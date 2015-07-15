@@ -1,0 +1,22 @@
+[Unit]
+Description=ytwebapp
+
+[Service]
+TimeoutStartSec=0
+EnvironmentFile=/etc/environment
+ExecStartPre=/bin/sh -c "/usr/bin/docker rm -f celery > /dev/null ; true"
+ExecStartPre=/usr/bin/docker pull ndslabs/ythub_worker
+ExecStartPre=/usr/bin/docker pull ndslabs/hublaunch
+ExecStartPre=/usr/bin/docker pull ndslabs/devenv
+ExecStartPre=/usr/bin/docker pull ndslabs/rstudio
+ExecStart=/usr/bin/docker run --privileged -p 8888 --name=celery \
+   --env-file=/etc/environment \
+   --env-file=/etc/hubenv \
+   ndslabs/ythub_worker
+ExecStop=/usr/bin/docker kill celery
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Conflicts=ytwebapp@*.service

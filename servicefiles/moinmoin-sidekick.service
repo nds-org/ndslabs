@@ -1,0 +1,17 @@
+[Unit]
+Description=Set etcd for Moin Moin
+BindsTo=moinmoin.service
+After=moinmoin.service
+
+[Service]
+EnvironmentFile=/etc/environment
+ExecStart=/bin/sh -c "\
+while true ; \
+do \
+   etcdctl set /proxy/proxies/wiki http://${COREOS_PRIVATE_IPV4}:$(docker port moinmoin 80 | cut -f2 -d:) --ttl 60 ;\
+   sleep 45;\
+done"
+ExecStop=/bin/sh -c "etcdctl rm /proxy/proxies/wiki"
+
+[X-Fleet]
+MachineOf=moinmoin.service

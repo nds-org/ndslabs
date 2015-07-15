@@ -1,0 +1,22 @@
+[Unit]
+Description=proxy
+
+[Service]
+TimeoutStartSec=0
+EnvironmentFile="/etc/environment"
+ExecStartPre=/bin/sh -c "/usr/bin/docker rm -f proxy > /dev/null ; true"
+ExecStartPre=/usr/bin/docker pull ndslabs/proxy
+ExecStart=/usr/bin/docker run \
+	--name proxy \
+	--env-file=/etc/environment \
+	--env-file=/etc/hubenv \
+	-p 8080:8000 \
+	-p 8001 \
+	ndslabs/proxy
+ExecStop=/usr/bin/docker kill proxy
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=elastic_ip=true

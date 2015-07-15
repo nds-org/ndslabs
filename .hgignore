@@ -1,0 +1,9 @@
+ythub_worker/aux
+ythub_worker/root
+docker-launcher/coreos-config.yaml
+pubring.gpg~
+secring.gpg
+hublaunch/ipython-conf.tgz
+nds-explorer/nds-explorer
+nds-explorer/dist.tar.gz
+.idea/  

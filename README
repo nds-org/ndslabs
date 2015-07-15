@@ -1,0 +1,148 @@
+NDS Labs
+========
+
+What's In The Box?
+------------------
+
+This is the main repository for the NDS Labs initiative, which is a part of the
+broader National Data Service (nationaldataservice.org) effort.
+
+NDSLabs is designed to be an experimental space for developing services and
+exploring interoperability between services.  Currently, it *only* works on
+Openstack clusters.
+
+Inside this repo you will find:
+
+ * Dockerfiles for building docker images that can serve as the building blocks
+   for data services
+ * Servicefiles that manage the lifecycle of services running on a cluster
+ * Methods for launching an "NDSLabs" cluster based on CoreOS and Fleet
+
+The individual dockerfiles have been constructed to be as generic as possible,
+with information provided to them via environment variables specified at
+launch.  (And sane defaults in advance of that.)  In some cases this increases
+their startup time, but allows them to be flexible in deployment and
+utilization.
+
+Requirements
+------------
+
+Starting your own NDSLabs cluster requires that you have access to:
+
+ * An Openstack cluster and its API endpoint
+ * An installation of fleet ( https://github.com/coreos/fleet )
+ * This repository
+
+Getting Started
+---------------
+
+The rough outline for getting started with a pre-built cluster of NDS Labs
+containers is as follows:
+
+ 1. Import the CoreOS images into Glance as per instructions at coreos.com
+ 2. Read over the output of:
+    $ python2.7 startup_ndslabs.py --help
+ 3. Run the startup script with the appropriate options.
+ 4. Spawn the appropriate servicefiles using fleetctl
+
+Each of the options to startup_ndslabs.py is documented.  A typical invocation
+will specify Openstack volumes to mount, the SSH key to use, a name, and a
+public IP address.
+
+Where to Get Help
+-----------------
+
+There are a few ways to get help for getting up and running.  The first is
+through the NDS discussion mailing list, discuss@nationaldataservice.org.  Only
+subscribers can post; to subscribe, email majordomo@nationaldataservice.org
+with the contents "subscribe discuss".
+
+The second way is through IRC.  On chat.freenode.net in the channel
+\#nds-epiphyte , folks are often idling and able to respond to questions with
+some delay.
+
+
+What's Next?
+------------
+
+Once you have started up the cluster, you are now able to create new docker
+files that interoperate with existing services.  (See the list of services
+below for more information.)  These can be spawned using servicefiles.
+
+All services, docker images and service files are designed to be nearly
+completely configurable at time of first instantiation by environment
+variables.  If they are backed by a persistent container (or linked to a
+persistent database container) they should restart cleanly with existing
+configuration.
+
+List of Services
+----------------
+
+Below are the services currently included.  To inspect which environment
+variables they take, examine the dockerfile for ENV lines.
+
+ * busybox
+ * docker-registry-frontend
+ * docker-registry
+ * hipache
+ * irods-icat
+ * irods-idrop2
+ * irods-rest
+ * kallithea
+ * moinmoin
+ * owncloud
+ * postgres-icat
+ * postgres-owncloud
+ * proxy
+ * rabbitmq
+ * webserve
+ * ytwebapp
+ * scidrive (planned, not yet implemented)
+
+Special Services
+----------------
+
+Some services are templated to allow for special use cases.  The most prominent
+of these is the webserve service, which is designed to spin up any
+appropriately named docker image.  This is to make it extremely easy to serve
+static content.  For an example of how to do this, see the nds-explorer
+Dockerfile (which builds a dist.tar.gz and inserts it into the dockerfile);
+this service can be spawned by executing
+
+ $ fleetctl start webserve@nds-explorer.service
+
+This will feed the portion of the name between the @ symbol and the . into the
+servicefile as %i.  It then downloads the image nds-labs/%i , executes it, and
+sets up an http proxy from the public IP address to the appropriate internal IP
+address.  At the public IP, under the suburl nds-explorer, it will now serve
+the content of that container.
+
+Configuration Variables
+-----------------------
+
+Below is a selection of environment variables that relate to configuration
+settings for the services.  Not all will need to be changed; in fact, at a bare
+minimum, none of them need to be changed.
+
+To change an environment variable, modify the contents of
+docker-launcher/production.env .
+
+ * IRODS_DATADIR defaults to /tempZone/home/rods/data .  What is the location,
+   in iRODS-space, of the data to be made available?
+ * irodspassword defaults to testpassword and is the password for the irods
+   postgres database.
+ * irodsresc defaults to defaultResc and is the resource on which files will be
+   created, by default.
+ * irodszone defaults to tempZone and is the iRODS Zone to be used.
+ * kemail defaults to nn@your.kallithea.server and is the email address
+   Kallithea will use for logging and reporting.
+ * keyforagent defaults to temp_32_byte_key_for_agent__conn and is the key used
+   in the iRODS setup.
+ * kpass defaults to simple_password and is the administrative password for
+   Kallithea.
+ * localzonesid defaults to TEMP_LOCAL_ZONE_SID and is the zone SID for iRODS
+   setup.
+ * owncloudpassword defaults to testpassword and is the password for admin on
+   ownCloud.
+ * ytfidopassword defaults to 3nthr0py and is the password for the ytfido user
+   account on iRODS.

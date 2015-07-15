@@ -1,0 +1,22 @@
+[Unit]
+Description=Serving curldrop
+After=docker.service
+Requires=docker.service mnt-data.mount
+BindsTo=mnt-data.mount
+
+[Service]
+TimeoutStartSec=0
+EnvironmentFile=/etc/environment
+ExecStartPre=/bin/sh -c "/usr/bin/docker rm -f curldrop > /dev/null ; true"
+ExecStartPre=/usr/bin/docker pull ndslabs/curldrop
+ExecStart=/usr/bin/docker run \
+    --name curldrop \
+    -p 8888 \
+    -e UPLOADDIR=/mnt/uploads/ \
+    -e BASEURL=http://labs.nationaldataservice.org/upload/ \
+    -v /mnt/data/temp:/mnt/uploads \
+    ndslabs/curldrop
+ExecStop=/usr/bin/docker stop -t 5 curldrop
+
+[X-Fleet]
+MachineMetadata=mounts=true

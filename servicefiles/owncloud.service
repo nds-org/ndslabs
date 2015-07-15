@@ -1,0 +1,21 @@
+[Unit]
+Description=ownCloud
+BindsTo=postgres-owncloud.service
+Requires=etcd.service docker.service
+
+[Service]
+TimeoutStartSec=0
+EnvironmentFile=/etc/environment
+ExecStartPre=/bin/sh -c "/usr/bin/docker rm -f owncloud1 > /dev/null ; true"
+ExecStartPre=/usr/bin/docker pull ndslabs/owncloud
+ExecStart=/usr/bin/docker run \
+    --name owncloud1 \
+    -p 80 \
+    --link db2:db2 \
+    --link irodsrest1:irodsrest \
+    ndslabs/owncloud
+ExecStop=/usr/bin/docker stop -t 5 owncloud1
+
+[X-Fleet]
+MachineOf=postgres-owncloud.service
+MachineMetadata=elastic_ip=false

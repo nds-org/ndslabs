@@ -1,0 +1,21 @@
+[Unit]
+Description=Set etcd for irods
+Requires=irods-icat.service etcd.service
+After=irods-icat.service etcd.service
+BindsTo=irods-icat.service
+
+[Service]
+EnvironmentFile=/etc/environment
+EnvironmentFile=/etc/hubenv
+ExecStart=/bin/sh -c "\
+while true ; \
+do \
+   etcdctl set /irods/port $(docker port icat1 1247 | cut -f 2 -d:) --ttl 60 ;\
+   etcdctl set /irods/zone ${irodszone} --ttl 60 ;\
+   etcdctl set /irods/host ${COREOS_PRIVATE_IPV4} ;\
+   sleep 45;\
+done"
+ExecStop=/bin/sh -c "etcdctl rm /irods/zone; etcdctl rm /irods/host; etcdctl rm /irods/port"
+
+[X-Fleet]
+MachineOf=irods-icat.service

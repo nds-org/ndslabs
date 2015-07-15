@@ -1,0 +1,15 @@
+[Unit]
+Description=RabbitMQ server
+After=docker.service
+Requires=docker.service
+After=etcd.service
+Requires=etcd.service
+
+[Service]
+ExecStartPre=/bin/sh -c "/usr/bin/docker rm -f rabbitmq > /dev/null ; true"
+ExecStart=/usr/bin/docker run --name rabbitmq --env-file /etc/environment -p 5672:5672 -p 15672:15672 ndslabs/rabbitmq-etcd
+ExecStartPost=/usr/bin/etcdctl set /rabbitmq/users/ytfido password
+ExecStartPost=/usr/bin/etcdctl set /rabbitmq/vhosts/ythub 1 
+ExecStartPost=/usr/bin/etcdctl set /rabbitmq/permissions/ythub/ytfido ".*/.*/.*"
+ExecStop=/usr/bin/docker stop rabbitmq
+ExecStopPost=/usr/bin/docker rm -f rabbitmq

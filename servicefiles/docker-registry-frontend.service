@@ -1,0 +1,26 @@
+# https://registry.hub.docker.com/u/konradkleine/docker-registry-frontend/
+
+[Unit]
+Description=Docker Registry Frontend
+After=docker-registry.service
+Requires=docker-registry.service
+
+[Service]
+TimeoutStartSec=0
+EnvironmentFile=/etc/environment
+ExecStartPre=/bin/sh -c "/usr/bin/docker rm -f docker-registry-frontend > /dev/null ; true"
+ExecStartPre=/usr/bin/docker pull konradkleine/docker-registry-frontend
+ExecStart=/usr/bin/docker run \
+   --name docker-registry-frontend \
+   -e ENV_DOCKER_REGISTRY_HOST=docker-registry \
+   -e ENV_DOCKER_REGISTRY_PORT=5000 \
+   --link docker-registry:docker-registry \
+   -p 8081:80 \
+   konradkleine/docker-registry-frontend
+ExecStartPost=/usr/bin/etcdctl set /proxy/proxies/registry http://${COREOS_PRIVATE_IPV4}:8081/
+ExecStop=/usr/bin/docker stop -t 5 docker-registry-frontend
+ExecStopPost=/usr/bin/etcdctl rm /proxy/proxies/registry
+
+[X-Fleet]
+X-ConditionMachineOf=docker-registry.service
+MachineMetadata=elastic_ip=false

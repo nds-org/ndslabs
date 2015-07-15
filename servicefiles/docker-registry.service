@@ -1,0 +1,26 @@
+# https://github.com/docker/docker-registry
+
+[Unit]
+Description=Docker Registry
+
+[Service]
+TimeoutStartSec=0
+EnvironmentFile=/etc/environment
+ExecStartPre=/bin/sh -c "/usr/bin/docker rm -f docker-registry > /dev/null ; true"
+ExecStartPre=/usr/bin/docker pull pallet/registry-swift
+ExecStart=/usr/bin/docker run \
+    --name docker-registry \
+    -e SETTINGS_FLAVOR=swift \
+    -e OS_CONTAINER=docker-registry \
+    -e OS_USERNAME=your-username \
+    -e OS_PASSWORD=your-password \
+    -e OS_AUTH_URL=https://identity.api.rackspacecloud.com/v2.0/ \
+    -e OS_REGION_NAME=DFW \
+    -e OS_TENANT_NAME=MossoCloudFS_nnnnn \
+    -p 5000:5000 \
+    --name registry \
+    pallet/registry-swift
+ExecStop=/usr/bin/docker stop -t 5 registry
+
+[X-Fleet]
+MachineMetadata=elastic_ip=false

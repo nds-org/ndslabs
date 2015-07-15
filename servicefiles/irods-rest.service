@@ -1,0 +1,17 @@
+[Unit]
+Description=irods-rest
+BindsTo=irods-icat.service
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill irodsrest1
+ExecStartPre=-/usr/bin/docker rm irodsrest1
+ExecStartPre=/usr/bin/docker pull ndslabs/irods-rest
+ExecStart=/usr/bin/docker run --name irodsrest1 --link icat1:icat1 -v /mnt/data:/mnt/data -p 80 -p 443 ndslabs/irods-rest
+ExecStop=/usr/bin/docker stop irodsrest1
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=irods-icat.service

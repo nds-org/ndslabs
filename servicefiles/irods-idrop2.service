@@ -1,0 +1,17 @@
+[Unit]
+Description=irods-idrop2
+BindsTo=irods-icat.service
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill idrop1
+ExecStartPre=-/usr/bin/docker rm idrop1
+ExecStartPre=/usr/bin/docker pull ndslabs/irods-idrop2
+ExecStart=/usr/bin/docker run --name idrop1 --link icat1:icat1 -v /mnt/data:/mnt/data -p 80 -p 443 ndslabs/irods-idrop2
+ExecStop=/usr/bin/docker stop idrop1
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=irods-icat.service

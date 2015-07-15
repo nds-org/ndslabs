@@ -1,0 +1,20 @@
+[Unit]
+Description=Serving Moin Moin Wiki
+After=docker.service
+Requires=docker.service mnt-moinmoin.mount
+BindsTo=mnt-moinmoin.mount
+
+[Service]
+TimeoutStartSec=0
+EnvironmentFile=/etc/environment
+ExecStartPre=/bin/sh -c "/usr/bin/docker rm -f moinmoin > /dev/null ; true"
+ExecStartPre=/usr/bin/docker pull ndslabs/moinmoin-wiki:standalone
+ExecStart=/usr/bin/docker run \
+    --name moinmoin \
+    -p 80 \
+    ndslabs/moinmoin-wiki:standalone
+ExecStop=/usr/bin/docker stop -t 5 moinmoin
+
+[X-Fleet]
+MachineMetadata=elastic_ip=false
+MachineMetadata=mounts=true

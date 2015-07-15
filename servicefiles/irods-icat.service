@@ -1,0 +1,27 @@
+[Unit]
+Description=irods-icat
+BindsTo=postgres-icat.service mnt-data.mount
+Requires=etcd.service docker.service mnt-data.mount postgres-icat.service
+Before=irods-sidekick.service
+After=postgres-icat.service
+
+[Service]
+TimeoutStartSec=0
+EnvironmentFile=/etc/environment
+EnvironmentFile=/etc/hubenv
+ExecStartPre=/bin/sh -c "/usr/bin/docker rm -f icat1 > /dev/null ; true"
+ExecStartPre=/usr/bin/docker pull ndslabs/irods-icat
+ExecStart=/usr/bin/docker run \
+     --env-file=/etc/hubenv \
+     -h icat1 \
+     --name icat1 --link db1:db1 \
+     -v /mnt/data:/var/lib/irods/Vault \
+     -p 1247 ndslabs/irods-icat
+ExecStop=/usr/bin/docker kill icat1
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineOf=postgres-icat.service
+MachineMetadata=mounts=true

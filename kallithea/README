@@ -1,0 +1,7 @@
+This is a simple Dockerfile for Kallithea.
+
+The environment variables kpass and kemail will be used to set up the password
+and email for the kallithea administrator user.
+
+The volume /home/kallithea is exposed, and will not be wiped out if it gets
+passed in.

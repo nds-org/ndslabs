@@ -1,0 +1,24 @@
+[Unit]
+Description=postgres-icat
+After=docker.service
+BindsTo=mnt-dbdata.mount
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+EnvironmentFile=/etc/environment
+ExecStartPre=/bin/sh -c "/usr/bin/docker kill db1 > /dev/null ; true"
+ExecStartPre=/bin/sh -c "/usr/bin/docker rm db1 > /dev/null ; true"
+ExecStartPre=/usr/bin/docker pull ndslabs/postgres-icat
+ExecStart=/usr/bin/docker run \
+	--env-file=/etc/hubenv \
+	-v /mnt/dbdata/data:/var/lib/postgresql/data \
+	--name db1 \
+	ndslabs/postgres-icat
+ExecStop=/usr/bin/docker stop -t 1 db1
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=mounts=true

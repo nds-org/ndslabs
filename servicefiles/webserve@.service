@@ -1,0 +1,18 @@
+[Unit]
+Description=Serving ndslabs/%i
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+EnvironmentFile=/etc/environment
+ExecStartPre=/bin/sh -c "/usr/bin/docker rm -f %i > /dev/null ; true"
+ExecStartPre=/usr/bin/docker pull ndslabs/%i
+ExecStart=/usr/bin/docker run \
+    --name %i \
+    -p 80 \
+    ndslabs/%i
+ExecStop=/usr/bin/docker stop -t 5 %i
+
+[X-Fleet]
+MachineMetadata=elastic_ip=false

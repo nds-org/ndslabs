@@ -1,0 +1,21 @@
+[Unit]
+Description=nginx
+
+[Service]
+TimeoutStartSec=0
+EnvironmentFile="/etc/environment"
+ExecStartPre=/bin/sh -c "/usr/bin/docker rm -f nginx > /dev/null ; true"
+ExecStartPre=/usr/bin/docker pull ndslabs/nginx
+ExecStart=/usr/bin/docker run \
+	--name nginx \
+	--env-file=/etc/environment \
+	--env-file=/etc/hubenv \
+	-p 80:80 \
+	ndslabs/nginx
+ExecStop=/usr/bin/docker kill nginx
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineMetadata=elastic_ip=true
