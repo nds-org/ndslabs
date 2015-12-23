@@ -1,0 +1,11 @@
+
+NDS turn-key deploy on openstack.
+
+GUI Based on fuel-menu.
+	 https://github.com/openstack/fuel-menu.git
+
+Basic heat templates for single-services:   
+	mongo, etc-keyserver, nginx
+
+Hierarchical templates include basic service templates for full-stacks:
+	irods, dataverse, xwiki, etc.

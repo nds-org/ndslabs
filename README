@@ -1,3 +1,25 @@
+NDS Labs v2
+Updated 15-12-23 - raila
+========
+
+Work in progress.   Many of the services and components are undergoing
+simultaneous non-incremental development - hence the v2 label.
+
+High level summary of changes:
+
+    Codebase reorganzied from flat-structure into functional hierarchy.
+
+    Container images to be tagged v2
+
+    Common image build system via make for consistency
+
+    Common etcd key schema
+
+    Multiple options for cluster deployment for production and dev environments 
+        - heat, kubernetes, vagrant, compose
+
+
+===============================================================================================
 NDS Labs
 ========
 
@@ -146,3 +168,4 @@ docker-launcher/production.env .
    ownCloud.
  * ytfidopassword defaults to 3nthr0py and is the password for the ytfido user
    account on iRODS.
+

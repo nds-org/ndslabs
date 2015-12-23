@@ -1,0 +1,23 @@
+
+Heat template to setup a coreos cluster with everything
+to support kubernetes.
+
+based on corekube, which can instantiate on other infrastructures than openstack
+
+
+What it does:
+	1.   Make a NDS openstack data volume for this configuration
+		docker create --name config-ostack-kube -v /nds/config/openstack nds-volume-base
+	2.   Copy your openstack API rc file and the heat template in
+		docker cp <your-rc-file> config-ostack-kube:/nds/config/openstack
+		docker cp <heat-file.yaml> config-ostack-kube:/nds/config/openstack
+	3.  Run the openstack cli container with your config
+		docker run --name nds-ostack-deploy --volumes-from config-ostack-kube 
+	4.  Uses openstack cli to find your ext-network name, external IP allocations, stuff.....
+	5.  Instantiates the kubernetes stack
+	6.  Instantiates services passwd in k8
+
+What it doesn't:
+	1.  Do any kind of tear-down.   This accomplished by hand using k8 cli.
+	2.  Handle errors very well.....
+

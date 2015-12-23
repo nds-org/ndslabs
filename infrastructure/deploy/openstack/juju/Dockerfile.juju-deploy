@@ -1,0 +1,8 @@
+from ubuntu
+
+run apt-get -y update
+run apt-get -y install juju
+
+#ADD help /bin/help
+
+#CMD bash
