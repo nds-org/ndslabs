@@ -1,0 +1,3 @@
+#!/bin/bash
+
+echo 'Usage:  eval "$(docker run --rm deploy-heat bootstrap <local-path-to-your-rc-file>)"'
