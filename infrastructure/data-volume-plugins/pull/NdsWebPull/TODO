@@ -1,0 +1,4 @@
+
+fix old make to new make
+fix url handling
+add generic mime downloads - zip, tgz, iso, ...

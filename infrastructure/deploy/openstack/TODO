@@ -1,0 +1,4 @@
+merging openstack deployers into one common image that supports
+nova, heat, and juju deploys.
+merging into juju in progress, then will rename to openstack and remove
+older single-purpose deployers.

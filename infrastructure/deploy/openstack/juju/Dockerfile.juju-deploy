@@ -6,7 +6,9 @@ run apt-get -y update &&\
     apt-get -y update &&\
     apt-get -y install python-urwid python-heatclient python-novaclient \
         python-neutronclient python-keystoneclient &&\
-    apt-get -y install juju juju-quickstart juju-deployer
+    apt-get -y install juju juju-quickstart juju-deployer &&\   
+    apt-get -y clean all &&\
+    rm -rf /var/lib/apt/lists/*
 
 #ADD help /bin/help
 

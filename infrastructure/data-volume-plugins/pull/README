@@ -1,0 +1,2 @@
+These adapaters provide copy to local volume from their source, such as a git pull or
+a http-tar extraction.
