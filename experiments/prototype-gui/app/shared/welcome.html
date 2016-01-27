@@ -1,0 +1,154 @@
+<!-- Welcome Banner -->
+<section id="intro" data-speed="6" data-type="background">
+    <div class="container-fluid" style="padding: 100px 0 100px 0;">
+      <div id="welcomeJumbo" class="jumbotron">
+        <div class="container" class="text-center">
+          <h1 id="jumboHeader">Hi, I am {{ currentAddress.name }}!</h1>
+          <p id="jumboContent">I am a professional full-stack developer currently living in {{ currentAddress.city }}, {{ currentAddress.stateOrProvince }} in {{ currentAddress.country | addTheToCountry }}</p>
+          <!-- ng-class="{ 'link-button': arrowPointsDown, 'thin-margins': !arrowPointsDown }"  -->
+          <div id="linkBar" class="row text-center">
+            <div class="col-md-2 col-xs-6" ng-repeat="link in links | orderBy:'id'">
+              <a data-toggle="tooltip" data-placement="top" title="{{ link.description }}" class="btn btn-sm btn-info link-button" ng-href="{{ link.url }}" ng-style="{ 
+  'padding': arrowPointsDown ? 'auto' : '0'}">
+                <i class="fa fa-lg fa-fw {{ link.icon }}"></i>
+              </a><!-- /#linkButton -->
+            </div><!-- /.col-md-2 -->
+          </div><!-- /.row text-center -->
+        </div><!-- /.container -->
+      </div><!-- /.jumbotron -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- Resume Proper -->
+<section id="home" data-speed="6" data-type="background">
+    <div id="straddleDiv" sticky class="center">
+      <a id="straddleButton" class="btn btn-info btn-lg" type="button" role="button" href="{{ arrowPointsDown ? '#scrollHere' : '#intro' }}">
+        <i class="fa" ng-class="{ 'fa-4x': arrowPointsDown, 'fa-2x': !arrowPointsDown, 'fa-arrow-circle-down': arrowPointsDown, 'fa-arrow-circle-up': !arrowPointsDown }"></i>
+      </a><!-- /#straddleButton -->
+    </div><!-- /#straddleDiv -->
+    
+    <div class="container" id="scrollHere">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="well">
+            <h3 class="text-center">Objective</h3>
+            {{ objectiveStatement }}
+          </div><!-- /.well -->
+        </div><!-- /.col-md-12 -->
+      </div><!-- /.row -->
+      
+      <div class="row">
+        <div class="col-md-12">
+          <div class="well">
+            <h3 class="text-center">Employment History</h3>
+            <accordion>
+              <accordion-group ng-repeat="position in employmentHistory">
+                <accordion-heading>
+                  {{ position.name }} <span class="pull-right"><small>{{ position.startDate }} - {{ position.endDate }}</small></span>
+                </accordion-heading>
+                <p>{{ position.summary }}</p>
+                <label>Responsibilities:</label>
+                <ul>
+                  <li ng-repeat="resp in position.responsibilities">{{ resp }}</li>
+                </ul>
+              </accordion-group>
+            </accordion>
+          </div><!-- /.well -->
+        </div><!-- /.col-md-12 -->
+      </div><!-- /.row -->
+      
+      <div class="row">
+        <div class="col-md-6">
+          <div class="well">
+            <h3 class="text-center">Primary Languages</h3>
+            <accordion>
+              <accordion-group ng-repeat="lang in primaryLanguages" heading="{{ lang.name }}">
+                {{ lang.experience }}
+              </accordion-group>
+            </accordion>
+          </div><!-- /.well -->
+        </div><!-- /.col-md-6 -->
+        
+        <div class="col-md-6">
+          <div class="well">
+            <h3 class="text-center">Other Skills</h3>
+            <p><a bs-popover ng-repeat="skill in skillList" tabindex="0" class="btn btn-link" role="button" data-placement="top" data-toggle="popover" data-trigger="focus" title="Experience" data-content="{{ skill.experience }}">{{ skill.name }}</a>
+            </p>
+            <p><strong>Oh no!</strong> You don't see all of the skills that you would like to see in a potential candidate listed above?</p>
+            <p><strong>Don't worry!</strong> I am always looking to include more technologies in my arsenal. I love learning new programming languages to develop in, along with their strengths and weaknesses.</p>
+          </div><!-- /.well -->
+        </div><!-- /.col-md-6 -->
+      </div><!-- /.row -->
+      
+    
+    <div class="row">
+      <div class="col-md-6">
+        <div id="wellObjective" class="well">
+          <h3 class="text-center">Education</h3>
+          <h4>{{ education.name }} <span class="pull-right"><small>{{ education.startDate }} - {{ education.endDate }}</small></span></h4>
+          <p>{{ education.degreeType }}, {{ education.major }} <span class="pull-right">Minored in {{ education.minor }}</span></p>
+          <accordion style="padding:10px;">
+            <accordion-group is-open="educationIsOpen">
+              <accordion-heading>
+                Relevant Coursework <i class="pull-right glyphicon" ng-class="{ 'glyphicon-chevron-down': educationIsOpen, 'glyphicon-chevron-right': !educationIsOpen }"></i>
+              </accordion-heading>
+              <ul>
+                <li ng-repeat="course in education.relevantCoursework"><small>{{ course.name }}</small></li>
+              </ul>
+            </accordion-group>
+          </accordion>
+        </div><!-- /.well -->
+      </div><!-- /.col-md-6 -->
+      
+      <div class="col-md-6">
+        <div class="well">
+          <h3 class="text-center">Certifications</h3>
+          <div class="media" ng-repeat="cert in certs">
+            <div class="media-left">
+              <a ng-href="{{ cert.imgLink }}">
+                <img class="media-object" height="85" width="110" ng-src="{{ cert.imgLink }}" alt="Loading...">
+              </a>
+            </div><!-- /.media-left -->
+            <div class="media-body">
+              <h4 class="media-heading">{{ cert.name }}</h4>
+              <p>{{cert.id | uppercase}}#{{ cert.number }}</p>
+              <p>Expires: {{ cert.validTo }}</p>
+            </div><!-- /.media-body -->
+          </div><!-- /.media -->
+        </div><!-- /.well -->
+      </div><!-- /.col-md-6 -->
+    </div><!-- /.row -->
+    
+    <div class="row">      
+      <div class="col-md-6">
+        <div class="well">
+          <h3 class="text-center">{{ links[0].description }}</h3>
+          <p>Interested in talking to me about a new career opportunity?</p>
+          <p>Click the button below and check out my formal resume, including contact details!</p>
+          <p class="text-center"><a type="button" class="btn btn-info" ng-href="{{ links[0].url }}">Click Here&nbsp;&nbsp;&nbsp;&rarr;</a></p>
+        </div><!-- /.well -->
+      </div><!-- /.col-md-6 -->
+      
+      <div class="col-md-6">
+        <div id="wellObjective" class="well">
+          <div class="media">
+            <div class="media-left">
+              <a ng-href="https://myspace.com/mikelambertband">
+                <img class="media-object" ng-src="/asset/jpg/cartoon_me.jpg" alt="Loading...">
+              </a>
+            </div><!-- /.media-left -->
+            <div class="media-body">
+              <h4 class="media-heading">About Me</h4>
+              <p>{{ aboutMe }}</p>
+            </div><!-- /.media-body -->
+          </div><!-- /.media -->
+        </div><!-- /.well -->
+      </div><!-- /.col-md-6 -->
+    </div><!-- /.row -->
+  </div><!-- /.container -->
+</section>
+<!-- Footer? -->
+<section id="about" data-speed="2" data-type="background">
+    <div class="container">
+      <!--<div ng-include src="'/app/shared/footer.html'" ng-controller="FooterController" ></div>-->
+    </div><!-- /.container -->
+</section>

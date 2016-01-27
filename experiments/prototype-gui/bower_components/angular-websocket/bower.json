@@ -1,0 +1,30 @@
+{
+  "name": "angular-websocket",
+  "main": "angular-wesocket.js",
+  "version": "0.0.1",
+  "homepage": "https://github.com/bodom0015/personal-website",
+  "authors": [
+    "Mike Lambert <bodom0015@gmail.com>"
+  ],
+  "description": "A simple websocket service for AngularJS",
+  "moduleType": [
+    "amd"
+  ],
+  "keywords": [
+    "angular",
+    "websocket",
+    "js",
+    "angularJS"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.3.15"
+  }
+}
