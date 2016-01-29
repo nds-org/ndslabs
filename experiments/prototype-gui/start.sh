@@ -1,1 +1,1 @@
-docker run -p 80:80 -v ~/prototype-gui:/usr/share/nginx/html -it --rm nginx
+docker run -p 80:80 -v `pwd`/src:/usr/share/nginx/html -it --rm nginx
