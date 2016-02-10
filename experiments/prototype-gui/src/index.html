@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html ng-app="test">
+  <head ng-controller="NavbarController">
+    <title>NDS Labs</title>
+    <meta name="charset" value="utf-8" />
+    <meta name="robots" value="nofollow noindex" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    
+    <link rel="shortcut icon" href="/favicon.png" />
+    <link rel="icon" sizes="16x16 32x32" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/bower_components/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="/bower_components/font-awesome/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="/asset/css/suppl.css" />
+    <link rel="stylesheet" type="text/css" href="/asset/css/animations.css" />
+
+    <link href="http://fonts.googleapis.com/css?family=Roboto:400,300" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Indie+Flower' rel='stylesheet' type='text/css'>
+    <style type="text/css">body { font-family: "Roboto", sans-serif !important; }</style>
+    
+    <!-- Other External JS / CSS -->
+    <script type="text/javascript" src="/bower_components/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <!-- AngularJS -->
+    <script src="/bower_components/angular/angular.js"></script>
+    <script src="/bower_components/angular-route/angular-route.min.js"></script>
+    <script src="/bower_components/angular-resource/angular-resource.min.js"></script>
+    <script src="/bower_components/angular-animate/angular-animate.min.js"></script>
+    
+    <!-- Bridge AngularJS with any external JS / CSS -->
+    <script src="/bower_components/angular-bootstrap/ui-bootstrap.min.js"></script>
+    
+    <!-- Then load the source for this app -->
+    <script src="/app/app.js"></script>
+    <script src="/app/shared/NavbarController.js"></script>
+    <div ng-include src="'/app/shared/navbar.html'" ng-controller="NavbarController" ></div> 
+    
+    <script src="/app/shared/TestController.js"></script>
+    
+    <div class="container-fluid page" ng-view id="scrollContainer"></div>
+    
+    <script src="/app/shared/FooterController.js"></script>
+  </body>
+</html>
