@@ -1,5 +1,15 @@
 angular
 .module('test')
+.constant('EtcdHost', 'localhost')
+.constant('EtcdPort', '4001')
+// 'http://' + EtcdHost + ':' + EtcdPort + '/v2/keys/:category/:name'
+.factory('Services', [ '$resource', 'EtcdHost', 'EtcdPort', function($resource, EtcdHost, EtcdPort) {
+  return $resource('/app/services.json', {category: 'services', name:'@name'}, {
+      get: {method:'GET', params:{}},
+      put: {method:'PUT', params:{ 'value':'@value' }},
+      query: {method:'GET', isArray: true}
+    })
+}])
 .filter('fromTo', function() {
   return function(input, from, total, lessThan) {
     from = parseInt(from);
@@ -46,15 +56,26 @@ angular
     }
   };
 }])
-.controller('TestController', [ '$scope', 'appConfig',  function($scope, appConfig) {
+.controller('TestController', [ '$scope', 'appConfig', 'Services', function($scope, appConfig, Services) {
   $scope.appConfig = appConfig;
   appConfig.title = "NDS Labs Prototype";
   appConfig.path = "test/";
   
+  $scope.serviceJson = Services.query(function(a, b, c) {
+    console.log("success!");
+    $scope.services = a;
+    console.log(a);
+    console.log(b);
+    console.log(c);
+  }, function (a, b, c) {
+    console.log("error!")
+    debugger;
+  });
+
   $scope.disabled = false;
   
   $scope.serviceSearchQuery = '';
-  $scope.services = [
+  /*$scope.services = [
     { key: 'apache', label: 'Apache' },
     { key: 'gitlab', label: 'GitLab' },
     { key: 'mongodb', label: 'MongoDB' },
@@ -62,7 +83,7 @@ angular
     { key: 'mysql', label: 'MySQL' },
     { key: 'postgresql', label: 'postgresql' },
     { key: 'rabbitmq', label: 'RabbitMQ' },
-  ];
+  ];*/
   
   $scope.nextId = 1;
   $scope.addedServices = [];

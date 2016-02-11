@@ -22,7 +22,7 @@
             </tr>
           </thead>
           <!-- MouseEnter/Leave are not mobile friendly:  ng-mouseleave="service.showHover = false;" ng-mouseenter="service.showHover = true;" -->
-          <tr ng-repeat="service in services | filter : serviceSearchQuery">
+          <tr ng-repeat="service in services | orderBy:'key'| filter : serviceSearchQuery">
             <td>{{ service.label }}</td>
             <td>
               <!-- MouseEnter/Leave are not mobile friendly: ng-show="service.showHover || service.count" -->
