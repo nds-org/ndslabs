@@ -45,4 +45,5 @@ NDSLabs extends the Kubernetes base system with NDS-specific services and REST A
 	 - **Distributed search**:   Locating named data and services in the NDS global system.
 	 -  **Resource discovery**:  Locates attribute-specified resources in the NDS global system, such as specifically sized **data-storage resources**, or **specific compute resources** such as HPC resources, or  accelerator-enabled compute resources, for example.
 
-![enter image description here](./archtecture.png)
+
+![**NDS Labs Architecture**](https://raw.githubusercontent.com/nds-org/nds-labs/v2/docs/architecture/architecture.png)
