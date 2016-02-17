@@ -49,8 +49,8 @@
 	{
 		"key": "image-preview",
 		"label": "Image Preview",
-    	"standalone": true,
-    	"persisted": false,
+		"standalone": true,
+		"persisted": false,
 		"links": {
 			"optional": [
 				"clowder:rabbitmq"
@@ -60,8 +60,8 @@
 	{
 		"key": "video-preview",
 		"label": "Video Preview",
-    	"standalone": true,
-    	"persisted": false,
+		"standalone": true,
+		"persisted": false,
 		"links": {
 			"optional": [
 				"clowder:rabbitmq"
@@ -71,8 +71,8 @@
 	{
 		"key": "plantcv",
 		"label": "PlantCV",
-    	"standalone": true,
-    	"persisted": false,
+		"standalone": true,
+		"persisted": false,
 		"links": {
 			"optional": [
 				"clowder:rabbitmq"
@@ -82,8 +82,8 @@
 	{
 		"key": "dataverse",
 		"label": "DataVerse",
-    	"standalone": false,
-    	"persisted": false,
+		"standalone": false,
+		"persisted": false,
 		"links": {
 			"required": [
 				"rserve",
@@ -97,23 +97,23 @@
 		"label": "PostgreSQL",
 		"standalone": true,
 		"persisted": true
-	}
+	},
 	{
 		"key": "rserve",
 		"label": "RServe",
-    	"standalone": false,
-    	"persisted": false
+		"standalone": false,
+		"persisted": false
 	},
 	{
 		"key": "solr",
 		"label": "Solr",
-    	"standalone": false,
-    	"persisted": false
+	    	"standalone": false,
+		"persisted": false
 	},
 	{
 		"key": "tworavens",
 		"label": "Two Ravens",
-    	"standalone": false,
-    	"persisted": false
+		"standalone": false,
+		"persisted": false
 	}
 ]
