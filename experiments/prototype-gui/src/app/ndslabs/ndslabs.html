@@ -78,7 +78,7 @@
                     <div class="col-md-12">                        
                         <!-- Wizard progress bar here -->
                         <div class="progress">
-                          <div class="progress-bar" ng-class="{ 'progress-bar-success':}" role="progressbar" aria-valuenow="{{ wizard.percentage }}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{ wizard.percentage }}%;">
+                          <div class="progress-bar" ng-class="{ 'progress-bar-success': wizard.percentage == 100}" role="progressbar" aria-valuenow="{{ wizard.percentage }}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{ wizard.percentage }}%;">
                             {{ wizard.percentage | number:0 }}%
                           </div>
                         </div>
