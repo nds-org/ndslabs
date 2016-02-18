@@ -1,0 +1,140 @@
+<section class="container-fluid">
+  <!-- Selector(s) Pane -->
+  <div class="row">
+    <div class="col-md-3">      
+      <h4>Services</h4>
+      <div>
+        <div ng-hide="disabled">
+          <div class="input-group">
+            <span class="input-group-addon" id="basic-addon1"><i class="fa fa-search"></i></span>
+            <input type="text" class="form-control" placeholder="Search..." ng-model="serviceSearchQuery" aria-describedby="basic-addon1" />
+          </div>
+          
+          <span class="label label-danger" ng-show="(services | filter : serviceSearchQuery).length === 0">No services match the query</span>
+          
+        </div>
+        
+        <table class="table table-striped table-condensed table-hover" ng-hide="disabled || (services | filter : serviceSearchQuery).length === 0">
+          <thead>
+            <tr>
+              <td width="95%"><strong>NDS Labs Service</strong></td>
+              <td width="5%"><strong>Add</strong></td>
+            </tr>
+          </thead>
+          <!-- MouseEnter/Leave are not mobile friendly:  ng-mouseleave="service.showHover = false;" ng-mouseenter="service.showHover = true;" -->
+          <tr ng-repeat="service in services | orderBy:'key'| filter : serviceSearchQuery">
+            <td>{{ service.label }}</td>
+            <td>
+              <!-- MouseEnter/Leave are not mobile friendly: ng-show="service.showHover || service.count" -->
+              <button class="btn btn-xs btn-success" ng-click="addService(service)" ng-disabled="disabled">
+                <i ng-show="!service.count" class="fa fa-plus"></i>
+                <span ng-show="service.count">{{ service.count }}</span>
+              </button>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Canvas -->
+    <div class="col-md-9">
+      <div ng-if="addedServices.length > 0">
+        <h4>Added Services</h4>
+        <table class="table table-striped table-condensed table-hover">
+          <thead>
+            <tr>
+              <td width="10%"><strong>ID</strong></td>
+              <td width="30%"><strong>Type</strong></td>
+              <td width="50%"><strong>Connections</strong></td>
+              <td width="10%"><strong>Remove</strong></td>
+            </tr>
+          </thead>
+          <tr ng-repeat="service in addedServices" ng-mouseleave="service.showHover = false;" ng-mouseenter="service.showHover = true;">
+            <td>{{ service.id }}</td>
+            <td>{{ service.label }}</td>
+            <td>{{ service.connections }}</td>
+            <td class="text-center">
+              <button class="btn btn-xs btn-danger" ng-click="removeService(service)">
+                <i class="fa fa-times"></i>
+              </button>
+            </td>
+          </tr>
+        </table>
+      </div>
+  </div>
+
+    <div>
+      <h1>ngWizard Demo Page</h1>
+
+      <!-- Button trigger modal -->
+      <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#wizardModal" ng-click="resetWizard()">
+        Launch demo wizard
+      </button>
+
+      <pre>{{ wizard | json }}</pre>
+
+      <!-- Wizard Popup (Modal) -->
+      <div class="modal fade" id="wizardModal" tabindex="-1" role="dialog" aria-labelledby="wizardModalLabel">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title" id="wizardModalLabel">Wizard Demonstration</h4>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                    <!-- Wizard Page selector --> 
+                    <div class="col-md-12">                        
+                        <!-- Wizard progress bar here -->
+                        <div class="progress">
+                          <div class="progress-bar" role="progressbar" aria-valuenow="{{ wizard.percentage }}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{ wizard.percentage }}%;">
+                            {{ wizard.percentage }}%
+                          </div>
+                        </div>
+
+                        <!-- Wizard Pages shown here -->
+                        <div ng-if="wizard.currentPage.key === 'first'">
+                          <h4>First Page</h4>
+                          <p>This is the first page of the wizard!</p>
+                          <p>You can use this page to introduce the user to the operation that you are about to perform.</p>
+                        </div>
+                        <div ng-if="wizard.currentPage.key === 'second'">
+                          <h4>Second Page</h4>
+                          <p>This is the second page of the wizard!</p>
+                          <p>You can use this page to collect data necessary to perform the operation described on the previous page.</p>
+                          <p><strong>NOTE:</strong> Make sure to get the user's permission / confirmation before changing any of their data.</p>
+                        </div>
+                        <div ng-show="wizard.currentPage.key === 'third'">
+                          <h4>Final Page</h4>
+                          <p>This is the final page of the wizard!</p>
+                          <p>This is where you can notify the user about the success (or failure) of the requested operation.</p>
+                          <p><strong>NOTE:</strong> In the case of failure, you may wish to provide the user with a method of going back to adjust their input.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+              <div ng-if="wizard.canNextPage()">
+                <!-- "Cancel" button (close modal with success === false) -->
+                <button class="btn btn-danger pull-left" ng-if="wizard.canNextPage()" data-dismiss="modal" aria-label="Close"><i class="fa fa-times"></i>&nbsp;&nbsp;Cancel</button>
+
+                <!-- Previous Page -->
+                <button class="btn btn-primary" ng-disabled="!wizard.canPrevPage()" ng-click="wizard.prevPage()"><i class="fa fa-arrow-circle-left"></i>&nbsp;&nbsp;Back</button>
+
+                <!-- Next Page -->
+                <button class="btn btn-primary" ng-disabled="wizard.currentTimer > 0 || !wizard.canNextPage()" ng-click="wizard.nextPage()">
+                    Next&nbsp;<span ng-show="wizard.currentTimer > 0">({{ wizard.currentTimer }})</span>&nbsp;
+                        <i ng-show="wizard.currentTimer === 0" class="fa fa-arrow-circle-right"></i>
+                        <i ng-show="wizard.currentTimer > 0" class='fa fa-spinner fa-spin'></i>
+                </button>
+              </div>
+              <div ng-if="wizard.currentPage.nextPage === null">
+                <!-- "Finish" button (close modal with success === true) -->
+                <button class="btn btn-success" ng-disabled="!wizard.canPrevPage()" data-dismiss="modal" aria-label="Close" ng-click="wizard.success = true">Finish&nbsp;&nbsp;<i class="fa fa-check-circle"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+</div>
+</section>

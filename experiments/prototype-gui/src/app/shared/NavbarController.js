@@ -1,5 +1,5 @@
 angular
-.module('test')
+.module('navbar', [])
 .factory('appConfig', function() {
   var appConfig = {
     title: ''
