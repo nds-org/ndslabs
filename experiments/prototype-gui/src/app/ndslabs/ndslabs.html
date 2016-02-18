@@ -63,16 +63,7 @@
       </div>
   </div>
 
-    <div>
-      <h1>ngWizard Demo Page</h1>
-
-      <!-- Button trigger modal -->
-      <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#wizardModal" ng-click="resetWizard()">
-        Launch demo wizard
-      </button>
-
-      <pre>{{ wizard | json }}</pre>
-
+  <div>
       <!-- Wizard Popup (Modal) -->
       <div class="modal fade" id="wizardModal" tabindex="-1" role="dialog" aria-labelledby="wizardModalLabel">
         <div class="modal-dialog" role="document">
@@ -104,13 +95,16 @@
                           <h4>Configuration</h4>
                           <p ng-show="newService.links.required">Required Services:</p>
                           <ul class="list-group checked-list-box">
-                            <li ng-repeat="req in newService.links.required" class="list-group-item">{{ req }}</li>
+                            <li ng-repeat="req in newService.links.required" class="list-group-item disabled">
+                              {{ req }}
+                            </li>
                           </ul>
-
                           
                           <p ng-show="newService.links.optional">Please choose the plugins that you wish to enable below:</p>
-                          <ul class="list-group checked-list-box">
-                            <li ng-click="toggleSelec" ng-repeat="opt in newService.links.optional" class="list-group-item">{{ opt }}</li>
+                          <ul class="list-group checked-list-box" ng-class="{ 'active':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }">
+                            <li ng-click="optionalLinksGrid.selector.select.toggle(opt)" ng-repeat="opt in newService.links.optional" class="list-group-item">
+                              {{ opt }}<input class="pull-right" type="checkbox" ng-checked="optionalLinksGrid.selector.selection.indexOf(opt) !== -1" />
+                            </li>
                           </ul>
                         </div>
 

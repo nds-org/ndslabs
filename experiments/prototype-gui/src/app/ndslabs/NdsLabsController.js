@@ -18,8 +18,7 @@ angular
   // The delay (in seconds) before allowing the user to click "Next"
   var initDelay = 0;
 
-  // Create a new Wizard to display
-  $scope.wizard = new Wizard([
+  var configPages = [
      new WizardPage("intro", "Introduction", {
         prev: null,
         canPrev: false,
@@ -45,8 +44,15 @@ angular
         canNext: false,
         next: null
      }, true)
-  ], initDelay);
-  
+  ];
+
+  // Create a new Wizard to display
+  ($scope.resetWizard = function() { 
+    $scope.requiredLinksGrid = new Grid([5,10,15,20], function() { return $scope.newService.links.required });
+    $scope.optionalLinksGrid = new Grid([5,10,15,20], function() { return $scope.newService.links.optional });
+    $scope.wizard = new Wizard(configPages, initDelay);
+  })();
+
   $scope.serviceJson = Services.query(function(a, b, c) {
     console.log("success!");
     $scope.services = a;
@@ -62,12 +68,25 @@ angular
  
   $scope.nextId = 1;
   $scope.addedServices = [];
+
+
   $scope.addService = function(service) {
-    service.count = (service.count || 0) + 1;
     $scope.newService = angular.copy(service);
-    $scope.newService.id = $scope.nextId;
+    if ($scope.newService.links || $scope.newService.persisted === 'true') {
+      $scope.resetWizard();
+      $('#wizardModal').modal('show');
+    } else {
+      $scope.finishAddingService(service);
+    }
+  };
+
+  $scope.finishAddingService = function(template, newService) {
+    template.count = (template.count || 0) + 1;
     $scope.nextId++;
-    $scope.addedServices.push($scope.newService);
+    newService.id = $scope.nextId;
+    $scope.addedServices.push(newService);
+    $scope.resetWizard();
+    $scope.newService = null;
   };
   
   $scope.decrementCount = function(serviceKey) {
