@@ -78,7 +78,7 @@
                     <div class="col-md-12">                        
                         <!-- Wizard progress bar here -->
                         <div class="progress">
-                          <div class="progress-bar" role="progressbar" aria-valuenow="{{ wizard.percentage }}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{ wizard.percentage }}%;">
+                          <div class="progress-bar" ng-class="{ 'progress-bar-success':}" role="progressbar" aria-valuenow="{{ wizard.percentage }}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{ wizard.percentage }}%;">
                             {{ wizard.percentage | number:0 }}%
                           </div>
                         </div>
@@ -94,15 +94,15 @@
                         <div ng-if="wizard.currentPage.key === 'config'">
                           <h4>Configuration</h4>
                           <p ng-show="newService.links.required">Required Services:</p>
-                          <ul class="list-group checked-list-box">
+                          <ul class="list-group">
                             <li ng-repeat="req in newService.links.required" class="list-group-item disabled">
-                              {{ req }}
+                              {{ req }}<input class="pull-right" type="checkbox" checked="true" />
                             </li>
                           </ul>
                           
-                          <p ng-show="newService.links.optional">Please choose the plugins that you wish to enable below:</p>
-                          <ul class="list-group checked-list-box" ng-class="{ 'active':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }">
-                            <li ng-click="optionalLinksGrid.selector.select.toggle(opt)" ng-repeat="opt in newService.links.optional" class="list-group-item">
+                          <p ng-show="newService.links.optional">Please choose the optional service plugins that you wish to enable below:</p>
+                          <ul class="list-group" ng-class="{ 'active':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }">
+                            <li ng-class="{ 'active':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }" ng-click="optionalLinksGrid.selector.select.toggle(opt)" ng-repeat="opt in newService.links.optional" class="list-group-item">
                               {{ opt }}<input class="pull-right" type="checkbox" ng-checked="optionalLinksGrid.selector.selection.indexOf(opt) !== -1" />
                             </li>
                           </ul>
@@ -111,7 +111,15 @@
                         <!-- Ask the user for confirmation -->
                         <div ng-show="wizard.currentPage.key === 'confirm'">
                           <h4>Confirmation</h4>
-                          <p></p>
+                          <p>You have chosen to enable {{ optionalLinksGrid.selector.selection.length || "no" }} optional service plugins<span ng-show="newService.links.required">, along with the {{ newService.links.required.length }} required services</span>.</p>
+                          <p>Services that will be added along with this instance of {{ newService.label}}:</p>
+                          <ul class="list-group">
+                            <li class="list-group-item disabled">{{ newService.key }}</li>
+                            <li class="list-group-item disabled" ng-repeat="req in newService.links.required">{{ req }}</li>
+                            <li class="list-group-item disabled" ng-repeat="opt in optionalLinksGrid.selector.selection">{{ opt }}</li>
+                          </ul>
+
+                          <p>Click <strong>Next</strong> to add these all of these services to your namespace.</p>
                         </div>
 
                         <!-- Final Page -->
@@ -140,7 +148,7 @@
               </div>
               <div ng-if="wizard.currentPage.nextPage === null">
                 <!-- "Finish" button (close modal with success === true) -->
-                <button class="btn btn-success" ng-disabled="!wizard.canPrevPage()" data-dismiss="modal" aria-label="Close" ng-click="wizard.success = true">Finish&nbsp;&nbsp;<i class="fa fa-check-circle"></i></button>
+                <button class="btn btn-success" ng-disabled="!wizard.canPrevPage()" data-dismiss="modal" aria-label="Close" ng-click="finishAddingService(newService)">Finish&nbsp;&nbsp;<i class="fa fa-check-circle"></i></button>
               </div>
             </div>
           </div>

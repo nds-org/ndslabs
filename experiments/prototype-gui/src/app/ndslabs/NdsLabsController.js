@@ -15,6 +15,16 @@ angular
   appConfig.title = "NDS Labs Prototype";
   appConfig.path = "test/";
 
+  var getServiceByName = function(key) {
+    var ret = null;
+    angular.forEach($scope.serviceJson, function(svc) {
+      if (key === svc.key) {
+        ret = svc;
+      }
+    });
+    return ret;
+  };
+
   // The delay (in seconds) before allowing the user to click "Next"
   var initDelay = 0;
 
@@ -48,7 +58,6 @@ angular
 
   // Create a new Wizard to display
   ($scope.resetWizard = function() { 
-    $scope.requiredLinksGrid = new Grid([5,10,15,20], function() { return $scope.newService.links.required });
     $scope.optionalLinksGrid = new Grid([5,10,15,20], function() { return $scope.newService.links.optional });
     $scope.wizard = new Wizard(configPages, initDelay);
   })();
@@ -69,22 +78,32 @@ angular
   $scope.nextId = 1;
   $scope.addedServices = [];
 
-
   $scope.addService = function(service) {
     $scope.newService = angular.copy(service);
     if ($scope.newService.links || $scope.newService.persisted === 'true') {
       $scope.resetWizard();
       $('#wizardModal').modal('show');
     } else {
-      $scope.finishAddingService(service);
+      $scope.finishAddingService($scope.newService);
     }
   };
 
-  $scope.finishAddingService = function(template, newService) {
-    template.count = (template.count || 0) + 1;
+  $scope.counts = {};
+
+  $scope.finishAddingService = function(newService) {
+    $scope.counts[newService.key] = ($scope.counts[newService.key] || 0) + 1;
     $scope.nextId++;
     newService.id = $scope.nextId;
     $scope.addedServices.push(newService);
+    angular.forEach(newService.links.required, function(req) {
+      $scope.addedServices.push(getServiceByName(req));
+    });
+    angular.forEach($scope.optionalLinksGrid.selector.selection, function(opt) {
+      var fragments = opt.split(":");
+      angular.forEach(fragments, function(frag) {
+        $scope.addedServices.push(getServiceByName(frag));
+      });
+    });
     $scope.resetWizard();
     $scope.newService = null;
   };
