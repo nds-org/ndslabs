@@ -24,7 +24,7 @@ export GOPATH=/path/to/your/workspace
 
 You'll want to add GOPATH/bin to your path:
 ```
-export BIN=$PATH:/$GOPATH/bin
+export PATH=$PATH:/$GOPATH/bin
 ```
 
 If you don't have golang installed, it's probably easiest to run the Docker container to build/install and run (for now):
