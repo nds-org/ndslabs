@@ -10,10 +10,36 @@ angular
       query: {method:'GET', isArray: true}
     })
 }])
-.controller('NdsLabsController', [ '$scope', 'appConfig', 'Services', function($scope, appConfig, Services) {
+.controller('NdsLabsController', [ '$scope', 'appConfig', 'Services', 'Wizard', 'WizardPage', function($scope, appConfig, Services, Wizard, WizardPage) {
   $scope.appConfig = appConfig;
   appConfig.title = "NDS Labs Prototype";
   appConfig.path = "test/";
+
+  // The delay (in seconds) before allowing the user to click "Next"
+  var initDelay = 0;
+
+  // Create a new Wizard to display
+  $scope.configWizard = $scope.wizard = new Wizard([
+     new WizardPage("intro", "Introduction", {
+        prev: null,
+        canPrev: false,
+        canNext: true,
+        next: 'config'
+     }, false),
+
+     new WizardPage("config", "Configuration", {
+        prev: 'intro',
+        canPrev: true,
+        canNext: true,
+        next: 'confirm'
+     }, true),
+     new WizardPage("confirm", "Confirmation", {
+        prev: 'config',
+        canPrev: true,
+        canNext: false,
+        next: null
+     }, true),
+  ], initDelay);
   
   $scope.serviceJson = Services.query(function(a, b, c) {
     console.log("success!");

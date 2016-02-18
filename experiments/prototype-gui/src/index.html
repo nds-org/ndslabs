@@ -33,7 +33,7 @@
     <script src="/bower_components/angular-bootstrap/ui-bootstrap.min.js"></script>
     
     <!-- Load some custom modules -->
-    <script src="/bower_components/angular-wizard/angular-wizard.js">
+    <script src="/bower_components/angular-wizard/angular-wizard.js"></script>
     <script src="/app/shared/NavbarController.js"></script>
     <script src="/app/shared/FooterController.js"></script>
     
@@ -41,8 +41,8 @@
     <script src="/app/app.js"></script>
     <script src="/app/ndslabs/NdsLabsController.js"></script>
  
-   <!-- Finally display the actual contents of the page -->
-   <div ng-include src="'/app/shared/navbar.html'" ng-controller="NavbarController" ></div> 
+    <!-- Finally display the actual contents of the page -->
+    <div ng-include src="'/app/shared/navbar.html'" ng-controller="NavbarController" ></div> 
     
     <div class="container-fluid page" ng-view id="scrollContainer"></div>
   
