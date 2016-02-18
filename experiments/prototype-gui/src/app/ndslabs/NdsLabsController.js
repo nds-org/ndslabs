@@ -10,7 +10,7 @@ angular
       query: {method:'GET', isArray: true}
     })
 }])
-.controller('NdsLabsController', [ '$scope', 'appConfig', 'Services', 'Wizard', 'WizardPage', function($scope, appConfig, Services, Wizard, WizardPage) {
+.controller('NdsLabsController', [ '$scope', 'appConfig', 'Services', 'Wizard', 'WizardPage', 'Grid', function($scope, appConfig, Services, Wizard, WizardPage, Grid) {
   $scope.appConfig = appConfig;
   appConfig.title = "NDS Labs Prototype";
   appConfig.path = "test/";
@@ -19,7 +19,7 @@ angular
   var initDelay = 0;
 
   // Create a new Wizard to display
-  $scope.configWizard = $scope.wizard = new Wizard([
+  $scope.wizard = new Wizard([
      new WizardPage("intro", "Introduction", {
         prev: null,
         canPrev: false,
@@ -37,8 +37,14 @@ angular
         prev: 'config',
         canPrev: true,
         canNext: false,
-        next: null
+        next: 'finish'
      }, true),
+    new WizardPage("finish", "Finish", {
+        prev: 'confirm',
+        canPrev: true,
+        canNext: false,
+        next: null
+     }, true)
   ], initDelay);
   
   $scope.serviceJson = Services.query(function(a, b, c) {
@@ -53,8 +59,6 @@ angular
   });
 
   $scope.serviceSearchQuery = '';
- 
-  $scope.wizard = new Wizard();
  
   $scope.nextId = 1;
   $scope.addedServices = [];

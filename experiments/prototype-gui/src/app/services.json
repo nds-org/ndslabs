@@ -30,8 +30,9 @@
     		],
     		"optional": [
     			"image-preview:rabbitmq",
+			"video-preview:rabbitmq",
+			"plantcv:rabbitmq",
     			"elasticsearch",
-    			"rabbitmq"
     		]
     	}
     },

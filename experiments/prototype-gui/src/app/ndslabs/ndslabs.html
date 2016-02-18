@@ -79,7 +79,7 @@
           <div class="modal-content">
             <div class="modal-header">
               <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-              <h4 class="modal-title" id="wizardModalLabel">Wizard Demonstration</h4>
+              <h4 class="modal-title" id="wizardModalLabel">{{ newService.label }} Configuration Wizard</h4>
             </div>
             <div class="modal-body">
               <div class="row">
@@ -88,27 +88,43 @@
                         <!-- Wizard progress bar here -->
                         <div class="progress">
                           <div class="progress-bar" role="progressbar" aria-valuenow="{{ wizard.percentage }}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{ wizard.percentage }}%;">
-                            {{ wizard.percentage }}%
+                            {{ wizard.percentage | number:0 }}%
                           </div>
                         </div>
 
                         <!-- Wizard Pages shown here -->
-                        <div ng-if="wizard.currentPage.key === 'first'">
-                          <h4>First Page</h4>
-                          <p>This is the first page of the wizard!</p>
-                          <p>You can use this page to introduce the user to the operation that you are about to perform.</p>
+                        <div ng-if="wizard.currentPage.key === 'intro'">
+                          <h4>Introduction</h4>
+                          <p>It looks like you are trying to add a new instance of {{ newService.label }}.</p>
+                          <p>This wizard will now guide you through the steps of choosing any required / optional plugins or configuration customizations.</p>
                         </div>
-                        <div ng-if="wizard.currentPage.key === 'second'">
-                          <h4>Second Page</h4>
-                          <p>This is the second page of the wizard!</p>
-                          <p>You can use this page to collect data necessary to perform the operation described on the previous page.</p>
-                          <p><strong>NOTE:</strong> Make sure to get the user's permission / confirmation before changing any of their data.</p>
+
+                        <!-- Configuration Page -->
+                        <div ng-if="wizard.currentPage.key === 'config'">
+                          <h4>Configuration</h4>
+                          <p ng-show="newService.links.required">Required Services:</p>
+                          <ul class="list-group checked-list-box">
+                            <li ng-repeat="req in newService.links.required" class="list-group-item">{{ req }}</li>
+                          </ul>
+
+                          
+                          <p ng-show="newService.links.optional">Please choose the plugins that you wish to enable below:</p>
+                          <ul class="list-group checked-list-box">
+                            <li ng-click="toggleSelec" ng-repeat="opt in newService.links.optional" class="list-group-item">{{ opt }}</li>
+                          </ul>
                         </div>
-                        <div ng-show="wizard.currentPage.key === 'third'">
-                          <h4>Final Page</h4>
-                          <p>This is the final page of the wizard!</p>
-                          <p>This is where you can notify the user about the success (or failure) of the requested operation.</p>
-                          <p><strong>NOTE:</strong> In the case of failure, you may wish to provide the user with a method of going back to adjust their input.</p>
+
+                        <!-- Ask the user for confirmation -->
+                        <div ng-show="wizard.currentPage.key === 'confirm'">
+                          <h4>Confirmation</h4>
+                          <p></p>
+                        </div>
+
+                        <!-- Final Page -->
+                        <div ng-show="wizard.currentPage.key === 'finish'">
+                          <h4>Success!</h4>
+                          <p>You have successfully configured your new instance of {{ newService.label }}.</p>
+                          <p>You should now see the instance listed on the right-hand side of the page.</p>
                         </div>
                     </div>
                 </div>
