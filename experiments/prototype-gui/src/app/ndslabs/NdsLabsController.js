@@ -10,14 +10,32 @@ angular
       query: {method:'GET', isArray: true}
     })
 }])
-.controller('NdsLabsController', [ '$scope', 'appConfig', 'Services', 'Wizard', 'WizardPage', 'Grid', function($scope, appConfig, Services, Wizard, WizardPage, Grid) {
-  $scope.appConfig = appConfig;
-  appConfig.title = "NDS Labs Prototype";
-  appConfig.path = "test/";
+.controller('NdsLabsController', [ '$scope', '$cookieStore', 'Services', 'Wizard', 'WizardPage', 'Grid', function($scope, $cookies, Services, Wizard, WizardPage, Grid) {
+  // Accounting stuff
+  $scope.counts = $cookies.get("counts") || {};
+  $scope.serviceSearchQuery = '';
+  $scope.nextId = $cookies.get("nextId") || 1;
+  $scope.addedServices = $cookies.get("state") || [];
 
-  var getServiceByName = function(key) {
+  $scope.commit = function() {
+    $cookies.put("state", $scope.addedServices);
+    $cookies.put("counts", $scope.counts);
+    $cookies.put("nextId", $scope.nextId);
+  };
+
+  $scope.toggleStatus = function(svc) {
+    svc.status = !svc.status;
+  };
+
+  $scope.deploy = function() {
+    angular.forEach($scope.addedServices, function(svc) {
+      svc.status = true;
+    });
+  };
+
+  var getServiceByName = function(list, key) {
     var ret = null;
-    angular.forEach($scope.serviceJson, function(svc) {
+    angular.forEach(list, function(svc) {
       if (key === svc.key) {
         ret = svc;
       }
@@ -73,11 +91,6 @@ angular
     debugger;
   });
 
-  $scope.serviceSearchQuery = '';
- 
-  $scope.nextId = 1;
-  $scope.addedServices = [];
-
   $scope.addService = function(service) {
     $scope.newService = angular.copy(service);
     if ($scope.newService.links || $scope.newService.persisted === 'true') {
@@ -88,26 +101,52 @@ angular
     }
   };
 
-  $scope.counts = {};
-
   $scope.finishAddingService = function(newService) {
-    $scope.counts[newService.key] = ($scope.counts[newService.key] || 0) + 1;
-    $scope.nextId++;
-    newService.id = $scope.nextId;
-    $scope.addedServices.push(newService);
+    // Add our main service
+    $scope.performAdd(angular.copy(newService));
+
+    // Add its required links
     angular.forEach(newService.links.required, function(req) {
-      $scope.addedServices.push(getServiceByName(req));
+      var service = getServiceByName($scope.serviceJson, req);
+      $scope.performAdd(angular.copy(service))
     });
+
+    // Now handle our optional links
     angular.forEach($scope.optionalLinksGrid.selector.selection, function(opt) {
       var fragments = opt.split(":");
       angular.forEach(fragments, function(frag) {
-        $scope.addedServices.push(getServiceByName(frag));
+        var service = getServiceByName($scope.serviceJson, frag);
+        $scope.performAdd(angular.copy(service))
       });
     });
-    $scope.resetWizard();
+    //$scope.resetWizard();
     $scope.newService = null;
   };
+
+  $scope.performAdd = function(newService) {
+    newService.connections = [];
+    if (newService.links) {
+      if (newService.links.required) {  
+        newService.connections = newService.links.required;
+      }
+      if (newService.links.optional) {
+        newService.connections = newService.connections.concat(newService.links.optional);
+      }
+    }
+    if (getServiceByName($scope.addedServices, newService.key) === null) {
+      newService.id = $scope.nextId++;
+      $scope.counts[newService.key] = ($scope.counts[newService.key] || 0) + 1;
+      $scope.addedServices.push(newService);
+    } else {
+      console.log(newService.key + ' is already present.. skipping duplicate');
+    }
+  }
   
+  $scope.removeService = function(service) {
+    $scope.addedServices.splice($scope.addedServices.indexOf(service), 1);
+    $scope.decrementCount(service.key)    
+  };
+
   $scope.decrementCount = function(serviceKey) {
     angular.forEach($scope.services, function(service) {
       if (serviceKey === service.key) {
