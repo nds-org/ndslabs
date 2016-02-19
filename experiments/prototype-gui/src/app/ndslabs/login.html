@@ -1,0 +1,38 @@
+<section class="container">
+  <div class="row">
+    <div class="col-sm-4 col-sm-offset-4">
+
+      <div class="panel panel-primary">
+        <div class="panel-heading">
+          <h3 class="panel-title">Login</h3>
+        </div>
+        <div class="panel-body">
+          <form ng-submit="login()">
+            <div class="form-group">
+              <label for="exampleInputNamespace1">Namespace</label>
+              <input type="username" ng-model="settings.namespace" class="form-control" id="exampleInputNamespace1" placeholder="Namespace">
+            </div>
+            <div class="form-group">
+              <label for="exampleInputPassword1">Password</label>
+              <input type="password" ng-model="settings.password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+            </div>
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" ng-model="settings.saveCookie"> Keep me logged in on this computer
+              </label>
+            </div>
+            <div class="pull-right">
+              <button type="submit" ng-click="login()" class="btn btn-default">Login</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+ <pre>{{ settings | json }}</pre>
+
+
+</section>

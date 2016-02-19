@@ -30,6 +30,25 @@
               </li>
             </ul>
           </li>
+
+	  <!-- Then draw our account settings button -->
+          <li ng-controller="LoginController" ng-show="settings.authenticated" ng-if="navFilter === 'right'">
+            <a id="dropDownButton" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+              <i class="fa fa-user fa-fw"></i>&nbsp;&nbsp;<i class="fa fa-caret-down"></i>
+            </a>
+            <ul class="dropdown-menu form-popover pullDown" role="menu" aria-labelledby="dropDownButton" ng-click="$event.stopPropagation();">
+              <li>
+                <!-- Sub-template for Additional Filters Popout -->
+                <div class="panel panel-default">
+                  <div class="panel-heading ng-binding">{{ settings.namespace }}</div>
+                    <div class="panel-body">
+                      <button type="button" class="btn btn-xl btn-danger" ng-click="logout()">Logout</button>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </li>
         </ul>
       </div><!--/.nav-collapse eWFsZGEgd2FzIGhlcmU= <-- easter egg -->
     </div>

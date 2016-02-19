@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html ng-app="ndslabs">
-  <head ng-controller="NavbarController">
+  <head>
     <title>NDS Labs</title>
     <meta name="charset" value="utf-8" />
     <meta name="robots" value="nofollow noindex" />
@@ -21,32 +21,37 @@
     <!-- Other External JS / CSS -->
     <script type="text/javascript" src="/bower_components/jquery/dist/jquery.min.js"></script>
     <script type="text/javascript" src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-  </head>
-  <body>
+
     <!-- AngularJS -->
     <script src="/bower_components/angular/angular.js"></script>
     <script src="/bower_components/angular-route/angular-route.min.js"></script>
     <script src="/bower_components/angular-resource/angular-resource.min.js"></script>
     <script src="/bower_components/angular-animate/angular-animate.min.js"></script>
     <script src="/bower_components/angular-cookies/angular-cookies.min.js"></script>
-    
+
     <!-- Bridge AngularJS with any external JS / CSS -->
     <script src="/bower_components/angular-bootstrap/ui-bootstrap.min.js"></script>
-    
+
     <!-- Load some custom modules -->
     <script src="/bower_components/angular-wizard/angular-wizard.js"></script>
     <script src="/bower_components/angular-grid/angular-grid.js"></script>
     <script src="/bower_components/angular-alert/angular-alert.js"></script>
     <script src="/app/shared/NavbarController.js"></script>
     <script src="/app/shared/FooterController.js"></script>
-    
+
     <!-- Then load the source for our app -->
     <script src="/app/app.js"></script>
+    <script src="/app/ndslabs/LoginController.js"></script>
     <script src="/app/ndslabs/NdsLabsController.js"></script>
- 
-    <!-- Finally display the actual contents of the page -->
+  </head>
+
+  <!-- Display the actual contents of the app down here -->
+  <body>
+    <!-- This syntax can be used to isolate smaller page templates (such as our navbar and footer) -->
+    <!-- NOTE: This method does not produce a navigatable route. For another full page/route, we need to add the route to app.js -->
     <div ng-include src="'/app/shared/navbar.html'" ng-controller="NavbarController" ></div> 
     
+    <!-- ng-view tells angular that we will swap in templates for the route specified by app.js (via ngRoute) -->
     <div class="container-fluid page" ng-view id="scrollContainer"></div>
   
     <div ng-include ng-src="'/app/shared/footer.html'" ng-controller="FooterController"></div>  
