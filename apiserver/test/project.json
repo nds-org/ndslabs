@@ -1,5 +1,7 @@
 { 
-    "id": "1",
-    "name": "test project",
-    "description": "test project description",
-    "namespace": "test" } 
+    "id": "demo",
+    "name": "demo project",
+    "description": "demo project description",
+    "namespace": "demo" 
+}
+

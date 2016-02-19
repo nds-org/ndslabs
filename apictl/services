@@ -1,0 +1,34 @@
+[
+  {
+    "key": "mongo",
+    "label": "MongoDB",
+    "description": "",
+    "maintainer": "",
+    "requiresVolume": true,
+    "tags": "",
+    "depends": null
+  },
+  {
+    "key": "elasticsearch",
+    "label": "ElasticSearch",
+    "description": "",
+    "maintainer": "",
+    "requiresVolume": false,
+    "tags": "",
+    "depends": null
+  },
+  {
+    "key": "clowder",
+    "label": "Clowder",
+    "description": "",
+    "maintainer": "",
+    "requiresVolume": false,
+    "tags": "",
+    "depends": [
+      {
+        "key": "mongodb",
+        "required": false
+      }
+    ]
+  }
+]
