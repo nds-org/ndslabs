@@ -40,7 +40,7 @@
               <li>
                 <!-- Sub-template for Additional Filters Popout -->
                 <div class="panel panel-default">
-                  <div class="panel-heading ng-binding">{{ settings.namespace }}</div>
+                  <div class="panel-heading ng-binding">{{ settings.namespace | uppercase }}</div>
                     <div class="panel-body">
                       <button type="button" class="btn btn-xl btn-danger" ng-click="logout()">Logout</button>
                     </div>

@@ -3,7 +3,11 @@ angular
 .controller('LoginController', [ '$scope', '$cookieStore', '$location', 'AuthInfo', function($scope, $cookies, $location, authInfo) {
   $scope.settings = authInfo.get();
   $scope.errorMessage = '';
-
+  
+  if ($scope.settings.authenticated) {
+    $location.path('/labs');
+  }
+  
   $scope.login = function() {
     $scope.settings.authenticated = true;
     if ($scope.settings.saveCookie === true) {
@@ -14,6 +18,7 @@ angular
 
   $scope.logout = function() {
     $scope.settings.authenticated = false;
+    $cookies.remove('auth');
     $location.path('/login');
   };
 }]);
