@@ -1,7 +1,7 @@
 {
   "name": "angular-ndslabs",
   "description": "AngularJS Client GUI for the NDS Labs API",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "homepage": "https://github.com/nds-org/nds-labs",
   "license": "MIT",
   "private": true,
