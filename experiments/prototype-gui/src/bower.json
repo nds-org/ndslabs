@@ -1,8 +1,8 @@
 {
-  "name": "angular-seed",
-  "description": "A starter project for AngularJS",
+  "name": "angular-ndslabs",
+  "description": "AngularJS Client GUI for the NDS Labs API",
   "version": "0.0.0",
-  "homepage": "https://github.com/angular/angular-seed",
+  "homepage": "https://github.com/nds-org/nds-labs",
   "license": "MIT",
   "private": true,
   "dependencies": {
