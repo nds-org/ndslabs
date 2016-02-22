@@ -134,6 +134,12 @@
                           </ul>
                         </div>
 
+                        <!-- Volumes Page -->
+                        <div ng-if="wizard.currentPage.key === 'volume'">
+                          <h4>Volumes</h4>
+                          <p>It looks like you are adding {{ newService.persisted ? 'some' : 'no' }} services that require a volume.</p>
+                        </div>
+
                         <!-- Ask the user for confirmation -->
                         <div ng-show="wizard.currentPage.key === 'confirm'">
                           <h4>Confirmation</h4>
