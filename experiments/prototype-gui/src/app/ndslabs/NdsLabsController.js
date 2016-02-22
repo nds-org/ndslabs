@@ -58,16 +58,16 @@ angular
         prev: 'intro',
         canPrev: true,
         canNext: true,
-        next: 'volume'
+        next: 'volumes'
      }, true),
-     new WizardPage("volume", "Volumes", {
+     new WizardPage("volumes", "Volumes", {
         prev: 'config',
         canPrev: true,
         canNext: true,
         next: 'confirm'
      }, true),
      new WizardPage("confirm", "Confirmation", {
-        prev: 'config',
+        prev: 'volumes',
         canPrev: true,
         canNext: true,
         next: 'finish'

@@ -135,13 +135,13 @@
                         </div>
 
                         <!-- Volumes Page -->
-                        <div ng-if="wizard.currentPage.key === 'volume'">
+                        <div ng-if="wizard.currentPage.key === 'volumes'">
                           <h4>Volumes</h4>
                           <p>It looks like you are adding {{ newService.persisted ? 'some' : 'no' }} services that require a volume.</p>
                         </div>
 
                         <!-- Ask the user for confirmation -->
-                        <div ng-show="wizard.currentPage.key === 'confirm'">
+                        <div ng-if="wizard.currentPage.key === 'confirm'">
                           <h4>Confirmation</h4>
                           <p>You have chosen to enable {{ optionalLinksGrid.selector.selection.length || "no" }} optional service plugins<span ng-show="newService.links.required">, along with the {{ newService.links.required.length }} required services</span>.</p>
                           <p>Services that will be added along with this instance of {{ newService.label}}:</p>
@@ -155,7 +155,7 @@
                         </div>
 
                         <!-- Final Page -->
-                        <div ng-show="wizard.currentPage.key === 'finish'">
+                        <div ng-if="wizard.currentPage.key === 'finish'">
                           <h4>Success!</h4>
                           <p>You have successfully configured your new instance of {{ newService.label }}.</p>
                           <p>You should now see the instance listed on the right-hand side of the page.</p>
