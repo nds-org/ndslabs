@@ -27,7 +27,7 @@ angular
     };
 })
 .config([ '$routeProvider', '$cookiesProvider', 'AuthInfoProvider', function($routeProvider, $cookiesProvider, authInfo) {
-  var cookies = $cookiesProvider.$get();
+  var cookies; //= $cookiesProvider.$get();
   if (cookies && cookies['auth']) {
     authInfo.setAuth(angular.fromJson(cookies['auth']));
   }  
