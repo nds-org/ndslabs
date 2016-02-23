@@ -1,120 +1,73 @@
 [
-    { 
-    	"key": "mongodb", 
-    	"label": "MongoDB",
-    	"standalone": true,
-    	"persisted": true
-    },
-    { 
-    	"key": "rabbitmq",
-    	"label": "RabbitMQ",
-    	"standalone": true,
-    	"persisted": false,
-    	"links": {
-    		"optional": [ 
-    			"image-preview:clowder",
-    			"video-preview:clowder",
-    			"plantcv:clowder",
-    			"clowder"
-    		]
-    	}
-    },
-    {
-    	"key": "clowder",
-    	"label": "Clowder",
-    	"standalone": false,
-    	"persisted": false,
-    	"links": {
-    		"required": [
-    			"mongodb"
-    		],
-    		"optional": [
-    			"image-preview:rabbitmq",
-			"video-preview:rabbitmq",
-			"plantcv:rabbitmq",
-    			"elasticsearch"
-    		]
-    	}
-    },
-    { 
-    	"key": "elasticsearch",
-    	"label": "ElasticSearch",
-    	"standalone": true,
-    	"persisted": false,
-    	"links": {
-    		"optional": [
-    			"clowder"
-    		]
-    	}
-    },
-	{
-		"key": "image-preview",
-		"label": "Image Preview",
-		"standalone": true,
-		"persisted": false,
-		"links": {
-			"optional": [
-				"clowder:rabbitmq"
-			]
-		}
-	},
-	{
-		"key": "video-preview",
-		"label": "Video Preview",
-		"standalone": true,
-		"persisted": false,
-		"links": {
-			"optional": [
-				"clowder:rabbitmq"
-			]
-		}
-	},
-	{
-		"key": "plantcv",
-		"label": "PlantCV",
-		"standalone": true,
-		"persisted": false,
-		"links": {
-			"optional": [
-				"clowder:rabbitmq"
-			]
-		}
-	},
-	{
-		"key": "dataverse",
-		"label": "DataVerse",
-		"standalone": false,
-		"persisted": false,
-		"links": {
-			"required": [
-				"rserve",
-				"solr",
-				"tworavens"
-			]
-		}
-	},
-	{
-		"key": "postgresql",
-		"label": "PostgreSQL",
-		"standalone": true,
-		"persisted": true
-	},
-	{
-		"key": "rserve",
-		"label": "RServe",
-		"standalone": false,
-		"persisted": false
-	},
-	{
-		"key": "solr",
-		"label": "Solr",
-	    	"standalone": false,
-		"persisted": false
-	},
-	{
-		"key": "tworavens",
-		"label": "Two Ravens",
-		"standalone": false,
-		"persisted": false
-	}
+  {
+    "key": "clowder",
+    "label": "Clowder",
+    "description": "Clowder is for cats.",
+    "stack": true,
+    "maintainer": "",
+    "requiresVolume": false,
+    "tags": [],
+    "dependencies": {
+      "mongo": true,
+      "image-preview": false,
+      "video-preview": false,
+      "plantcv": false
+    }
+  },
+  {
+    "key": "mongo",
+    "label": "MongoDB",
+    "description": "NoSQL Database",
+    "stack": false,
+    "maintainer": "",
+    "requiresVolume": true,
+    "tags": [],
+    "dependencies": {}
+  },
+  {
+    "key": "image-preview",
+    "label": "Image Preview",
+    "description": "BrownDog Extractor for creating image preview thumbnails",
+    "stack": false,
+    "maintainer": "",
+    "requiresVolume": false,
+    "tags": [],
+    "dependencies": {
+      "rabbitmq": true
+    }
+  },
+  {
+    "key": "video-preview",
+    "label": "Video Preview",
+    "description": "BrownDog Extractor for creating video preview slideshows",
+    "stack": false,
+    "maintainer": "",
+    "requiresVolume": false,
+    "tags": [],
+    "dependencies": {
+      "rabbitmq": true
+    }
+  },
+  {
+    "key": "plantcv",
+    "label": "PlantCV",
+    "description": "BrownDog Extractor for analyzing images of plants",
+    "stack": false,
+    "maintainer": "",
+    "requiresVolume": false,
+    "tags": [],
+    "dependencies": {
+      "rabbitmq": true
+    }
+  },
+  {
+    "key": "rabbitmq",
+    "label": "RabbitMQ",
+    "description": "Queues for days...",
+    "stack": false,
+    "maintainer": "",
+    "requiresVolume": false,
+    "tags": [],
+    "dependencies": {}
+  }
 ]

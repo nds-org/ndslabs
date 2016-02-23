@@ -4,82 +4,68 @@
     <div class="col-md-3">      
       <h4>Services</h4>
       <div>
-        <div ng-hide="disabled">
+        <div id="stackSearchHeader">
           <div class="input-group">
             <span class="input-group-addon" id="basic-addon1"><i class="fa fa-search"></i></span>
-            <input type="text" class="form-control" placeholder="Search..." ng-model="serviceSearchQuery" aria-describedby="basic-addon1" />
+            <input type="text" class="form-control" placeholder="Search..." ng-model="svcQuery" aria-describedby="basic-addon1" />
           </div>
           
-          <span class="label label-danger" ng-show="(services | filter : serviceSearchQuery).length === 0">No services match the query</span>
-          
+          <span class="label label-danger" ng-show="(services | filter : svcQuery).length === 0">No services match the query</span>
         </div>
         
-        <table class="table table-striped table-condensed table-hover" ng-hide="disabled || (services | filter : serviceSearchQuery).length === 0">
+        <table class="table table-striped table-condensed table-hover" ng-hide="(services | filter : svcQuery).length === 0">
           <thead>
             <tr>
               <td width="95%"><strong>NDS Labs Service</strong></td>
               <td width="5%"><strong>Add</strong></td>
             </tr>
           </thead>
-          <!-- MouseEnter/Leave are not mobile friendly:  ng-mouseleave="service.showHover = false;" ng-mouseenter="service.showHover = true;" -->
-          <tr ng-repeat="service in services | orderBy:'key'| filter : serviceSearchQuery">
-            <td>{{ service.label }}</td>
-            <td>
-              <!-- MouseEnter/Leave are not mobile friendly: ng-show="service.showHover || service.count" -->
-              <button class="btn btn-xs btn-primary" ng-click="addService(service)" ng-disabled="disabled">
-                <i ng-show="!service.count" class="fa fa-plus"></i>
-                <span ng-show="service.count">{{ service.count }}</span>
-              </button>
-            </td>
-          </tr>
+          <tbody>
+            <tr ng-repeat="stack in stacks | orderBy:'key'| filter : svcQuery">
+              <td>{{ stack.label }}</td>
+              <td>
+                <button class="btn btn-xs btn-primary" ng-click="addStack(stack)">
+                  <i class="fa fa-plus"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
         </table>
       </div>
     </div>
-    
-    <!-- Canvas -->
+   
+    <!-- Configured Stacks --> 
     <div class="col-md-9">
-      <div ng-if="addedServices.length > 0">
-        <h4>Configured Services</h4>
+      <div>
+        <h4>Configured Stacks</h4>
         <table class="table table-striped table-condensed table-hover">
           <thead>
             <tr>
-              <td width="5%"><strong>Status</strong></td>
-              <td width="5%"><strong>ID</strong></td>
-              <td width="30%"><strong>Type</strong></td>
-              <td width="50%"><strong>Connections</strong></td>
-              <td width="10%"><strong>Remove</strong></td>
+              <td width="10%"><strong>Status</strong></td>
+              <td width="35%"><strong>Name</strong></td>
+              <td width="50%"><strong>Services</strong></td>
+              <td width="7%"><strong>Edit</strong></td>
+              <td width="8%"><strong>Remove</strong></td>
             </tr>
           </thead>
-          <tfoot>
-            <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td>
-                <div class="pull-right">
-                  <button class="btn btn-default" type="button" ng-click="commit()"><i class="fa fa-save"></i>&nbsp;&nbsp;Save</button>
-                  <button class="btn btn-primary" type="button" ng-click="deploy()"><i class="fa fa-send"></i>&nbsp;&nbsp;Deploy</button>
-                </div>
-              </td>
-            </tr>
-          </tfoot>
           <tbody>
-            <tr ng-repeat="service in addedServices" ng-mouseleave="service.showHover = false;" ng-mouseenter="service.showHover = true;">
+            <tr ng-repeat="stack in configuredStacks" ng-mouseleave="service.showHover = false;" ng-mouseenter="service.showHover = true;">
               <td class="text-center">
-                <button class="btn btn-xs" ng-class="{ 'btn-danger':!service.status, 'btn-success':service.status }" ng-click="toggleStatus(service)">
-                  <i class="fa fa-play" ng-show="service.status"></i>
-                  <i class="fa fa-pause" ng-show="!service.status"></i>
-                </button>
+                 <toggle-switch ng-model="stack.status"><toggle-switch>
               </td>
-              <td>{{ service.id }}</td>
-              <td>{{ service.label }}</td>
+              <td>{{ stack.name }}</td>
               <td>
                 <ul>
-                  <li ng-repeat="plugin in service.connections">{{ plugin }}</li>
+                  <li ng-repeat="svc in stack.services">{{ svc.serviceId }}</li>
                 </ul>
               </td>
               <td class="text-center">
-                <button class="btn btn-xs btn-danger" ng-click="removeService(service)">
+                <button class="btn btn-xs btn-danger" ng-click="editStack(stack)">
+                  <i class="fa fa-pencil"></i>
+                </button>
+              </td>
+              <td class="text-center">
+                <button class="btn btn-xs btn-danger" ng-click="removeStack(stack)">
                   <i class="fa fa-times"></i>
                 </button>
               </td>
@@ -96,7 +82,7 @@
           <div class="modal-content">
             <div class="modal-header">
               <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-              <h4 class="modal-title" id="wizardModalLabel">{{ newService.label }} Configuration Wizard</h4>
+              <h4 class="modal-title" id="wizardModalLabel">{{ newStack.label }} Configuration Wizard</h4>
             </div>
             <div class="modal-body">
               <div class="row">
@@ -109,46 +95,48 @@
                           </div>
                         </div>
 
+                        <h4>{{ wizard.currentPage.displayName }}</h4>
+                        
                         <!-- Wizard Pages shown here -->
                         <div ng-if="wizard.currentPage.key === 'intro'">
-                          <h4>Introduction</h4>
-                          <p>It looks like you are trying to add a new instance of {{ newService.label }}.</p>
+                          <p>It looks like you are trying to add a new instance of {{ newStackLabel }}.</p>
+                          <p>Please choose a <strong>name</strong> for this stack: <input class="form-control" type="text" ng-model="newStack.name" /></p>
                           <p>This wizard will now guide you through the steps of choosing any required / optional plugins or configuration customizations.</p>
                         </div>
 
                         <!-- Configuration Page -->
                         <div ng-if="wizard.currentPage.key === 'config'">
-                          <h4>Configuration</h4>
-                          <p ng-show="newService.links.required">Required Services:</p>
+                          <p>Stack services:</p>
                           <ul class="list-group">
-                            <li ng-repeat="req in newService.links.required" class="list-group-item disabled">
-                              {{ req }}<input class="pull-right" type="checkbox" checked="true" />
+                            <li ng-repeat="req in newStack.services" class="list-group-item disabled">
+                              {{ req.serviceId }}<input class="pull-right" type="checkbox" checked="true" />
                             </li>
                           </ul>
                           
-                          <p ng-show="newService.links.optional">Please choose the optional service plugins that you wish to enable below:</p>
+                          <p ng-show="newStackOptions.length > 0">Please choose the optional service plugins that you wish to enable below:</p>
                           <ul class="list-group" ng-class="{ 'active':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }">
-                            <li ng-class="{ 'active':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }" ng-click="optionalLinksGrid.selector.select.toggle(opt)" ng-repeat="opt in newService.links.optional" class="list-group-item">
-                              {{ opt }}<input class="pull-right" type="checkbox" ng-checked="optionalLinksGrid.selector.selection.indexOf(opt) !== -1" />
+                            <li ng-class="{ 'active':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }" ng-click="optionalLinksGrid.selector.select.toggle(opt)" ng-repeat="opt in newStackOptions" class="list-group-item">
+                              <p>{{ opt.serviceId }}<input class="pull-right" type="checkbox" ng-checked="optionalLinksGrid.selector.selection.indexOf(opt) !== -1" /></p>
+                              <p ng-if="optionalDeps=_.find(deps, function(dep) { return dep.key === opt.serviceId }).dependencies.length > 0">Requires:
+                                <ul>
+                                  <li ng-repeat="dep in optionalDeps">{{ dep.label }}</li>
+                                </ul>
+                              </p>
                             </li>
                           </ul>
                         </div>
 
                         <!-- Volumes Page -->
                         <div ng-if="wizard.currentPage.key === 'volumes'">
-                          <h4>Volumes</h4>
                           <p>It looks like you are adding {{ newService.persisted ? 'some' : 'no' }} services that require a volume.</p>
                         </div>
 
                         <!-- Ask the user for confirmation -->
                         <div ng-if="wizard.currentPage.key === 'confirm'">
-                          <h4>Confirmation</h4>
                           <p>You have chosen to enable {{ optionalLinksGrid.selector.selection.length || "no" }} optional service plugins<span ng-show="newService.links.required">, along with the {{ newService.links.required.length }} required services</span>.</p>
-                          <p>Services that will be added along with this instance of {{ newService.label}}:</p>
+                          <p>Services that will be added to the <i>"{{ newStack.name }}"</i> stack:</p>
                           <ul class="list-group">
-                            <li class="list-group-item disabled">{{ newService.key }}</li>
-                            <li class="list-group-item disabled" ng-repeat="req in newService.links.required">{{ req }}</li>
-                            <li class="list-group-item disabled" ng-repeat="opt in optionalLinksGrid.selector.selection">{{ opt }}</li>
+                            <li class="list-group-item disabled" ng-repeat="req in newStack.services">{{ req.serviceId }}</li>
                           </ul>
 
                           <p>Click <strong>Next</strong> to add these all of these services to your namespace.</p>
@@ -156,31 +144,29 @@
 
                         <!-- Final Page -->
                         <div ng-if="wizard.currentPage.key === 'finish'">
-                          <h4>Success!</h4>
-                          <p>You have successfully configured your new instance of {{ newService.label }}.</p>
+                          <p>You have successfully configured {{ newStack.name }}.</p>
                           <p>You should now see the instance listed on the right-hand side of the page.</p>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-              <div ng-if="wizard.canNextPage()">
+              <div ng-if="wizard.currentPage.key !== 'finish'">
                 <!-- "Cancel" button (close modal with success === false) -->
-                <button class="btn btn-danger pull-left" ng-if="wizard.canNextPage()" data-dismiss="modal" aria-label="Close"><i class="fa fa-times"></i>&nbsp;&nbsp;Cancel</button>
+                <button class="btn btn-danger pull-left" ng-if="wizard.currentPage.key !== 'finish'" data-dismiss="modal" aria-label="Close"><i class="fa fa-times"></i>&nbsp;&nbsp;Cancel</button>
 
                 <!-- Previous Page -->
                 <button class="btn btn-primary" ng-disabled="!wizard.canPrevPage()" ng-click="wizard.prevPage()"><i class="fa fa-arrow-circle-left"></i>&nbsp;&nbsp;Back</button>
 
                 <!-- Next Page -->
-                <button class="btn btn-primary" ng-disabled="wizard.currentTimer > 0 || !wizard.canNextPage()" ng-click="wizard.nextPage()">
-                    Next&nbsp;<span ng-show="wizard.currentTimer > 0">({{ wizard.currentTimer }})</span>&nbsp;
-                        <i ng-show="wizard.currentTimer === 0" class="fa fa-arrow-circle-right"></i>
-                        <i ng-show="wizard.currentTimer > 0" class='fa fa-spinner fa-spin'></i>
+                <button class="btn btn-primary" ng-disabled="!wizard.canNextPage()" ng-click="wizard.nextPage()">
+                  Next&nbsp;&nbsp;<i class="fa fa-arrow-circle-right"></i>
                 </button>
               </div>
-              <div ng-if="wizard.currentPage.nextPage === null">
-                <!-- "Finish" button (close modal with success === true) -->
-                <button class="btn btn-success" ng-disabled="!wizard.canPrevPage()" data-dismiss="modal" aria-label="Close" ng-click="finishAddingService(newService)">Finish&nbsp;&nbsp;<i class="fa fa-check-circle"></i></button>
+
+              <!-- "Finish" button (close modal with success === true) -->
+              <div ng-if="wizard.currentPage.key === 'finish'">
+                <button class="btn btn-success" ng-disabled="!wizard.canPrevPage()" data-dismiss="modal" aria-label="Close" ng-click="finishWizard(newStack)">Finish&nbsp;&nbsp;<i class="fa fa-check-circle"></i></button>
               </div>
             </div>
           </div>

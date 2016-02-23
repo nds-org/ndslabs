@@ -6,6 +6,7 @@ angular
   
   if ($scope.settings.authenticated) {
     $location.path('/labs');
+    return;
   }
   
   $scope.login = function() {

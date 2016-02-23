@@ -10,37 +10,16 @@ angular
       query: {method:'GET', isArray: true}
     })
 }])
-.controller('NdsLabsController', [ '$scope', '$cookieStore', 'Services', 'Wizard', 'WizardPage', 'Grid', function($scope, $cookies, Services, Wizard, WizardPage, Grid) {
+.controller('NdsLabsController', [ '$scope', '$cookieStore', '_', 'Services', 'Wizard', 'WizardPage', 'Grid', function($scope, $cookies, _, Services, Wizard, WizardPage, Grid) {
   // Accounting stuff
-  $scope.counts = $cookies.get("counts") || {};
-  $scope.serviceSearchQuery = '';
-  $scope.nextId = $cookies.get("nextId") || 1;
-  $scope.addedServices = $cookies.get("state") || [];
-
-  $scope.commit = function() {
-    $cookies.put("state", $scope.addedServices);
-    $cookies.put("counts", $scope.counts);
-    $cookies.put("nextId", $scope.nextId);
-  };
+  $scope.counts = {};
+  $scope.svcQuery = '';
+  $scope.nextId = 1;
+  $scope.configuredStacks = [];
+  $scope.stacks = [];
 
   $scope.toggleStatus = function(svc) {
     svc.status = !svc.status;
-  };
-
-  $scope.deploy = function() {
-    angular.forEach($scope.addedServices, function(svc) {
-      svc.status = true;
-    });
-  };
-
-  var getServiceByName = function(list, key) {
-    var ret = null;
-    angular.forEach(list, function(svc) {
-      if (key === svc.key) {
-        ret = svc;
-      }
-    });
-    return ret;
   };
 
   // The delay (in seconds) before allowing the user to click "Next"
@@ -50,29 +29,47 @@ angular
      new WizardPage("intro", "Introduction", {
         prev: null,
         canPrev: false,
-        canNext: true,
-        next: 'config'
+        canNext: function() {
+          return $scope.newStack && $scope.newStack.name !== '';
+        },
+        next: 'config',
+        onNext: function() {
+          console.log("Verifying that the name " + $scope.newStack.name + " has not already been used by another service...");
+        }
      }, false),
-
      new WizardPage("config", "Configuration", {
         prev: 'intro',
         canPrev: true,
         canNext: true,
-        next: 'volumes'
+        next: 'volumes',
+        onNext: function() {
+          console.log("Adding optional selections to stack...");
+          $scope.newStack.services = angular.copy($scope.newStackRequirements);
+          angular.forEach($scope.optionalLinksGrid.selector.selection, function(option) {
+            var svc = _.find($scope.deps, function(svc) { return svc.key === option.serviceId })
+            $scope.newStack.services.push(createStackSvc($scope.newStack, svc));
+          }); 
+        }
      }, true),
      new WizardPage("volumes", "Volumes", {
         prev: 'config',
         canPrev: true,
         canNext: true,
-        next: 'confirm'
+        next: 'confirm',
+        onNext: function() {
+          console.log("Verifying that user has made valid 'Volume' selections...");
+        }
      }, true),
      new WizardPage("confirm", "Confirmation", {
         prev: 'volumes',
         canPrev: true,
         canNext: true,
-        next: 'finish'
+        next: 'finish',
+        onNext: function() {
+          console.log("Sending create stack / volume requests...");
+        }
      }, true),
-    new WizardPage("finish", "Finish", {
+    new WizardPage("finish", "Success!", {
         prev: 'confirm',
         canPrev: true,
         canNext: false,
@@ -82,87 +79,92 @@ angular
 
   // Create a new Wizard to display
   ($scope.resetWizard = function() { 
-    $scope.optionalLinksGrid = new Grid([5,10,15,20], function() { return $scope.newService.links.optional });
     $scope.wizard = new Wizard(configPages, initDelay);
   })();
 
-  $scope.serviceJson = Services.query(function(a, b, c) {
+  Services.query(function(data, xhr) {
     console.log("success!");
-    $scope.services = a;
-    console.log(a);
-    console.log(b);
-    console.log(c);
-  }, function (a, b, c) {
-    console.log("error!")
-    debugger;
+    console.debug(xhr);
+    $scope.deps = data;
+    $scope.stacks = _.remove($scope.deps, function(svc) { return svc.stack === true  });
+  }, function (headers) {
+    console.log("error!");
+    console.debug(headers);
   });
 
-  $scope.addService = function(service) {
-    $scope.newService = angular.copy(service);
-    if ($scope.newService.links || $scope.newService.persisted === 'true') {
-      $scope.resetWizard();
-      $('#wizardModal').modal('show');
-    } else {
-      $scope.finishAddingService($scope.newService);
-    }
+  var createStack = function(template) {
+    return {
+      id: "",
+      name: "",
+      status: "Suspended",
+      services: []
+    };
   };
 
-  $scope.finishAddingService = function(newService) {
-    // Add our main service
-    $scope.performAdd(angular.copy(newService));
-
-    // Add its required links
-    angular.forEach(newService.links.required, function(req) {
-      var service = getServiceByName($scope.serviceJson, req);
-      $scope.performAdd(angular.copy(service))
-    });
-
-    // Now handle our optional links
-    angular.forEach($scope.optionalLinksGrid.selector.selection, function(opt) {
-      var fragments = opt.split(":");
-      angular.forEach(fragments, function(frag) {
-        var service = getServiceByName($scope.serviceJson, frag);
-        $scope.performAdd(angular.copy(service))
-      });
-    });
-    //$scope.resetWizard();
-    $scope.newService = null;
+  var createStackSvc = function(stack, svc) {
+    return {
+      id: "",
+      stackId: stack.name,
+      serviceId: svc.key,
+      status: "Suspended",
+      replicas: 1,
+      endpoints: []
+    };
   };
 
-  $scope.performAdd = function(newService) {
-    newService.connections = [];
-    if (newService.links) {
-      if (newService.links.required) {  
-        newService.connections = newService.links.required;
+  $scope.addStack = function(template) {
+    $scope.newStackLabel = template.label;
+    $scope.newStack = createStack(template);
+
+    $scope.newStackOptions = [];
+    var pageSize = 100;
+    $scope.optionalLinksGrid = new Grid(pageSize, function() { return $scope.newStackOptions; });
+
+    // Add our base service to the stack
+    var base = _.find($scope.stacks, function(svc) { return svc.key === template.key });
+    $scope.newStack.services.push(createStackSvc($scope.newStack, base));
+
+    // Add required dependencies to the stack
+    $scope.collectDependencies(template);
+
+    $scope.newStackRequirements = angular.copy($scope.newStack.services);
+
+    $scope.resetWizard();
+
+    //  TODO: Get that jQuery outta my controller...
+    $('#wizardModal').modal('show');
+  };
+
+  $scope.finishWizard = function(newStack) {
+    // Associate this stack with our user 
+    $scope.configuredStacks.push(newStack);
+  };
+
+  // TODO: Use queue for recursion?
+  $scope.collectDependencies = function(targetSvc) {
+    angular.forEach(targetSvc.dependencies, function(required, key) {
+      var svc = _.find($scope.deps, function(svc) { return svc.key === key });
+      var stackSvc = createStackSvc($scope.newStack, svc);
+      var targetArray = null;
+      if (required) {
+          targetArray = $scope.newStack.services;
+      } else {
+          targetArray = $scope.newStackOptions;
       }
-      if (newService.links.optional) {
-        newService.connections = newService.connections.concat(newService.links.optional);
-      }
-    }
-    if (getServiceByName($scope.addedServices, newService.key) === null) {
-      newService.id = $scope.nextId++;
-      $scope.counts[newService.key] = ($scope.counts[newService.key] || 0) + 1;
-      $scope.addedServices.push(newService);
-    } else {
-      console.log(newService.key + ' is already present.. skipping duplicate');
-    }
-  }
-  
-  $scope.removeService = function(service) {
-    $scope.addedServices.splice($scope.addedServices.indexOf(service), 1);
-    $scope.decrementCount(service.key)    
-  };
 
-  $scope.decrementCount = function(serviceKey) {
-    angular.forEach($scope.services, function(service) {
-      if (serviceKey === service.key) {
-        service.count--;
+      // Check if this service is already present on our proposed stack
+      var exists = _.find($scope.newStack.services, function(svc) { svc.key === key });
+      if (!exists) {
+        // Add the service if it has not already been added
+        targetArray.push(stackSvc);
+      } else {
+        // Skip this service if we see it in the list already
+        console.log("Skipping duplicate service: " + svc.key);
       }
     });
   };
-  
-  $scope.urls = {
-    'apache':'http://tecdistro.com/wp-content/uploads/2015/03/apache318x2601.png?49beef',
-    'mongodb':'http://tecadmin.net/wp-content/uploads/2013/07/mongodb-logo-265x250.png',
+
+  $scope.removeStack = function(stack) {
+    $scope.configuredStacks.splice($scope.configuredStacks.indexOf(stack), 1);
   };
 }]);

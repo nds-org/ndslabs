@@ -51,7 +51,7 @@ angular
   $scope.home = 
   {
     name:'NDS Labs',
-    url:'http://141.142.209.135/#'
+    url:'/'
   };
 
   $scope.navs = [

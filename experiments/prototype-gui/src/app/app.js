@@ -1,7 +1,8 @@
 'use strict';
 
 angular
-.module('ndslabs', [ 'navbar', 'footer', 'ngWizard', 'ngGrid', 'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ui.bootstrap' ])
+.module('ndslabs', [ 'navbar', 'footer', 'ngWizard', 'ngGrid', 'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'toggle-switch', 'ui.bootstrap' ])
+.constant('_', window._)
 .provider('AuthInfo', function() {
     this.authInfo = {
       authenticated: false,
@@ -11,27 +12,14 @@ angular
     };
 
     this.$get = function() {
-        var authInfo = this.authInfo
         return {
-            isAuth: function() {
-                return authInfo.authenticated;
-            },
-            get: function() {
-                return authInfo;
-            }
+            isAuth: function() { return this.authInfo.authenticated; },
+            get: function() { return this.authInfo; },
+            setAuth: function(authCookie) { this.authInfo = angular.fromJson(authCookie); }
         }
     };
-
-    this.setAuth = function(authCookie) {
-        this.authInfo = authCookie;
-    };
 })
-.config([ '$routeProvider', '$cookiesProvider', 'AuthInfoProvider', function($routeProvider, $cookiesProvider, authInfo) {
-  var cookies; //= $cookiesProvider.$get();
-  if (cookies && cookies['auth']) {
-    authInfo.setAuth(angular.fromJson(cookies['auth']));
-  }  
-
+.config([ '$routeProvider', 'AuthInfoProvider', function($routeProvider, authInfo) {
   $routeProvider.when('/labs', {
     controller: 'NdsLabsController',
     templateUrl: '/app/ndslabs/ndslabs.html'
@@ -41,20 +29,25 @@ angular
     templateUrl: '/app/ndslabs/login.html'
   })
   .otherwise({
-    redirectTo: function(routeParams, path, search) {
-      console.log(routeParams);
-      console.log(path);
-      console.log(search);
-      
+//    redirectTo: '/login'
+    redirectTo: function() {
+      debugger;
       if (authInfo.isAuth() === true) {
-        return '/labs';
+        $location.path('/labs');
       } else {
-        return '/login';
+        $location.path('/login');
       }
     }
   });
 }])
-.run([ '$rootScope', '$location', 'AuthInfo', function($rootScope, $location, authInfo) {
+.run([ '$rootScope', '$location', '$cookies', 'AuthInfo', function($rootScope, $location, $cookies, authInfo) {
+  var authCookie;
+  if ($cookies && (authCookie = $cookies.get('auth'))) {
+    authInfo.setAuth(authCookie);
+  }
+
+  // TODO: Investigate performance concerns here
+  $rootScope._ = window._;
   $rootScope.$on( "$routeChangeStart", function(event, next, current) {
     if (authInfo.isAuth() === false) {
 
