@@ -16,7 +16,24 @@ angular
   $scope.svcQuery = '';
   $scope.nextId = 1;
   $scope.configuredStacks = [];
+  $scope.configuredVolumes = [];
   $scope.stacks = [];
+
+  $scope.listRequiredDeps = function(svc) {
+    var spec = _.find($scope.deps, function(service) { return service.key === svc.serviceId });
+    console.debug(spec);
+  };
+
+  $scope.showVolume = function(stack, svc) {
+    var volume = null;
+    angular.forEach($scope.configuredVolumes, function(vol) {
+      if (stack.name === vol.stackId && svc.serviceId === vol.serviceId) {
+        volume = vol;
+      }
+    });
+
+    return volume;
+  };
 
   $scope.toggleStatus = function(svc) {
     svc.status = !svc.status;
@@ -46,15 +63,31 @@ angular
           console.log("Adding optional selections to stack...");
           $scope.newStack.services = angular.copy($scope.newStackRequirements);
           angular.forEach($scope.optionalLinksGrid.selector.selection, function(option) {
-            var svc = _.find($scope.deps, function(svc) { return svc.key === option.serviceId })
+            var svc = _.find($scope.deps, function(svc) { return svc.key === option.serviceId });
+            $scope.collectDependencies(svc);
             $scope.newStack.services.push(createStackSvc($scope.newStack, svc));
-          }); 
+          });
+
+          console.log("Discovering volume requirements...");
+          $scope.discoverVolumeReqs($scope.newStack); 
         }
      }, true),
      new WizardPage("volumes", "Volumes", {
         prev: 'config',
         canPrev: true,
-        canNext: true,
+        canNext: function() {
+          var requiredParams = ['name', 'size', 'sizeUnit'];
+          var volumeParamsSet = true;
+          angular.forEach($scope.newStackVolumeRequirements, function(volume) {
+            angular.forEach(requiredParams, function (key) {
+              if (!volume[key] || volume[key] === '') {
+                volumeParamsSet = false;
+                return;
+              }
+            });
+          });
+          return volumeParamsSet;
+        },
         next: 'confirm',
         onNext: function() {
           console.log("Verifying that user has made valid 'Volume' selections...");
@@ -82,10 +115,10 @@ angular
     $scope.wizard = new Wizard(configPages, initDelay);
   })();
 
-  Services.query(function(data, xhr) {
+  $scope.allServices = Services.query(function(data, xhr) {
     console.log("success!");
     console.debug(xhr);
-    $scope.deps = data;
+    $scope.deps = angular.copy(data);
     $scope.stacks = _.remove($scope.deps, function(svc) { return svc.stack === true  });
   }, function (headers) {
     console.log("error!");
@@ -112,7 +145,18 @@ angular
     };
   };
 
-  $scope.addStack = function(template) {
+  var createVolume = function(stack, svcSpec) { 
+    return {
+      id: '',
+      stackId: stack.name,
+      serviceId: svcSpec.key,
+      format: 'Raw',
+      size: 10,
+      sizeUnit: 'GB'
+    };
+  };
+
+  $scope.startWizard = function(template) {
     $scope.newStackLabel = template.label;
     $scope.newStack = createStack(template);
 
@@ -135,9 +179,24 @@ angular
     $('#wizardModal').modal('show');
   };
 
+  $scope.discoverVolumeReqs = function(stack) {
+    var requiredVolumes = [];
+    angular.forEach(stack.services, function(requestedSvc) {
+      var svcSpec = _.find($scope.allServices, function(svc) { return svc.key === requestedSvc.serviceId });
+      if (svcSpec.requiresVolume === true) {
+        requiredVolumes.push(createVolume(stack, svcSpec));
+      }
+    });
+
+    $scope.newStackVolumeRequirements = requiredVolumes;
+  };
+
   $scope.finishWizard = function(newStack) {
     // Associate this stack with our user 
     $scope.configuredStacks.push(newStack);
+    angular.forEach($scope.newStackVolumeRequirements, function(vol) {
+      $scope.configuredVolumes.push(vol);
+    });
   };
 
   // TODO: Use queue for recursion?
@@ -153,7 +212,7 @@ angular
       }
 
       // Check if this service is already present on our proposed stack
-      var exists = _.find($scope.newStack.services, function(svc) { svc.key === key });
+      var exists = _.find($scope.newStack.services, function(svc) { return svc.serviceId === key });
       if (!exists) {
         // Add the service if it has not already been added
         targetArray.push(stackSvc);
@@ -166,5 +225,39 @@ angular
 
   $scope.removeStack = function(stack) {
     $scope.configuredStacks.splice($scope.configuredStacks.indexOf(stack), 1);
+  };
+
+  $scope.testAdd = function() {
+    $scope.configuredStacks.push({
+      "id": "",
+      "name": "clowder-01",
+      "status": false,
+      "services": [
+        {
+          "id": "",
+          "stackId": "",
+          "serviceId": "clowder",
+          "status": false,
+          "replicas": 1,
+          "endpoints": []
+        },
+        {
+          "id": "",
+          "stackId": "",
+          "serviceId": "mongo",
+          "status": true,
+          "replicas": 1,
+          "endpoints": []
+        },
+        {
+          "id": "",
+          "stackId": "clowder-01",
+          "serviceId": "video-preview",
+          "status": false,
+          "replicas": 1,
+          "endpoints": []
+        }
+      ]
+    });
   };
 }]);

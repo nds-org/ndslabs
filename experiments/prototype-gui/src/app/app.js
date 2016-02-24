@@ -31,7 +31,6 @@ angular
   .otherwise({
 //    redirectTo: '/login'
     redirectTo: function() {
-      debugger;
       if (authInfo.isAuth() === true) {
         $location.path('/labs');
       } else {
