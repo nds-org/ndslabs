@@ -12,10 +12,11 @@ angular
     };
 
     this.$get = function() {
+        var authInfo = this.authInfo;
         return {
-            isAuth: function() { return this.authInfo.authenticated; },
-            get: function() { return this.authInfo; },
-            setAuth: function(authCookie) { this.authInfo = angular.fromJson(authCookie); }
+            isAuth: function() { return authInfo.authenticated; },
+            get: function() { return authInfo; },
+            setAuth: function(authCookie) { authInfo = angular.fromJson(authCookie); }
         }
     };
 })

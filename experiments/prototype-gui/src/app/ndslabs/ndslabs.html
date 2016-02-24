@@ -57,8 +57,8 @@
               <td>
                 <ul class="fa-ul">
                   <li ng-repeat="svc in stack.services">
-                    <i class="fa-li fa" ng-style="{ 'color':stack.status ? 'green' : 'red' }" ng-class="{ 'fa-check-circle-o':stack.status, 'fa-times-circle-o':!stack.status }"></i>
-                    {{ svc.serviceId }}: {{ stack.status ? 'Running' : 'Suspended'}} <i ng-if="showVolume(stack, svc)" class="fa fa-database"></i>
+                    <i class="fa-li fa" ng-style="{ 'color':stack.status ? 'green' : 'red' }" ng-class="{ 'fa-database':showVolume(stack, svc) && svc.status, 'fa-check-circle-o':!showVolume(stack, svc) && stack.status, 'fa-times-circle-o':!stack.status }"></i>
+                    {{ svc.serviceId }}: {{ stack.status ? 'Running' : 'Suspended'}}
                   </li>
                 </ul>
               </td>
@@ -75,7 +75,6 @@
             </tr>
           </tbody>
         </table>
-        <pre>{{ configuredVolumes | json }}</pre>
       </div>
   </div>
 
@@ -110,6 +109,8 @@
 
                         <!-- Configuration Page -->
                         <div ng-if="wizard.currentPage.key === 'config'">
+
+                          <!-- List Required Services -->
                           <p>Stack services:</p>
                           <ul class="list-group">
                             <li ng-repeat="req in newStackRequirements" class="list-group-item disabled">
@@ -117,14 +118,17 @@
                             </li>
                           </ul>
                           
+                          <!-- List Optional Services -->
                           <p ng-show="newStackOptions.length > 0">Please choose the optional service plugins that you wish to enable below:</p>
                           <ul class="list-group" ng-class="{ 'active':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }">
                             <li ng-class="{ 'active':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }" ng-click="optionalLinksGrid.selector.select.toggle(opt)" ng-repeat="opt in newStackOptions" class="list-group-item">
-                              <p>{{ opt.serviceId }}<input class="pull-right" type="checkbox" ng-checked="optionalLinksGrid.selector.selection.indexOf(opt) !== -1" /></p>
-                              <p>Requires:
-                                <ul>
-                                  <li ng-repeat="dep in listRequiredDeps(opt)">{{ dep.label }}</li>
-                                </ul>
+                              <p>
+                                <span class="pull-left">{{ opt.serviceId }}&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                                <span class="text-center" ng-if="newStackOptionalDeps[opt]">(Requires: 
+                                  <span ng-if="$index === 0" ng-repeat="dep in newStackOptionalDeps[opt]"><strong>{{ dep }}</strong></span>
+                                  <span ng-if="$index !== 0 "ng-repeat="dep in newStackOptionalDeps[opt]">, <strong>{{ dep }}</strong></span>)
+                                </span>
+                                <input class="pull-right" type="checkbox" ng-checked="optionalLinksGrid.selector.selection.indexOf(opt) !== -1" />
                               </p>
                             </li>
                           </ul>
@@ -132,16 +136,26 @@
 
                         <!-- Volumes Page -->
                         <div ng-if="wizard.currentPage.key === 'volumes'">
-                          <p>It looks like you are adding {{ newStackVolumeRequirements.length }} service{{ newStackVolumeRequirements > 1 ? 's' : '' }} that require{{ newStackVolumeRequirements > 1 ? '' : 's' }} a volume.</p>
+                          <p>It looks like you are adding {{ newStackVolumeRequirements.length }} service{{ newStackVolumeRequirements > 1 ? 's' : '' }} that require{{ newStackVolumeRequirements > 1 ? '' : 's' }} a volume.</p> 
+
+                          <!-- Create New Volumes -->
                           <div ng-repeat="volume in newStackVolumeRequirements">
                             <h4>{{ volume.serviceId }}</h4>
-                            <form>
-                              <!-- Volume Name -->
-                              <div class="form-group">
-                                <label for="inputVolumeName">Volume Name</label>
-                                <input type="text" class="form-control" id="inputVolumeName" placeholder="Volume Name" ng-model="volume.name">
+                           
+                            <!-- Reuse Orphaned Volumes? -->
+                            <div ng-if="newStackOrphanedVolumes | orphanExists:volume.serviceId" ng-init="volume.useOrphan=false">
+                              <p>Your namespace contains a detattached volume that was previously associated with {{ volume.serviceId }} in the "{{ (newStackOrphanedVolumes | orphanExists:volume.serviceId).stackId }}" stack.</p>
+                              <p>Would you like to reuse the data on from volume, or create a new volume?</p>
+                              <div class="radio" ng-click="volume.useOrphan=true;volume.name=(newStackOrphanedVolumes | orphanExists:volume.serviceId).name">
+                                <label><input type="radio" ng-checked="volume.useOrphan" name="orphaned{{ volume.serviceId }}VolumeRadio">Reuse Previous Data</label>
                               </div>
+                              <div class="radio" ng-click="volume.useOrphan=false;volume.name=''">
+                                <label><input type="radio" ng-checked="!volume.useOrphan" name="orphaned{{ volume.serviceId }}VolumeRadio">Create New Volume</label>
+                              </div>
+                            </div>
 
+                            <!-- Create a New Volume -->
+                            <form class="form-inline" ng-show="!volume.useOrphan">
                               <!-- Volume Format -->
                               <div class="form-group">
                                 <label for="inputVolumeFormat">Volume Format</label>
@@ -166,6 +180,12 @@
                                     </ul>
                                   </div><!-- /btn-group -->
                                 </div><!-- /input-group -->
+                              </div>
+
+                              <!-- Volume Name -->
+                              <div class="form-group">
+                                <label for="inputVolumeName">Volume Name</label>
+                                <input type="text" class="form-control" id="inputVolumeName" placeholder="Volume Name" ng-model="volume.name">
                               </div>
                             </form>
                           </div>

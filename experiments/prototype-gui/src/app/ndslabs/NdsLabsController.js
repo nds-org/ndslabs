@@ -10,18 +10,95 @@ angular
       query: {method:'GET', isArray: true}
     })
 }])
+.filter('orphanExists', function() {
+  return function(orphans, serviceId) {
+    var target = null;
+    angular.forEach(orphans, function(orphan) {
+      if (orphan.serviceId === serviceId) {
+        target = orphan;
+      }
+    });
+    return target !== null ? target : false;
+  };
+})
 .controller('NdsLabsController', [ '$scope', '$cookieStore', '_', 'Services', 'Wizard', 'WizardPage', 'Grid', function($scope, $cookies, _, Services, Wizard, WizardPage, Grid) {
   // Accounting stuff
   $scope.counts = {};
   $scope.svcQuery = '';
   $scope.nextId = 1;
-  $scope.configuredStacks = [];
-  $scope.configuredVolumes = [];
+  $scope.currentProject = {
+    id: '',
+    namespace: 'default',
+    name: 'Test Project',
+    description: 'NDS Labs Test Project',
+    quota: 3,
+    quotaUnits: 'TB'
+  };
+  $scope.configuredStacks = [
+    {
+    "id": "",
+    "name": "clowder",
+    "status": true,
+    "services": [
+      {
+        "id": "",
+        "stackId": "",
+        "serviceId": "clowder",
+        "status": "Suspended",
+        "replicas": 1,
+        "endpoints": []
+      },
+      {
+        "id": "",
+        "stackId": "",
+        "serviceId": "mongo",
+        "status": "Suspended",
+        "replicas": 1,
+        "endpoints": []
+      },
+      {
+        "id": "",
+        "stackId": "clowder",
+        "serviceId": "rabbitmq",
+        "status": "Suspended",
+        "replicas": 1,
+        "endpoints": []
+      },
+      {
+        "id": "",
+        "stackId": "clowder",
+        "serviceId": "image-preview",
+        "status": "Suspended",
+        "replicas": 1,
+        "endpoints": []
+      }
+    ]
+  }
+  ];
+  $scope.configuredVolumes = [
+    {
+    "id": "",
+    "stackId": "clowder",
+    "serviceId": "mongo",
+    "format": "Raw",
+    "size": 10,
+    "sizeUnit": "GB",
+    "name": "mongo",
+    "attachment": "clowder-mongo",
+    "useOrphan": false 
+  }
+  ];
   $scope.stacks = [];
 
   $scope.listRequiredDeps = function(svc) {
     var spec = _.find($scope.deps, function(service) { return service.key === svc.serviceId });
-    console.debug(spec);
+    var required = [];
+    angular.forEach(spec.dependencies, function(req, key) {
+      if (req === true) {
+        required.push(key);
+      }
+    });
+    return required;
   };
 
   $scope.showVolume = function(stack, svc) {
@@ -52,6 +129,11 @@ angular
         next: 'config',
         onNext: function() {
           console.log("Verifying that the name " + $scope.newStack.name + " has not already been used by another service...");
+          console.log("Gathering optional dependencies and their requirements...");
+          $scope.newStackOptionalDeps = {};
+          angular.forEach($scope.newStackOptions, function(opt) {
+            $scope.newStackOptionalDeps[opt] = $scope.listRequiredDeps(opt);
+          });
         }
      }, false),
      new WizardPage("config", "Configuration", {
@@ -145,14 +227,15 @@ angular
     };
   };
 
-  var createVolume = function(stack, svcSpec) { 
+  var createVolume = $scope.createVolume = function(stackName, svcSpecKey) { 
     return {
       id: '',
-      stackId: stack.name,
-      serviceId: svcSpec.key,
+      stackId: stackName,
+      serviceId: svcSpecKey,
       format: 'Raw',
       size: 10,
-      sizeUnit: 'GB'
+      sizeUnit: 'GB',
+      attachment: stackName + '-' + svcSpecKey
     };
   };
 
@@ -180,14 +263,22 @@ angular
   };
 
   $scope.discoverVolumeReqs = function(stack) {
+    var reusableVolumes = [];
     var requiredVolumes = [];
     angular.forEach(stack.services, function(requestedSvc) {
       var svcSpec = _.find($scope.allServices, function(svc) { return svc.key === requestedSvc.serviceId });
       if (svcSpec.requiresVolume === true) {
-        requiredVolumes.push(createVolume(stack, svcSpec));
+        angular.forEach($scope.configuredVolumes, function(volume) {
+          if (!volume.attachment && svcSpec.key === volume.serviceId) {
+            // This is an orphaned volume from this service... Prompt the user to reuse it
+            reusableVolumes.push(volume);
+          }
+        });
+        requiredVolumes.push(createVolume(stack.name, svcSpec.key));
       }
     });
 
+    $scope.newStackOrphanedVolumes = reusableVolumes;
     $scope.newStackVolumeRequirements = requiredVolumes;
   };
 
@@ -224,6 +315,11 @@ angular
   };
 
   $scope.removeStack = function(stack) {
+    angular.forEach($scope.configuredVolumes, function(volume) {
+      if (volume.stackId === stack.name) {
+        volume.attachment = null;
+      }
+    });
     $scope.configuredStacks.splice($scope.configuredStacks.indexOf(stack), 1);
   };
 

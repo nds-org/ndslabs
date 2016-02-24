@@ -1,29 +1,51 @@
 <section class="container">
-  <div class="row" style="margin:50px;">
+  <div class="row" style="margin:75px;">
    <div class="col-sm-4 col-sm-offset-4">
 
+      <!-- Main Panel -->
       <div class="panel panel-primary">
         <div class="panel-heading">
           <h3 class="panel-title">Login</h3>
         </div>
         <div class="panel-body">
-          <form ng-submit="login()">
+
+          <!-- Login form -->
+          <form class="form-horizontal">
+
+            <!-- Namespace Field -->
             <div class="form-group">
-              <label for="exampleInputNamespace1">Namespace</label>
-              <input type="username" ng-model="settings.namespace" class="form-control" id="exampleInputNamespace1" placeholder="Namespace">
+              <label for="inputNamespace" class="col-sm-2 control-label">Namespace</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="inputNamespace" placeholder="Namespace" ng-model="settings.namespace">
+              </div>
             </div>
+
+            <!-- Password Field -->
             <div class="form-group">
-              <label for="exampleInputPassword1">Password</label>
-              <input type="password" ng-model="settings.password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+              <label for="inputPassword" class="col-sm-2 control-label">Password</label>
+              <div class="col-sm-10">
+                <input type="password" class="form-control" id="inputPassword" placeholder="Password" ng-model="settings.password">
+              </div>
             </div>
-            <div class="checkbox">
-              <label>
-                <input type="checkbox" ng-model="settings.saveCookie"> Keep me logged in on this computer
-              </label>
+
+            <!-- Save Cookie Checkbox -->
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" ng-model="settings.saveCookie"> Remember me
+                  </label>
+                </div>
+              </div>
             </div>
-            <div class="pull-right">
-              <button type="submit" ng-click="login()" class="btn btn-default">Login</button>
+
+            <!-- Login Button -->
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="btn btn-default" ng-click="login()">Sign in</button>
+              </div>
             </div>
+
           </form>
         </div>
       </div>

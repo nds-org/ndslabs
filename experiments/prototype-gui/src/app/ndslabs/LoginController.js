@@ -1,6 +1,6 @@
 angular
 .module('ndslabs')
-.controller('LoginController', [ '$scope', '$cookieStore', '$location', 'AuthInfo', function($scope, $cookies, $location, authInfo) {
+.controller('LoginController', [ '$scope', '$cookies', '$location', 'AuthInfo', function($scope, $cookies, $location, authInfo) {
   $scope.settings = authInfo.get();
   $scope.errorMessage = '';
   
@@ -10,6 +10,7 @@ angular
   }
   
   $scope.login = function() {
+    console.log("Logged in!");
     $scope.settings.authenticated = true;
     if ($scope.settings.saveCookie === true) {
       $cookies.put('auth', $scope.settings);
@@ -18,6 +19,7 @@ angular
   };
 
   $scope.logout = function() {
+    console.log("Logged out!");
     $scope.settings.authenticated = false;
     $cookies.remove('auth');
     $location.path('/login');

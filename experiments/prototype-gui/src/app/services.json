@@ -9,10 +9,21 @@
     "tags": [],
     "dependencies": {
       "mongo": true,
+      "postgresql": true,
       "image-preview": false,
       "video-preview": false,
       "plantcv": false
     }
+  },
+  {
+    "key": "postgresql",
+    "label": "PostgreSQL",
+    "description": "SQL Database",
+    "stack": false,
+    "maintainer": "",
+    "requiresVolume": true,
+    "tags": [],
+    "dependencies": {}
   },
   {
     "key": "mongo",
