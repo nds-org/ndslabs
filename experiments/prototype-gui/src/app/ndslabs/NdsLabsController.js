@@ -286,8 +286,12 @@ angular
     $scope.configuredStacks.push(newStack);
     angular.forEach($scope.newStackVolumeRequirements, function(vol) {
       // Orphaned volumes are already in the list
-      if (!_.find($scope.configuredVolumes, function(volume) { return vol.name === volume.name; })) {
+      var exists = _.find($scope.configuredVolumes, function(volume) { return vol.name === volume.name; });
+      if (!exists) {
         $scope.configuredVolumes.push(vol);
+      } else {
+        exists.stackId = $scope.newStack.name;
+        exists.attachment = $scope.stackId + '-' + exists.serviceId;
       }
     });
   };

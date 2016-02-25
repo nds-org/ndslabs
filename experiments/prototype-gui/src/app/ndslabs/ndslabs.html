@@ -160,8 +160,19 @@
 
                             <!-- Create a New Volume -->
                             <form class="form-inline" ng-show="!volume.useOrphan">
+                              <!-- Volume Name -->
+                              <div class="row">
+                                <div class="col-sm-12 form-group">
+                                  <label for="inputVolumeName">Volume Name</label>
+                                  <input type="text" class="form-control" id="inputVolumeName" placeholder="Volume Name" ng-model="volume.name">
+                                </div>
+                              </div>
+
+
+                              <div class="row">
+
                               <!-- Volume Format -->
-                              <div class="form-group">
+                              <div class="col-sm-6 form-group">
                                 <label for="inputVolumeFormat">Volume Format</label>
                                 <select type="text" class="form-control" id="inputVolumeFormat" ng-model="volume.format">
                                   <option ng-repeat="format in ['Raw','HostPath','EXT4','FAT32']">{{ format }}</option>
@@ -169,7 +180,7 @@
                               </div>
 
                               <!-- Volume Size / Units -->
-                              <div class="form-group">
+                              <div class="col-sm-6 form-group">
                                 <label for="inputVolumeSize">Volume Size:</label>
                                 <div class="input-group" id="inputVolumeSize">
                                   <!-- Size -->
@@ -184,13 +195,9 @@
                                     </ul>
                                   </div><!-- /btn-group -->
                                 </div><!-- /input-group -->
-                              </div>
+                              </div><!-- /form-group -->
+                              </div><!-- /row -->
 
-                              <!-- Volume Name -->
-                              <div class="form-group">
-                                <label for="inputVolumeName">Volume Name</label>
-                                <input type="text" class="form-control" id="inputVolumeName" placeholder="Volume Name" ng-model="volume.name">
-                              </div>
                             </form>
                           </div>
                         </div>
