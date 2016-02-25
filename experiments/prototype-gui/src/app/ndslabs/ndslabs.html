@@ -136,9 +136,11 @@
                           <p>It looks like you are adding {{ newStackVolumeRequirements.length }} service{{ newStackVolumeRequirements > 1 ? 's' : '' }} that require{{ newStackVolumeRequirements > 1 ? '' : 's' }} a volume.</p> 
 
                           <!-- Create New Volumes -->
-                          <div ng-repeat="volume in newStackVolumeRequirements">
-                            <h4>{{ volume.serviceId }}</h4>
+                          <div class="panel panel-default" ng-repeat="volume in newStackVolumeRequirements">
+                            <div class="panel-heading"><h4 class="panel-title">{{ volume.serviceId }}</h4></div>
                            
+
+                            <div class="panel-body">
                             <!-- Reuse Orphaned Volumes? -->
                             <div ng-if="newStackOrphanedVolumes && (newStackOrphanedVolumes | orphansExist:volume.serviceId).length > 0" ng-init="volume.useOrphan=true">
                               <p>Your namespace contains one or more detattached volumes that were previously associated with {{ volume.serviceId }}.</p>
@@ -199,6 +201,7 @@
                               </div><!-- /row -->
 
                             </form>
+                            </div>
                           </div>
                         </div>
 
