@@ -10,18 +10,44 @@ angular
       query: {method:'GET', isArray: true}
     })
 }])
-.filter('orphansExist', function() {
-  return function(orphans, serviceId) {
-    var targetOrphans = [];
-    angular.forEach(orphans, function(orphan) {
-      if (orphan.serviceId === serviceId) {
-        targetOrphans.push(orphan);
+.filter('volumesExist', function() {
+  return function(volumes, stackName, svcId) {
+    var matches = [];
+    angular.forEach(volumes, function(vol) {
+      if (stackName === vol.stackId && svcId === vol.serviceId) {
+        matches.push(vol);
       }
     });
-    return targetOrphans;
+    return matches;
   };
 })
-.controller('NdsLabsController', [ '$scope', '$cookies', '_', 'Services', 'Wizard', 'WizardPage', 'Grid', function($scope, $cookies, _, Services, Wizard, WizardPage, Grid) {
+.filter('orphansExist', function() {
+  return function(orphans, serviceId) {
+    var matches = [];
+    angular.forEach(orphans, function(orphan) {
+      if (orphan.serviceId === serviceId) {
+        matches.push(orphan);
+      }
+    });
+    return matches;
+  };
+})
+.controller('ConfigurationWizardCtrl', [ '$scope', '$uibModalInstance', function($scope, $uibModalInstance) {
+  $scope.items = [ 'item1', 'item2', 'item3' ];
+  $scope.selected = {
+    item: $scope.items[0]
+  };
+
+  $scope.ok = function () {
+    $uibModalInstance.close($scope.selected.item);
+  };
+
+  $scope.cancel = function () {
+    $uibModalInstance.dismiss('cancel');
+  };
+}])
+.controller('NdsLabsController', [ '$scope', '$cookies', '$log', '$uibModal', '_', 'Services', 'Wizard', 'WizardPage', 'Grid', 
+    function($scope, $cookies, $log, $uibModal, _, Services, Wizard, WizardPage, Grid) {
   // Accounting stuff
   $scope.counts = {};
   $scope.svcQuery = '';
@@ -38,13 +64,14 @@ angular
     {
     "id": "",
     "name": "clowder",
+    "key": "clowder",
     "status": true,
     "services": [
       {
         "id": "",
         "stackId": "clowder",
         "serviceId": "clowder",
-        "status": "Suspended",
+        "status": false,
         "replicas": 1,
         "endpoints": []
       },
@@ -52,7 +79,7 @@ angular
         "id": "",
         "stackId": "clowder",
         "serviceId": "mongo",
-        "status": "Suspended",
+        "status": false,
         "replicas": 1,
         "endpoints": []
       },
@@ -60,7 +87,7 @@ angular
         "id": "",
         "stackId": "clowder",
         "serviceId": "rabbitmq",
-        "status": "Suspended",
+        "status": false,
         "replicas": 1,
         "endpoints": []
       },
@@ -68,7 +95,7 @@ angular
         "id": "",
         "stackId": "clowder",
         "serviceId": "image-preview",
-        "status": "Suspended",
+        "status": false,
         "replicas": 1,
         "endpoints": []
       }
@@ -112,8 +139,14 @@ angular
     return volume;
   };
 
-  $scope.toggleStatus = function(svc) {
-    svc.status = !svc.status;
+  $scope.toggleStatus = function(stack, state) {
+    if (angular.isUndefined(state)) {
+      state = !stack.status;
+    }
+    stack.status = state;
+    angular.forEach(stack.services, function(svc) {
+      svc.status = state;
+    });
   };
 
   // The delay (in seconds) before allowing the user to click "Next"
@@ -128,8 +161,8 @@ angular
         },
         next: 'config',
         onNext: function() {
-          console.log("Verifying that the name " + $scope.newStack.name + " has not already been used by another service...");
-          console.log("Gathering optional dependencies and their requirements...");
+          $log.debug("Verifying that the name " + $scope.newStack.name + " has not already been used by another service...");
+          $log.debug("Gathering optional dependencies and their requirements...");
           $scope.newStackOptionalDeps = {};
           angular.forEach($scope.newStackOptions, function(opt) {
             $scope.newStackOptionalDeps[opt] = $scope.listRequiredDeps(opt);
@@ -142,7 +175,7 @@ angular
         canNext: true,
         next: 'volumes',
         onNext: function() {
-          console.log("Adding optional selections to stack...");
+          $log.debug("Adding optional selections to stack...");
           $scope.newStack.services = angular.copy($scope.newStackRequirements);
           angular.forEach($scope.optionalLinksGrid.selector.selection, function(option) {
             var svc = _.find($scope.deps, function(svc) { return svc.key === option.serviceId });
@@ -150,7 +183,7 @@ angular
             $scope.newStack.services.push(createStackSvc($scope.newStack, svc));
           });
 
-          console.log("Discovering volume requirements...");
+          $log.debug("Discovering volume requirements...");
           $scope.discoverVolumeReqs($scope.newStack); 
         }
      }, true),
@@ -172,7 +205,7 @@ angular
         },
         next: 'confirm',
         onNext: function() {
-          console.log("Verifying that user has made valid 'Volume' selections...");
+          $log.debug("Verifying that user has made valid 'Volume' selections...");
         }
      }, true),
      new WizardPage("confirm", "Confirmation", {
@@ -181,7 +214,7 @@ angular
         canNext: true,
         next: 'finish',
         onNext: function() {
-          console.log("Sending create stack / volume requests...");
+          $log.debug("Sending create stack / volume requests...");
         }
      }, true),
     new WizardPage("finish", "Success!", {
@@ -192,17 +225,12 @@ angular
      }, true)
   ];
 
-  // Create a new Wizard to display
-  ($scope.resetWizard = function() { 
-    $scope.wizard = new Wizard(configPages, initDelay);
-  })();
-
   $scope.allServices = Services.query(function(data, xhr) {
-    console.log("success!");
+    $log.debug("success!");
     $scope.deps = angular.copy(data);
     $scope.stacks = _.remove($scope.deps, function(svc) { return svc.stack === true  });
   }, function (headers) {
-    console.log("error!");
+    $log.debug("error!");
     console.debug(headers);
   });
 
@@ -210,6 +238,7 @@ angular
     return {
       id: "",
       name: "",
+      key: template.key,
       status: "Suspended",
       services: []
     };
@@ -237,6 +266,36 @@ angular
       attachment: stackName + '-' + svcSpecKey
     };
   };
+  
+  $scope.openWizard = function () {
+      // Create a new Wizard to display
+      $scope.wizard = new Wizard(configPages, initDelay);
+      
+      var modalInstance = $uibModal.open({
+        animation: true,
+        templateUrl: '/app/ndslabs/subviews/wizardModal.html',
+        controller: 'ConfigurationWizardCtrl',
+        size: 'lg',
+        resolve: {
+          wizard: function() { return $scope.wizard; },
+          newStack: function () { return $scope.newStack; },
+          newStackLabel: function() { return $scope.newStackLabel; },
+          newStackVolumeRequirements: function() { return $scope.newStackVolumeRequirements; },
+          newStackOrphanedVolumes: function() { return $scope.newStackOrphanedVolumes; },
+          newStackRequirements: function() { return $scope.newStackRequirements; },
+          newStackOptions: function() { return $scope.newStackOptions; },
+          newStackOptionalDeps: function() { return $scope.newStackOptionalDeps },
+        }
+      });
+  
+      // Define what we should do when the modal is closed
+      modalInstance.result.then(function (selectedItem) {
+        //$scope.selected = selectedItem;
+        $log.debug('Modal accepted at: ' + new Date());
+      }, function () {
+        $log.debug('Modal dismissed at: ' + new Date());
+      });
+    };
 
   $scope.startWizard = function(template) {
     $scope.newStackLabel = template.label;
@@ -255,10 +314,9 @@ angular
 
     $scope.newStackRequirements = angular.copy($scope.newStack.services);
 
-    $scope.resetWizard();
-
     //  TODO: Get that jQuery outta my controller...
-    $('#wizardModal').modal('show');
+    //$('#wizardModal').modal('show');
+    $scope.openWizard();
   };
 
   $scope.discoverVolumeReqs = function(stack) {
@@ -315,11 +373,10 @@ angular
         targetArray.push(stackSvc);
       } else {
         // Skip this service if we see it in the list already
-        console.log("Skipping duplicate service: " + svc.key);
+        $log.debug("Skipping duplicate service: " + svc.key);
       }
     });
   };
-
   $scope.confirmRemoval = function(stack) {
     $scope.deletionCandidate = stack;
     $('#confirmModal').modal('show');
@@ -346,6 +403,25 @@ angular
     if (removeVolumes) {
       angular.forEach(toRemove, function(volume) {
         $scope.configuredVolumes.splice($scope.configuredVolumes.indexOf(volume), 1);
+      });
+    }
+  };
+  
+  $scope.addStackSvc = function(stack, svcName) {
+    var svc = _.find($scope.deps, { 'key': svcName });
+    if (svc) {
+      stack.services.push(createStackSvc(stack, svc));
+    }
+  };
+  
+  $scope.removeStackSvc = function(stack, svc) {
+    stack.services.splice(stack.services.indexOf(svc), 1);
+    var volume = $scope.showVolume(stack, svc);
+    if (volume) {
+      angular.forEach($scope.configuredVolumes, function(volume) {
+        if (volume.stackId === stack.name) {
+          volume.attachment = null;
+        }
       });
     }
   };

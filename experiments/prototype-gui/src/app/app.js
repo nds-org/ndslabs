@@ -27,7 +27,7 @@ angular
   })
   .when('/login', {
     controller: 'LoginController',
-    templateUrl: '/app/ndslabs/login.html'
+    templateUrl: '/app/login/login.html'
   })
   .otherwise({
 //    redirectTo: '/login'

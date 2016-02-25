@@ -41,34 +41,58 @@
         <table class="table table-striped table-condensed table-hover">
           <thead>
             <tr>
-              <td width="10%"><strong>Running?</strong></td>
+              <td width="10%"></td>
               <td width="30%"><strong>Stack Name</strong></td>
-              <td width="30%"><strong>Stack Services</strong></td>
-              <td width="15%"><strong>Edit</strong></td>
-              <td width="15%"><strong>Remove</strong></td>
+              <td width="40%"><strong>Stack Services</strong></td>
+              <td width="20%"></td>
             </tr>
           </thead>
           <tbody>
-            <tr ng-repeat="stack in configuredStacks" ng-mouseleave="service.showHover = false;" ng-mouseenter="service.showHover = true;">
+            <tr ng-repeat="stack in configuredStacks">
               <td class="text-center">
                  <toggle-switch ng-model="stack.status"><toggle-switch>
               </td>
-              <td>{{ stack.name }}</td>
+              <td><pre>{{ stack | json }}</pre></td>
               <td>
                 <ul class="fa-ul">
+                  <!-- List off our stack's services here -->
                   <li ng-repeat="svc in stack.services">
-                    <i class="fa-li fa" ng-style="{ 'color':stack.status ? 'green' : 'red' }" ng-class="{ 'fa-database':showVolume(stack, svc) && svc.status, 'fa-check-circle-o':!showVolume(stack, svc) && stack.status, 'fa-times-circle-o':!stack.status }"></i>
-                    {{ svc.serviceId }}: {{ stack.status ? 'Running' : 'Suspended'}}
+                    <div class="row">
+                      <div class="col-xs-4">
+                        <a tabindex="0" uib-popover-template="'/app/ndslabs/subviews/serviceOptionsPopover.html'" popover-title="{{ svc.serviceId | uppercase }}" popover-placement="bottom" popover-trigger="outsideClick" id="{{svc.serviceId}}OptionsDropDownButton" class="btn btn-xs btn-default" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                          <i class="fa fa-gear fa-fw"></i><i class="fa fa-fw fa-caret-down"></i>
+                        </a>
+                      </div>
+                      <div class="col-xs-8">
+                        <i ng-if="!showVolume(stack, svc)" class="fa-li fa fa-fw" 
+                        ng-style="{ 'color':stack.status ? 'green' : 'red' }"
+                        ng-class="{ 'fa-check-circle-o':stack.status, 'fa-times-circle-o':!stack.status }"></i>
+                        <i ng-if="showVolume(stack, svc)" class="fa-li fa fa-fw fa-database" style="cursor:pointer;"
+                           ng-style="{ 'color':stack.status ? 'green' : 'red' }" 
+                           uib-popover-template="'/app/ndslabs/subviews/volumeDetailsPopover.html'" 
+                           popover-title="{{ showVolume(stack, svc).name | uppercase }}"
+                           popover-placement="bottom" popover-trigger="outsideClick"></i>
+                        {{ svc.serviceId }}
+                      </div>
+                    </div>
+                  </li>
+                  
+                  <!-- The "Add Service" Button -->
+                  <li>
+                    <div class="row">
+                      <div class="col-xs-4">
+                        <a class="btn btn-xs btn-success" tabindex="0" uib-popover-template="'/app/ndslabs/subviews/serviceAddPopover.html'" 
+                           popover-title="OPTIONAL SERVICES"
+                           popover-placement="bottom-left" popover-trigger="outsideClick">
+                          <i class="fa fa-plus fa-fw"></i><i class="fa fa-fw fa-caret-down"></i>
+                        </a>
+                      </div>
+                    </div>
                   </li>
                 </ul>
               </td>
               <td>
-                <button class="btn btn-xs btn-default" ng-click="editStack(stack)">
-                  <i class="fa fa-pencil"></i>
-                </button>
-              </td>
-              <td>
-                <button style="display:inline-block;horizontal-align:middle;margin:auto;" class="btn btn-xs btn-danger" ng-click="confirmRemoval(stack)">
+                <button style="display:inline-block;horizontal-align:middle;margin:auto;" class="btn btn-xs btn-danger" ng-click="removeStack(stack)" uib-tooltip="Delete this Stack from your Namespace">
                   <i class="fa fa-times"></i>
                 </button>
               </td>
@@ -77,200 +101,13 @@
         </table>
       </div>
   </div>
-
-  <!-- Confirm Delete (Modal) -->
+  
+    <!-- Confirm Delete (Modal) -->
   <div id="confirmModal" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog">
       <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title">Removal Confirmation</h4>
-        </div>
-        <div class="modal-body">
-          <p>Are you sure that you would like to delete this stack?</p>
-          <p>What would you like to do with the leftover volumes from the removed stack?</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
-          <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="removeCandidateStack(deletionCandidate, true)">Yes, and delete the volumes</button>
-          <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="removeCandidateStack(deletionCandidate, false)">Yes, but save the volumes</button>
-        </div>
+        <div ng-include ng-src="'/app/ndslabs/subviews/stackDeleteModal.html'" ng-controller="NdsLabsController"></div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->
-
-  <!-- Wizard Popup (Modal) -->
-  <div>
-      <div class="modal fade" id="wizardModal" tabindex="-1" role="dialog" aria-labelledby="wizardModalLabel">
-        <div class="modal-dialog" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-              <h4 class="modal-title" id="wizardModalLabel">{{ newStack.label }} Configuration Wizard</h4>
-            </div>
-            <div class="modal-body">
-              <div class="row">
-                    <!-- Wizard Page selector --> 
-                    <div class="col-md-12">                        
-                        <!-- Wizard progress bar here -->
-                        <div class="progress">
-                          <div class="progress-bar" ng-class="{ 'progress-bar-success': wizard.percentage == 100}" role="progressbar" aria-valuenow="{{ wizard.percentage }}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{ wizard.percentage }}%;">
-                            {{ wizard.percentage | number:0 }}%
-                          </div>
-                        </div>
-
-                        <h2>{{ wizard.currentPage.displayName }}</h2>
-                        
-                        <!-- Wizard Pages shown here -->
-                        <div ng-if="wizard.currentPage.key === 'intro'">
-                          <p>This wizard will now guide you through the steps of choosing any required / optional plugins or configuration customizations for {{ newStackLabel }}.</p>
-                          <p>Please choose a <strong>name</strong> for this stack: <input class="form-control" type="text" ng-model="newStack.name" /></p>
-                        </div>
-
-                        <!-- Configuration Page -->
-                        <div ng-if="wizard.currentPage.key === 'config'">
-
-                          <!-- List Required Services -->
-                          <p>Stack services:</p>
-                          <ul class="list-group">
-                            <li ng-repeat="req in newStackRequirements" class="list-group-item disabled">
-                              {{ req.serviceId }}<input class="pull-right" type="checkbox" checked="true" />
-                            </li>
-                          </ul>
-                          
-                          <!-- List Optional Services -->
-                          <p ng-show="newStackOptions.length > 0">Please choose the optional service plugins that you wish to enable below:</p>
-                          <ul class="list-group" ng-class="{ 'active':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }">
-                            <li ng-class="{ 'active':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }" ng-click="optionalLinksGrid.selector.select.toggle(opt)" ng-repeat="opt in newStackOptions" class="list-group-item">
-                              <p>
-                                <div class="pull-left">{{ opt.serviceId }}</div>
-                                <div class="text-center" ng-if="newStackOptionalDeps[opt]">(Requires: <span ng-if="$index === 0" ng-repeat="dep in newStackOptionalDeps[opt]"><strong>{{ dep }}</strong></span><span ng-if="$index !== 0 "ng-repeat="dep in newStackOptionalDeps[opt]">, <strong>{{ dep }}</strong></span>)
-                                </div>
-                                <input class="pull-right" type="checkbox" ng-checked="optionalLinksGrid.selector.selection.indexOf(opt) !== -1" />
-                              </p>
-                            </li>
-                          </ul>
-                        </div>
-
-                        <!-- Volumes Page -->
-                        <div ng-if="wizard.currentPage.key === 'volumes'">
-                          <p>It looks like you are adding {{ newStackVolumeRequirements.length }} service{{ newStackVolumeRequirements > 1 ? 's' : '' }} that require{{ newStackVolumeRequirements > 1 ? '' : 's' }} a volume.</p> 
-
-                          <!-- Create New Volumes -->
-                          <div class="panel panel-default" ng-repeat="volume in newStackVolumeRequirements">
-                            <div class="panel-heading"><h4 class="panel-title">{{ volume.serviceId }}</h4></div>
-                           
-
-                            <div class="panel-body">
-                            <!-- Reuse Orphaned Volumes? -->
-                            <div ng-if="newStackOrphanedVolumes && (newStackOrphanedVolumes | orphansExist:volume.serviceId).length > 0" ng-init="volume.useOrphan=true">
-                              <p>Your namespace contains one or more detattached volumes that were previously associated with {{ volume.serviceId }}.</p>
-                              <p>Would you like to reuse the data on from volume, or create a new volume?</p>
-                              <div class="radio" ng-click="volume.useOrphan=true;volume.name=''">
-                                <label><input type="radio" ng-checked="volume.useOrphan" name="orphaned{{ volume.serviceId }}VolumeRadio">Reuse Previous Data</label>
-                              </div>
-                              <div class="radio" ng-click="volume.useOrphan=false;volume.name=''">
-                                <label><input type="radio" ng-checked="!volume.useOrphan" name="orphaned{{ volume.serviceId }}VolumeRadio">Create New Volume</label>
-                              </div>
-                            </div>
-
-                            <!-- List usable orphaned volumes -->
-                            <div ng-show="volume.useOrphan">
-                              <div class="radio" ng-repeat="orphan in newStackOrphanedVolumes | orphansExist:volume.serviceId" ng-click="volume.useOrphan=true;volume.name = orphan.name">
-                                <label><input type="radio" ng-checked="volume.name === orphan.name" name="orphaned{{ volume.serviceId }}OrphanVolumeRadio">{{ orphan.name }} (Source: {{ orphan.stackId }})</label>
-                              </div>
-                            </div>
-
-                            <!-- Create a New Volume -->
-                            <form class="form-inline" ng-show="!volume.useOrphan">
-                              <!-- Volume Name -->
-                              <div class="row">
-                                <div class="col-sm-12 form-group">
-                                  <label for="inputVolumeName">Volume Name</label>
-                                  <input type="text" class="form-control" id="inputVolumeName" placeholder="Volume Name" ng-model="volume.name">
-                                </div>
-                              </div>
-
-
-                              <div class="row">
-
-                              <!-- Volume Format -->
-                              <div class="col-sm-6 form-group">
-                                <label for="inputVolumeFormat">Volume Format</label>
-                                <select type="text" class="form-control" id="inputVolumeFormat" ng-model="volume.format">
-                                  <option ng-repeat="format in ['Raw','HostPath','EXT4','FAT32']">{{ format }}</option>
-                                </select>
-                              </div>
-
-                              <!-- Volume Size / Units -->
-                              <div class="col-sm-6 form-group">
-                                <label for="inputVolumeSize">Volume Size:</label>
-                                <div class="input-group" id="inputVolumeSize">
-                                  <!-- Size -->
-                                  <input type="number" name="volumeSize" min="1" max="999" class="form-control" ng-model="volume.size" aria-label="Please enter desired Volume Size.">
-
-                                  <!-- Units -->
-                                  <div class="input-group-btn">
-                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ volume.sizeUnit || 'Choose Units' }} <span class="caret"></span></button>
-                                    <ul class="dropdown-menu dropdown-menu-right">
-                                      <li><a href="#/labs" ng-click="volume.sizeUnit='GB'">GB</a></li>
-                                      <li><a href="#/labs" ng-click="volume.sizeUnit='TB'">TB</a></li>
-                                    </ul>
-                                  </div><!-- /btn-group -->
-                                </div><!-- /input-group -->
-                              </div><!-- /form-group -->
-                              </div><!-- /row -->
-
-                            </form>
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- Ask the user for confirmation -->
-                        <div ng-if="wizard.currentPage.key === 'confirm'">
-                          <p>You have chosen to enable {{ optionalLinksGrid.selector.selection.length || "no" }} optional service plugins<span ng-show="newService.links.required">, along with the {{ newService.links.required.length }} required services</span>.</p>
-                          <p>Services that will be added to the "{{ newStack.name }}" stack:</p>
-                          <ul class="list-group">
-                            <li class="list-group-item disabled" ng-repeat="req in newStack.services">{{ req.serviceId }}</li>
-                          </ul>
-
-                          <p>Volumes that will be used within the "{{ newStack.name }}" stack:</p>
-                          <ul class="list-group">
-                            <li class="list-group-item disabled" ng-repeat="volume in newStackVolumeRequirements">{{ volume.name }}: {{ volume.size }} {{ volume.sizeUnit }}</li>
-                          </ul>
-
-                          <p>If the above configuration looks correct, please click <strong>Next</strong> to add these changes to your namespace.</p>
-                        </div>
-
-                        <!-- Final Page -->
-                        <div ng-if="wizard.currentPage.key === 'finish'">
-                          <p>You have successfully configured {{ newStack.name }}.</p>
-                          <p>You should now see the instance listed on the right-hand side of the page.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-              <div ng-if="wizard.currentPage.key !== 'finish'">
-                <!-- "Cancel" button (close modal with success === false) -->
-                <button class="btn btn-danger pull-left" ng-if="wizard.currentPage.key !== 'finish'" data-dismiss="modal" aria-label="Close"><i class="fa fa-times"></i>&nbsp;&nbsp;Cancel</button>
-
-                <!-- Previous Page -->
-                <button class="btn btn-primary" ng-disabled="!wizard.canPrevPage()" ng-click="wizard.prevPage()"><i class="fa fa-arrow-circle-left"></i>&nbsp;&nbsp;Back</button>
-
-                <!-- Next Page -->
-                <button class="btn btn-primary" ng-disabled="!wizard.canNextPage()" ng-click="wizard.nextPage()">
-                  Next&nbsp;&nbsp;<i class="fa fa-arrow-circle-right"></i>
-                </button>
-              </div>
-
-              <!-- "Finish" button (close modal with success === true) -->
-              <div ng-if="wizard.currentPage.key === 'finish'">
-                <button class="btn btn-success" ng-disabled="!wizard.canPrevPage()" data-dismiss="modal" aria-label="Close" ng-click="finishWizard(newStack)">Finish&nbsp;&nbsp;<i class="fa fa-check-circle"></i></button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-  </div>
 </section>
