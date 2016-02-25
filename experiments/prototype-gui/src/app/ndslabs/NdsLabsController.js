@@ -320,12 +320,33 @@ angular
     });
   };
 
-  $scope.removeStack = function(stack) {
+  $scope.confirmRemoval = function(stack) {
+    $scope.deletionCandidate = stack;
+    $('#confirmModal').modal('show');
+  };
+
+  $scope.removeCandidateStack = function(stack, removeVolumes) {
+    var toRemove = [];
+
+    // Loop to find any associated volumes
     angular.forEach($scope.configuredVolumes, function(volume) {
       if (volume.stackId === stack.name) {
-        volume.attachment = null;
+        if (removeVolumes) {
+          toRemove.push(volume);
+        } else {
+          volume.attachment = null;
+        }
       }
     });
+    
+    // Then remove the stack itself
     $scope.configuredStacks.splice($scope.configuredStacks.indexOf(stack), 1);
+
+    // Remove any volumes associated, if asked 
+    if (removeVolumes) {
+      angular.forEach(toRemove, function(volume) {
+        $scope.configuredVolumes.splice($scope.configuredVolumes.indexOf(volume), 1);
+      });
+    }
   };
 }]);

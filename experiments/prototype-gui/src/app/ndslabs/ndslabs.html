@@ -68,7 +68,7 @@
                 </button>
               </td>
               <td>
-                <button style="display:inline-block;horizontal-align:middle;margin:auto;" class="btn btn-xs btn-danger" ng-click="removeStack(stack)">
+                <button style="display:inline-block;horizontal-align:middle;margin:auto;" class="btn btn-xs btn-danger" ng-click="confirmRemoval(stack)">
                   <i class="fa fa-times"></i>
                 </button>
               </td>
@@ -78,8 +78,29 @@
       </div>
   </div>
 
+  <!-- Confirm Delete (Modal) -->
+  <div id="confirmModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">Removal Confirmation</h4>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure that you would like to delete this stack?</p>
+          <p>What would you like to do with the leftover volumes from the removed stack?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+          <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="removeCandidateStack(deletionCandidate, true)">Yes, and delete the volumes</button>
+          <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="removeCandidateStack(deletionCandidate, false)">Yes, but save the volumes</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
+
+  <!-- Wizard Popup (Modal) -->
   <div>
-      <!-- Wizard Popup (Modal) -->
       <div class="modal fade" id="wizardModal" tabindex="-1" role="dialog" aria-labelledby="wizardModalLabel">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
@@ -251,5 +272,5 @@
           </div>
         </div>
       </div>
-</div>
+  </div>
 </section>
