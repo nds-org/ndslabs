@@ -32,10 +32,10 @@ angular
   .otherwise({
 //    redirectTo: '/login'
     redirectTo: function() {
-      if (authInfo.isAuth() === true) {
-        $location.path('/labs');
+      if (authInfo.authInfo.authenticated === true) {
+        return '/labs';
       } else {
-        $location.path('/login');
+        return '/login';
       }
     }
   });

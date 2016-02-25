@@ -42,7 +42,7 @@ angular
     "services": [
       {
         "id": "",
-        "stackId": "",
+        "stackId": "clowder",
         "serviceId": "clowder",
         "status": "Suspended",
         "replicas": 1,
@@ -50,7 +50,7 @@ angular
       },
       {
         "id": "",
-        "stackId": "",
+        "stackId": "clowder",
         "serviceId": "mongo",
         "status": "Suspended",
         "replicas": 1,
@@ -199,7 +199,6 @@ angular
 
   $scope.allServices = Services.query(function(data, xhr) {
     console.log("success!");
-    console.debug(xhr);
     $scope.deps = angular.copy(data);
     $scope.stacks = _.remove($scope.deps, function(svc) { return svc.stack === true  });
   }, function (headers) {
@@ -324,39 +323,5 @@ angular
       }
     });
     $scope.configuredStacks.splice($scope.configuredStacks.indexOf(stack), 1);
-  };
-
-  $scope.testAdd = function() {
-    $scope.configuredStacks.push({
-      "id": "",
-      "name": "clowder-01",
-      "status": false,
-      "services": [
-        {
-          "id": "",
-          "stackId": "",
-          "serviceId": "clowder",
-          "status": false,
-          "replicas": 1,
-          "endpoints": []
-        },
-        {
-          "id": "",
-          "stackId": "",
-          "serviceId": "mongo",
-          "status": true,
-          "replicas": 1,
-          "endpoints": []
-        },
-        {
-          "id": "",
-          "stackId": "clowder-01",
-          "serviceId": "video-preview",
-          "status": false,
-          "replicas": 1,
-          "endpoints": []
-        }
-      ]
-    });
   };
 }]);
