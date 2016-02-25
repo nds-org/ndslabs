@@ -42,7 +42,7 @@ angular
 }])
 .run([ '$rootScope', '$location', '$cookies', 'AuthInfo', function($rootScope, $location, $cookies, authInfo) {
   var authCookie;
-  if ($cookies && (authCookie = $cookies.get('auth'))) {
+  if ($cookies && (authCookie = $cookies.getObject('auth'))) {
     authInfo.setAuth(authCookie);
   }
 

@@ -21,7 +21,7 @@ angular
     return target !== null ? target : false;
   };
 })
-.controller('NdsLabsController', [ '$scope', '$cookieStore', '_', 'Services', 'Wizard', 'WizardPage', 'Grid', function($scope, $cookies, _, Services, Wizard, WizardPage, Grid) {
+.controller('NdsLabsController', [ '$scope', '$cookies', '_', 'Services', 'Wizard', 'WizardPage', 'Grid', function($scope, $cookies, _, Services, Wizard, WizardPage, Grid) {
   // Accounting stuff
   $scope.counts = {};
   $scope.svcQuery = '';

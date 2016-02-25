@@ -6,14 +6,15 @@ angular
   
   if ($scope.settings.authenticated) {
     $location.path('/labs');
-    return;
+  } else {
+    $location.path('/login');
   }
   
   $scope.login = function() {
     console.log("Logged in!");
     $scope.settings.authenticated = true;
     if ($scope.settings.saveCookie === true) {
-      $cookies.put('auth', $scope.settings);
+      $cookies.putObject('auth', $scope.settings);
     }
     $location.path('/labs');
   };
