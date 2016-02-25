@@ -10,15 +10,15 @@ angular
       query: {method:'GET', isArray: true}
     })
 }])
-.filter('orphanExists', function() {
+.filter('orphansExist', function() {
   return function(orphans, serviceId) {
-    var target = null;
+    var targetOrphans = [];
     angular.forEach(orphans, function(orphan) {
       if (orphan.serviceId === serviceId) {
-        target = orphan;
+        targetOrphans.push(orphan);
       }
     });
-    return target !== null ? target : false;
+    return targetOrphans;
   };
 })
 .controller('NdsLabsController', [ '$scope', '$cookies', '_', 'Services', 'Wizard', 'WizardPage', 'Grid', function($scope, $cookies, _, Services, Wizard, WizardPage, Grid) {
@@ -124,7 +124,7 @@ angular
         prev: null,
         canPrev: false,
         canNext: function() {
-          return $scope.newStack && $scope.newStack.name !== '';
+          return $scope.newStack && $scope.newStack.name !== '' && !_.find($scope.configuredStacks, function(stack) { return stack.name === $scope.newStack.name; });
         },
         next: 'config',
         onNext: function() {
@@ -286,7 +286,10 @@ angular
     // Associate this stack with our user 
     $scope.configuredStacks.push(newStack);
     angular.forEach($scope.newStackVolumeRequirements, function(vol) {
-      $scope.configuredVolumes.push(vol);
+      // Orphaned volumes are already in the list
+      if (!_.find($scope.configuredVolumes, function(volume) { return vol.name === volume.name; })) {
+        $scope.configuredVolumes.push(vol);
+      }
     });
   };
 
