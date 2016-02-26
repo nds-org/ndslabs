@@ -1,0 +1,6 @@
+{
+  "key": "mongo",
+  "label": "MongoDB",
+  "requiresVolume": true,
+  "isService": true
+}

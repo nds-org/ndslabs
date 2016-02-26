@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: solr
+spec:
+  replicas: 1
+  selector:
+    component: solr
+  template:
+    metadata:
+      labels:
+        component: solr
+    spec:
+      containers:
+      - name: solr
+        image: ndslabs/dataverse-solr:latest
+        ports:
+        - containerPort: 8983
+          protocol: TCP
+        volumeMounts:
+        - name: solr
+          mountPath: /usr/local/solr-4.6.0/example/solr/

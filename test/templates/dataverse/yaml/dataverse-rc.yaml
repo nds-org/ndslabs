@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: dataverse
+spec:
+  replicas: 1
+  selector:
+    component: dataverse
+  template:
+    metadata:
+      labels:
+        component: dataverse
+    spec:
+      containers:
+      - name: dataverse
+        image: ndslabs/dataverse:latest
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        env:
+        - name: SMTP_HOST
+          value: "smtp.ncsa.illinois.edu"
+        - name: HOST_DNS_ADDRESS 
+          value : "localhost"
+        - name: GLASSFISH_DIRECTORY 
+          value : "/usr/local/glassfish4"
+        - name: MAIL_SERVER 
+          value : "smtp.ncsa.illinois.edu"
+        - name: POSTGRES_DATABASE 
+          value : "dvndb"
+        - name: POSTGRES_USER 
+          value : "dvnapp"
+        - name: POSTGRES_PASSWORD 
+          value : "secret"
+        - name: RSERVE_USER 
+          value : "rserve"
+        - name: RSERVE_PASSWORD 
+          value : "rserve"
+        readinessProbe:
+          httpGet:
+            path: /resources/images/dataverseproject_logo.jpg
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          timeoutSeconds: 120
+        volumeMounts:
+          name: dataverse
+          mountPath: /usr/local/glassfish4/glassfish/domains/domain1/files

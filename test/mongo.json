@@ -1,5 +1,0 @@
-{
-  "key": "mongo",
-  "label": "MongoDB",
-  "requiresVolume": true
-}

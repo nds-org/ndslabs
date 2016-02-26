@@ -1,0 +1,41 @@
+{
+    "apiVersion": "v1",
+    "kind": "ReplicationController",
+    "metadata": {
+        "name": "postgres"
+    },
+    "spec": {
+        "replicas": 1,
+        "selector": {
+            "name": "postgres"
+        },
+        "template": {
+            "metadata": {
+                "labels": {
+                    "name": "postgres",
+           			"stack": "dataverse"
+                }
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "image": "postgres:9.3",
+                        "name": "postgres",
+                        "ports": [
+                            {
+                                "containerPort": 5432,
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/var/lib/postgresql/data",
+                                "name": "postgres"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

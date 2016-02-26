@@ -1,0 +1,43 @@
+{
+    "apiVersion": "v1",
+    "kind": "ReplicationController",
+    "metadata": {
+        "name": "rserve"
+    },
+    "spec": {
+        "replicas": 1,
+        "selector": {
+            "name": "rserve"
+        },
+        "template": {
+            "metadata": {
+                "labels": {
+                    "name": "rserve",
+                    "stack": "dataverse"
+                }
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "image": "ndslabs/dataverse-rserve:latest",
+                        "name": "rserve",
+                        "ports": [
+                            {
+                                "containerPort": 6311,
+                                "protocol": "TCP"
+                            }
+                        ]
+                    }
+                ],
+                "volumes": [
+                    {
+                        "emptyDir": {
+                            "medium": ""
+                        },
+                        "name": "storage"
+                    }
+                ]
+            }
+        }
+    }
+}
