@@ -1,0 +1,6 @@
+{
+  "key": "postgres",
+  "label": "PostgreSQL",
+  "isService": true,
+  "requiresVolume": true
+}

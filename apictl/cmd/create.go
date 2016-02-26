@@ -15,16 +15,19 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	api "github.com/nds-labs/apiserver/types"
+	"io/ioutil"
 	"log"
 	"net/http"
 
 	"github.com/spf13/cobra"
 )
 
-// stopCmd represents the stop command
-var stopCmd = &cobra.Command{
-	Use:   "stop",
+// createCmd represents the create command
+var createCmd = &cobra.Command{
+	Use:   "create",
 	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
@@ -33,12 +36,14 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		stack := args[0]
+		//resource := args[0]
+		size := args[1]
+		uid := args[2]
 
-		url := apiServer + "projects/" + apiUser.username + "/stop/" + stack
+		url := apiServer + "projects/" + apiUser.username + "/volumes?size=" + size + "&uid=" + uid
 
 		client := &http.Client{}
-		request, err := http.NewRequest("GET", url, nil)
+		request, err := http.NewRequest("PUT", url, nil)
 		request.Header.Set("Content-Type", "application/json")
 		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
 		resp, err := client.Do(request)
@@ -46,25 +51,34 @@ to quickly create a Cobra application.`,
 			log.Fatal(err)
 		} else {
 			if resp.StatusCode == http.StatusOK {
-				fmt.Printf("Stopped %s", stack)
+				defer resp.Body.Close()
+				body, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				fmt.Print(string(body))
+				volume := api.Volume{}
+				json.Unmarshal([]byte(body), &volume)
+				fmt.Printf("Created volume %s", volume.Id)
 			} else {
-				fmt.Print("Error stopping %s", stack)
+				fmt.Print("Error adding volume")
 			}
 		}
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(stopCmd)
+	RootCmd.AddCommand(createCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// stopCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// createCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// stopCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 }

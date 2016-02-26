@@ -1,8 +1,0 @@
-{
-  "key": "clowder",
-  "label": "Clowder",
-  "requiresVolume": false,
-  "depends": [
-      { "key": "mongodb", "required": false }
-  ]
-}

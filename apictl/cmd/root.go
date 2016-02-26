@@ -15,9 +15,11 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"os/user"
 	"strings"
@@ -30,7 +32,7 @@ var cfgFile string
 
 type User struct {
 	username string
-	password string
+	token    string
 }
 
 var apiUser User
@@ -48,6 +50,42 @@ to quickly create a Cobra application.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },
+}
+
+func RefreshToken(cmd *cobra.Command, args []string) {
+
+	usr, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	url := apiServer + "refresh_token"
+	client := &http.Client{}
+	request, err := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
+	resp, err := client.Do(request)
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			defer resp.Body.Close()
+
+			body, err := ioutil.ReadAll(resp.Body)
+
+			err = json.Unmarshal(body, &jwt)
+			token := jwt["token"].(string)
+			if err != nil {
+				log.Fatal(err)
+			}
+			path := usr.HomeDir + "/ndslabs"
+			os.Mkdir(path, 0700)
+			e := ioutil.WriteFile(path+"/.passwd", []byte(apiUser.username+":"+token), 0644)
+			check(e)
+		} else {
+			fmt.Printf("Login failed: %s \n", resp.Status)
+		}
+	}
 }
 
 // Execute adds all child commands to the root command sets flags appropriately.
@@ -69,7 +107,7 @@ func readPasswd() {
 	if err == nil {
 		s := strings.Split(string(dat), ":")
 		apiUser.username = s[0]
-		apiUser.password = s[1]
+		apiUser.token = s[1]
 	}
 	//fmt.Printf("%s %s", s[0], s[1])
 

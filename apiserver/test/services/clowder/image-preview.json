@@ -1,0 +1,10 @@
+{
+  "key": "image-preview",
+  "label": "Image-Preview",
+  "requiresVolume": false,
+  "isStack": false,
+  "isService": false,
+  "depends": [
+      { "key": "rabbitmq", "required": true }
+  ]
+}

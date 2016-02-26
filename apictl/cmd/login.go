@@ -16,16 +16,21 @@ package cmd
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh/terminal"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"os/user"
 	"strings"
 	"syscall"
 )
+
+var jwt map[string]interface{}
 
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
@@ -37,11 +42,37 @@ var loginCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		//fmt.Println(usr.HomeDir)
-		path := usr.HomeDir + "/ndslabs"
-		os.Mkdir(path, 0700)
-		e := ioutil.WriteFile(path+"/.passwd", []byte(username+":"+password), 0644)
-		check(e)
+
+		url := apiServer + "authenticate"
+		client := &http.Client{}
+		data := fmt.Sprintf("{\"username\": \"%s\", \"password\": \"%s\"}", username, password)
+		request, err := http.NewRequest("POST",
+			url, bytes.NewBuffer([]byte(data)))
+		request.Header.Set("Content-Type", "application/json")
+		resp, err := client.Do(request)
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			if resp.StatusCode == http.StatusOK {
+				defer resp.Body.Close()
+
+				body, err := ioutil.ReadAll(resp.Body)
+
+				err = json.Unmarshal(body, &jwt)
+				token := jwt["token"].(string)
+				if err != nil {
+					log.Fatal(err)
+				}
+				path := usr.HomeDir + "/ndslabs"
+				os.Mkdir(path, 0700)
+				e := ioutil.WriteFile(path+"/.passwd", []byte(username+":"+token), 0644)
+				check(e)
+			} else {
+				fmt.Printf("Login failed: %s \n", resp.Status)
+			}
+
+		}
+
 	},
 }
 

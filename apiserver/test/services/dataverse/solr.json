@@ -1,0 +1,6 @@
+{
+  "key": "solr",
+  "label": "Solr",
+  "isService": true,
+  "requiresVolume": true
+}

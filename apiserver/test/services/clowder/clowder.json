@@ -1,0 +1,12 @@
+{
+  "key": "clowder",
+  "label": "Clowder",
+  "requiresVolume": false,
+  "isStack": true,
+  "isService": true,
+  "depends": [
+      { "key": "mongo", "required": true },
+      { "key": "image-preview", "required": false },
+      { "key": "elasticsearch", "required": false }
+  ]
+}

@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 )
 
 var apiServer = "http://localhost:8083/"
@@ -32,9 +33,9 @@ func GetService(serviceName string) *api.Service {
 
 	client := &http.Client{}
 	request, err := http.NewRequest("GET", url, nil)
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
 
 	//fmt.Println(apiUser)
-	request.SetBasicAuth(apiUser.username, apiUser.password)
 	resp, err := client.Do(request)
 	if err != nil {
 		log.Fatal(err)
@@ -57,26 +58,95 @@ func GetService(serviceName string) *api.Service {
 	}
 }
 
-func AddConfig(project string, serviceKey string) {
-	url := apiServer + "projects/" + project + "/config/" + serviceKey
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
 
-	config := api.Config{}
-	config.Key = serviceKey
+func AddRequiredDependencies(stackKey string, stack *api.Stack) {
+
+	service := GetService(stackKey)
+
+	for _, depends := range service.Dependencies {
+		if depends.Required {
+			stackService := api.StackService{}
+			stackService.Service = depends.DependencyKey
+			stack.Services = append(stack.Services, stackService)
+			fmt.Printf("Adding required dependency %s\n", depends.DependencyKey)
+			AddRequiredDependencies(depends.DependencyKey, stack)
+		}
+	}
+}
+
+func AddStack(project string, serviceKey string, opt string) {
+
+	service := GetService(serviceKey)
+	optional := strings.Split(opt, ",")
+
+	// Add this service
+	stack := api.Stack{}
+	stack.Key = serviceKey
+
+	stackService := api.StackService{}
+	stackService.Service = serviceKey
+	stack.Services = append(stack.Services, stackService)
+
+	AddRequiredDependencies(serviceKey, &stack)
+
+	for _, depends := range service.Dependencies {
+		if contains(optional, depends.DependencyKey) {
+			stackService = api.StackService{}
+			stackService.Service = depends.DependencyKey
+			stack.Services = append(stack.Services, stackService)
+			AddRequiredDependencies(depends.DependencyKey, &stack)
+		}
+		/*
+			stackService = api.StackService{}
+			stackService.Service = depends.DependencyKey
+			if depends.Required {
+				stack.Services = append(stack.Services, stackService)
+				//fmt.Printf("Adding dependency %s\n", depends.DependencyKey)
+			} else if contains(optional, depends.DependencyKey) {
+				stack.Services = append(stack.Services, stackService)
+			}
+		*/
+	}
+	// Does the stack exist?
+
+	url := apiServer + "projects/" + project + "/stacks"
 
 	client := &http.Client{}
-	data, err := json.Marshal(config)
-	request, err := http.NewRequest("PUT",
+	data, err := json.Marshal(stack)
+	request, err := http.NewRequest("POST",
 		url, bytes.NewBuffer(data))
 	request.Header.Set("Content-Type", "application/json")
-	request.SetBasicAuth(apiUser.username, apiUser.password)
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
 	resp, err := client.Do(request)
 	if err != nil {
 		log.Fatal(err)
 	} else {
 		if resp.StatusCode == http.StatusOK {
-			fmt.Println("Added " + serviceKey)
+			defer resp.Body.Close()
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			fmt.Println("Added stack " + serviceKey)
+
+			stack := api.Stack{}
+			json.Unmarshal([]byte(body), &stack)
+			//fmt.Printf(string(body))
+
+			for _, stackService := range stack.Services {
+				fmt.Printf("%s %s\n", stackService.Service, stackService.Id)
+			}
 		} else {
-			fmt.Print("Error adding " + serviceKey)
+			fmt.Println("Error adding " + serviceKey)
 		}
 
 	}
@@ -85,17 +155,16 @@ func AddConfig(project string, serviceKey string) {
 // addCmd represents the add command
 var addCmd = &cobra.Command{
 	Use:   "add",
-	Short: "Add the specified service to the current config",
+	Short: "Add the specified service stack",
 	Run: func(cmd *cobra.Command, args []string) {
-		serviceName := args[0]
+		key := args[0]
+		optional := ""
+		if len(args) > 1 {
+			optional = args[1]
+		}
 
 		//fmt.Printf("Adding service %s\n", serviceName)
-		service := GetService(serviceName)
-		AddConfig(apiUser.username, service.Key)
-
-		// Add this service to the current config  (how, TBD)
-
-		// Now call add config in the API
+		AddStack(apiUser.username, key, optional)
 
 		/*
 			if service.RequiresVolume {

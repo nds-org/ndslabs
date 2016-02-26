@@ -1,0 +1,6 @@
+{
+  "key": "rabbitmq",
+  "label": "RabbitMQ",
+  "isService": true,
+  "requiresVolume": false
+}

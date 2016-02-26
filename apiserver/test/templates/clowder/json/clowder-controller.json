@@ -1,0 +1,52 @@
+{
+    "apiVersion": "v1",
+    "kind": "ReplicationController",
+    "metadata": {
+        "labels": {
+            "name": "clowder",
+            "stack": "clowder"
+        },
+        "name": "clowder"
+    },
+    "spec": {
+        "replicas": 1,
+        "selector": {
+            "name": "clowder"
+        },
+        "template": {
+            "metadata": {
+                "labels": {
+                    "name": "clowder",
+            		"stack": "clowder"
+                }
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "env": [
+                            {
+                                "name": "SMTP_HOST",
+                                "value": "smtp.ncsa.illinois.edu"
+                            },
+                            {
+                                "name": "ELASTICSEARCH_CLUSTERNAME",
+                                "value": "clowder"
+                            },
+                            {
+                                "name": "RABBITMQ_EXCHANGE",
+                                "value": "clowder"
+                            }
+                        ],
+                        "image": "ndslabs/clowder:0.9.1",
+                        "name": "clowder",
+                        "ports": [
+                            {
+                                "containerPort": 9000
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -22,6 +22,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"text/tabwriter"
 )
 
 //var apiServer = "http://localhost:8083/"
@@ -40,15 +42,17 @@ $ apictl list resources`,
 
 		url := apiServer + resource
 
-		if resource == "config" {
-			url = apiServer + "projects/" + apiUser.username + "/config"
+		if resource == "stacks" {
+			url = apiServer + "projects/" + apiUser.username + "/stacks"
+		} else if resource == "volumes" {
+			url = apiServer + "projects/" + apiUser.username + "/volumes"
 		}
 
 		client := &http.Client{}
 		request, err := http.NewRequest("GET", url, nil)
 		//fmt.Print(apiUser)
 
-		request.SetBasicAuth(apiUser.username, apiUser.password)
+		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
 		resp, err := client.Do(request)
 		if err != nil {
 			log.Fatal(err)
@@ -67,7 +71,16 @@ $ apictl list resources`,
 				services := make([]api.Service, 0)
 				json.Unmarshal([]byte(body), &services)
 				for _, service := range services {
-					fmt.Printf("%s\n", service.Key)
+					if service.IsStack {
+						fmt.Printf("%s\n", service.Key)
+						for _, dependency := range service.Dependencies {
+							if dependency.Required {
+								fmt.Printf("\t %s (required)\n", dependency.DependencyKey)
+							} else {
+								fmt.Printf("\t %s (optional)\n", dependency.DependencyKey)
+							}
+						}
+					}
 				}
 			} else if resource == "projects" {
 				projects := make([]api.Project, 0)
@@ -75,17 +88,31 @@ $ apictl list resources`,
 				for _, project := range projects {
 					fmt.Printf("%s %s\n", project.Id, project.Name)
 				}
-			} else if resource == "config" {
-				configs := make([]api.Config, 0)
-				json.Unmarshal([]byte(body), &configs)
-				for _, config := range configs {
-					fmt.Printf("%s\n", config.Key)
+			} else if resource == "stacks" {
+				stacks := make([]api.Stack, 0)
+				json.Unmarshal([]byte(body), &stacks)
+				w := new(tabwriter.Writer)
+				w.Init(os.Stdout, 0, 20, 0, '\t', 0)
+				fmt.Fprintln(w, "STACK\tSERVICE\tSTATUS\tENDPOINT\tUID")
+				for _, stack := range stacks {
+					fmt.Fprintf(w, "%s\t\t\n", stack.Key)
+					for _, service := range stack.Services {
+						fmt.Fprintf(w, "\t%s\t%s\t%s\t%s\n", service.Service, service.Status, service.Endpoints[0], service.Id)
+					}
+				}
+				w.Flush()
+			} else if resource == "volumes" {
+				volumes := make([]api.Volume, 0)
+				json.Unmarshal([]byte(body), &volumes)
+				for _, volume := range volumes {
+					fmt.Printf("%s\n", volume.Id)
 				}
 			}
 		} else {
 			fmt.Printf("%s\n", resp.Status)
 		}
 	},
+	PostRun: RefreshToken,
 }
 
 func init() {
