@@ -1,13 +1,16 @@
 angular
 .module('ndslabs')
-.controller('LoginController', [ '$scope', '$cookies', '$location', 'AuthInfo', function($scope, $cookies, $location, authInfo) {
+.controller('LoginController', [ '$scope', '$cookies', '$location', 'AuthInfo', 'ExpressRoute', 'LoginRoute',
+    function($scope, $cookies, $location, authInfo, ExpressRoute, LoginRoute) {
   $scope.settings = authInfo.get();
   $scope.errorMessage = '';
   
+  var HomeRoute = ExpressRoute;
+  
   if ($scope.settings.authenticated) {
-    $location.path('/labs');
+    $location.path(HomeRoute);
   } else {
-    $location.path('/login');
+    $location.path(LoginRoute);
   }
   
   $scope.login = function() {
@@ -16,13 +19,13 @@ angular
     if ($scope.settings.saveCookie === true) {
       $cookies.putObject('auth', $scope.settings);
     }
-    $location.path('/labs');
+    $location.path(HomeRoute);
   };
 
   $scope.logout = function() {
     console.log("Logged out!");
     $scope.settings.authenticated = false;
     $cookies.remove('auth');
-    $location.path('/login');
+    $location.path(LoginRoute);
   };
 }]);

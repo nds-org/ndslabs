@@ -34,7 +34,8 @@ angular
     return filtered;
   };
 })
-.controller('NavbarController', [ '$scope', '$location', 'appConfig', function($scope, $location, appConfig) {
+.controller('NavbarController', [ '$scope', '$location', 'appConfig', 'LoginRoute', 'ExpressRoute', 'ExpertRoute', 'ManageRoute', 
+    function($scope, $location, appConfig, LoginRoute, ExpressRoute, ExpertRoute, ManageRoute) {
   $scope.appConfig = appConfig;
   
   $scope.$watch('appConfig.title', function(newValue, oldValue) {
@@ -51,14 +52,22 @@ angular
   $scope.home = 
   {
     name:'NDS Labs',
-    url:'/'
+    url: '#' + LoginRoute
   };
 
   $scope.navs = [
     {
-      name: $scope.home.name,
-      url: $scope.home.url,
+      name: 'Express Setup',
+      url: '#' + ExpressRoute
+    },
+    {
+      name: 'Expert Setup',
+      url: '#' + ExpertRoute
+    },
+    {
+      name: 'Manage Deployments',
+      url: '#' + ManageRoute,
       right: true
-    }
+    },
   ];
 }]);

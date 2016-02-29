@@ -1,6 +1,0 @@
-<section>
-    <pre>{{ svc | json }}</pre>
-    <button type="button" class="btn btn-xs btn-success"><i class="fa fa-fw fa-play" uib-tooltip="Start / Stop Service"></i></button>
-    <button type="button" class="btn btn-xs btn-info"><i class="fa fa-fw fa-newspaper-o" uib-tooltip="View Logs"></i></button>
-    <button type="button" ng-if="_.invertBy(_.find(stacks, 'key').dependencies)[true].indexOf(svc.serviceId) === -1" class="btn btn-xs btn-danger" ng-click="removeStackSvc(stack, svc)"><i class="fa fa-fw fa-times" uib-tooltip="Remove Service from Stack"></i></button>
-</section>

@@ -3,6 +3,10 @@
 angular
 .module('ndslabs', [ 'navbar', 'footer', 'ngWizard', 'ngGrid', 'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'toggle-switch', 'ui.bootstrap' ])
 .constant('_', window._)
+.constant('LoginRoute', '/login')
+.constant('ExpressRoute', '/express')
+.constant('ExpertRoute', '/expert')
+.constant('ManageRoute', '/deployments')
 .provider('AuthInfo', function() {
     this.authInfo = {
       authenticated: false,
@@ -20,27 +24,35 @@ angular
         }
     };
 })
-.config([ '$routeProvider', 'AuthInfoProvider', function($routeProvider, authInfo) {
-  $routeProvider.when('/labs', {
-    controller: 'NdsLabsController',
-    templateUrl: '/app/ndslabs/ndslabs.html'
+.config([ '$routeProvider', 'AuthInfoProvider', 'LoginRoute', 'ExpressRoute', 'ExpertRoute', 'ManageRoute',
+    function($routeProvider, authInfo, LoginRoute, ExpressRoute, ExpertRoute, ManageRoute) {
+  $routeProvider.when(ExpertRoute, {
+    controller: 'ExpertSetupController',
+    templateUrl: '/app/expert/expertSetup.html'
   })
-  .when('/login', {
+  .when(LoginRoute, {
     controller: 'LoginController',
     templateUrl: '/app/login/login.html'
   })
+  .when(ExpressRoute, {
+    controller: 'ExpressSetupController',
+    templateUrl: '/app/express/expressSetup.html'
+  })
+  .when(ManageRoute, {
+    controller: 'DeploymentsController',
+    templateUrl: '/app/deployments/manage.html'
+  })
   .otherwise({
-//    redirectTo: '/login'
     redirectTo: function() {
       if (authInfo.authInfo.authenticated === true) {
-        return '/labs';
+        return ExpressRoute;
       } else {
-        return '/login';
+        return LoginRoute;
       }
     }
   });
 }])
-.run([ '$rootScope', '$location', '$cookies', 'AuthInfo', function($rootScope, $location, $cookies, authInfo) {
+.run([ '$rootScope', '$location', '$cookies', 'AuthInfo', 'LoginRoute', function($rootScope, $location, $cookies, authInfo, LoginRoute) {
   var authCookie;
   if ($cookies && (authCookie = $cookies.getObject('auth'))) {
     authInfo.setAuth(authCookie);
@@ -52,8 +64,8 @@ angular
     if (authInfo.isAuth() === false) {
 
       // user needs to log in, redirect to /login
-      if (next.templateUrl !== "/app/ndslabs/login.html") {
-        $location.path("/login");
+      if (next.templateUrl !== "/app/login/login.html") {
+        $location.path(LoginRoute);
       }
     }
   });

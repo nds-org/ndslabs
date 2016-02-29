@@ -24,7 +24,7 @@
             <tr ng-repeat="stack in stacks | orderBy:'key'| filter : svcQuery">
               <td>{{ stack.label }}</td>
               <td>
-                <button class="btn btn-xs btn-primary" ng-click="startWizard(stack)">
+                <button class="btn btn-xs btn-primary" ng-click="openWizard(stack)">
                   <i class="fa fa-plus"></i>
                 </button>
               </td>
@@ -52,14 +52,14 @@
               <td class="text-center">
                  <toggle-switch ng-model="stack.status"><toggle-switch>
               </td>
-              <td><pre>{{ stack | json }}</pre></td>
+              <td>{{ stack.name }}<pre ng-if="DEBUG">{{ stack | json }}</pre></td>
               <td>
                 <ul class="fa-ul">
                   <!-- List off our stack's services here -->
                   <li ng-repeat="svc in stack.services">
                     <div class="row">
                       <div class="col-xs-4">
-                        <a tabindex="0" uib-popover-template="'/app/ndslabs/subviews/serviceOptionsPopover.html'" popover-title="{{ svc.serviceId | uppercase }}" popover-placement="bottom" popover-trigger="outsideClick" id="{{svc.serviceId}}OptionsDropDownButton" class="btn btn-xs btn-default" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        <a tabindex="0" uib-popover-template="'/app/expert/subviews/serviceOptionsPopover.html'" popover-title="{{ svc.serviceId | uppercase }}" popover-placement="bottom" popover-trigger="outsideClick" id="{{svc.serviceId}}OptionsDropDownButton" class="btn btn-xs btn-default" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                           <i class="fa fa-gear fa-fw"></i><i class="fa fa-fw fa-caret-down"></i>
                         </a>
                       </div>
@@ -69,7 +69,7 @@
                         ng-class="{ 'fa-check-circle-o':stack.status, 'fa-times-circle-o':!stack.status }"></i>
                         <i ng-if="showVolume(stack, svc)" class="fa-li fa fa-fw fa-database" style="cursor:pointer;"
                            ng-style="{ 'color':stack.status ? 'green' : 'red' }" 
-                           uib-popover-template="'/app/ndslabs/subviews/volumeDetailsPopover.html'" 
+                           uib-popover-template="'/app/expert/subviews/volumeDetailsPopover.html'" 
                            popover-title="{{ showVolume(stack, svc).name | uppercase }}"
                            popover-placement="bottom" popover-trigger="outsideClick"></i>
                         {{ svc.serviceId }}
@@ -81,8 +81,8 @@
                   <li>
                     <div class="row">
                       <div class="col-xs-4">
-                        <a class="btn btn-xs btn-success" tabindex="0" uib-popover-template="'/app/ndslabs/subviews/serviceAddPopover.html'" 
-                           popover-title="OPTIONAL SERVICES"
+                        <a class="btn btn-xs btn-success" tabindex="0" uib-popover-template="'/app/expert/subviews/serviceAddPopover.html'" 
+                           popover-title="OPTIONAL SERVICES" ng-show="stack.services | missingDeps:stacks:stack.name:'optional'"
                            popover-placement="bottom-left" popover-trigger="outsideClick">
                           <i class="fa fa-plus fa-fw"></i><i class="fa fa-fw fa-caret-down"></i>
                         </a>
@@ -92,7 +92,7 @@
                 </ul>
               </td>
               <td>
-                <button style="display:inline-block;horizontal-align:middle;margin:auto;" class="btn btn-xs btn-danger" ng-click="removeStack(stack)" uib-tooltip="Delete this Stack from your Namespace">
+                <button style="display:inline-block;horizontal-align:middle;margin:auto;" class="btn btn-xs btn-danger" ng-click="deletionCandidate = stack;removeCandidateStack(stack)" uib-tooltip="Delete this Stack from your Namespace">
                   <i class="fa fa-times"></i>
                 </button>
               </td>
@@ -106,7 +106,7 @@
   <div id="confirmModal" class="modal fade" tabindex="-1" role="dialog">
     <div class="modal-dialog">
       <div class="modal-content">
-        <div ng-include ng-src="'/app/ndslabs/subviews/stackDeleteModal.html'" ng-controller="NdsLabsController"></div>
+        <div ng-include ng-src="'/app/expert/subviews/stackDeleteModal.html'" ng-controller="ExpertSetupController"></div>
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
   </div><!-- /.modal -->

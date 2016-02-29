@@ -55,7 +55,7 @@
 
             <div class="panel-body">
               <!-- Reuse Orphaned Volumes? -->
-              <div ng-if="newStackOrphanedVolumes && (newStackOrphanedVolumes | orphansExist:volume.serviceId).length > 0" ng-init="volume.useOrphan=true">
+              <div ng-if="newStackOrphanedVolumes && (newStackOrphanedVolumes | orphansExist:volume.serviceId).length > 0">
                 <p>Your namespace contains one or more detattached volumes that were previously associated with {{ volume.serviceId }}.</p>
                 <p>Would you like to reuse the data on from volume, or create a new volume?</p>
                 <div class="radio" ng-click="volume.useOrphan=true;volume.name=''">
@@ -127,6 +127,9 @@
 
         <!-- Ask the user for confirmation -->
         <div ng-if="wizard.currentPage.key === 'confirm'">
+          <p>Please confirm the configuration of your new stack below.</p></p>
+          <p>If the configuration looks correct, click <strong>Confirm</strong> to close the wizard and add these changes to your namespace.</p>
+        
           <p>You have chosen to enable {{ optionalLinksGrid.selector.selection.length || "no" }} optional service plugins<span ng-show="newService.links.required">, along with the {{ newService.links.required.length }} required services</span>.</p>
           <p>Services that will be added to the "{{ newStack.name }}" stack:</p>
           <ul class="list-group">
@@ -137,14 +140,6 @@
           <ul class="list-group">
             <li class="list-group-item disabled" ng-repeat="volume in newStackVolumeRequirements">{{ volume.name }}: {{ volume.size }} {{ volume.sizeUnit }}</li>
           </ul>
-
-          <p>If the above configuration looks correct, please click <strong>Next</strong> to add these changes to your namespace.</p>
-        </div>
-
-        <!-- Final Page -->
-        <div ng-if="wizard.currentPage.key === 'finish'">
-          <p>You have successfully configured {{ newStack.name }}.</p>
-          <p>You should now see the instance listed on the right-hand side of the page.</p>
         </div>
       </div>
     </div>
@@ -158,23 +153,34 @@
         {{ wizard.percentage | number:0 }}%
       </div>
     </div>
-        
-    <div ng-if="wizard.currentPage.key !== 'finish'">
-      <!-- "Cancel" button (close modal with success === false) -->
-      <button class="btn btn-danger pull-left" ng-if="wizard.currentPage.key !== 'finish'" data-dismiss="modal" aria-label="Close"><i class="fa fa-times" ng-click="close()"></i>&nbsp;&nbsp;Cancel</button>
 
-      <!-- Previous Page -->
-      <button class="btn btn-primary" ng-disabled="!wizard.canPrevPage()" ng-click="wizard.prevPage()"><i class="fa fa-arrow-circle-left"></i>&nbsp;&nbsp;Back</button>
-
-      <!-- Next Page -->
-      <button class="btn btn-primary" ng-disabled="!wizard.canNextPage()" ng-click="wizard.nextPage()">
-        Next&nbsp;&nbsp;<i class="fa fa-arrow-circle-right"></i>
+    <!-- "Cancel" button (close modal with success === false) -->
+    <button class="btn btn-danger pull-left" ng-click="close()">
+      <i class="fa fa-fw fa-times"></i>
+      Cancel
       </button>
-    </div>
 
-    <!-- "Finish" button (close modal with success === true) -->
-    <div ng-if="wizard.currentPage.key === 'finish'">
-      <button class="btn btn-success" ng-disabled="!wizard.canPrevPage()" data-dismiss="modal" aria-label="Close" ng-click="ok() || finishWizard(newStack)">Finish&nbsp;&nbsp;<i class="fa fa-check-circle"></i></button>
+    <!-- Previous Page -->
+    <div class="pull-right">
+      <button class="btn btn-primary" ng-disabled="!wizard.canPrevPage()"
+          ng-click="wizard.prevPage()">
+        <i class="fa fa-fw fa-arrow-circle-left"></i>
+        Back
+      </button>
+  
+      <!-- Next Page -->
+      <button class="btn btn-primary" ng-disabled="!wizard.canNextPage()"
+          ng-click="wizard.nextPage()" ng-if="wizard.currentPage.key !== 'confirm'">
+        Next
+        <i class="fa fa-fw fa-arrow-circle-right"></i>
+      </button>
+  
+      <!-- "Finish" button (close modal with success === true) -->
+      <button class="btn btn-success" ng-disabled="!wizard.canPrevPage()"
+          ng-click="ok()" ng-if="wizard.currentPage.key === 'confirm'">
+        Confirm
+        <i class="fa fa-fw fa-check-circle"></i>
+      </button>
     </div>
   </div>
 </section>

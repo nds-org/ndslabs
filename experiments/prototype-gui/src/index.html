@@ -44,18 +44,20 @@
     <!-- Then load the source for our app -->
     <script src="/app/app.js"></script>
     <script src="/app/login/LoginController.js"></script>
-    <script src="/app/ndslabs/NdsLabsController.js"></script>
+    <script src="/app/express/ExpressSetupController.js"></script>
+    <script src="/app/expert/ExpertSetupController.js"></script>
+    <script src="/app/deployments/DeploymentsController.js"></script>
   </head>
 
   <!-- Display the actual contents of the app down here -->
-  <body>
+  <body ng-controller="FooterController" ng-style="{ 'margin-bottom': showVolumes ? '200px' : '60px' }">
     <!-- This syntax can be used to isolate smaller page templates (such as our navbar and footer) -->
     <!-- NOTE: This method does not produce a navigatable route. For another full page/route, we need to add the route to app.js -->
     <div ng-include src="'/app/shared/navbar.html'" ng-controller="NavbarController" ></div> 
     
     <!-- ng-view tells angular that we will swap in templates for the route specified by app.js (via ngRoute) -->
-    <div class="container-fluid page" ng-view id="scrollContainer"></div>
+    <div class="container-fluid" ng-view></div>
   
-    <div ng-include ng-src="'/app/shared/footer.html'" ng-controller="FooterController"></div>  
+    <div ng-include src="'/app/shared/footer.html'" ng-controller="FooterController"></div>  
   </body>
 </html>

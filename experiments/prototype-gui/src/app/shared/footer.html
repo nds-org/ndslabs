@@ -1,8 +1,36 @@
-<footer class="site-footer">
-  <div class="container navbar navbar-default navbar-inverse">
-    <div class="pull-right">
-      <!-- {{ trademark }}&trade; -->
-      &copy; {{ trademark }} {{ today | date:'yyyy' }}
+<footer class="footer" ng-class="{ 'expanded-footer': showVolumes }">
+  <div id="volumeSlideOutFooter" class="container-fluid" ng-click="toggleVolumes()">
+    <div class="container-fluid" style="border-style:solid none none none;cursor:pointer;">
+      <div class="row">
+        <!-- Left Expand Button -->
+        <div class="col-md-4">
+          <div style="vertical-align:middle;">
+            <button class="btn btn-primary btn-sm pull-left">
+              <i class="fa fa-fw" ng-class="{ 'fa-caret-up': !showVolumes, 'fa-caret-down': showVolumes}"></i>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Panel Title / Label -->
+        <div class="col-md-4 text-center">
+          <h3 class="text-muted">DATA</h3>
+        </div>
+        
+        <!-- Right Expand Button -->
+        <div class="col-md-4" style="height:100%;border-style:dotted;">
+          <div style="vertical-align:middle;">
+            <button class="btn btn-primary btn-sm pull-right">
+              <i class="fa fa-fw" ng-class="{ 'fa-caret-up': !showVolumes, 'fa-caret-down': showVolumes}"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Slide-Out Panel Contents -->
+  <div ng-if="showVolumes" class="container-fluid">
+    <div class="row">
+      <pre>{{ volumes | json }}</pre>
     </div>
   </div>
 </footer>
