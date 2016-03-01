@@ -2,5 +2,5 @@
   "key": "rserve",
   "label": "Rserve",
   "isService": true,
-  "requiresVolume": true
+  "requiresVolume": false
 }

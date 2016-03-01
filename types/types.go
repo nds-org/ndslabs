@@ -60,6 +60,7 @@ type StackService struct {
 
 type Volume struct {
 	Id          string `json:"id"`
+	Name        string `json:"name"`
 	Size        int    `json:"size"`
 	Format      string `json:"format"`
 	AttachedTo  string `json:"attachedTo"`
