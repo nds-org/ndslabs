@@ -18,29 +18,28 @@ import (
 	"encoding/json"
 	"fmt"
 	api "github.com/nds-labs/apiserver/types"
+	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
 	"net/http"
-
-	"github.com/spf13/cobra"
+	"os"
 )
 
-// createCmd represents the create command
 var createCmd = &cobra.Command{
-	Use:   "create",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:   "create [name] [size] [serviceId]",
+	Short: "Create a volume",
 	Run: func(cmd *cobra.Command, args []string) {
-		//resource := args[0]
+		if len(args) < 3 {
+			cmd.Usage()
+			os.Exit(-1)
+		}
+
+		fmt.Printf("%s %s %s %s\n", args[0], args[1], args[2])
+		name := args[0]
 		size := args[1]
 		uid := args[2]
 
-		url := apiServer + "projects/" + apiUser.username + "/volumes?size=" + size + "&uid=" + uid
+		url := apiServer + "projects/" + apiUser.username + "/volumes?size=" + size + "&uid=" + uid + "&name=" + name
 
 		client := &http.Client{}
 		request, err := http.NewRequest("PUT", url, nil)
@@ -60,7 +59,7 @@ to quickly create a Cobra application.`,
 				fmt.Print(string(body))
 				volume := api.Volume{}
 				json.Unmarshal([]byte(body), &volume)
-				fmt.Printf("Created volume %s", volume.Id)
+				fmt.Printf("Created volume %s", volume.Name)
 			} else {
 				fmt.Print("Error adding volume")
 			}
@@ -70,15 +69,4 @@ to quickly create a Cobra application.`,
 
 func init() {
 	RootCmd.AddCommand(createCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// createCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// createCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 }

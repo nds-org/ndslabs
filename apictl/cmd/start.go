@@ -16,23 +16,23 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/spf13/cobra"
 	"log"
 	"net/http"
-
-	"github.com/spf13/cobra"
+	"os"
 )
 
 // startCmd represents the start command
 var startCmd = &cobra.Command{
-	Use:   "start",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:   "start [stackName]",
+	Short: "Start the specified resource",
 	Run: func(cmd *cobra.Command, args []string) {
+
+		if len(args) == 0 {
+			cmd.Usage()
+			os.Exit(-1)
+		}
+
 		stack := args[0]
 
 		url := apiServer + "projects/" + apiUser.username + "/start/" + stack
@@ -48,7 +48,7 @@ to quickly create a Cobra application.`,
 			if resp.StatusCode == http.StatusOK {
 				fmt.Printf("Started %s\n", stack)
 			} else {
-				fmt.Print("Error starting %s\n", stack)
+				fmt.Printf("Error starting %s: %s\n", stack, resp.Status)
 			}
 		}
 	},
@@ -56,15 +56,4 @@ to quickly create a Cobra application.`,
 
 func init() {
 	RootCmd.AddCommand(startCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// startCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// startCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 }

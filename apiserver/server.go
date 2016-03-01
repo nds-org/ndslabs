@@ -22,6 +22,48 @@ import (
 	"time"
 )
 
+type StackStatus struct {
+	Code    int
+	Message string
+}
+
+var stackStatus = map[int]string{
+	Started:  "started",
+	Starting: "starting",
+	Stopped:  "stopped",
+	Stopping: "stopping",
+}
+
+type Error struct {
+	ErrorCode int    `json:"errorCode"`
+	Message   string `json:"message"`
+}
+
+var errors = map[int]string{
+	NotFound: "Not found",
+	Exists:   "Exists",
+}
+
+const (
+	NotFound = 100
+	Exists   = 101
+	Started  = 1
+	Starting = 2
+	Stopped  = 3
+	Stopping = 4
+)
+
+func NewError(errorCode int) *Error {
+	return &Error{
+		ErrorCode: errorCode,
+		Message:   errors[errorCode],
+	}
+}
+
+func (e Error) Error() string {
+	return e.Message
+}
+
 func main() {
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
@@ -136,6 +178,7 @@ func main() {
 		rest.Put("/projects/:pid/volumes", storage.CreateVolume),
 		rest.Put("/projects/:pid/volumes/:vid", storage.PutVolume),
 		rest.Get("/projects/:pid/volumes/:vid", storage.GetVolume),
+		rest.Delete("/projects/:pid/volumes/:vid", storage.DeleteVolume),
 		rest.Get("/projects/:pid/start/:sid", storage.StartStack),
 		rest.Get("/projects/:pid/stop/:sid", storage.StopStack),
 	)
@@ -429,21 +472,21 @@ func GetEtcdClient(etcdAddress string) client.KeysAPI {
 	return kapi
 }
 
-func (s *Storage) getService(key string) (api.Service, error) {
+func (s *Storage) getService(key string) (*api.Service, error) {
 
-	var service api.Service
 	resp, err := s.etcd.Get(context.Background(), "/services/"+key, nil)
 	if err != nil {
 		log.Print(err)
-		return service, err
+		return nil, err
 	} else {
 		service := api.Service{}
 		node := resp.Node
 		json.Unmarshal([]byte(node.Value), &service)
-		return service, nil
+		return &service, nil
 	}
 }
 
+/*
 func (s *Storage) getStack(pid string, sid string) (api.Stack, error) {
 	var stack api.Stack
 	resp, err := s.etcd.Get(context.Background(), "/projects/"+pid+"/stacks/"+sid, nil)
@@ -457,6 +500,7 @@ func (s *Storage) getStack(pid string, sid string) (api.Stack, error) {
 		return stack, nil
 	}
 }
+*/
 
 func (s *Storage) GetAllStacks(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
@@ -508,25 +552,66 @@ func (s *Storage) GetAllStacks(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-func (s *Storage) GetStack(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.PathParam("pid")
-	sid := r.PathParam("sid")
+func (s *Storage) stackExists(pid string, sid string) bool {
+	stack, _ := s.getStack(pid, sid)
+	if stack != nil {
+		return true
+	} else {
+		return false
+	}
+}
 
+func (s *Storage) getStack(pid string, sid string) (*api.Stack, error) {
+
+	stack := api.Stack{}
 	path := "/projects/" + pid + "/stacks/" + sid
 	resp, err := s.etcd.Get(context.Background(), path, nil)
 
 	if err != nil {
 		if e, ok := err.(*etcderr.Error); ok {
 			if e.ErrorCode == etcderr.EcodeKeyNotFound {
+				return nil, NewError(NotFound)
+			}
+		} else {
+			return nil, err
+		}
+	} else {
+		json.Unmarshal([]byte(resp.Node.Value), &stack)
+	}
+	return &stack, nil
+}
+
+func (s *Storage) GetStack(w rest.ResponseWriter, r *rest.Request) {
+	pid := r.PathParam("pid")
+	sid := r.PathParam("sid")
+
+	stack, err := s.getStack(pid, sid)
+	if err != nil {
+		if e, ok := err.(*Error); ok {
+			if e.ErrorCode == NotFound {
 				rest.NotFound(w, r)
 			}
 		}
-		w.WriteJson(&err)
 	} else {
-		stack := api.Stack{}
-		json.Unmarshal([]byte(resp.Node.Value), &stack)
 		w.WriteJson(&stack)
 	}
+	/*
+		path := "/projects/" + pid + "/stacks/" + sid
+		resp, err := s.etcd.Get(context.Background(), path, nil)
+
+		if err != nil {
+			if e, ok := err.(*etcderr.Error); ok {
+				if e.ErrorCode == etcderr.EcodeKeyNotFound {
+					rest.NotFound(w, r)
+				}
+			}
+			w.WriteJson(&err)
+		} else {
+			stack := api.Stack{}
+			json.Unmarshal([]byte(resp.Node.Value), &stack)
+			w.WriteJson(&stack)
+		}
+	*/
 }
 
 func (s *Storage) PostStack(w rest.ResponseWriter, r *rest.Request) {
@@ -539,8 +624,20 @@ func (s *Storage) PostStack(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
+	if s.stackExists(pid, stack.Key) {
+		rest.Error(w, "Conflict", 409)
+		return
+	}
+
+	_, err = s.getService(stack.Key)
+	if err != nil {
+		rest.Error(w, "Service not found", 404)
+		return
+	}
+
 	sid, _ := newUUID()
 	stack.Id = sid
+	stack.Status = stackStatus[Stopped]
 
 	for i := range stack.Services {
 		sid, _ := newUUID()
@@ -557,29 +654,56 @@ func (s *Storage) PostStack(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&stack)
 }
 
-func (s *Storage) PutStack(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.PathParam("pid")
-	sid := r.PathParam("sid")
-
-	stack := api.Stack{}
-	err := r.DecodeJsonPayload(&stack)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
+func (s *Storage) putStack(pid string, sid string, stack *api.Stack) error {
 	opts := client.SetOptions{Dir: true}
 	s.etcd.Set(context.Background(), "/projects/"+pid, "/stacks", &opts)
 
 	data, _ := json.Marshal(stack)
 	path := "/projects/" + pid + "/stacks/" + sid
-	_, err = s.etcd.Set(context.Background(), path, string(data), nil)
+	fmt.Printf("stack %s\n", data)
+	_, err := s.etcd.Set(context.Background(), path, string(data), nil)
+	if err != nil {
+		fmt.Printf("Error storing stack %s", err)
+		return err
+	} else {
+		return nil
+	}
+}
+
+func (s *Storage) PutStack(w rest.ResponseWriter, r *rest.Request) {
+	pid := r.PathParam("pid")
+	sid := r.PathParam("sid")
+
+	stack := api.Stack{}
+	err := r.DecodeJsonPayload(stack)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	stack.Status = stackStatus[Stopped]
+	err = s.putStack(pid, sid, &stack)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteJson(&stack)
 }
 
 func (s *Storage) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	sid := r.PathParam("sid")
+
+	stack, err := s.getStack(pid, sid)
+	if stack == nil {
+		rest.NotFound(w, r)
+		return
+	}
+
+	if stack.Status == stackStatus[Started] ||
+		stack.Status == stackStatus[Starting] {
+		s.stopStack(pid, sid)
+	}
 
 	path := "/projects/" + pid + "/stacks/" + sid
 	resp, err := s.etcd.Delete(context.Background(), path, nil)
@@ -612,25 +736,21 @@ func (s *Storage) getVolumes(pid string) ([]api.Volume, error) {
 	return volumes, nil
 }
 
-func (s *Storage) startStackService(serviceKey string, pid string, stack api.Stack) {
+func (s *Storage) startStackService(serviceKey string, pid string, stack *api.Stack) {
 
 	fmt.Printf("Starting controllers for %s\n", serviceKey)
 
 	service, _ := s.getService(serviceKey)
 	for _, dep := range service.Dependencies {
 		if dep.Required {
-			s.startStackService(dep.DependencyKey, pid, stack)
-		}
-	}
-	for _, dep := range service.Dependencies {
-		if !dep.Required {
+			fmt.Printf("Starting required dependency %s\n", dep.DependencyKey)
 			s.startStackService(dep.DependencyKey, pid, stack)
 		}
 	}
 	s.startController(pid, service.Key, stack)
 }
 
-func (s *Storage) startController(pid string, serviceKey string, stack api.Stack) {
+func (s *Storage) startController(pid string, serviceKey string, stack *api.Stack) {
 
 	stackService := api.StackService{}
 	found := false
@@ -644,6 +764,7 @@ func (s *Storage) startController(pid string, serviceKey string, stack api.Stack
 		return
 	}
 
+	fmt.Printf("Starting controller for %s\n", serviceKey)
 	service, _ := s.getService(serviceKey)
 
 	rcTemplate, _ := s.getTemplate(stackService.Service, "controller")
@@ -651,13 +772,17 @@ func (s *Storage) startController(pid string, serviceKey string, stack api.Stack
 	//fmt.Println(string(rcTemplate))
 
 	k8rc := k8api.ReplicationController{}
-	json.Unmarshal([]byte(rcTemplate), &k8rc)
+	e := json.Unmarshal([]byte(rcTemplate), &k8rc)
+	if e != nil {
+		log.Panicln(e)
+	}
 	//data, _ := json.Marshal(k8rc)
 
 	if service.RequiresVolume {
 		k8vols := make([]k8api.Volume, 0)
 		k8vol := k8api.Volume{}
 		k8vol.Name = stackService.Service
+		fmt.Printf("Need volume for %s \n", stackService.Service)
 
 		volumes, _ := s.getVolumes(pid)
 		found := false
@@ -683,6 +808,9 @@ func (s *Storage) startController(pid string, serviceKey string, stack api.Stack
 			k8vol.EmptyDir = &k8empty
 			k8vols = append(k8vols, k8vol)
 		}
+		//fmt.Printf("%s\n", k8rc.Spec.Template.Spec)
+		//fmt.Printf("%s\n", k8rc.Spec.Template.Spec.Volumes)
+		//fmt.Printf("%s\n", k8vols)
 		k8rc.Spec.Template.Spec.Volumes = k8vols
 	}
 
@@ -693,6 +821,7 @@ func (s *Storage) startController(pid string, serviceKey string, stack api.Stack
 
 	url := s.kubeBase + "/api/v1/namespaces/" + pid + "/replicationcontrollers"
 	request, _ := http.NewRequest("POST", url, bytes.NewBuffer([]byte(data)))
+	fmt.Printf("%s\n", string(data))
 
 	request.Header.Set("Content-Type", "application/json")
 	httpresp, httperr := client.Do(request)
@@ -736,7 +865,14 @@ func (s *Storage) StartStack(w rest.ResponseWriter, r *rest.Request) {
 	sid := r.PathParam("sid")
 
 	stack, _ := s.getStack(pid, sid)
+	if stack == nil {
+		rest.NotFound(w, r)
+		return
+	}
 	log.Print("Starting stack " + stack.Key)
+
+	stack.Status = stackStatus[Starting]
+	s.putStack(sid, sid, stack)
 
 	stackServices := stack.Services
 
@@ -769,7 +905,16 @@ func (s *Storage) StartStack(w rest.ResponseWriter, r *rest.Request) {
 		}
 	}
 
+	// Start required depedencies
 	s.startStackService(stack.Key, pid, stack)
+
+	// Start optional dependencies
+	for _, stackService := range stack.Services {
+		s.startController(pid, stackService.Service, stack)
+	}
+
+	stack.Status = "started"
+	s.putStack(pid, sid, stack)
 	/*
 		for _, stackService := range stackServices {
 
@@ -905,6 +1050,24 @@ func (s *Storage) getPods(pid string, label string, value string) ([]k8api.Pod, 
 func (s *Storage) StopStack(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	sid := r.PathParam("sid")
+
+	stack, _ := s.getStack(pid, sid)
+	if stack == nil {
+		rest.NotFound(w, r)
+		return
+	}
+
+	log.Print("Stopping stack " + sid)
+	if s.stopStack(pid, sid) {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusGone)
+	}
+
+}
+
+func (s *Storage) stopStack(pid string, sid string) bool {
+
 	path := "/projects/" + pid + "/stacks/" + sid
 	log.Print("Stopping stack " + path)
 
@@ -964,6 +1127,7 @@ func (s *Storage) StopStack(w rest.ResponseWriter, r *rest.Request) {
 			}
 		}
 	}
+	return true
 }
 
 func (s *Storage) GetAllVolumes(w rest.ResponseWriter, r *rest.Request) {
@@ -992,6 +1156,7 @@ func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	size := r.Request.FormValue("size")
 	stackService := r.Request.FormValue("uid")
+	name := r.Request.FormValue("name")
 
 	if s.local {
 		uid, err := newUUID()
@@ -1008,6 +1173,7 @@ func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
 
 		vol := api.Volume{}
 		vol.Id = uid
+		vol.Name = name
 		vol.Size, err = strconv.Atoi(size)
 		if err != nil {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1022,7 +1188,7 @@ func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
 
 		data, _ := json.Marshal(vol)
 		fmt.Println("Json: " + string(data))
-		path := "/projects/" + pid + "/volumes/" + vol.Id
+		path := "/projects/" + pid + "/volumes/" + vol.Name
 		_, err = s.etcd.Set(context.Background(), path, string(data), nil)
 		w.WriteJson(&vol)
 	}
@@ -1030,7 +1196,7 @@ func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Storage) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
-	vid := r.PathParam("vid")
+	name := r.PathParam("name")
 
 	volume := api.Volume{}
 	err := r.DecodeJsonPayload(&volume)
@@ -1059,7 +1225,7 @@ func (s *Storage) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 	s.etcd.Set(context.Background(), "/projects/"+pid, "/volumes", &opts)
 
 	data, _ := json.Marshal(volume)
-	path := "/projects/" + pid + "/volumes/" + vid
+	path := "/projects/" + pid + "/volumes/" + name
 	resp, err := s.etcd.Set(context.Background(), path, string(data), nil)
 	w.WriteJson(&resp)
 }
@@ -1083,6 +1249,21 @@ func (s *Storage) GetVolume(w rest.ResponseWriter, r *rest.Request) {
 		json.Unmarshal([]byte(resp.Node.Value), &volume)
 		w.WriteJson(&volume)
 	}
+}
+
+func (s *Storage) DeleteVolume(w rest.ResponseWriter, r *rest.Request) {
+	pid := r.PathParam("pid")
+	vid := r.PathParam("vid")
+
+	path := "/projects/" + pid + "/volumes/" + vid
+	resp, err := s.etcd.Delete(context.Background(), path, nil)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	log.Print(resp.Action)
+	w.WriteHeader(http.StatusOK)
 }
 
 // newUUID generates a random UUID according to RFC 4122

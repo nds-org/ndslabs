@@ -28,6 +28,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+var apiServer = "http://localhost:8083/"
+
 var cfgFile string
 
 type User struct {
@@ -40,24 +42,10 @@ var apiUser User
 // This represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:   "apictl",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	Short: "NDS Labs API server CLI",
 }
 
 func RefreshToken(cmd *cobra.Command, args []string) {
-
-	usr, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	url := apiServer + "refresh_token"
 	client := &http.Client{}
@@ -66,7 +54,8 @@ func RefreshToken(cmd *cobra.Command, args []string) {
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
 	resp, err := client.Do(request)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Error in call to refresh_token: %s\n", err)
+		os.Exit(-1)
 	} else {
 		if resp.StatusCode == http.StatusOK {
 			defer resp.Body.Close()
@@ -78,12 +67,9 @@ func RefreshToken(cmd *cobra.Command, args []string) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			path := usr.HomeDir + "/ndslabs"
-			os.Mkdir(path, 0700)
-			e := ioutil.WriteFile(path+"/.passwd", []byte(apiUser.username+":"+token), 0644)
-			check(e)
+			writePasswd(token)
 		} else {
-			fmt.Printf("Login failed: %s \n", resp.Status)
+			//fmt.Printf("Login failed: %s \n", resp.Status)
 		}
 	}
 }
@@ -97,28 +83,47 @@ func Execute() {
 	}
 }
 
-func readPasswd() {
+func getCurrentUser() *user.User {
 	usr, err := user.Current()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Error getting current OS user: %s\n", err)
+		os.Exit(-1)
 	}
-	path := usr.HomeDir + "/ndslabs/.passwd"
+	return usr
+}
+
+func readPasswd() {
+	usr := getCurrentUser()
+	path := usr.HomeDir + "/.apictl/.passwd"
 	dat, err := ioutil.ReadFile(path)
-	if err == nil {
+
+	if err != nil {
+		//	fmt.Printf("Error reading password file: %s\n", err)
+		//	os.Exit(-1)
+		apiUser.username = ""
+		apiUser.token = ""
+	} else {
 		s := strings.Split(string(dat), ":")
 		apiUser.username = s[0]
 		apiUser.token = s[1]
 	}
-	//fmt.Printf("%s %s", s[0], s[1])
+}
 
+func writePasswd(token string) {
+	usr := getCurrentUser()
+	path := usr.HomeDir + "/.apictl"
+	os.Mkdir(path, 0700)
+	err := ioutil.WriteFile(path+"/.passwd", []byte(apiUser.username+":"+token), 0644)
+	if err != nil {
+		fmt.Printf("Error writing passwd file: %s\n", err)
+		os.Exit(-1)
+	}
 }
 
 func init() {
 	cobra.OnInitialize(initConfig)
 
 	readPasswd()
-
-	// Read the password file if present
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports Persistent Flags, which, if defined here,

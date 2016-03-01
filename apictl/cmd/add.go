@@ -23,12 +23,42 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
+	"text/tabwriter"
 )
 
-var apiServer = "http://localhost:8083/"
+var (
+	opts string
+)
 
-func GetService(serviceName string) *api.Service {
+func init() {
+	RootCmd.AddCommand(addCmd)
+	addCmd.AddCommand(addStackCmd)
+
+	// add stack flags
+	addStackCmd.Flags().StringVar(&opts, "opt", "", "Comma-delimited list of optional services")
+}
+
+var addCmd = &cobra.Command{
+	Use:   "add",
+	Short: "Add the specified resource",
+}
+
+var addStackCmd = &cobra.Command{
+	Use:   "stack [stackName]",
+	Short: "Add the specified stack to your project",
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			cmd.Usage()
+			os.Exit(-1)
+		}
+
+		addStack(apiUser.username, args[0], opts)
+	},
+}
+
+func getService(serviceName string) *api.Service {
 	url := apiServer + "services/" + serviceName
 
 	client := &http.Client{}
@@ -67,24 +97,24 @@ func contains(s []string, e string) bool {
 	return false
 }
 
-func AddRequiredDependencies(stackKey string, stack *api.Stack) {
+func addRequiredDependencies(stackKey string, stack *api.Stack) {
 
-	service := GetService(stackKey)
+	service := getService(stackKey)
 
 	for _, depends := range service.Dependencies {
 		if depends.Required {
 			stackService := api.StackService{}
 			stackService.Service = depends.DependencyKey
 			stack.Services = append(stack.Services, stackService)
-			fmt.Printf("Adding required dependency %s\n", depends.DependencyKey)
-			AddRequiredDependencies(depends.DependencyKey, stack)
+			//fmt.Printf("Adding required dependency %s\n", depends.DependencyKey)
+			addRequiredDependencies(depends.DependencyKey, stack)
 		}
 	}
 }
 
-func AddStack(project string, serviceKey string, opt string) {
+func addStack(project string, serviceKey string, opt string) {
 
-	service := GetService(serviceKey)
+	service := getService(serviceKey)
 	optional := strings.Split(opt, ",")
 
 	// Add this service
@@ -95,27 +125,16 @@ func AddStack(project string, serviceKey string, opt string) {
 	stackService.Service = serviceKey
 	stack.Services = append(stack.Services, stackService)
 
-	AddRequiredDependencies(serviceKey, &stack)
+	addRequiredDependencies(serviceKey, &stack)
 
 	for _, depends := range service.Dependencies {
 		if contains(optional, depends.DependencyKey) {
 			stackService = api.StackService{}
 			stackService.Service = depends.DependencyKey
 			stack.Services = append(stack.Services, stackService)
-			AddRequiredDependencies(depends.DependencyKey, &stack)
+			addRequiredDependencies(depends.DependencyKey, &stack)
 		}
-		/*
-			stackService = api.StackService{}
-			stackService.Service = depends.DependencyKey
-			if depends.Required {
-				stack.Services = append(stack.Services, stackService)
-				//fmt.Printf("Adding dependency %s\n", depends.DependencyKey)
-			} else if contains(optional, depends.DependencyKey) {
-				stack.Services = append(stack.Services, stackService)
-			}
-		*/
 	}
-	// Does the stack exist?
 
 	url := apiServer + "projects/" + project + "/stacks"
 
@@ -142,58 +161,17 @@ func AddStack(project string, serviceKey string, opt string) {
 			json.Unmarshal([]byte(body), &stack)
 			//fmt.Printf(string(body))
 
+			w := new(tabwriter.Writer)
+			w.Init(os.Stdout, 20, 30, 0, '\t', 0)
+			fmt.Fprintln(w, "SERVICE\tUID")
 			for _, stackService := range stack.Services {
-				fmt.Printf("%s %s\n", stackService.Service, stackService.Id)
+				fmt.Fprintf(w, "%s\t%s\n", stackService.Service, stackService.Id)
 			}
+			w.Flush()
+
 		} else {
-			fmt.Println("Error adding " + serviceKey)
+			fmt.Printf("Unable to add stack %s: %s \n", serviceKey, resp.Status)
 		}
 
 	}
-}
-
-// addCmd represents the add command
-var addCmd = &cobra.Command{
-	Use:   "add",
-	Short: "Add the specified service stack",
-	Run: func(cmd *cobra.Command, args []string) {
-		key := args[0]
-		optional := ""
-		if len(args) > 1 {
-			optional = args[1]
-		}
-
-		//fmt.Printf("Adding service %s\n", serviceName)
-		AddStack(apiUser.username, key, optional)
-
-		/*
-			if service.RequiresVolume {
-				fmt.Printf("\tThis service requires a volume\n")
-			}
-			if len(service.Dependencies) > 0 {
-				for _, dependency := range service.Dependencies {
-					fmt.Printf("\tRequires %s\n", dependency.DependencyKey)
-					dep := GetService(dependency.DependencyKey)
-					if dep.RequiresVolume {
-						fmt.Printf("\tThis service requires a volume\n")
-					}
-				}
-			}
-		*/
-	},
-}
-
-func init() {
-	RootCmd.AddCommand(addCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// addCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// addCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 }

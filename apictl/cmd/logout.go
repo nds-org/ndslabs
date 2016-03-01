@@ -16,49 +16,42 @@ package cmd
 
 import (
 	"fmt"
-	"log"
-	"net/http"
+	"os"
+	"os/user"
 
 	"github.com/spf13/cobra"
 )
 
-// stopCmd represents the stop command
-var stopCmd = &cobra.Command{
-	Use:   "stop",
-	Short: "Stop the specified resource",
+// logoutCmd represents the logout command
+var logoutCmd = &cobra.Command{
+	Use:   "logout",
+	Short: "Logout the current user",
 	Run: func(cmd *cobra.Command, args []string) {
-		stack := args[0]
-
-		url := apiServer + "projects/" + apiUser.username + "/stop/" + stack
-
-		client := &http.Client{}
-		request, err := http.NewRequest("GET", url, nil)
-		request.Header.Set("Content-Type", "application/json")
-		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
-		resp, err := client.Do(request)
+		usr, err := user.Current()
 		if err != nil {
-			log.Fatal(err)
-		} else {
-			if resp.StatusCode == http.StatusOK {
-				fmt.Printf("Stopped %s\n", stack)
-			} else {
-				fmt.Print("Error stopping %s", stack)
-			}
+			fmt.Printf("Error looking up current OS user %s\n", err)
+			os.Exit(-1)
+		}
+		path := usr.HomeDir + "/.apictl"
+		err = os.Remove(path + "/.passwd")
+		if err != nil {
+			fmt.Printf("Error removing passwd data: %s\n", err)
+			os.Exit(-1)
 		}
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(stopCmd)
+	RootCmd.AddCommand(logoutCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// stopCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// logoutCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// stopCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// logoutCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 }

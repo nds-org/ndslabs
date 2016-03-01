@@ -16,37 +16,100 @@ package cmd
 
 import (
 	"fmt"
-
 	"github.com/spf13/cobra"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"os"
 )
-
-// deleteCmd represents the delete command
-var deleteCmd = &cobra.Command{
-	Use:   "delete",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		// TODO: Work your own magic here
-		fmt.Println("delete called")
-	},
-}
 
 func init() {
 	RootCmd.AddCommand(deleteCmd)
+	deleteCmd.AddCommand(deleteStackCmd)
+	deleteCmd.AddCommand(deleteVolumeCmd)
+}
 
-	// Here you will define your flags and configuration settings.
+var deleteCmd = &cobra.Command{
+	Use:   "delete",
+	Short: "Delete the specified resource",
+}
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// deleteCmd.PersistentFlags().String("foo", "", "A help for foo")
+var deleteStackCmd = &cobra.Command{
+	Use:   "stack [stackName]",
+	Short: "Remove the specified stack",
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			cmd.Usage()
+			os.Exit(-1)
+		}
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// deleteCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+		deleteStack(apiUser.username, args[0])
+	},
+}
 
+var deleteVolumeCmd = &cobra.Command{
+	Use:   "volume [volumeId]",
+	Short: "Remove the specified volume",
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			cmd.Usage()
+			os.Exit(-1)
+		}
+
+		deleteVolume(apiUser.username, args[0])
+	},
+}
+
+func deleteVolume(project string, volumeId string) {
+
+	url := apiServer + "projects/" + project + "/volumes/" + volumeId
+
+	client := &http.Client{}
+	request, err := http.NewRequest("DELETE", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
+	resp, err := client.Do(request)
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			defer resp.Body.Close()
+			_, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			fmt.Println("Deleted volume " + volumeId)
+
+		} else {
+			fmt.Printf("Unable to delete volume %s: %s \n", volumeId, resp.Status)
+		}
+	}
+}
+
+func deleteStack(project string, stackKey string) {
+
+	url := apiServer + "projects/" + project + "/stacks/" + stackKey
+
+	client := &http.Client{}
+	request, err := http.NewRequest("DELETE", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
+	resp, err := client.Do(request)
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			defer resp.Body.Close()
+			_, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			fmt.Println("Deleted stack " + stackKey)
+
+		} else {
+			fmt.Printf("Unable to delete stack %s: %s \n", stackKey, resp.Status)
+		}
+	}
 }

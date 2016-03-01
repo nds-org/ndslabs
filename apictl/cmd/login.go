@@ -1,4 +1,4 @@
-// Copyright © 2016 NAME HERE <EMAIL ADDRESS>
+// Copyright © 2016
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh/terminal"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"os/user"
@@ -35,12 +34,13 @@ var jwt map[string]interface{}
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
 	Use:   "login",
-	Short: "Login to the NDSLabs api server",
+	Short: "Login to the NDS Labs api server",
 	Run: func(cmd *cobra.Command, args []string) {
 		username, password := credentials()
 		usr, err := user.Current()
 		if err != nil {
-			log.Fatal(err)
+			fmt.Printf("Error looking up current OS user %s\n", err)
+			os.Exit(-1)
 		}
 
 		url := apiServer + "authenticate"
@@ -51,7 +51,8 @@ var loginCmd = &cobra.Command{
 		request.Header.Set("Content-Type", "application/json")
 		resp, err := client.Do(request)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Printf("Login error: %s\n", err)
+			os.Exit(-1)
 		} else {
 			if resp.StatusCode == http.StatusOK {
 				defer resp.Body.Close()
@@ -61,25 +62,26 @@ var loginCmd = &cobra.Command{
 				err = json.Unmarshal(body, &jwt)
 				token := jwt["token"].(string)
 				if err != nil {
-					log.Fatal(err)
+					fmt.Printf("Error reading response: %s\n", err)
+					os.Exit(-1)
 				}
-				path := usr.HomeDir + "/ndslabs"
+
+				path := usr.HomeDir + "/.apictl"
 				os.Mkdir(path, 0700)
 				e := ioutil.WriteFile(path+"/.passwd", []byte(username+":"+token), 0644)
-				check(e)
+				if e != nil {
+					fmt.Printf("Error writing passwd data: %s\n", err)
+					os.Exit(-1)
+				}
+				fmt.Printf("Login succeeded\n")
 			} else {
-				fmt.Printf("Login failed: %s \n", resp.Status)
+				fmt.Printf("Login failed\n")
+				os.Exit(-1)
 			}
 
 		}
 
 	},
-}
-
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
 }
 
 func credentials() (string, string) {
