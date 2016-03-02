@@ -22,6 +22,8 @@ import (
 	"time"
 )
 
+var etcdBasePath = "/ndslabs/"
+
 type StackStatus struct {
 	Code    int
 	Message string
@@ -183,8 +185,8 @@ func main() {
 		rest.Put("/services/:key", storage.PutService),
 		rest.Get("/services/:key", storage.GetService),
 		rest.Delete("/services/:key", storage.DeleteService),
-		rest.Put("/services/templates/:key/:type", storage.PutServiceTemplate),
-		rest.Get("/services/templates/:key/:type", storage.GetServiceTemplate),
+		rest.Put("/templates/:key/:type", storage.PutServiceTemplate),
+		rest.Get("/templates/:key/:type", storage.GetServiceTemplate),
 		//rest.Delete("/services/:id/template/:type", storage.DeleteServiceTemplate),
 		rest.Get("/projects/:pid/stacks", storage.GetAllStacks),
 		rest.Post("/projects/:pid/stacks", storage.PostStack),
@@ -230,7 +232,7 @@ func GetPaths(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Storage) GetAllProjects(w rest.ResponseWriter, r *rest.Request) {
 
-	resp, err := s.etcd.Get(context.Background(), "/projects", nil)
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/projects", nil)
 	if err != nil {
 		if e, ok := err.(*etcderr.Error); ok {
 			if e.ErrorCode == etcderr.EcodeKeyNotFound {
@@ -262,7 +264,7 @@ func (s *Storage) GetProject(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Storage) getProject(pid string) (*api.Project, error) {
-	path := "/projects/" + pid + "/project"
+	path := etcdBasePath + "/projects/" + pid + "/project"
 
 	glog.Infof("getProject %s\n", path)
 
@@ -294,8 +296,8 @@ func (s *Storage) PutProject(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	opts := client.SetOptions{Dir: true}
-	s.etcd.Set(context.Background(), "/projects/", pid, &opts)
-	_, err = s.etcd.Set(context.Background(), "/projects/"+pid+"/project", string(data), nil)
+	s.etcd.Set(context.Background(), etcdBasePath+"/projects/", pid, &opts)
+	_, err = s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid+"/project", string(data), nil)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -334,7 +336,7 @@ func (s *Storage) DeleteProject(w rest.ResponseWriter, r *rest.Request) {
 
 	glog.V(4).Infof("DeleteProject %s", pid)
 
-	_, err := s.etcd.Delete(context.Background(), "/projects/"+pid, nil)
+	_, err := s.etcd.Delete(context.Background(), etcdBasePath+"/projects/"+pid, nil)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -344,7 +346,7 @@ func (s *Storage) DeleteProject(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Storage) GetAllServices(w rest.ResponseWriter, r *rest.Request) {
 
-	resp, err := s.etcd.Get(context.Background(), "/services", nil)
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/services", nil)
 	if err != nil {
 		if e, ok := err.(*etcderr.Error); ok {
 			if e.ErrorCode == etcderr.EcodeKeyNotFound {
@@ -367,7 +369,7 @@ func (s *Storage) GetAllServices(w rest.ResponseWriter, r *rest.Request) {
 func (s *Storage) GetService(w rest.ResponseWriter, r *rest.Request) {
 	key := r.PathParam("key")
 
-	resp, err := s.etcd.Get(context.Background(), "/services/"+key, nil)
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/services/"+key, nil)
 
 	if err != nil {
 		if e, ok := err.(*etcderr.Error); ok {
@@ -385,7 +387,7 @@ func (s *Storage) GetService(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Storage) getTemplate(key string, templateType string) (string, error) {
 
-	resp, err := s.etcd.Get(context.Background(), "/services/templates/"+key+"/"+templateType, nil)
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/templates/"+key+"/"+templateType, nil)
 
 	if err != nil {
 		glog.Error(err)
@@ -399,7 +401,7 @@ func (s *Storage) GetServiceTemplate(w rest.ResponseWriter, r *rest.Request) {
 	key := r.PathParam("key")
 	t := r.PathParam("type")
 
-	resp, err := s.etcd.Get(context.Background(), "/services/templates/"+key+"/"+t, nil)
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/templates/"+key+"/"+t, nil)
 
 	if err != nil {
 		if e, ok := err.(*etcderr.Error); ok {
@@ -434,7 +436,7 @@ func (s *Storage) PostService(w rest.ResponseWriter, r *rest.Request) {
 	service.Id = id
 
 	data, _ := json.Marshal(service)
-	resp, err := s.etcd.Set(context.Background(), "/services/"+service.Key, string(data), nil)
+	resp, err := s.etcd.Set(context.Background(), etcdBasePath+"/services/"+service.Key, string(data), nil)
 	w.WriteJson(&resp)
 }
 
@@ -449,7 +451,7 @@ func (s *Storage) PutService(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	data, _ := json.Marshal(service)
-	resp, err := s.etcd.Set(context.Background(), "/services/"+key, string(data), nil)
+	resp, err := s.etcd.Set(context.Background(), etcdBasePath+"/services/"+key, string(data), nil)
 	w.WriteJson(&resp)
 }
 
@@ -465,17 +467,16 @@ func (s *Storage) PutServiceTemplate(w rest.ResponseWriter, r *rest.Request) {
 	t := r.PathParam("type")
 
 	opts := client.SetOptions{Dir: true}
-	s.etcd.Set(context.Background(), "/services", "/templates", &opts)
-	s.etcd.Set(context.Background(), "/services/templates", key, &opts)
+	s.etcd.Set(context.Background(), etcdBasePath+"/templates", key, &opts)
 
-	resp, err := s.etcd.Set(context.Background(), "/services/templates/"+key+"/"+t, string(template), nil)
+	resp, err := s.etcd.Set(context.Background(), etcdBasePath+"/templates/"+key+"/"+t, string(template), nil)
 	w.WriteJson(&resp)
 }
 
 func (s *Storage) DeleteService(w rest.ResponseWriter, r *rest.Request) {
 	key := r.PathParam("key")
 
-	_, err := s.etcd.Delete(context.Background(), "/services/"+key, nil)
+	_, err := s.etcd.Delete(context.Background(), etcdBasePath+"/services/"+key, nil)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -512,7 +513,7 @@ func GetEtcdClient(etcdAddress string) (client.KeysAPI, error) {
 
 func (s *Storage) getService(key string) (*api.Service, error) {
 
-	resp, err := s.etcd.Get(context.Background(), "/services/"+key, nil)
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/services/"+key, nil)
 	if err != nil {
 		glog.Error(err)
 		return nil, err
@@ -526,7 +527,7 @@ func (s *Storage) getService(key string) (*api.Service, error) {
 
 func (s *Storage) GetAllStacks(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
-	resp, err := s.etcd.Get(context.Background(), "/projects/"+pid+"/stacks", nil)
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/projects/"+pid+"/stacks", nil)
 	if err != nil {
 		if e, ok := err.(*etcderr.Error); ok {
 			if e.ErrorCode == etcderr.EcodeKeyNotFound {
@@ -587,7 +588,7 @@ func (s *Storage) getStack(pid string, sid string) (*api.Stack, error) {
 
 	stack := api.Stack{}
 	path := "/projects/" + pid + "/stacks/" + sid
-	resp, err := s.etcd.Get(context.Background(), path, nil)
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+path, nil)
 
 	if err != nil {
 		if e, ok := err.(*etcderr.Error); ok {
@@ -668,21 +669,21 @@ func (s *Storage) PostStack(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	opts := client.SetOptions{Dir: true}
-	s.etcd.Set(context.Background(), "/projects/"+pid, "/stacks", &opts)
+	s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid, "/stacks", &opts)
 
 	data, _ := json.Marshal(stack)
-	path := "/projects/" + pid + "/stacks/" + stack.Key
+	path := etcdBasePath + "/projects/" + pid + "/stacks/" + stack.Key
 	_, err = s.etcd.Set(context.Background(), path, string(data), nil)
 	w.WriteJson(&stack)
 }
 
 func (s *Storage) putStack(pid string, sid string, stack *api.Stack) error {
 	opts := client.SetOptions{Dir: true}
-	s.etcd.Set(context.Background(), "/projects/"+pid, "/stacks", &opts)
+	s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid, "/stacks", &opts)
 
 	data, _ := json.Marshal(stack)
-	path := "/projects/" + pid + "/stacks/" + sid
-	glog.V(4).Infof("stack %s\n", data)
+	path := etcdBasePath + "/projects/" + pid + "/stacks/" + sid
+	//glog.V(4).Infof("stack %s\n", data)
 	_, err := s.etcd.Set(context.Background(), path, string(data), nil)
 	if err != nil {
 		glog.Error("Error storing stack %s", err)
@@ -731,7 +732,7 @@ func (s *Storage) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	path := "/projects/" + pid + "/stacks/" + sid
+	path := etcdBasePath + "/projects/" + pid + "/stacks/" + sid
 	_, err = s.etcd.Delete(context.Background(), path, nil)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -757,7 +758,7 @@ func (s *Storage) getVolumes(pid string) ([]api.Volume, error) {
 
 	volumes := make([]api.Volume, 0)
 
-	resp, err := s.etcd.Get(context.Background(), "/projects/"+pid+"/volumes", nil)
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/projects/"+pid+"/volumes", nil)
 	if err != nil {
 		return volumes, err
 	} else {
@@ -775,8 +776,6 @@ func (s *Storage) getVolumes(pid string) ([]api.Volume, error) {
 
 func (s *Storage) startStackService(serviceKey string, pid string, stack *api.Stack) {
 
-	glog.V(4).Infof("Starting controllers for %s\n", serviceKey)
-
 	service, _ := s.getService(serviceKey)
 	for _, dep := range service.Dependencies {
 		if dep.Required {
@@ -790,9 +789,10 @@ func (s *Storage) startStackService(serviceKey string, pid string, stack *api.St
 
 func (s *Storage) startController(pid string, serviceKey string, stack *api.Stack) (bool, error) {
 
-	stackService := api.StackService{}
+	var stackService *api.StackService
 	found := false
-	for _, ss := range stack.Services {
+	for i := range stack.Services {
+		ss := &stack.Services[i]
 		if ss.Service == serviceKey {
 			stackService = ss
 			found = true
@@ -800,6 +800,19 @@ func (s *Storage) startController(pid string, serviceKey string, stack *api.Stac
 	}
 	if !found {
 		return false, nil
+	}
+
+	pods, _ := s.getPods(pid, "name", serviceKey)
+	running := false
+	for _, pod := range pods {
+		if pod.Status.Phase == "Running" {
+			running = true
+		}
+	}
+
+	if running {
+		glog.V(4).Infof("Controller %s already running\n", serviceKey)
+		return true, nil
 	}
 
 	glog.V(4).Infof("Starting controller for %s\n", serviceKey)
@@ -855,7 +868,7 @@ func (s *Storage) startController(pid string, serviceKey string, stack *api.Stac
 
 	url := s.kubeBase + "/api/v1/namespaces/" + pid + "/replicationcontrollers"
 	request, _ := http.NewRequest("POST", url, bytes.NewBuffer([]byte(data)))
-	glog.V(4).Infof("%s\n", string(data))
+	//glog.V(4).Infof("%s\n", string(data))
 
 	request.Header.Set("Content-Type", "application/json")
 	httpresp, httperr := client.Do(request)
@@ -876,13 +889,14 @@ func (s *Storage) startController(pid string, serviceKey string, stack *api.Stac
 	// Wait for pods in ready state
 	ready := 0
 
-	pods, _ := s.getPods(pid, "name", service.Key)
-	glog.V(4).Infof("Waiting for pods %s %d\n", service.Key, len(pods))
+	pods, _ = s.getPods(pid, "name", service.Key)
+	glog.V(4).Infof("Waiting for pod to be ready %s %d\n", service.Key, len(pods))
 	for ready < len(pods) {
 		for _, pod := range pods {
 			if len(pod.Status.Conditions) > 0 {
 				condition := pod.Status.Conditions[0]
-				glog.V(4).Infof("%s %s %s\n", condition.Type, condition.Status, pod.Name)
+				glog.V(4).Infof("Waiting for %s (%s=%s)\n", pod.Name, condition.Type, condition.Status)
+				stackService.Status = string(pod.Status.Phase)
 				if condition.Type == "Ready" && condition.Status == "True" {
 					ready++
 				} else {
@@ -916,7 +930,7 @@ func (s *Storage) StartStack(w rest.ResponseWriter, r *rest.Request) {
 		service, _ := s.getService(stackService.Service)
 		if service.IsService {
 
-			glog.V(4).Infof("Starting service %s\n", service.Key)
+			glog.V(4).Infof("Starting Kubernetes service %s\n", service.Key)
 
 			svcTemplate, _ := s.getTemplate(service.Key, "service")
 
@@ -932,9 +946,9 @@ func (s *Storage) StartStack(w rest.ResponseWriter, r *rest.Request) {
 				rest.Error(w, httperr.Error(), http.StatusInternalServerError)
 			} else {
 				if httpresp.StatusCode == http.StatusCreated {
-					glog.V(4).Infof("Created service " + service.Key)
+					glog.V(4).Infof("Created Kubernetes service " + service.Key)
 				} else {
-					glog.Warningf("Error starting service (%d): %s\n", httpresp.StatusCode, httpresp.Status)
+					glog.Warningf("Error starting Kubernetes service (%d): %s\n", httpresp.StatusCode, httpresp.Status)
 				}
 			}
 		}
@@ -957,7 +971,7 @@ func (s *Storage) getK8Services(pid string, stack string) ([]k8api.Service, erro
 	client := &http.Client{}
 
 	url := s.kubeBase + "/api/v1/namespaces/" + pid + "/services?labelSelector=stack%3D" + stack
-	glog.V(4).Infof(url)
+	glog.V(4).Infoln(url)
 	request, _ := http.NewRequest("GET", url, nil)
 	resp, err := client.Do(request)
 	if err != nil {
@@ -1031,8 +1045,9 @@ func (s *Storage) StopStack(w rest.ResponseWriter, r *rest.Request) {
 
 	err = s.stopStack(pid, sid)
 	if err == nil {
-		w.WriteHeader(http.StatusGone)
+		w.WriteHeader(http.StatusOK)
 	} else {
+		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -1119,7 +1134,7 @@ func (s *Storage) stopStack(pid string, sid string) error {
 
 func (s *Storage) GetAllVolumes(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
-	resp, err := s.etcd.Get(context.Background(), "/projects/"+pid+"/volumes", nil)
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/projects/"+pid+"/volumes", nil)
 	if err != nil {
 		if e, ok := err.(*etcderr.Error); ok {
 			if e.ErrorCode == etcderr.EcodeKeyNotFound {
@@ -1171,22 +1186,48 @@ func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
 		vol.Attached = stackService
 
 		opts := client.SetOptions{Dir: true}
-		s.etcd.Set(context.Background(), "/projects/"+pid, "/volumes", &opts)
+		s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid, "/volumes", &opts)
 
 		data, _ := json.Marshal(vol)
 		glog.V(4).Infof("Json: " + string(data))
-		path := "/projects/" + pid + "/volumes/" + vol.Name
+		path := etcdBasePath + "/projects/" + pid + "/volumes/" + vol.Name
 		_, err = s.etcd.Set(context.Background(), path, string(data), nil)
 		w.WriteJson(&vol)
 	}
+	// Create volume via OpenStack API
+
+	// Create volume via Openstack API
+	// Attach volume to current host
+	// run mkfs
+	// detach volume
+	/*
+		cmd := exec.Command("tr", "a-z", "A-Z")
+		cmd.Stdin = strings.NewReader("some input")
+		var out bytes.Buffer
+		cmd.Stdout = &out
+		err := cmd.Run()
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("in all caps: %q\n", out.String())
+	*/
 }
+
+//func (s *Storage) createOpenstackVolume(tenant string) {
+// Authenticate with openstack
+//url := s.openStackAddress + "/v2.0/tokens"
+// Post
+// {"auth": {"tenantName": "tenant", "passwordCredentials": {"username": "username", "password": "password"}}}
+
+//	url := s.openStackAddress + "/v2/" + tenant + "/volumes"
+//}
 
 func (s *Storage) putVolume(pid string, name string, volume api.Volume) error {
 	opts := client.SetOptions{Dir: true}
-	s.etcd.Set(context.Background(), "/projects/"+pid, "/volumes", &opts)
+	s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid, "/volumes", &opts)
 
 	data, _ := json.Marshal(volume)
-	path := "/projects/" + pid + "/volumes/" + name
+	path := etcdBasePath + "/projects/" + pid + "/volumes/" + name
 	_, err := s.etcd.Set(context.Background(), path, string(data), nil)
 	if err != nil {
 		return err
@@ -1206,21 +1247,6 @@ func (s *Storage) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	// Create volume via Openstack API
-	// Attach volume to current host
-	// run mkfs
-	// detach volume
-	/*
-		cmd := exec.Command("tr", "a-z", "A-Z")
-		cmd.Stdin = strings.NewReader("some input")
-		var out bytes.Buffer
-		cmd.Stdout = &out
-		err := cmd.Run()
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("in all caps: %q\n", out.String())
-	*/
 	err = s.putVolume(pid, vid, volume)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1234,7 +1260,7 @@ func (s *Storage) GetVolume(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	vid := r.PathParam("vid")
 
-	path := "/projects/" + pid + "/volumes/" + vid
+	path := etcdBasePath + "/projects/" + pid + "/volumes/" + vid
 	resp, err := s.etcd.Get(context.Background(), path, nil)
 
 	if err != nil {
@@ -1255,7 +1281,7 @@ func (s *Storage) DeleteVolume(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	vid := r.PathParam("vid")
 
-	path := "/projects/" + pid + "/volumes/" + vid
+	path := etcdBasePath + "/projects/" + pid + "/volumes/" + vid
 	_, err := s.etcd.Delete(context.Background(), path, nil)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
