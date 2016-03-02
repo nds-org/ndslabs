@@ -125,7 +125,7 @@ func main() {
 			},
 			AllowedMethods: []string{"GET", "POST", "PUT"},
 			AllowedHeaders: []string{
-				"Accept", "Content-Type", "X-Custom-Header", "Origin"},
+				"Accept", "Content-Type", "X-Custom-Header", "Origin", "accept", "authorization"},
 			AccessControlAllowCredentials: true,
 			AccessControlMaxAge:           3600,
 		})
