@@ -1,1 +1,738 @@
-{"basePath":"/v1","consumes":["application/json"],"definitions":{"Auth":{"properties":{"password":{"type":"string"},"username":{"type":"string"}},"type":"object"},"Log":{"properties":{"text":{"type":"string"}},"type":"object"},"Project":{"properties":{"description":{"type":"string"},"id":{"type":"string"},"name":{"type":"string"},"namespace":{"type":"string"},"quotas":{"properties":{"storage":{"type":"string"}},"type":"object"}},"type":"object"},"Service":{"properties":{"createdTime":{"type":"integer"},"depends":{"items":{"$ref":"#/definitions/ServiceDependency"},"type":"array"},"description":{"type":"string"},"exposePorts":{"items":{"properties":{"port":{"type":"integer"}},"type":"object"},"type":"array"},"id":{"type":"string"},"isStack":{"type":"boolean"},"key":{"type":"string"},"label":{"type":"string"},"maintainer":{"type":"string"},"requiresVolume":{"type":"boolean"},"tags":{"items":{"properties":{"tag":{"type":"string"}},"type":"object"},"type":"array"},"updatedTime":{"type":"integer"}},"type":"object"},"ServiceDependency":{"properties":{"required":{"type":"boolean"},"serviceId":{"type":"string"}},"type":"object"},"Stack":{"properties":{"action":{"type":"string"},"createTime":{"type":"integer"},"id":{"type":"string"},"key":{"type":"string"},"name":{"type":"string"},"services":{"items":{"$ref":"#/definitions/StackService"},"type":"array"},"status":{"type":"string"},"updateTime":{"type":"integer"}},"type":"object"},"StackService":{"properties":{"endpoints":{"items":{"properties":{"url":{"type":"string"}},"type":"object"},"type":"array"},"id":{"type":"string"},"serviceId":{"type":"string"},"stackId":{"type":"string"},"status":{"type":"string"}},"type":"object"},"Token":{"properties":{"token":{"type":"string"}},"type":"object"},"Volume":{"properties":{"attached":{"type":"string"},"createTime":{"type":"integer"},"format":{"type":"string"},"formatted":{"type":"boolean"},"id":{"type":"string"},"serviceId":{"type":"string"},"size":{"type":"integer"},"updateTime":{"type":"integer"}},"type":"object"}},"info":{"title":"NDS Labs Project API","version":"0.1"},"parameters":{"project-id":{"description":"The unique project identifier","in":"path","name":"project-id","required":true,"type":"string"},"service-id":{"description":"The unique service identifier","in":"path","name":"service-id","required":true,"type":"string"},"stack-id":{"description":"The unique stack identifier","in":"path","name":"stack-id","required":true,"type":"string"},"stack-service-id":{"description":"The unique stack service identifier","in":"path","name":"stack-service-id","required":true,"type":"string"},"volume-id":{"description":"The unique volume identifier","in":"path","name":"volume-id","required":true,"type":"string"}},"paths":{"/authenticate":{"delete":{"description":"Logout a user\n","responses":{"200":{"description":"OK","schema":{"properties":{"data":{"$ref":"#/definitions/Token"}},"type":"object"}}}},"post":{"description":"Authenticate a user (login)\n","parameters":[{"description":"Auth definition","in":"body","name":"auth","required":true,"schema":{"$ref":"#/definitions/Auth"}}],"responses":{"200":{"description":"OK","schema":{"properties":{"data":{"$ref":"#/definitions/Token"}},"type":"object"}},"401":{"description":"Not logged in"}}}},"/projects":{"get":{"description":"Retrieves a site-wide list of NDSLabs projects.\n","responses":{"200":{"description":"OK","schema":{"properties":{"data":{"items":{"$ref":"#/definitions/Project"},"type":"array"}},"type":"object"}},"404":{"description":"Not found"}}},"post":{"description":"Adds a new project\n","parameters":[{"description":"Project definition","in":"body","name":"project","required":true,"schema":{"$ref":"#/definitions/Project"}}],"responses":{"201":{"description":"Created"}}}},"/projects/{project-id}":{"delete":{"description":"Delete a project\n","responses":{"200":{"description":"OK"}}},"get":{"description":"Retrieves basic information about a project.\n","responses":{"200":{"description":"OK","schema":{"properties":{"data":{"$ref":"#/definitions/Project"}},"type":"object"}}}},"parameters":[{"$ref":"#/parameters/project-id"}],"put":{"description":"Updates project information\n","parameters":[{"description":"Project definition","in":"body","name":"project","required":true,"schema":{"$ref":"#/definitions/Project"}}],"responses":{"201":{"description":"Updated"}}}},"/projects/{project-id}/logs/{stack-service-id}":{"get":{"description":"Retrieves the stack service log.\n","responses":{"200":{"description":"OK","schema":{"properties":{"data":{"$ref":"#/definitions/Log"}},"type":"object"}}}},"parameters":[{"$ref":"#/parameters/project-id"},{"$ref":"#/parameters/stack-service-id"}]},"/projects/{project-id}/stacks":{"get":{"description":"Retrieves a list of stacks for this project.\n","responses":{"200":{"description":"OK","schema":{"properties":{"data":{"items":{"$ref":"#/definitions/Stack"},"type":"array"}},"type":"object"}},"404":{"description":"Not found"}}},"parameters":[{"$ref":"#/parameters/project-id"}],"post":{"description":"Adds a new stack to this project\n","parameters":[{"description":"Stack definition","in":"body","name":"stack","required":true,"schema":{"$ref":"#/definitions/Stack"}}],"responses":{"201":{"description":"Created"}}}},"/projects/{project-id}/stacks/{stack-id}":{"delete":{"description":"Delete a stack\n","responses":{"200":{"description":"OK"}}},"get":{"description":"Retrieves the stack definition.\n","responses":{"200":{"description":"OK","schema":{"properties":{"data":{"$ref":"#/definitions/Stack"}},"type":"object"}}}},"parameters":[{"$ref":"#/parameters/project-id"},{"$ref":"#/parameters/stack-id"}],"put":{"description":"Updates stack information\n","parameters":[{"description":"Stack definition","in":"body","name":"stack","required":true,"schema":{"$ref":"#/definitions/Stack"}}],"responses":{"201":{"description":"Updated"}}}},"/projects/{project-id}/volumes":{"get":{"description":"Retrieves a list of volumes for this project.\n","responses":{"200":{"description":"OK","schema":{"properties":{"data":{"items":{"$ref":"#/definitions/Volume"},"type":"array"}},"type":"object"}},"404":{"description":"Not found"}}},"parameters":[{"$ref":"#/parameters/project-id"}],"post":{"description":"Adds a new volume to this project\n","parameters":[{"description":"Volume definition","in":"body","name":"volume","required":true,"schema":{"$ref":"#/definitions/Volume"}}],"responses":{"201":{"description":"Created"}}}},"/projects/{project-id}/volumes/{volume-id}":{"delete":{"description":"Delete a volume\n","responses":{"200":{"description":"OK"}}},"get":{"description":"Retrieves the volume definition.\n","responses":{"200":{"description":"OK","schema":{"properties":{"data":{"$ref":"#/definitions/Volume"}},"type":"object"}}}},"parameters":[{"$ref":"#/parameters/project-id"},{"$ref":"#/parameters/volume-id"}],"put":{"description":"Updates volume information\n","parameters":[{"description":"Volume definition","in":"body","name":"volume","required":true,"schema":{"$ref":"#/definitions/Volume"}}],"responses":{"201":{"description":"Updated"}}}},"/services":{"get":{"description":"Retrieves a site-wide list of available service definitions.\n","parameters":[{"description":"Filter list for stacks (true or false)","in":"query","name":"stack","required":false,"type":"boolean"}],"responses":{"200":{"description":"OK","schema":{"properties":{"data":{"items":{"$ref":"#/definitions/Service"},"type":"array"}},"type":"object"}}}},"post":{"description":"Adds a new service to the service library\n","parameters":[{"description":"Service definition","in":"body","name":"service","required":true,"schema":{"$ref":"#/definitions/Service"}}],"responses":{"201":{"description":"Created"}}}},"/services/{service-id}":{"delete":{"description":"Delete a service\n","responses":{"200":{"description":"OK"}}},"get":{"description":"Retrieves the service definition.\n","responses":{"200":{"description":"The service object","schema":{"properties":{"data":{"$ref":"#/definitions/Service"}},"type":"object"}}}},"parameters":[{"$ref":"#/parameters/service-id"}],"put":{"description":"Updates a service definition in the service library\n","parameters":[{"description":"Service definition","in":"body","name":"service","required":true,"schema":{"$ref":"#/definitions/Service"}}],"responses":{"201":{"description":"Updated"}}}}},"produces":["application/json"],"schemes":["https"],"swagger":"2.0"}
+{
+    "basePath": "/v1",
+    "consumes": [
+        "application/json"
+    ],
+    "definitions": {
+        "Auth": {
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "Log": {
+            "properties": {
+                "text": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "Project": {
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "namespace": {
+                    "type": "string"
+                },
+                "quotas": {
+                    "properties": {
+                        "storage": {
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        },
+        "Service": {
+            "properties": {
+                "createdTime": {
+                    "type": "integer"
+                },
+                "depends": {
+                    "items": {
+                        "$ref": "#/definitions/ServiceDependency"
+                    },
+                    "type": "array"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "exposePorts": {
+                    "items": {
+                        "properties": {
+                            "port": {
+                                "type": "integer"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "type": "array"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isStack": {
+                    "type": "boolean"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "maintainer": {
+                    "type": "string"
+                },
+                "requiresVolume": {
+                    "type": "boolean"
+                },
+                "tags": {
+                    "items": {
+                        "properties": {
+                            "tag": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "type": "array"
+                },
+                "updatedTime": {
+                    "type": "integer"
+                }
+            },
+            "type": "object"
+        },
+        "ServiceDependency": {
+            "properties": {
+                "required": {
+                    "type": "boolean"
+                },
+                "serviceId": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "Stack": {
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "createTime": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "services": {
+                    "items": {
+                        "$ref": "#/definitions/StackService"
+                    },
+                    "type": "array"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updateTime": {
+                    "type": "integer"
+                }
+            },
+            "type": "object"
+        },
+        "StackService": {
+            "properties": {
+                "endpoints": {
+                    "items": {
+                        "properties": {
+                            "url": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "type": "array"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "serviceId": {
+                    "type": "string"
+                },
+                "stackId": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "Token": {
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "Volume": {
+            "properties": {
+                "attached": {
+                    "type": "string"
+                },
+                "createTime": {
+                    "type": "integer"
+                },
+                "format": {
+                    "type": "string"
+                },
+                "formatted": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "serviceId": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "updateTime": {
+                    "type": "integer"
+                }
+            },
+            "type": "object"
+        }
+    },
+    "info": {
+        "title": "NDS Labs Project API",
+        "version": "0.1"
+    },
+    "parameters": {
+        "project-id": {
+            "description": "The unique project identifier",
+            "in": "path",
+            "name": "project-id",
+            "required": true,
+            "type": "string"
+        },
+        "service-id": {
+            "description": "The unique service identifier",
+            "in": "path",
+            "name": "service-id",
+            "required": true,
+            "type": "string"
+        },
+        "stack-id": {
+            "description": "The unique stack identifier",
+            "in": "path",
+            "name": "stack-id",
+            "required": true,
+            "type": "string"
+        },
+        "stack-service-id": {
+            "description": "The unique stack service identifier",
+            "in": "path",
+            "name": "stack-service-id",
+            "required": true,
+            "type": "string"
+        },
+        "volume-id": {
+            "description": "The unique volume identifier",
+            "in": "path",
+            "name": "volume-id",
+            "required": true,
+            "type": "string"
+        }
+    },
+    "paths": {
+        "/authenticate": {
+            "delete": {
+                "description": "Logout a user\n",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Token"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Authenticate a user (login)\n",
+                "parameters": [
+                    {
+                        "description": "Auth definition",
+                        "in": "body",
+                        "name": "auth",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Auth"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Token"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "401": {
+                        "description": "Not logged in"
+                    }
+                }
+            }
+        },
+        "/projects": {
+            "get": {
+                "description": "Retrieves a site-wide list of NDSLabs projects.\n",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "items": {
+                                        "$ref": "#/definitions/Project"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                }
+            },
+            "post": {
+                "description": "Adds a new project\n",
+                "parameters": [
+                    {
+                        "description": "Project definition",
+                        "in": "body",
+                        "name": "project",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Project"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
+            }
+        },
+        "/projects/{project-id}": {
+            "delete": {
+                "description": "Delete a project\n",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "get": {
+                "description": "Retrieves basic information about a project.\n",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Project"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "parameters": [
+                {
+                    "$ref": "#/parameters/project-id"
+                }
+            ],
+            "put": {
+                "description": "Updates project information\n",
+                "parameters": [
+                    {
+                        "description": "Project definition",
+                        "in": "body",
+                        "name": "project",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Project"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Updated"
+                    }
+                }
+            }
+        },
+        "/projects/{project-id}/logs/{stack-service-id}": {
+            "get": {
+                "description": "Retrieves the stack service log.\n",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Log"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "parameters": [
+                {
+                    "$ref": "#/parameters/project-id"
+                },
+                {
+                    "$ref": "#/parameters/stack-service-id"
+                }
+            ]
+        },
+        "/projects/{project-id}/stacks": {
+            "get": {
+                "description": "Retrieves a list of stacks for this project.\n",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "items": {
+                                        "$ref": "#/definitions/Stack"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                }
+            },
+            "parameters": [
+                {
+                    "$ref": "#/parameters/project-id"
+                }
+            ],
+            "post": {
+                "description": "Adds a new stack to this project\n",
+                "parameters": [
+                    {
+                        "description": "Stack definition",
+                        "in": "body",
+                        "name": "stack",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Stack"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
+            }
+        },
+        "/projects/{project-id}/stacks/{stack-id}": {
+            "delete": {
+                "description": "Delete a stack\n",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "get": {
+                "description": "Retrieves the stack definition.\n",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Stack"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "parameters": [
+                {
+                    "$ref": "#/parameters/project-id"
+                },
+                {
+                    "$ref": "#/parameters/stack-id"
+                }
+            ],
+            "put": {
+                "description": "Updates stack information\n",
+                "parameters": [
+                    {
+                        "description": "Stack definition",
+                        "in": "body",
+                        "name": "stack",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Stack"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Updated"
+                    }
+                }
+            }
+        },
+        "/projects/{project-id}/volumes": {
+            "get": {
+                "description": "Retrieves a list of volumes for this project.\n",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "items": {
+                                        "$ref": "#/definitions/Volume"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                }
+            },
+            "parameters": [
+                {
+                    "$ref": "#/parameters/project-id"
+                }
+            ],
+            "post": {
+                "description": "Adds a new volume to this project\n",
+                "parameters": [
+                    {
+                        "description": "Volume definition",
+                        "in": "body",
+                        "name": "volume",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Volume"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
+            }
+        },
+        "/projects/{project-id}/volumes/{volume-id}": {
+            "delete": {
+                "description": "Delete a volume\n",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "get": {
+                "description": "Retrieves the volume definition.\n",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Volume"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "parameters": [
+                {
+                    "$ref": "#/parameters/project-id"
+                },
+                {
+                    "$ref": "#/parameters/volume-id"
+                }
+            ],
+            "put": {
+                "description": "Updates volume information\n",
+                "parameters": [
+                    {
+                        "description": "Volume definition",
+                        "in": "body",
+                        "name": "volume",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Volume"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Updated"
+                    }
+                }
+            }
+        },
+        "/services": {
+            "get": {
+                "description": "Retrieves a site-wide list of available service definitions.\n",
+                "parameters": [
+                    {
+                        "description": "Filter list for stacks (true or false)",
+                        "in": "query",
+                        "name": "stack",
+                        "required": false,
+                        "type": "boolean"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "items": {
+                                        "$ref": "#/definitions/Service"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Adds a new service to the service library\n",
+                "parameters": [
+                    {
+                        "description": "Service definition",
+                        "in": "body",
+                        "name": "service",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Service"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
+            }
+        },
+        "/services/{service-id}": {
+            "delete": {
+                "description": "Delete a service\n",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "get": {
+                "description": "Retrieves the service definition.\n",
+                "responses": {
+                    "200": {
+                        "description": "The service object",
+                        "schema": {
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Service"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "parameters": [
+                {
+                    "$ref": "#/parameters/service-id"
+                }
+            ],
+            "put": {
+                "description": "Updates a service definition in the service library\n",
+                "parameters": [
+                    {
+                        "description": "Service definition",
+                        "in": "body",
+                        "name": "service",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Service"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Updated"
+                    }
+                }
+            }
+        }
+    },
+    "produces": [
+        "application/json"
+    ],
+    "schemes": [
+        "https"
+    ],
+    "swagger": "2.0"
+}
