@@ -27,11 +27,11 @@ angular
       
       // Given a list of dependency names, check for their existence in services
       var areDepsMissing = function(dependencySet) {
-        var missingDeps = false;
+        var missingDeps = [];
         angular.forEach(dependencySet, function(service) {
           var exists = _.find(services, { 'serviceId': service });
           if (!exists) {
-            missingDeps = true
+            missingDeps.push(service);
           }
         });
         return missingDeps;
@@ -46,15 +46,10 @@ angular
         return areDepsMissing(inverted['false']);
       } else {
         // Get both diffs, concat them, and return
-        return areDepsMissing(_.concat(inverted['true'], inverted['false']));
+        return _.concat(inverted['true'], inverted['false']);
       }
     } 
     return false;
-  };
-})
-.filter('difference', function() {
-  return function(colA, colB, predicate) {
-    return _.differenceBy(colA, colB, predicate);
   };
 })
 .filter('contains', function() {
@@ -62,36 +57,6 @@ angular
     debugger;
     return _.find(collection, _.matchesProperty(label, key));
   }
-})
-.filter('dependencies', function() {
-  return function(stacks, target, reqOpt) {
-    var svc = _.find(stacks, _.matchesProperty('key', target));
-    debugger;
-    if (svc) {
-      var inverted = _.invertBy(svc.dependencies);
-      
-      // Get one set of dependencies, or a map of all of them
-      if (reqOpt === 'required') {
-        return inverted['true']
-      } else if (reqOpt === 'optional') {
-        return inverted['false']
-      } else {
-        return _.mapKeys(inverted, { 'true':'required', 'false':'optional' });
-      }
-    } 
-    return [];
-  };
-})
-.filter('volumesExist', function() {
-  return function(volumes, stackName, svcId) {
-    var matches = [];
-    angular.forEach(volumes, function(vol) {
-      if (stackName === vol.stackId && svcId === vol.serviceId) {
-        matches.push(vol);
-      }
-    });
-    return matches;
-  };
 })
 .filter('orphansExist', function() {
   return function(orphans, serviceId) {
