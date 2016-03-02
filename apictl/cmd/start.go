@@ -15,8 +15,11 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	api "github.com/nds-labs/apiserver/types"
 	"github.com/spf13/cobra"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -33,9 +36,16 @@ var startCmd = &cobra.Command{
 			os.Exit(-1)
 		}
 
-		stack := args[0]
+		stackKey := args[0]
 
-		url := apiServer + "projects/" + apiUser.username + "/start/" + stack
+		stack := getStack(apiUser.username, stackKey)
+
+		if stack.Status == "started" || stack.Status == "starting" {
+			fmt.Print("Stack already started\n")
+			return
+		}
+
+		url := apiServer + "projects/" + apiUser.username + "/start/" + stackKey
 
 		client := &http.Client{}
 		request, err := http.NewRequest("GET", url, nil)
@@ -46,9 +56,9 @@ var startCmd = &cobra.Command{
 			log.Fatal(err)
 		} else {
 			if resp.StatusCode == http.StatusOK {
-				fmt.Printf("Started %s\n", stack)
+				fmt.Printf("Started %s\n", stackKey)
 			} else {
-				fmt.Printf("Error starting %s: %s\n", stack, resp.Status)
+				fmt.Printf("Error starting %s: %s\n", stackKey, resp.Status)
 			}
 		}
 	},
@@ -56,4 +66,31 @@ var startCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(startCmd)
+}
+
+func getStack(pid string, stack string) *api.Stack {
+	url := apiServer + "projects/" + apiUser.username + "/stacks/" + stack
+
+	client := &http.Client{}
+	request, err := http.NewRequest("GET", url, nil)
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
+	resp, err := client.Do(request)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if resp.StatusCode == http.StatusOK {
+
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		stack := api.Stack{}
+		json.Unmarshal([]byte(body), &stack)
+		return &stack
+	} else {
+		return nil
+	}
 }
