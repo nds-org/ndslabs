@@ -1,5 +1,13 @@
-<section class="container-fluid">
+<section>
   <!-- Selector(s) Pane -->
+  <div class="row" style="padding-left:">
+    <div class="col-md-12">
+      <div class="jumbotron text-center">
+        <h1>Welcome to StackMaster</h1>
+        <h4>Become <strong>one</strong> with the stack</h4>
+      </div>
+    </div>
+  </div>
   <div class="row">
     <div class="col-md-3">      
       <h4>Services</h4>
@@ -7,17 +15,21 @@
         <div id="stackSearchHeader">
           <div class="input-group">
             <span class="input-group-addon" id="basic-addon1"><i class="fa fa-search"></i></span>
-            <input type="text" class="form-control" placeholder="Search..." ng-model="svcQuery" aria-describedby="basic-addon1" />
+            <input type="text" class="form-control" placeholder="Search..." ng-model="svcQuery" 
+                aria-describedby="basic-addon1" />
           </div>
           
-          <span class="label label-danger" ng-show="(allServices | filter : svcQuery).length === 0">No services match the query</span>
+          <span class="label label-danger" ng-show="(allServices | filter : svcQuery).length === 0">
+            No services matched the specified query
+          </span>
         </div>
         
-        <table class="table table-striped table-condensed table-hover" ng-hide="(allServices | filter : svcQuery).length === 0">
+        <table class="table table-striped table-condensed table-hover" 
+            ng-hide="(allServices | filter : svcQuery).length === 0">
           <thead>
             <tr>
-              <td width="95%"><strong>NDS Labs Service</strong></td>
-              <td width="5%"><strong>Add</strong></td>
+              <td width="95%"></td>
+              <td width="5%"></td>
             </tr>
           </thead>
           <tbody>
@@ -60,14 +72,14 @@
               <!-- The stack's "Button Bar" -->
               <div class="row">
                 <!-- Stack Enable / Disable -->
-                <div class="col-md-6">
+                <div class="col-md-2">
                   <div style="horizontal-align:middle;vertical-align:middle;">
-                     <toggle-switch ng-model="stack.status"><toggle-switch>
+                     <toggle-switch ng-model="stack.status" ng-changed="toggleStatus(stack)"><toggle-switch>
                   </div>
                 </div>
                     
                 <!-- The "Add Service" Button -->
-                <div class="col-md-4">
+                <div class="col-md-2">
                   <a class="btn btn-xs btn-success" tabindex="0" uib-popover-template="'/app/expert/subviews/serviceAddPopover.html'" 
                      popover-title="OPTIONAL SERVICES" ng-if="!stack.status && (stack.services | missingDeps:stacks:stack.name:'optional')"
                      popover-placement="bottom-left" popover-trigger="outsideClick">
@@ -76,39 +88,16 @@
                 </div>
                 
                 <!-- The Delete Stack Button -->
-                <div class="col-md-2" style="horizontal-align:middle;vertical-align:middle;">
+                <div class="col-md-offset-6 col-md-2" style="horizontal-align:middle;vertical-align:middle;">
                   <button style="display:inline-block;margin:auto;" class="btn btn-lg btn-danger pull-right" ng-click="deletionCandidate = stack;removeCandidateStack(stack)" uib-tooltip="Delete this Stack from your Namespace">
                     <i class="fa fa-times"></i>
                   </button>
                 </div>
               </div>
               
-              
-              
               <!-- Stack Services -->
               <div class="row">
-                <!-- Service Options -->
-                <div class="col-md-4 col-md-offset-2">
-                  <ul class="fa-ul">
-                  <li ng-repeat="svc in stack.services">
-                    <div class="row" style="margin:5px;">
-                      <!-- TODO: Can we even start/stop individual services?? -->
-                       <!-- <button type="button" class="btn btn-xs btn-success" uib-tooltip="Start / Stop Service"><i class="fa fa-fw fa-play"></i></button>-->
-                    
-                        <button type="button" class="btn btn-xs btn-info" uib-tooltip="View Logs"><i class="fa fa-fw fa-newspaper-o"></i></button>
-                    
-                        <button type="button" ng-disabled="stack.services | isRecursivelyRequired:svc:stacks:deps" 
-                        ng-if="svc.serviceId !== stack.key && (stacks | dependencies:stack.key:'required').indexOf(svc.serviceId) === -1" 
-                            class="btn btn-xs btn-danger" ng-click="removeStackSvc(stack, svc)" 
-                            uib-tooltip="Remove Service from Stack" tooltip-placement="left">
-                          <i class="fa fa-fw fa-times"></i>
-                        </button>
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-              
-                <div class="col-md-6">
+                <div class="col-md-offset-2 col-md-4">
                   <ul class="fa-ul">
                     <!-- List off our stack's services here -->
                     <li ng-repeat="svc in stack.services">
@@ -125,8 +114,18 @@
                              popover-title="{{ showVolume(stack, svc).name | uppercase }}"
                              popover-placement="right" popover-trigger="outsideClick"></i>
                              
-                          <!-- link to endpoint, if one exists -->   
-                          <a style="margin-left:20px;">{{ svc.serviceId }}</a>
+                          {{ svc.serviceId }}
+                          
+                          <a ng-repeat="endpt in svc.endpoints" ng-if="stack.status && svc.status" href="{{ endpt }}"
+                              uib-tooltip="Navigate to {{ _.capitalize(svc.serviceId) }} ({{ endpt }})">
+                            <i class="fa fa-fw fa-chain"></i>
+                          </a>
+                             
+                          <!-- link to endpoint, if one exists -->
+                          <!--<div>
+                            <a ng-if="svc.endpoints.length > 0" href="svc.endpoints[0]" style="margin-left:20px;">{{ svc.serviceId }}</a>
+                            <span ng-if="svc.endpoints. length === 0">{{ svc.serviceId }}</span>
+                          </div>-->
                           
                           <!-- "options" popover for services -->
                           <!--<a tabindex="0" uib-popover-template="'/app/expert/subviews/serviceOptionsPopover.html'" 
@@ -138,6 +137,39 @@
                       </div>
                     </li>
                   </ul>
+                </div>
+                
+                <!-- Service Options -->
+                <div class="col-md-6">
+                  <ul class="fa-ul">
+                  <li ng-repeat="svc in stack.services">
+                    <div class="row" style="margin:5px;">
+                      <!-- TODO: Can we even start/stop individual services?? -->
+                       <!-- <button type="button" class="btn btn-xs btn-success" uib-tooltip="Start / Stop Service"><i class="fa fa-fw fa-play"></i></button>-->
+                    
+                        <!-- Link to endpoint(s) here -->
+                        <!--<button type="button" ng-disabled="!stack.status || !svc.status" ng-repeat="endpoint in svc.endpoints" class="btn btn-xs btn-primary"
+                            uib-tooltip="Navigate to Endpoint: {{ endpoint }}">
+                          <i class="fa fa-fw fa-chain" ng-class="{ 'fa-chain': svc.status, 'fa-chain-broken':!svc.status }"></i>
+                        </button>-->
+                    
+                        <button type="button" class="btn btn-xs btn-info" uib-tooltip="View Logs"><i class="fa fa-fw fa-search"></i></button>
+                    
+                        <button type="button" ng-disabled="stack.services | isRecursivelyRequired:svc:stacks:deps" 
+                        ng-if="svc.serviceId !== stack.key && (stacks | dependencies:stack.key:'required').indexOf(svc.serviceId) === -1" 
+                            class="btn btn-xs btn-danger" ng-click="removeStackSvc(stack, svc)" 
+                            uib-tooltip="Remove Service from Stack" tooltip-placement="left">
+                          <i class="fa fa-fw fa-times"></i>
+                        </button>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div class="row" ng-if="DEBUG">
+                  <div class="col-md-12">
+                    <pre>{{ stack | json }}</pre>
+                  </div>
                 </div>
               </div>
           </uib-accordion-group>

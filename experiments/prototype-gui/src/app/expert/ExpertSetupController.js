@@ -1,6 +1,6 @@
 angular
 .module('ndslabs')
-.constant('DEBUG', false)
+.constant('DEBUG', true)
 .constant('EtcdHost', 'localhost')
 .constant('EtcdPort', '4001')
 .factory('Specs', [ function() {
@@ -320,8 +320,8 @@ angular
     $uibModalInstance.dismiss('cancel');
   };
 }])
-.controller('ExpertSetupController', [ '$scope', '$cookies', '$log', '$uibModal', '_', 'DEBUG', 'ApiServer', 'Services', 'Wizard', 'WizardPage', 'Grid', 
-    function($scope, $cookies, $log, $uibModal, _, DEBUG, ApiServer, Services, Wizard, WizardPage, Grid) {
+.controller('ExpertSetupController', [ '$scope', '$log', '$uibModal', '_', 'DEBUG', 'ApiServer', 'Services', 
+    function($scope, $log, $uibModal, _, DEBUG, ApiServer, Services) {
   // TODO: This should be a service
   var createStackSvc = function(stack, svc) {
     return {
@@ -362,15 +362,17 @@ angular
           "id": "",
           "stackId": "clowder",
           "serviceId": "clowder",
-          "status": false,
+          "status": true,
           "replicas": 1,
-          "endpoints": []
+          "endpoints": [ 
+            "http://141.142.209.135/clowder"
+          ]
         },
         {
           "id": "",
           "stackId": "clowder",
           "serviceId": "mongo",
-          "status": false,
+          "status": true,
           "replicas": 1,
           "endpoints": []
         },
@@ -378,7 +380,7 @@ angular
           "id": "",
           "stackId": "clowder",
           "serviceId": "rabbitmq",
-          "status": false,
+          "status": true,
           "replicas": 1,
           "endpoints": []
         },
@@ -386,7 +388,7 @@ angular
           "id": "",
           "stackId": "clowder",
           "serviceId": "image-preview",
-          "status": false,
+          "status": true,
           "replicas": 1,
           "endpoints": []
         }
@@ -411,8 +413,7 @@ angular
   
   $scope.stacks = [];
 
-  //var api = new ApiServer();
-  //;
+  var api = new ApiServer();
   Services.query(function(data, xhr) {
     $log.debug("success!");
     $scope.allServices = data;

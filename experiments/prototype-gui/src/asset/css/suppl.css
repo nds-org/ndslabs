@@ -38,10 +38,8 @@ body {
   border-radius:5px;
 }
 
-
-.container {
-  width: auto;
-  max-width: 680px;
-  padding: auto;
-  margin: auto;
+.jumbotron {
+  padding-top:10px;
+  padding-bottom:10px
+  width:100%;
 }
