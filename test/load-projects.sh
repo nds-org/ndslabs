@@ -3,4 +3,6 @@ TOKEN=`curl -s -d "{\"username\": \"demo\", \"password\": \"12345\"}" -H "Conten
 
 HEADERS=("--header" "Authorization: Bearer ${TOKEN}" "--header" "Content-Type: application/json")
 
-curl "${HEADERS[@]}" -X PUT --data @project.json http://localhost:8083/projects/demo
+curl "${HEADERS[@]}" -X PUT --data @project.json http://localhost:8083/projects/demo/project
+
+curl "${HEADERS[@]}"  http://localhost:8083/projects/demo/project
