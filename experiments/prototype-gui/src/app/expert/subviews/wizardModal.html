@@ -34,10 +34,21 @@
           <ul class="list-group" ng-class="{ 'active':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }">
             <li ng-class="{ 'active':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }" ng-click="optionalLinksGrid.selector.select.toggle(opt)" ng-repeat="opt in newStackOptions" class="list-group-item">
               <p>
-                <div class="pull-left">{{ opt.serviceId }}</div>
-                <div class="text-center" ng-if="newStackOptionalDeps[opt]">(Requires: <span ng-if="$index === 0" ng-repeat="dep in newStackOptionalDeps[opt]"><strong>{{ dep }}</strong></span><span ng-if="$index !== 0 " ng-repeat="dep in newStackOptionalDeps[opt]">, <strong>{{ dep }}</strong></span>)
+                <div class="row">
+                  <div class="col-md-4">{{ opt.serviceId }}</div>
+                  <div class="col-md-4">
+                    <span ng-if="newStackOptionalDeps[opt.serviceId].length > 0">
+                      Requirements: 
+                      <span ng-if="$index === 0" ng-repeat="dep in newStackOptionalDeps[opt.serviceId]"><strong>{{ dep }}</strong></span>
+                      <span ng-if="$index !== 0" ng-repeat="dep in newStackOptionalDeps[opt.serviceId]">, <strong>{{ dep }}</strong></span>
+                    </span>
+                  </div>
+                  <div class="col-md-1 col-offset-md-1 pull-right">
+                    <div class="pull-right">
+                      <input type="checkbox" ng-checked="optionalLinksGrid.selector.selection.indexOf(opt) !== -1" />
+                    </div>
+                  </div>
                 </div>
-                <input class="pull-right" type="checkbox" ng-checked="optionalLinksGrid.selector.selection.indexOf(opt) !== -1" />
               </p>
             </li>
           </ul>

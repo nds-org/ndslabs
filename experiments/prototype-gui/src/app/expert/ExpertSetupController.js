@@ -1,27 +1,13 @@
 angular
 .module('ndslabs')
-.constant('DEBUG', true)
-.constant('EtcdHost', 'localhost')
-.constant('EtcdPort', '4001')
-.factory('Specs', [ function() {
-  
-}])
-// 'http://' + EtcdHost + ':' + EtcdPort + '/v2/keys/:category/:name'
-.factory('Services', [ '$resource', 'EtcdHost', 'EtcdPort', function($resource, EtcdHost, EtcdPort) {
-  return $resource('/app/services.json', {category: 'services', name:'@name'}, {
-      get: {method:'GET', params:{}},
-      put: {method:'PUT', params:{ 'value':'@value' }},
-      query: {method:'GET', isArray: true}
-    })
-}])
 .filter('isRecursivelyRequired', function() {
   return function(services, service, stacks, deps) {
     var result = false;
     angular.forEach(services, function(svc) {
       var spec = _.find(_.concat(stacks, deps), { 'key': svc.serviceId });
       if (spec) {
-        var dep = spec.dependencies[service.serviceId];
-        if (dep === true) {
+        var dep = _.find(spec.depends, _.matchesProperty('key', service.serviceId));
+        if (dep && dep.required === true) {
           result = true;
         }
       }
@@ -35,7 +21,9 @@ angular
     var svc = _.find(stacks, _.matchesProperty('key', stackKey));
     
     if (svc) {
-      var inverted = _.invertBy(svc.dependencies);
+      var inverted = _.invertBy(_.mapValues(_.keyBy(svc.depends, function(o) {
+        return o.key;
+      }), 'required'));
       
       // Given a list of dependency names, check for their existence in services
       var areDepsMissing = function(dependencySet) {
@@ -71,12 +59,14 @@ angular
 })
 .filter('contains', function() {
   return function(collection, label, key) {
+    debugger;
     return _.find(collection, _.matchesProperty(label, key));
   }
 })
 .filter('dependencies', function() {
   return function(stacks, target, reqOpt) {
     var svc = _.find(stacks, _.matchesProperty('key', target));
+    debugger;
     if (svc) {
       var inverted = _.invertBy(svc.dependencies);
       
@@ -189,7 +179,9 @@ angular
 
   // TODO: Use queue for recursion?
   $scope.collectDependencies = function(targetSvc) {
-    angular.forEach(targetSvc.dependencies, function(required, key) {
+    angular.forEach(targetSvc.depends, function(dependency) {
+      var key = dependency.key;
+      var required = dependency.required;
       var svc = _.find(deps, function(svc) { return svc.key === key });
       var stackSvc = createStackSvc($scope.newStack, svc);
       var targetArray = null;
@@ -214,9 +206,9 @@ angular
   $scope.listRequiredDeps = function(svc) {
     var spec = _.find(deps, function(service) { return service.key === svc.serviceId });
     var required = [];
-    angular.forEach(spec.dependencies, function(req, key) {
-      if (req === true) {
-        required.push(key);
+    angular.forEach(spec.depends, function(dep) {
+      if (dep.required === true) {
+        required.push(dep.key);
       }
     });
     return required;
@@ -240,7 +232,7 @@ angular
           $log.debug("Gathering optional dependencies and their requirements...");
           $scope.newStackOptionalDeps = {};
           angular.forEach($scope.newStackOptions, function(opt) {
-            $scope.newStackOptionalDeps[opt] = $scope.listRequiredDeps(opt);
+            $scope.newStackOptionalDeps[opt.serviceId] = $scope.listRequiredDeps(opt);
           });
         }
      }, false),
@@ -320,8 +312,8 @@ angular
     $uibModalInstance.dismiss('cancel');
   };
 }])
-.controller('ExpertSetupController', [ '$scope', '$log', '$uibModal', '_', 'DEBUG', 'ApiServer', 'Services', 
-    function($scope, $log, $uibModal, _, DEBUG, ApiServer, Services) {
+.controller('ExpertSetupController', [ '$scope', '$log', '$uibModal', '_', 'DEBUG', 'NdsLabsApi', 
+    function($scope, $log, $uibModal, _, DEBUG, NdsLabsApi) {
   // TODO: This should be a service
   var createStackSvc = function(stack, svc) {
     return {
@@ -413,8 +405,10 @@ angular
   
   $scope.stacks = [];
 
-  var api = new ApiServer();
-  Services.query(function(data, xhr) {
+  // TODO: Investigate options / caching
+  
+  // Grab our list of services
+  NdsLabsApi.getServices().then(function(data, xhr) {
     $log.debug("success!");
     $scope.allServices = data;
     $scope.deps = angular.copy(data);
@@ -423,6 +417,15 @@ angular
     $log.debug("error!");
     console.debug(headers);
   });
+  /*Services.query(function(data, xhr) {
+    $log.debug("success!");
+    $scope.allServices = data;
+    $scope.deps = angular.copy(data);
+    $scope.stacks = _.remove($scope.deps, function(svc) { return svc.stack === true  });
+  }, function (headers) {
+    $log.debug("error!");
+    console.debug(headers);
+  });*/
   
   // TODO: This could be a service
   $scope.openWizard = function(template) {
@@ -504,12 +507,12 @@ angular
     var spec = _.find($scope.deps, { 'key': svcName });
     if (spec) {
       // Ensure this does not require new dependencies
-      angular.forEach(spec.dependencies, function(required, key) {
-        var svc = _.find($scope.deps, function(svc) { return svc.key === key });
+      angular.forEach(spec.depends, function(dependency) {
+        var svc = _.find($scope.deps, function(svc) { return svc.key === dependency.key });
         var stackSvc = createStackSvc(stack, svc);
         
         // Check if this service is already present on our proposed stack
-        var exists = _.find(stack.services, function(svc) { return svc.serviceId === key });
+        var exists = _.find(stack.services, function(svc) { return svc.serviceId === dependency.key });
         if (!exists) {
           // Add the service if it has not already been added
           stack.services.push(stackSvc);

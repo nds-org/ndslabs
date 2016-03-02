@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "title": "ndslabs",
+        "title": "NDS Labs Project API",
         "version": "0.1"
     },
     "basePath": "/v1",
@@ -100,24 +100,36 @@
                 }
             }
         },
+        "/refresh_token": {
+            "get": {
+                "description": "Refresh the JWT token\n",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "$ref": "#/definitions/Token"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not logged in"
+                    }
+                }
+            }
+        },
         "/services": {
             "get": {
                 "description": "Retrieves a site-wide list of available service definitions.\n",
                 "parameters": [
                     {
-                        "name": "service",
-                        "in": "body",
-                        "description": "Service definition",
-                        "schema": {
-                            "$ref": "#/definitions/Service"
-                        },
-                        "required": true
-                    },
-                    {
                         "name": "stack",
                         "in": "query",
                         "description": "Filter list for stacks (true or false)",
-                        "required": true,
+                        "required": false,
                         "type": "boolean"
                     }
                 ],
@@ -650,6 +662,9 @@
             "type": "object",
             "properties": {
                 "id": {
+                    "type": "string"
+                },
+                "key": {
                     "type": "string"
                 },
                 "name": {
