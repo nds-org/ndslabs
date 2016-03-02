@@ -80,7 +80,22 @@ paths:
             properties:
               data:
                 $ref: '#/definitions/Token'
-        
+  
+  /refresh_token:
+    get:
+      description: |
+        Refresh the JWT token
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/Token'
+        401:
+          description: Not logged in        
+          
   # Services
   /services:
     get:
