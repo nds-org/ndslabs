@@ -42,16 +42,16 @@
           <uib-accordion-group ng-repeat="stack in configuredStacks" is-open="open">
             <uib-accordion-heading>
               <!-- Stack Enable / Disable -->
-              <div class="row"  style="vertical-align:middle;">
-                <div class="col-md-1" style="vertical-align:middle;">
+              <div class="row">
+                <div class="col-md-1">
                   <i class="pull-left fa fa-fw fa-2x" 
                     ng-class="{ 'fa-check-circle-o': stack.status, 'fa-times-circle-o': !stack.status }"
                     ng-style="{ 'color': stack.status ? 'green' : 'red' }"></i>
                 </div>
-                <div class="col-md-10" style="vertical-align:middle;">
+                <div class="col-md-10">
                   <h4>{{ _.capitalize(stack.name) }}</h4>
                 </div>
-                <div class="col-md-1" style="vertical-align:middle;">
+                <div class="col-md-1">
                   <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': open, 'glyphicon-chevron-right': !open}"></i>
                 </div>
               </div>
