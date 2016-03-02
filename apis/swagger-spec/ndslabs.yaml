@@ -87,16 +87,10 @@ paths:
       description: |
         Retrieves a site-wide list of available service definitions.
       parameters:
-        - name: service
-          in: body
-          description: Service definition
-          schema:
-            $ref: '#/definitions/Service'
-          required: true  
         - name: stack
           in: query
           description: Filter list for stacks (true or false)
-          required: true
+          required: false
           type: boolean
       responses:
         200:
