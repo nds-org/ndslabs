@@ -1,11 +1,12 @@
 'use strict';
 
 angular
-.module('ndslabs', [ 'navbar', 'footer', 'ngWizard', 'ngGrid', 'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'toggle-switch', 'ui.bootstrap' ])
+.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-api', 'ngWizard', 'ngGrid', 'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'toggle-switch', 'ui.bootstrap' ])
 .constant('_', window._)
+.constant('Google', window.google)
 .constant('LoginRoute', '/login')
 .constant('ExpressRoute', '/express')
-.constant('ExpertRoute', '/expert')
+.constant('ExpertRoute', '/home')
 .constant('ManageRoute', '/deployments')
 .provider('AuthInfo', function() {
     this.authInfo = {
@@ -34,10 +35,10 @@ angular
     controller: 'LoginController',
     templateUrl: '/app/login/login.html'
   })
-  .when(ExpressRoute, {
+  /*.when(ExpressRoute, {
     controller: 'ExpressSetupController',
     templateUrl: '/app/express/expressSetup.html'
-  })
+  })*/
   .when(ManageRoute, {
     controller: 'DeploymentsController',
     templateUrl: '/app/deployments/manage.html'
@@ -45,7 +46,7 @@ angular
   .otherwise({
     redirectTo: function() {
       if (authInfo.authInfo.authenticated === true) {
-        return ExpressRoute;
+        return ExpertRoute; //ExpressRoute;
       } else {
         return LoginRoute;
       }
@@ -58,10 +59,15 @@ angular
     authInfo.setAuth(authCookie);
   }
 
-  // TODO: Investigate performance concerns here
+  // TODO: Investigate performance concerns here...
   $rootScope._ = window._;
+  $rootScope.google = window.google;
+  
   $rootScope.$on( "$routeChangeStart", function(event, next, current) {
     if (authInfo.isAuth() === false) {
+      
+      // TODO: Allow login page to reroute user to destination?
+      //authInfo.returnRoute = next.$$route.originalPath;
 
       // user needs to log in, redirect to /login
       if (next.templateUrl !== "/app/login/login.html") {

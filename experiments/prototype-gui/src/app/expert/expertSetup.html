@@ -10,10 +10,10 @@
             <input type="text" class="form-control" placeholder="Search..." ng-model="svcQuery" aria-describedby="basic-addon1" />
           </div>
           
-          <span class="label label-danger" ng-show="(services | filter : svcQuery).length === 0">No services match the query</span>
+          <span class="label label-danger" ng-show="(allServices | filter : svcQuery).length === 0">No services match the query</span>
         </div>
         
-        <table class="table table-striped table-condensed table-hover" ng-hide="(services | filter : svcQuery).length === 0">
+        <table class="table table-striped table-condensed table-hover" ng-hide="(allServices | filter : svcQuery).length === 0">
           <thead>
             <tr>
               <td width="95%"><strong>NDS Labs Service</strong></td>
@@ -21,7 +21,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr ng-repeat="stack in stacks | orderBy:'key'| filter : svcQuery">
+            <tr ng-repeat="stack in allServices | orderBy:'key'| filter : svcQuery">
               <td>{{ stack.label }}</td>
               <td>
                 <button class="btn btn-xs btn-primary" ng-click="openWizard(stack)">
@@ -38,68 +38,112 @@
     <div class="col-md-9">
       <div>
         <h4>Configured Stacks</h4>
-        <table class="table table-striped table-condensed table-hover">
-          <thead>
-            <tr>
-              <td width="10%"></td>
-              <td width="30%"><strong>Stack Name</strong></td>
-              <td width="40%"><strong>Stack Services</strong></td>
-              <td width="20%"></td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr ng-repeat="stack in configuredStacks">
-              <td class="text-center">
-                 <toggle-switch ng-model="stack.status"><toggle-switch>
-              </td>
-              <td>{{ stack.name }}<pre ng-if="DEBUG">{{ stack | json }}</pre></td>
-              <td>
-                <ul class="fa-ul">
-                  <!-- List off our stack's services here -->
+        <uib-accordion close-others="true">
+          <uib-accordion-group ng-repeat="stack in configuredStacks" is-open="open">
+            <uib-accordion-heading>
+              <!-- Stack Enable / Disable -->
+              <div class="row"  style="vertical-align:middle;">
+                <div class="col-md-1" style="vertical-align:middle;">
+                  <i class="pull-left fa fa-fw fa-2x" 
+                    ng-class="{ 'fa-check-circle-o': stack.status, 'fa-times-circle-o': !stack.status }"
+                    ng-style="{ 'color': stack.status ? 'green' : 'red' }"></i>
+                </div>
+                <div class="col-md-10" style="vertical-align:middle;">
+                  <h4>{{ _.capitalize(stack.name) }}</h4>
+                </div>
+                <div class="col-md-1" style="vertical-align:middle;">
+                  <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': open, 'glyphicon-chevron-right': !open}"></i>
+                </div>
+              </div>
+            </uib-accordion-heading>
+            
+              <!-- The stack's "Button Bar" -->
+              <div class="row">
+                <!-- Stack Enable / Disable -->
+                <div class="col-md-6">
+                  <div style="horizontal-align:middle;vertical-align:middle;">
+                     <toggle-switch ng-model="stack.status"><toggle-switch>
+                  </div>
+                </div>
+                    
+                <!-- The "Add Service" Button -->
+                <div class="col-md-4">
+                  <a class="btn btn-xs btn-success" tabindex="0" uib-popover-template="'/app/expert/subviews/serviceAddPopover.html'" 
+                     popover-title="OPTIONAL SERVICES" ng-if="!stack.status && (stack.services | missingDeps:stacks:stack.name:'optional')"
+                     popover-placement="bottom-left" popover-trigger="outsideClick">
+                    <i class="fa fa-plus fa-fw"></i><i class="fa fa-fw fa-caret-down"></i>
+                  </a>
+                </div>
+                
+                <!-- The Delete Stack Button -->
+                <div class="col-md-2" style="horizontal-align:middle;vertical-align:middle;">
+                  <button style="display:inline-block;margin:auto;" class="btn btn-lg btn-danger pull-right" ng-click="deletionCandidate = stack;removeCandidateStack(stack)" uib-tooltip="Delete this Stack from your Namespace">
+                    <i class="fa fa-times"></i>
+                  </button>
+                </div>
+              </div>
+              
+              
+              
+              <!-- Stack Services -->
+              <div class="row">
+                <!-- Service Options -->
+                <div class="col-md-4 col-md-offset-2">
+                  <ul class="fa-ul">
                   <li ng-repeat="svc in stack.services">
-                    <div class="row">
-                      <div class="col-xs-4">
-                        <a tabindex="0" uib-popover-template="'/app/expert/subviews/serviceOptionsPopover.html'" popover-title="{{ svc.serviceId | uppercase }}" popover-placement="bottom" popover-trigger="outsideClick" id="{{svc.serviceId}}OptionsDropDownButton" class="btn btn-xs btn-default" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                          <i class="fa fa-gear fa-fw"></i><i class="fa fa-fw fa-caret-down"></i>
-                        </a>
+                    <div class="row" style="margin:5px;">
+                      <!-- TODO: Can we even start/stop individual services?? -->
+                       <!-- <button type="button" class="btn btn-xs btn-success" uib-tooltip="Start / Stop Service"><i class="fa fa-fw fa-play"></i></button>-->
+                    
+                        <button type="button" class="btn btn-xs btn-info" uib-tooltip="View Logs"><i class="fa fa-fw fa-newspaper-o"></i></button>
+                    
+                        <button type="button" ng-disabled="stack.services | isRecursivelyRequired:svc:stacks:deps" 
+                        ng-if="svc.serviceId !== stack.key && (stacks | dependencies:stack.key:'required').indexOf(svc.serviceId) === -1" 
+                            class="btn btn-xs btn-danger" ng-click="removeStackSvc(stack, svc)" 
+                            uib-tooltip="Remove Service from Stack" tooltip-placement="left">
+                          <i class="fa fa-fw fa-times"></i>
+                        </button>
                       </div>
-                      <div class="col-xs-8">
-                        <i ng-if="!showVolume(stack, svc)" class="fa-li fa fa-fw" 
-                        ng-style="{ 'color':stack.status ? 'green' : 'red' }"
-                        ng-class="{ 'fa-check-circle-o':stack.status, 'fa-times-circle-o':!stack.status }"></i>
-                        <i ng-if="showVolume(stack, svc)" class="fa-li fa fa-fw fa-database" style="cursor:pointer;"
-                           ng-style="{ 'color':stack.status ? 'green' : 'red' }" 
-                           uib-popover-template="'/app/expert/subviews/volumeDetailsPopover.html'" 
-                           popover-title="{{ showVolume(stack, svc).name | uppercase }}"
-                           popover-placement="bottom" popover-trigger="outsideClick"></i>
-                        {{ svc.serviceId }}
+                    </li>
+                  </ul>
+                </div>
+              
+                <div class="col-md-6">
+                  <ul class="fa-ul">
+                    <!-- List off our stack's services here -->
+                    <li ng-repeat="svc in stack.services">
+                      <div class="row" style="margin:5px;">
+                          <!-- show status icon if no volume(s) present -->
+                          <i ng-if="!showVolume(stack, svc)" class="fa-li fa fa-fw" 
+                            ng-style="{ 'color':stack.status ? 'green' : 'red' }"
+                            ng-class="{ 'fa-check-circle-o':stack.status, 'fa-times-circle-o':!stack.status }"></i>
+                            
+                          <!-- show volume details if we find a volume -->
+                          <i ng-if="showVolume(stack, svc)" class="fa-li fa fa-fw fa-database" style="cursor:pointer;"
+                             ng-style="{ 'color':stack.status ? 'green' : 'red' }" 
+                             uib-popover-template="'/app/expert/subviews/volumeDetailsPopover.html'" 
+                             popover-title="{{ showVolume(stack, svc).name | uppercase }}"
+                             popover-placement="right" popover-trigger="outsideClick"></i>
+                             
+                          <!-- link to endpoint, if one exists -->   
+                          <a style="margin-left:20px;">{{ svc.serviceId }}</a>
+                          
+                          <!-- "options" popover for services -->
+                          <!--<a tabindex="0" uib-popover-template="'/app/expert/subviews/serviceOptionsPopover.html'" 
+                          popover-title="{{ svc.serviceId | uppercase }}" popover-placement="left"
+                          popover-trigger="focus" id="{{svc.serviceId}}OptionsDropDownButton" 
+                          class="btn btn-xs btn-default pull-right" type="button">
+                            <i class="fa fa-gear fa-fw"></i><i class="fa fa-fw fa-caret-down"></i>
+                          </a>-->
                       </div>
-                    </div>
-                  </li>
-                  
-                  <!-- The "Add Service" Button -->
-                  <li>
-                    <div class="row">
-                      <div class="col-xs-4">
-                        <a class="btn btn-xs btn-success" tabindex="0" uib-popover-template="'/app/expert/subviews/serviceAddPopover.html'" 
-                           popover-title="OPTIONAL SERVICES" ng-show="stack.services | missingDeps:stacks:stack.name:'optional'"
-                           popover-placement="bottom-left" popover-trigger="outsideClick">
-                          <i class="fa fa-plus fa-fw"></i><i class="fa fa-fw fa-caret-down"></i>
-                        </a>
-                      </div>
-                    </div>
-                  </li>
-                </ul>
-              </td>
-              <td>
-                <button style="display:inline-block;horizontal-align:middle;margin:auto;" class="btn btn-xs btn-danger" ng-click="deletionCandidate = stack;removeCandidateStack(stack)" uib-tooltip="Delete this Stack from your Namespace">
-                  <i class="fa fa-times"></i>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+          </uib-accordion-group>
+        </uib-accordion>
       </div>
+    </div>
   </div>
   
     <!-- Confirm Delete (Modal) -->

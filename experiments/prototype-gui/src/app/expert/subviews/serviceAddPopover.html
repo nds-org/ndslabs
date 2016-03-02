@@ -1,9 +1,10 @@
 <section>
     <!-- List all dependencies, invert keys/values, filter by only optional dependencies, and show only missing entries -->
     <div ng-repeat="option in stacks | dependencies:stack.key:'optional'"
-         ng-if="!stack.services | contains:'serviceId':option">
+         ng-if="!(stack.services | contains:'serviceId':option)">
         <button class="btn btn-xs btn-success" ng-click="addStackSvc(stack, option)">
             <i class="fa fa-fw fa-plus"></i>
-        </button>&nbsp;&nbsp;{{ option }}
+        </button>
+        {{ option }}
     </div>
 </section>

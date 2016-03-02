@@ -1,11 +1,11 @@
 angular
 .module('ndslabs')
-.controller('LoginController', [ '$scope', '$cookies', '$location', 'AuthInfo', 'ExpressRoute', 'LoginRoute',
-    function($scope, $cookies, $location, authInfo, ExpressRoute, LoginRoute) {
+.controller('LoginController', [ '$scope', '$cookies', '$location', 'AuthInfo', 'ExpressRoute', 'LoginRoute', 'ExpertRoute',
+    function($scope, $cookies, $location, authInfo, ExpressRoute, LoginRoute, ExpertRoute) {
   $scope.settings = authInfo.get();
   $scope.errorMessage = '';
   
-  var HomeRoute = ExpressRoute;
+  var HomeRoute = ExpertRoute; //ExpressRoute;
   
   if ($scope.settings.authenticated) {
     $location.path(HomeRoute);

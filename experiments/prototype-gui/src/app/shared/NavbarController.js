@@ -1,11 +1,5 @@
 angular
 .module('navbar', [])
-.factory('appConfig', function() {
-  var appConfig = {
-    title: ''
-  };
-  return appConfig;
-})
 .filter('navbar', function() {
   return function(input, pull) {
     var filtered = [];
@@ -34,17 +28,11 @@ angular
     return filtered;
   };
 })
-.controller('NavbarController', [ '$scope', '$location', 'appConfig', 'LoginRoute', 'ExpressRoute', 'ExpertRoute', 'ManageRoute', 
-    function($scope, $location, appConfig, LoginRoute, ExpressRoute, ExpertRoute, ManageRoute) {
-  $scope.appConfig = appConfig;
-  
-  $scope.$watch('appConfig.title', function(newValue, oldValue) {
-    $scope.title = newValue;
+.controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'ExpressRoute', 'ExpertRoute', 'ManageRoute', 
+    function($scope, $location, LoginRoute, ExpressRoute, ExpertRoute, ManageRoute) {
+  $scope.$on('$routeChangeSuccess', function(event, current, previous){
+    $scope.path = current.$$route.originalPath;
   });
-  
-  $scope.$watch('appConfig.path', function(newValue, oldValue) {
-    $scope.path = $scope.home.url + newValue;
- });
 
   // TODO: This is probably horrible, performance-wise
   $scope.isArray = angular.isArray;
@@ -54,20 +42,20 @@ angular
     name:'NDS Labs',
     url: '#' + LoginRoute
   };
-
+  
   $scope.navs = [
-    {
+    /*{
       name: 'Express Setup',
       url: '#' + ExpressRoute
-    },
-    {
-      name: 'Expert Setup',
+    },*/
+    /*{
+      name: 'Setup',
       url: '#' + ExpertRoute
     },
     {
       name: 'Manage Deployments',
       url: '#' + ManageRoute,
       right: true
-    },
+    },*/
   ];
 }]);

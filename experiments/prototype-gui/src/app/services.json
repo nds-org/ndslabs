@@ -16,16 +16,6 @@
     }
   },
   {
-    "key": "postgresql",
-    "label": "PostgreSQL",
-    "description": "SQL Database",
-    "stack": false,
-    "maintainer": "",
-    "requiresVolume": true,
-    "tags": [],
-    "dependencies": {}
-  },
-  {
     "key": "mongo",
     "label": "MongoDB",
     "description": "NoSQL Database",
@@ -78,6 +68,16 @@
     "stack": false,
     "maintainer": "",
     "requiresVolume": false,
+    "tags": [],
+    "dependencies": {}
+  },
+  {
+    "key": "postgresql",
+    "label": "PostgreSQL",
+    "description": "SQL Database",
+    "stack": false,
+    "maintainer": "",
+    "requiresVolume": true,
     "tags": [],
     "dependencies": {}
   }

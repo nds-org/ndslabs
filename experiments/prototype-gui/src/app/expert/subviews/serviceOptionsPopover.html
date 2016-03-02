@@ -1,16 +1,17 @@
 <section>
-    Insert Service Details here...
+    {{ _.find(allServices, { 'key': svc.serviceId }).description }}
     <pre ng-if="DEBUG">{{ svc | json }}</pre>
-    <div>
+    <div style="margin:10px;">
         <button type="button" class="btn btn-xs btn-success" uib-tooltip="Start / Stop Service"><i class="fa fa-fw fa-play"></i></button>
     
     
         <button type="button" class="btn btn-xs btn-info" uib-tooltip="View Logs"><i class="fa fa-fw fa-newspaper-o"></i></button>
         <button type="button" class="btn btn-xs btn-info" uib-tooltip="Execute a Command"><i class="fa fa-fw fa-terminal"></i></button>
     
-    
-        <button type="button" ng-if="(stacks | dependencies:stack.key:'required').indexOf(svc.serviceId) === -1" 
-            class="btn btn-xs btn-danger" ng-click="removeStackSvc(stack, svc)" uib-tooltip="Remove Service from Stack">
+        <button type="button" ng-disabled="stack.services | isRecursivelyRequired:svc:stacks:deps" 
+        ng-if="svc.serviceId !== stack.key && (stacks | dependencies:stack.key:'required').indexOf(svc.serviceId) === -1" 
+            class="btn btn-xs btn-danger pull-right" ng-click="removeStackSvc(stack, svc)" 
+            uib-tooltip="Remove Service from Stack" tooltip-placement="left">
           <i class="fa fa-fw fa-times"></i>
         </button>
      </div>

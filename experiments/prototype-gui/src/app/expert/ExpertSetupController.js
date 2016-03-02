@@ -3,6 +3,9 @@ angular
 .constant('DEBUG', false)
 .constant('EtcdHost', 'localhost')
 .constant('EtcdPort', '4001')
+.factory('Specs', [ function() {
+  
+}])
 // 'http://' + EtcdHost + ':' + EtcdPort + '/v2/keys/:category/:name'
 .factory('Services', [ '$resource', 'EtcdHost', 'EtcdPort', function($resource, EtcdHost, EtcdPort) {
   return $resource('/app/services.json', {category: 'services', name:'@name'}, {
@@ -11,17 +14,33 @@ angular
       query: {method:'GET', isArray: true}
     })
 }])
+.filter('isRecursivelyRequired', function() {
+  return function(services, service, stacks, deps) {
+    var result = false;
+    angular.forEach(services, function(svc) {
+      var spec = _.find(_.concat(stacks, deps), { 'key': svc.serviceId });
+      if (spec) {
+        var dep = spec.dependencies[service.serviceId];
+        if (dep === true) {
+          result = true;
+        }
+      }
+    });
+    return result;
+  };
+})
 .filter('missingDeps', function() {
   // Returns true iff service list provided does not contain all of the specified dependencies
   return function(services, stacks, stackKey, reqOpt) {
     var svc = _.find(stacks, _.matchesProperty('key', stackKey));
+    
     if (svc) {
       var inverted = _.invertBy(svc.dependencies);
       
       // Given a list of dependency names, check for their existence in services
       var areDepsMissing = function(dependencySet) {
         var missingDeps = false;
-        angular.forEach(inverted['true'], function(service) {
+        angular.forEach(dependencySet, function(service) {
           var exists = _.find(services, { 'serviceId': service });
           if (!exists) {
             missingDeps = true
@@ -52,7 +71,7 @@ angular
 })
 .filter('contains', function() {
   return function(collection, label, key) {
-    return !_.find(collection, { "$label": key });
+    return _.find(collection, _.matchesProperty(label, key));
   }
 })
 .filter('dependencies', function() {
@@ -282,7 +301,7 @@ angular
   $scope.optionalLinksGrid = new Grid(pageSize, function() { return $scope.newStackOptions; });
 
   // Add our base service to the stack
-  var base = _.find(stacks, function(svc) { return svc.key === template.key });
+  var base = _.find(_.concat(deps, stacks), function(svc) { return svc.key === template.key });
   $scope.newStack.services.push(createStackSvc($scope.newStack, base));
 
   // Add required dependencies to the stack
@@ -301,8 +320,8 @@ angular
     $uibModalInstance.dismiss('cancel');
   };
 }])
-.controller('ExpertSetupController', [ '$scope', '$cookies', '$log', '$uibModal', '_', 'DEBUG', 'Services', 'Wizard', 'WizardPage', 'Grid', 
-    function($scope, $cookies, $log, $uibModal, _, DEBUG, Services, Wizard, WizardPage, Grid) {
+.controller('ExpertSetupController', [ '$scope', '$cookies', '$log', '$uibModal', '_', 'DEBUG', 'ApiServer', 'Services', 'Wizard', 'WizardPage', 'Grid', 
+    function($scope, $cookies, $log, $uibModal, _, DEBUG, ApiServer, Services, Wizard, WizardPage, Grid) {
   // TODO: This should be a service
   var createStackSvc = function(stack, svc) {
     return {
@@ -391,30 +410,12 @@ angular
   ];
   
   $scope.stacks = [];
-  
-  $scope.showVolume = function(stack, svc) {
-    var volume = null;
-    angular.forEach($scope.configuredVolumes, function(vol) {
-      if (stack.name === vol.stackId && svc.serviceId === vol.serviceId) {
-        volume = vol;
-      }
-    });
 
-    return volume;
-  };
-
-  $scope.toggleStatus = function(stack, state) {
-    if (angular.isUndefined(state)) {
-      state = !stack.status;
-    }
-    stack.status = state;
-    angular.forEach(stack.services, function(svc) {
-      svc.status = state;
-    });
-  };
-
+  //var api = new ApiServer();
+  //;
   Services.query(function(data, xhr) {
     $log.debug("success!");
+    $scope.allServices = data;
     $scope.deps = angular.copy(data);
     $scope.stacks = _.remove($scope.deps, function(svc) { return svc.stack === true  });
   }, function (headers) {
@@ -447,10 +448,31 @@ angular
     });
   };
   
-  $scope.confirmRemoval = function(stack) {
+  $scope.showVolume = function(stack, svc) {
+    var volume = null;
+    angular.forEach($scope.configuredVolumes, function(vol) {
+      if (stack.name === vol.stackId && svc.serviceId === vol.serviceId) {
+        volume = vol;
+      }
+    });
+
+    return volume;
+  };
+
+  $scope.toggleStatus = function(stack, state) {
+    if (angular.isUndefined(state)) {
+      state = !stack.status;
+    }
+    stack.status = state;
+    angular.forEach(stack.services, function(svc) {
+      svc.status = state;
+    });
+  };
+  
+  /*$scope.confirmRemoval = function(stack) {
     $scope.deletionCandidate = stack;
     $('#confirmModal').modal('show');
-  };
+  };*/
 
   $scope.removeCandidateStack = function(stack, removeVolumes) {
     var toRemove = [];
@@ -478,13 +500,34 @@ angular
   };
   
   $scope.addStackSvc = function(stack, svcName) {
-    var svc = _.find($scope.deps, { 'key': svcName });
-    if (svc) {
-      stack.services.push(createStackSvc(stack, svc));
+    var spec = _.find($scope.deps, { 'key': svcName });
+    if (spec) {
+      // Ensure this does not require new dependencies
+      angular.forEach(spec.dependencies, function(required, key) {
+        var svc = _.find($scope.deps, function(svc) { return svc.key === key });
+        var stackSvc = createStackSvc(stack, svc);
+        
+        // Check if this service is already present on our proposed stack
+        var exists = _.find(stack.services, function(svc) { return svc.serviceId === key });
+        if (!exists) {
+          // Add the service if it has not already been added
+          stack.services.push(stackSvc);
+        } else {
+          // Skip this service if we see it in the list already
+          $log.debug("Skipping duplicate service: " + svc.key);
+        }
+      });
+      
+      // Now that we have all required dependencies, add our target service
+      stack.services.push(createStackSvc(stack, spec));
+    } else {
+      $log.error("spec not found: " + svcName);
     }
   };
   
   $scope.removeStackSvc = function(stack, svc) {
+    var spec = _.find($scope.stacks, _.matchesProperty('key', stack.key));
+    
     stack.services.splice(stack.services.indexOf(svc), 1);
     var volume = $scope.showVolume(stack, svc);
     if (volume) {
