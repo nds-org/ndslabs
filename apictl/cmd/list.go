@@ -150,7 +150,7 @@ var listVolumesCmd = &cobra.Command{
 			w.Init(os.Stdout, 10, 4, 3, ' ', 0)
 			fmt.Fprintln(w, "NAME\tATTACHED TO\tSIZE\tSTATUS")
 			for _, volume := range volumes {
-				fmt.Fprintf(w, "%s\t%s\t%d\t%s\n", volume.Name, volume.AttachedTo, volume.Size, volume.Status)
+				fmt.Fprintf(w, "%s\t%s\t%d\t%s\n", volume.Name, volume.Attached, volume.Size, volume.Status)
 			}
 			w.Flush()
 

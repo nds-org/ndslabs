@@ -63,7 +63,7 @@ type Volume struct {
 	Name        string `json:"name"`
 	Size        int    `json:"size"`
 	Format      string `json:"format"`
-	AttachedTo  string `json:"attachedTo"`
+	Attached    string `json:"attached"`
 	Service     string `json:"service"`
 	Status      string `json:"status"`
 	Formatted   bool   `json:"formatted"`

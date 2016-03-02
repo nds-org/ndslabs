@@ -30,6 +30,7 @@ var stopCmd = &cobra.Command{
 		stack := args[0]
 
 		url := apiServer + "projects/" + apiUser.username + "/stop/" + stack
+		fmt.Println(url)
 
 		client := &http.Client{}
 		request, err := http.NewRequest("GET", url, nil)
@@ -42,7 +43,7 @@ var stopCmd = &cobra.Command{
 			if resp.StatusCode == http.StatusOK {
 				fmt.Printf("Stopped %s\n", stack)
 			} else {
-				fmt.Print("Error stopping %s", stack)
+				fmt.Printf("Error stopping %s: %s\n", stack, resp.Status)
 			}
 		}
 	},
@@ -50,15 +51,4 @@ var stopCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(stopCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// stopCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// stopCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 }

@@ -28,7 +28,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var apiServer = "http://localhost:8083/"
+var apiServer string //= "http://141.142.209.154:8083/"
 
 var cfgFile string
 
@@ -130,6 +130,7 @@ func init() {
 	// will be global for your application.
 
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.apictl.yaml)")
+	RootCmd.PersistentFlags().StringVar(&apiServer, "host", "http://localhost:8083/", "API server host address")
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	RootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
