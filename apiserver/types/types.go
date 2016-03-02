@@ -11,6 +11,7 @@ type Project struct {
 	Namespace    string `json:"namespace"`
 	StorageQuota int    `json:"storageQuota"`
 	EmailAddress string `json:"email"`
+	Password     string `json:"password"`
 }
 
 type ServiceList struct {
