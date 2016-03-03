@@ -26,7 +26,7 @@
                   <li ng-repeat="svc in stack.services">
                     <div class="row">
                       <div class="col-xs-4">
-                        <a tabindex="0" uib-popover-template="'/app/expert/subviews/serviceOptionsPopover.html'" popover-title="{{ svc.serviceId | uppercase }}" popover-placement="bottom" popover-trigger="outsideClick" id="{{svc.serviceId}}OptionsDropDownButton" class="btn btn-xs btn-default" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        <a tabindex="0" uib-popover-template="'/app/expert/subviews/serviceOptionsPopover.html'" popover-title="{{ svc.service | uppercase }}" popover-placement="bottom" popover-trigger="outsideClick" id="{{svc.service}}OptionsDropDownButton" class="btn btn-xs btn-default" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                           <i class="fa fa-gear fa-fw"></i><i class="fa fa-fw fa-caret-down"></i>
                         </a>
                       </div>
@@ -39,7 +39,7 @@
                            uib-popover-template="'/app/expert/subviews/volumeDetailsPopover.html'" 
                            popover-title="{{ showVolume(stack, svc).name | uppercase }}"
                            popover-placement="bottom" popover-trigger="outsideClick"></i>
-                        {{ svc.serviceId }}
+                        {{ svc.service }}
                       </div>
                     </div>
                   </li>

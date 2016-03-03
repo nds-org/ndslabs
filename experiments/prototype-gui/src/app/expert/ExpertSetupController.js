@@ -55,12 +55,13 @@ angular
   return function(stack, service) { 
     var volume = {
       id: '',
-      stackId: stack.name,
-      serviceId: service.key,
+      key: service.key,
+      stack: stack.name,
+      service: service.key,
       format: 'Raw',
       size: 10,
       sizeUnit: 'GB',
-      attachment: stack.name + '-' + service.key
+      attached: service.id
     };
     
     //Volumes.all.push(volume);
@@ -73,8 +74,8 @@ angular
   return function(stack, spec) {
     var svc = {
       id: "",
-      stackId: stack.name,
-      serviceId: spec.key,
+      stack: stack.key,
+      service: spec.key,
       status: "Suspended",
       replicas: 1,
       endpoints: []
@@ -89,9 +90,9 @@ angular
   return function(services, service) {
     var result = false;
     angular.forEach(services, function(svc) {
-      var spec = _.find(Specs.all, { 'key': svc.serviceId });
+      var spec = _.find(Specs.all, { 'key': svc.service });
       if (spec) {
-        var dep = _.find(spec.depends, _.matchesProperty('key', service.serviceId));
+        var dep = _.find(spec.depends, _.matchesProperty('key', service.service));
         if (dep && dep.required === true) {
           result = true;
         }
@@ -112,7 +113,7 @@ angular
       var options = _.filter(angular.copy(spec.depends), [ 'required', false ]);
       var missing = [];
       angular.forEach(options, function(op) {
-        if (!_.find(stack.services, [ 'serviceId', op.key ])) {
+        if (!_.find(stack.services, [ 'service', op.key ])) {
           missing.push(op);
         }
       });
@@ -158,10 +159,10 @@ angular
   };
 }])
 .filter('orphansExist', function() {
-  return function(orphans, serviceId) {
+  return function(orphans, service) {
     var matches = [];
     angular.forEach(orphans, function(orphan) {
-      if (orphan.serviceId === serviceId) {
+      if (orphan.service === service) {
         matches.push(orphan);
       }
     });
@@ -176,10 +177,10 @@ angular
     var reusableVolumes = [];
     var requiredVolumes = [];
     angular.forEach(stack.services, function(requestedSvc) {
-      var svcSpec = _.find(_.concat(stacks, deps), function(svc) { return svc.key === requestedSvc.serviceId });
+      var svcSpec = _.find(_.concat(stacks, deps), function(svc) { return svc.key === requestedSvc.service });
       if (svcSpec.requiresVolume === true) {
         angular.forEach(configuredVolumes, function(volume) {
-          if (!volume.attachment && svcSpec.key === volume.serviceId) {
+          if (!volume.attachment && svcSpec.key === volume.service) {
             // This is an orphaned volume from this service... Prompt the user to reuse it
             reusableVolumes.push(volume);
           }
@@ -190,21 +191,6 @@ angular
 
     $scope.newStackOrphanedVolumes = reusableVolumes;
     $scope.newStackVolumeRequirements = requiredVolumes;
-  };
-
-  $scope.finishWizard = function(newStack) {
-    // Associate this stack with our user 
-    configuredStacks.push(newStack);
-    angular.forEach($scope.newStackVolumeRequirements, function(vol) {
-      // Orphaned volumes are already in the list
-      var exists = _.find(configuredVolumes, function(volume) { return vol.name === volume.name; });
-      if (!exists) {
-        configuredVolumes.push(vol);
-      } else {
-        exists.stackId = $scope.newStack.name;
-        exists.attachment = $scope.stackId + '-' + exists.serviceId;
-      }
-    });
   };
 
   // TODO: Use queue for recursion?
@@ -222,7 +208,7 @@ angular
       }
 
       // Check if this service is already present on our proposed stack
-      var exists = _.find($scope.newStack.services, function(svc) { return svc.serviceId === key });
+      var exists = _.find($scope.newStack.services, function(svc) { return svc.service === key });
       if (!exists) {
         // Add the service if it has not already been added
         targetArray.push(stackSvc);
@@ -234,7 +220,7 @@ angular
   };
   
   $scope.listRequiredDeps = function(svc) {
-    var spec = _.find(deps, function(service) { return service.key === svc.serviceId });
+    var spec = _.find(deps, function(service) { return service.key === svc.service });
     var required = [];
     angular.forEach(spec.depends, function(dep) {
       if (dep.required === true) {
@@ -262,7 +248,7 @@ angular
           $log.debug("Gathering optional dependencies and their requirements...");
           $scope.newStackOptionalDeps = {};
           angular.forEach($scope.newStackOptions, function(opt) {
-            $scope.newStackOptionalDeps[opt.serviceId] = $scope.listRequiredDeps(opt);
+            $scope.newStackOptionalDeps[opt.service] = $scope.listRequiredDeps(opt);
           });
         }
      }, false),
@@ -275,7 +261,7 @@ angular
           $log.debug("Adding optional selections to stack...");
           $scope.newStack.services = angular.copy($scope.newStackRequirements);
           angular.forEach($scope.optionalLinksGrid.selector.selection, function(option) {
-            var svc = _.find(deps, function(svc) { return svc.key === option.serviceId });
+            var svc = _.find(deps, function(svc) { return svc.key === option.service });
             $scope.collectDependencies(svc);
             $scope.newStack.services.push(new StackService($scope.newStack, svc));
           });
@@ -333,8 +319,7 @@ angular
   
   $scope.ok = function () {
     $log.debug("Closing modal with success!");
-    $scope.finishWizard($scope.newStack);
-    $uibModalInstance.close($scope.newStack);
+    $uibModalInstance.close({ 'stack': $scope.newStack, 'volumes': $scope.newStackVolumeRequirements });
   };
 
   $scope.close = function () {
@@ -353,115 +338,58 @@ angular
   $scope.counts = {};
   $scope.svcQuery = '';
   $scope.nextId = 1;
-  $scope.currentProject = {
-    id: '',
-    namespace: 'default',
-    name: 'Test Project',
-    description: 'NDS Labs Test Project',
-    quota: 3,
-    quotaUnits: 'TB'
-  };
   
-  // Stacks test data
-  $scope.configuredStacks = [
-    {
-      "id": "",
-      "name": "clowder",
-      "key": "clowder",
-      "status": true,
-      "services": [
-        {
-          "id": "",
-          "stackId": "clowder",
-          "serviceId": "clowder",
-          "status": true,
-          "replicas": 1,
-          "endpoints": [ 
-            "http://141.142.209.135/clowder"
-          ]
-        },
-        {
-          "id": "",
-          "stackId": "clowder",
-          "serviceId": "mongo",
-          "status": true,
-          "replicas": 1,
-          "endpoints": []
-        },
-        {
-          "id": "",
-          "stackId": "clowder",
-          "serviceId": "rabbitmq",
-          "status": true,
-          "replicas": 1,
-          "endpoints": []
-        },
-        {
-          "id": "",
-          "stackId": "clowder",
-          "serviceId": "image-preview",
-          "status": true,
-          "replicas": 1,
-          "endpoints": []
-        }
-      ]
-    }
-  ];
-  
-  // Volume test data
-  $scope.configuredVolumes = [
-    {
-      "id": "",
-      "stackId": "clowder",
-      "serviceId": "mongo",
-      "format": "Raw",
-      "size": 10,
-      "sizeUnit": "GB",
-      "name": "mongo",
-      "attachment": "clowder-mongo",
-      "useOrphan": false 
-    }
-  ];
+  $scope.currentProject = {};
+  $scope.configuredStacks = [];
+  $scope.configuredVolumes = [];
   
   var projectId = AuthInfo.get().namespace;
   
+  var query = {};
+  
   // Grab the current project
-  NdsLabsApi.getProjectsByProjectId({ "projectId": projectId }).then(function(project, xhr) {
-    $log.debug("successfully grabbed from /projects/" + projectId + "!");
-    AuthInfo.project = Project = project;
-  }, function(headers) {
-    $log.debug("error!");
-    console.debug(headers);
-  });
+  (query.project = function() {
+    return NdsLabsApi.getProjectsByProjectId({ "projectId": projectId }).then(function(project, xhr) {
+      $log.debug("successfully grabbed from /projects/" + projectId + "!");
+      $scope.project = AuthInfo.project = Project = project;
+    }, function(headers) {
+      $log.debug("error!");
+      console.debug(headers);
+    })
+  })();
   
   // Grab the list of services available at our site
-  NdsLabsApi.getServices().then(function(specs, xhr) {
-    $log.debug("successfully grabbed from /services!");
-    Specs.all = $scope.allServices = specs;
-    Specs.deps = $scope.deps = angular.copy(specs);
-    Specs.stacks = $scope.stacks = _.remove($scope.deps, function(svc) { return svc.stack === true; });
-  }, function (headers) {
-    $log.debug("error!");
-    console.debug(headers);
-  });
+  (query.services = function() {
+    return NdsLabsApi.getServices().then(function(specs, xhr) {
+      $log.debug("successfully grabbed from /services!");
+      Specs.all = $scope.allServices = specs;
+      Specs.deps = $scope.deps = angular.copy(specs);
+      Specs.stacks = $scope.stacks = _.remove($scope.deps, function(svc) { return svc.stack === true; });
+    }, function (headers) {
+      $log.error("error grabbing from /services!");
+    })
+  })();
   
-  // Grab the list of configured stacks in our namespace
-  NdsLabsApi.getProjectsByProjectIdStacks({ "projectId": projectId }).then(function(stacks, xhr) {
-    $log.debug("successfully grabbed from /projects/" + projectId + "/stacks!");
-    Stacks.all = stacks || [];
-  }, function(headers) {
-    $log.debug("error!");
-    console.debug(headers);
-  });
+  (query.stacks = function() {
+    // Grab the list of configured stacks in our namespace
+    return NdsLabsApi.getProjectsByProjectIdStacks({ "projectId": projectId }).then(function(stacks, xhr) {
+      $log.debug("successfully grabbed from /projects/" + projectId + "/stacks!");
+      //Stacks.all = stacks || [];
+      $scope.configuredStacks = stacks || [];
+    }, function(headers) {
+      $log.error("error grabbing from /projects/" + projectId + "/stacks!");
+    });
+  })();
   
   // Grab the list of volumes in our namespace
-  NdsLabsApi.getProjectsByProjectIdVolumes({ "projectId": projectId }).then(function(volumes, xhr) {
-    $log.debug("successfully grabbed from /projects/" + projectId + "/volumes!");
-    Volumes.all = volumes || [];
-  }, function(headers) {
-    $log.debug("error!");
-    console.debug(headers);
-  });
+  (query.volumes = function() {
+    return NdsLabsApi.getProjectsByProjectIdVolumes({ "projectId": projectId }).then(function(volumes, xhr) {
+      $log.debug("successfully grabbed from /projects/" + projectId + "/volumes!");
+      Volumes.all = volumes || [];
+    }, function(headers) {
+      $log.error("error grabbing from /projects/" + projectId + "/volumes!");
+    })
+  })();
   
   // TODO: This could be a service
   $scope.openWizard = function(template) {
@@ -480,18 +408,63 @@ angular
     });
 
     // Define what we should do when the modal is closed
-    modalInstance.result.then(function (selectedItem) {
-      //$scope.selected = selectedItem;
+    modalInstance.result.then(function(newEntities) {
       $log.debug('Modal accepted at: ' + new Date());
-    }, function () {
+      
+      // Create the stack inside our project first
+      NdsLabsApi.postProjectsByProjectIdStacks({ 'stack': newEntities.stack, 'projectId': projectId }).then(function(response, xhr) {
+        $log.debug("successfully posted to /projects/" + projectId + "/stacks!");
+        //$scope.configuredStacks.push($scope.newStack);
+        
+        NdsLabsApi.getProjectsByProjectIdStacksByStackId({ 'projectId': projectId, 'stackId': newEntities.stack.key }).then(function(stack, headers) {
+          $scope.configuredStacks.push(stack);
+          
+          // Then attach our necessary volumes
+          angular.forEach(newEntities.volumes, function(vol) {
+            NdsLabsApi.postProjectsByProjectIdVolumes({ 'volume': vol, 'projectId': projectId }).then(function(response, xhr) {
+              $log.debug("successfully posted to /projects/" + projectId + "/volumes!");
+              query.volumes();
+              //$scope.configuredStacks.push($scope.newStack);
+            }, function(headers) {
+              $log.error("error posting to /projects/" + projectId + "/volumes!");
+            });
+            // Orphaned volumes are already in the list
+            /* var exists = _.find($scope.configuredVolumes, function(volume) { return vol.name === volume.name; });
+            if (!exists) {
+              $scope.configuredVolumes.push(vol);
+            } else {
+              exists.stack = $scope.newStack.name;
+              exists.attachment = $scope.stack + '-' + exists.service;
+            }*/
+          });
+        }, function(headers) {
+          $log.error("errorgrabbing new stack from /projects/" + projectId + "/stacks/" + $scope.newStack.key + "!");
+        });
+      }, function(headers) {
+        $log.error("error posting to /projects/" + projectId + "/stacks!");
+      });
+    }, function() {
       $log.debug('Modal dismissed at: ' + new Date());
+    });
+  };
+  
+  $scope.showLogs = function(service) {
+    NdsLabsApi.getProjectsByProjectIdLogsByStackServiceId({ 
+      'projectId': projectId,
+      'stackServiceId': service.id
+    }).then(function(data, xhr) {
+      $log.debug('successfully grabbed logs for serviceId ' + service.id);
+      //$scope.serviceLogs = data;
+      alert(data);
+    }, function(headers) {
+      //$scope.serviceLogs = 'An error was encountered querying this service\'s logs.';
     });
   };
   
   $scope.showVolume = function(stack, svc) {
     var volume = null;
     angular.forEach($scope.configuredVolumes, function(vol) {
-      if (stack.name === vol.stackId && svc.serviceId === vol.serviceId) {
+      if (stack.name === vol.stack && svc.service === vol.service) {
         volume = vol;
       }
     });
@@ -515,11 +488,21 @@ angular
   };*/
 
   $scope.removeCandidateStack = function(stack, removeVolumes) {
-    var toRemove = [];
+    NdsLabsApi.deleteProjectsByProjectIdStacksByStackId({
+      'projectId': projectId,
+      'stackId': stack.key
+    }).then(function(data, xhr) {
+      $log.debug('successfully deleted stack: ' + stack.name);
+      $scope.configuredStacks.splice($scope.configuredStacks.indexOf(stack), 1);
+    }, function(headers) {
+      
+    });
+    
+    /*var toRemove = [];
 
     // Loop to find any associated volumes
     angular.forEach($scope.configuredVolumes, function(volume) {
-      if (volume.stackId === stack.name) {
+      if (volume.stack === stack.name) {
         if (removeVolumes) {
           toRemove.push(volume);
         } else {
@@ -536,7 +519,7 @@ angular
       angular.forEach(toRemove, function(volume) {
         $scope.configuredVolumes.splice($scope.configuredVolumes.indexOf(volume), 1);
       });
-    }
+    }*/
   };
   
   $scope.addStackSvc = function(stack, svc) {
@@ -549,7 +532,7 @@ angular
         var stackSvc = new StackService(stack, svc);
         
         // Check if this service is already present on our proposed stack
-        var exists = _.find(stack.services, function(svc) { return svc.serviceId === dependency.key });
+        var exists = _.find(stack.services, function(svc) { return svc.service === dependency.key });
         if (!exists) {
           // Add the service if it has not already been added
           stack.services.push(stackSvc);
@@ -573,7 +556,7 @@ angular
     var volume = $scope.showVolume(stack, svc);
     if (volume) {
       angular.forEach($scope.configuredVolumes, function(volume) {
-        if (volume.stackId === stack.name) {
+        if (volume.stack === stack.name) {
           volume.attachment = null;
         }
       });

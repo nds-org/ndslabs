@@ -24,7 +24,7 @@
           <p>Stack services:</p>
           <ul class="list-group">
             <li ng-repeat="req in newStackRequirements" class="list-group-item disabled">
-              {{ req.serviceId }}
+              {{ req.service }}
               <input class="pull-right" type="checkbox" checked="true" />
             </li>
           </ul>
@@ -35,12 +35,12 @@
             <li ng-class="{ 'active':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }" ng-click="optionalLinksGrid.selector.select.toggle(opt)" ng-repeat="opt in newStackOptions" class="list-group-item">
               <p>
                 <div class="row">
-                  <div class="col-md-4">{{ opt.serviceId }}</div>
+                  <div class="col-md-4">{{ opt.service }}</div>
                   <div class="col-md-4">
-                    <span ng-if="newStackOptionalDeps[opt.serviceId].length > 0">
+                    <span ng-if="newStackOptionalDeps[opt.service].length > 0">
                       Requirements: 
-                      <span ng-if="$index === 0" ng-repeat="dep in newStackOptionalDeps[opt.serviceId]"><strong>{{ dep }}</strong></span>
-                      <span ng-if="$index !== 0" ng-repeat="dep in newStackOptionalDeps[opt.serviceId]">, <strong>{{ dep }}</strong></span>
+                      <span ng-if="$index === 0" ng-repeat="dep in newStackOptionalDeps[opt.service]"><strong>{{ dep }}</strong></span>
+                      <span ng-if="$index !== 0" ng-repeat="dep in newStackOptionalDeps[opt.service]">, <strong>{{ dep }}</strong></span>
                     </span>
                   </div>
                   <div class="col-md-1 col-offset-md-1 pull-right">
@@ -61,29 +61,29 @@
           <!-- Create New Volumes -->
           <div class="panel panel-default" ng-repeat="volume in newStackVolumeRequirements">
             <div class="panel-heading">
-              <h4 class="panel-title">{{ volume.serviceId }}</h4></div>
+              <h4 class="panel-title">{{ volume.service }}</h4></div>
 
 
             <div class="panel-body">
               <!-- Reuse Orphaned Volumes? -->
-              <div ng-if="newStackOrphanedVolumes && (newStackOrphanedVolumes | orphansExist:volume.serviceId).length > 0">
-                <p>Your namespace contains one or more detattached volumes that were previously associated with {{ volume.serviceId }}.</p>
+              <div ng-if="newStackOrphanedVolumes && (newStackOrphanedVolumes | orphansExist:volume.service).length > 0">
+                <p>Your namespace contains one or more detattached volumes that were previously associated with {{ volume.service }}.</p>
                 <p>Would you like to reuse the data on from volume, or create a new volume?</p>
                 <div class="radio" ng-click="volume.useOrphan=true;volume.name=''">
                   <label>
-                    <input type="radio" ng-checked="volume.useOrphan" name="orphaned{{ volume.serviceId }}VolumeRadio">Reuse Previous Data</label>
+                    <input type="radio" ng-checked="volume.useOrphan" name="orphaned{{ volume.service }}VolumeRadio">Reuse Previous Data</label>
                 </div>
                 <div class="radio" ng-click="volume.useOrphan=false;volume.name=''">
                   <label>
-                    <input type="radio" ng-checked="!volume.useOrphan" name="orphaned{{ volume.serviceId }}VolumeRadio">Create New Volume</label>
+                    <input type="radio" ng-checked="!volume.useOrphan" name="orphaned{{ volume.service }}VolumeRadio">Create New Volume</label>
                 </div>
               </div>
 
               <!-- List usable orphaned volumes -->
               <div ng-show="volume.useOrphan">
-                <div class="radio" ng-repeat="orphan in newStackOrphanedVolumes | orphansExist:volume.serviceId" ng-click="volume.useOrphan=true;volume.name = orphan.name">
+                <div class="radio" ng-repeat="orphan in newStackOrphanedVolumes | orphansExist:volume.service" ng-click="volume.useOrphan=true;volume.name = orphan.name">
                   <label>
-                    <input type="radio" ng-checked="volume.name === orphan.name" name="orphaned{{ volume.serviceId }}OrphanVolumeRadio">{{ orphan.name }} (Source: {{ orphan.stackId }})</label>
+                    <input type="radio" ng-checked="volume.name === orphan.name" name="orphaned{{ volume.service }}OrphanVolumeRadio">{{ orphan.name }} (Source: {{ orphan.stack }})</label>
                 </div>
               </div>
 
@@ -144,7 +144,7 @@
           <p>You have chosen to enable {{ optionalLinksGrid.selector.selection.length || "no" }} optional service plugins<span ng-show="newService.links.required">, along with the {{ newService.links.required.length }} required services</span>.</p>
           <p>Services that will be added to the "{{ newStack.name }}" stack:</p>
           <ul class="list-group">
-            <li class="list-group-item disabled" ng-repeat="req in newStack.services">{{ req.serviceId }}</li>
+            <li class="list-group-item disabled" ng-repeat="req in newStack.services">{{ req.service }}</li>
           </ul>
 
           <p>Volumes that will be used within the "{{ newStack.name }}" stack:</p>

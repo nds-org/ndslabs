@@ -1855,6 +1855,170 @@ angular.module('ndslabs-api', [])
 
                 return deferred.promise;
             };
+            /**
+             * Starts the specified stack
+
+             * @method
+             * @name ApiServer#getProjectsByProjectIdStartByStackServiceId
+             * @param {string} projectId - The unique project identifier
+             * @param {string} stackServiceId - The unique stack service identifier
+             * 
+             */
+            ApiServer.prototype.getProjectsByProjectIdStartByStackServiceId = function(parameters) {
+                if (parameters === undefined) {
+                    parameters = {};
+                }
+                var deferred = $q.defer();
+
+                var domain = this.domain;
+                var path = '/projects/{project-id}/start/{stack-service-id}';
+
+                var body;
+                var queryParameters = {};
+                var headers = {};
+                var form = {};
+
+                path = path.replace('{project-id}', parameters['projectId']);
+
+                if (parameters['projectId'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: projectId'));
+                    return deferred.promise;
+                }
+
+                path = path.replace('{stack-service-id}', parameters['stackServiceId']);
+
+                if (parameters['stackServiceId'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: stackServiceId'));
+                    return deferred.promise;
+                }
+
+                if (parameters.$queryParameters) {
+                    Object.keys(parameters.$queryParameters)
+                        .forEach(function(parameterName) {
+                            var parameter = parameters.$queryParameters[parameterName];
+                            queryParameters[parameterName] = parameter;
+                        });
+                }
+
+                var url = domain + path;
+                var cached = parameters.$cache && parameters.$cache.get(url);
+                if (cached !== undefined && parameters.$refresh !== true) {
+                    deferred.resolve(cached);
+                    return deferred.promise;
+                }
+                var options = {
+                    timeout: parameters.$timeout,
+                    method: 'GET',
+                    url: url,
+                    params: queryParameters,
+                    data: body,
+                    headers: headers
+                };
+                if (Object.keys(form).length > 0) {
+                    options.data = form;
+                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+                    options.transformRequest = ApiServer.transformRequest;
+                }
+                $http(options)
+                    .success(function(data, status, headers, config) {
+                        deferred.resolve(data);
+                        if (parameters.$cache !== undefined) {
+                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
+                        }
+                    })
+                    .error(function(data, status, headers, config) {
+                        deferred.reject({
+                            status: status,
+                            headers: headers,
+                            config: config,
+                            body: data
+                        });
+                    });
+
+                return deferred.promise;
+            };
+            /**
+             * Starts the specified stack
+
+             * @method
+             * @name ApiServer#getProjectsByProjectIdStopByStackServiceId
+             * @param {string} projectId - The unique project identifier
+             * @param {string} stackServiceId - The unique stack service identifier
+             * 
+             */
+            ApiServer.prototype.getProjectsByProjectIdStopByStackServiceId = function(parameters) {
+                if (parameters === undefined) {
+                    parameters = {};
+                }
+                var deferred = $q.defer();
+
+                var domain = this.domain;
+                var path = '/projects/{project-id}/stop/{stack-service-id}';
+
+                var body;
+                var queryParameters = {};
+                var headers = {};
+                var form = {};
+
+                path = path.replace('{project-id}', parameters['projectId']);
+
+                if (parameters['projectId'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: projectId'));
+                    return deferred.promise;
+                }
+
+                path = path.replace('{stack-service-id}', parameters['stackServiceId']);
+
+                if (parameters['stackServiceId'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: stackServiceId'));
+                    return deferred.promise;
+                }
+
+                if (parameters.$queryParameters) {
+                    Object.keys(parameters.$queryParameters)
+                        .forEach(function(parameterName) {
+                            var parameter = parameters.$queryParameters[parameterName];
+                            queryParameters[parameterName] = parameter;
+                        });
+                }
+
+                var url = domain + path;
+                var cached = parameters.$cache && parameters.$cache.get(url);
+                if (cached !== undefined && parameters.$refresh !== true) {
+                    deferred.resolve(cached);
+                    return deferred.promise;
+                }
+                var options = {
+                    timeout: parameters.$timeout,
+                    method: 'GET',
+                    url: url,
+                    params: queryParameters,
+                    data: body,
+                    headers: headers
+                };
+                if (Object.keys(form).length > 0) {
+                    options.data = form;
+                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+                    options.transformRequest = ApiServer.transformRequest;
+                }
+                $http(options)
+                    .success(function(data, status, headers, config) {
+                        deferred.resolve(data);
+                        if (parameters.$cache !== undefined) {
+                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
+                        }
+                    })
+                    .error(function(data, status, headers, config) {
+                        deferred.reject({
+                            status: status,
+                            headers: headers,
+                            config: config,
+                            body: data
+                        });
+                    });
+
+                return deferred.promise;
+            };
 
             return ApiServer;
         })();

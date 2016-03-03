@@ -8,11 +8,6 @@
       </div>
     </div>
   </div>
-  <div class="row" ng-if="DEBUG">
-    <div class="col-md-12">
-      <pre>{{ allServices | json }}</pre>
-    </div>
-  </div>
   <div class="row">
     <div class="col-md-3">    
       <h4>Services</h4>
@@ -67,8 +62,8 @@
               <div class="row">
                 <div class="col-md-2 text-center">
                   <i class="pull-left fa fa-fw fa-2x" 
-                    ng-class="{ 'fa-check-circle-o': stack.status, 'fa-times-circle-o': !stack.status }"
-                    ng-style="{ 'color': stack.status ? 'green' : 'red' }"></i>
+                    ng-class="{ 'fa-check-circle-o': stack.status, 'text-success': stack.status,
+                        'fa-times-circle-o': !stack.status, 'text-danger':!stack.status }"></i>
                 </div>
                 <div class="col-md-9">
                   <h4>{{ _.capitalize(stack.name) }}</h4>
@@ -111,37 +106,37 @@
                 <div class="col-md-offset-2 col-md-3">
                   <ul class="fa-ul">
                     <!-- List off our stack's services here -->
-                    <li ng-repeat="svc in stack.services track by svc.serviceId">
+                    <li ng-repeat="svc in stack.services track by svc.service">
                       <div class="row" style="margin:5px;">
                           <!-- show status icon if no volume(s) present -->
-                          <i ng-if="!showVolume(stack, svc)" class="fa-li fa fa-fw" 
-                            ng-style="{ 'color':stack.status ? 'green' : 'red' }"
-                            ng-class="{ 'fa-check-circle-o':stack.status, 'fa-times-circle-o':!stack.status }"></i>
+                          <i ng-if="!showVolume(stack, svc)" class="fa-li fa fa-fw"
+                            ng-class="{ 'fa-check-circle-o':svc.status, 'fa-times-circle-o':!svc.status,
+                                'text-success': svc.status, 'text-danger': !svc.status }"></i>
                             
                           <!-- show volume details if we find a volume -->
                           <i ng-if="showVolume(stack, svc)" class="fa-li fa fa-fw fa-database" style="cursor:pointer;"
-                             ng-style="{ 'color':stack.status ? 'green' : 'red' }" 
                              uib-popover-template="'/app/expert/subviews/volumeDetailsPopover.html'" 
+                             ng-class="{ 'text-success': svc.status, 'text-danger': !svc.status  }"
                              popover-title="{{ showVolume(stack, svc).name | uppercase }}"
                              popover-placement="right" popover-trigger="outsideClick"></i>
                              
-                          {{ svc.serviceId }}
+                          {{ svc.service }}
                           
                           <a ng-repeat="endpt in svc.endpoints" ng-if="stack.status && svc.status" href="{{ endpt }}"
-                              uib-tooltip="Navigate to {{ _.capitalize(svc.serviceId) }} ({{ endpt }})">
+                              uib-tooltip="Navigate to {{ _.capitalize(svc.service) }} ({{ endpt }})">
                             <i class="fa fa-fw fa-chain"></i>
                           </a>
                              
                           <!-- link to endpoint, if one exists -->
                           <!--<div>
-                            <a ng-if="svc.endpoints.length > 0" href="svc.endpoints[0]" style="margin-left:20px;">{{ svc.serviceId }}</a>
-                            <span ng-if="svc.endpoints. length === 0">{{ svc.serviceId }}</span>
+                            <a ng-if="svc.endpoints.length > 0" href="svc.endpoints[0]" style="margin-left:20px;">{{ svc.service }}</a>
+                            <span ng-if="svc.endpoints. length === 0">{{ svc.service }}</span>
                           </div>-->
                           
                           <!-- "options" popover for services -->
                           <!--<a tabindex="0" uib-popover-template="'/app/expert/subviews/serviceOptionsPopover.html'" 
-                          popover-title="{{ svc.serviceId | uppercase }}" popover-placement="left"
-                          popover-trigger="focus" id="{{svc.serviceId}}OptionsDropDownButton" 
+                          popover-title="{{ svc.service | uppercase }}" popover-placement="left"
+                          popover-trigger="focus" id="{{svc.service}}OptionsDropDownButton" 
                           class="btn btn-xs btn-default pull-right" type="button">
                             <i class="fa fa-gear fa-fw"></i><i class="fa fa-fw fa-caret-down"></i>
                           </a>-->
@@ -153,8 +148,8 @@
                 <!-- Service Options -->
                 <div class="col-md-7">
                   <ul class="fa-ul">
-                  <li ng-repeat="svc in stack.services track by svc.serviceId">
-                    <div class="row" style="margin:5px;">
+                  <li ng-repeat="svc in stack.services track by svc.service">
+                    <div class="row">
                       <!-- TODO: Can we even start/stop individual services?? -->
                        <!-- <button type="button" class="btn btn-xs btn-success" uib-tooltip="Start / Stop Service"><i class="fa fa-fw fa-play"></i></button>-->
                     
@@ -164,10 +159,12 @@
                           <i class="fa fa-fw fa-chain" ng-class="{ 'fa-chain': svc.status, 'fa-chain-broken':!svc.status }"></i>
                         </button>-->
                     
-                        <button type="button" class="btn btn-xs btn-info" uib-tooltip="View Logs"><i class="fa fa-fw fa-search"></i></button>
+                        <button type="button" class="btn btn-xs btn-info" uib-tooltip="View Logs" ng-click="showLogs(svc)">
+                          <i class="fa fa-fw fa-search"></i>
+                        </button>
                     
                         <button type="button" ng-disabled="stack.services | isRecursivelyRequired:svc" 
-                            ng-if="svc.serviceId !== stack.key && (stack.key | requirements).indexOf(svc.serviceId) === -1" 
+                            ng-if="svc.service !== stack.key && (stack.key | requirements).indexOf(svc.service) === -1" 
                             class="btn btn-xs btn-danger" ng-click="removeStackSvc(stack, svc)" 
                             uib-tooltip="Remove Service from Stack" tooltip-placement="left">
                           <i class="fa fa-fw fa-times"></i>
@@ -186,6 +183,12 @@
           </uib-accordion-group>
         </uib-accordion>
       </div>
+    </div>
+  </div>
+  
+  <div class="row" ng-if="DEBUG">
+    <div class="col-md-12">
+      <pre>{{ allServices | json }}</pre>
     </div>
   </div>
   

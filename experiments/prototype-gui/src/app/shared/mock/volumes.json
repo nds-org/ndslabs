@@ -1,8 +1,8 @@
 [
   {
     "id": "",
-    "stackId": "clowder",
-    "serviceId": "mongo",
+    "stack": "clowder",
+    "service": "mongo",
     "format": "Raw",
     "size": 10,
     "sizeUnit": "GB",

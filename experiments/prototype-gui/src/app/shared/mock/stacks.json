@@ -7,8 +7,8 @@
       "services": [
         {
           "id": "",
-          "stackId": "clowder",
-          "serviceId": "clowder",
+          "stack": "clowder",
+          "service": "clowder",
           "status": true,
           "replicas": 1,
           "endpoints": [ 
@@ -17,24 +17,24 @@
         },
         {
           "id": "",
-          "stackId": "clowder",
-          "serviceId": "mongo",
+          "stack": "clowder",
+          "service": "mongo",
           "status": true,
           "replicas": 1,
           "endpoints": []
         },
         {
           "id": "",
-          "stackId": "clowder",
-          "serviceId": "rabbitmq",
+          "stack": "clowder",
+          "service": "rabbitmq",
           "status": true,
           "replicas": 1,
           "endpoints": []
         },
         {
           "id": "",
-          "stackId": "clowder",
-          "serviceId": "image-preview",
+          "stack": "clowder",
+          "service": "image-preview",
           "status": true,
           "replicas": 1,
           "endpoints": []

@@ -39,10 +39,17 @@ angular
   };
 
   $scope.logout = function() {
-    $log.debug("Logged out!");
-    $scope.settings.authenticated = false;
-    $cookies.remove('token');
-    $cookies.remove('namespace');
-    $location.path(LoginRoute);
+    $log.debug("Logging out!");
+    NdsLabsApi.deleteAuthenticate().then(function(data, xhr) {
+      $log.debug("Logged out!");
+      $scope.errorMessage = '';
+      $cookies.remove('token');
+      $cookies.remove('namespace');
+      $location.path(LoginRoute);
+    }, function(response) {
+      $log.error("Error logging out!");
+    }).finally(function() {
+      $scope.progressMessage = '';
+    });
   };
 }]);

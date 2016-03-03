@@ -3,7 +3,7 @@
 angular
 .module('ndslabs', [ 'navbar', 'footer', 'ndslabs-api', 'ngWizard', 'ngGrid', 
     'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'toggle-switch', 'ui.bootstrap' ])
-.constant('DEBUG', false)
+.constant('DEBUG', true)
 .constant('MOCKDATA', false)
 .constant('_', window._)
 .constant('Google', window.google)

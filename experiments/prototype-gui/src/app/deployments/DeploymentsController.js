@@ -4,8 +4,8 @@ angular
   var createStackSvc = function(stack, svc) {
     return {
       id: "",
-      stackId: stack.name,
-      serviceId: svc.key,
+      stack: stack.name,
+      service: svc.key,
       status: "Suspended",
       replicas: 1,
       endpoints: []
@@ -22,32 +22,32 @@ angular
       "services": [
         {
           "id": "",
-          "stackId": "clowder",
-          "serviceId": "clowder",
+          "stack": "clowder",
+          "service": "clowder",
           "status": false,
           "replicas": 1,
           "endpoints": []
         },
         {
           "id": "",
-          "stackId": "clowder",
-          "serviceId": "mongo",
+          "stack": "clowder",
+          "service": "mongo",
           "status": false,
           "replicas": 1,
           "endpoints": []
         },
         {
           "id": "",
-          "stackId": "clowder",
-          "serviceId": "rabbitmq",
+          "stack": "clowder",
+          "service": "rabbitmq",
           "status": false,
           "replicas": 1,
           "endpoints": []
         },
         {
           "id": "",
-          "stackId": "clowder",
-          "serviceId": "image-preview",
+          "stack": "clowder",
+          "service": "image-preview",
           "status": false,
           "replicas": 1,
           "endpoints": []
@@ -68,7 +68,7 @@ angular
   $scope.showVolume = function(stack, svc) {
     var volume = null;
     angular.forEach($scope.configuredVolumes, function(vol) {
-      if (stack.name === vol.stackId && svc.serviceId === vol.serviceId) {
+      if (stack.name === vol.stack && svc.service === vol.service) {
         volume = vol;
       }
     });
@@ -93,10 +93,13 @@ angular
 
   $scope.removeCandidateStack = function(stack, removeVolumes) {
     var toRemove = [];
+    
+    
 
+/*
     // Loop to find any associated volumes
     angular.forEach($scope.configuredVolumes, function(volume) {
-      if (volume.stackId === stack.name) {
+      if (volume.stack === stack.name) {
         if (removeVolumes) {
           toRemove.push(volume);
         } else {
@@ -113,7 +116,7 @@ angular
       angular.forEach(toRemove, function(volume) {
         $scope.configuredVolumes.splice($scope.configuredVolumes.indexOf(volume), 1);
       });
-    }
+    }*/
   };
   
   $scope.addStackSvc = function(stack, svcName) {
@@ -125,7 +128,7 @@ angular
         var stackSvc = createStackSvc(stack, svc);
         
         // Check if this service is already present on our proposed stack
-        var exists = _.find(stack.services, function(svc) { return svc.serviceId === key });
+        var exists = _.find(stack.services, function(svc) { return svc.service === key });
         if (!exists) {
           // Add the service if it has not already been added
           stack.services.push(stackSvc);
@@ -149,7 +152,7 @@ angular
     var volume = $scope.showVolume(stack, svc);
     if (volume) {
       angular.forEach($scope.configuredVolumes, function(volume) {
-        if (volume.stackId === stack.name) {
+        if (volume.stack === stack.name) {
           volume.attachment = null;
         }
       });
