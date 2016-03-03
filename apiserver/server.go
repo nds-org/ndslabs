@@ -20,7 +20,6 @@ import (
 	k8api "k8s.io/kubernetes/pkg/api"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 )
 
@@ -126,6 +125,10 @@ func main() {
 	glog.Infof("JWT key %s ", cfg.Server.JwtKey)
 	glog.Infof("host %s ", cfg.Server.Host)
 	glog.Infof("port %s", cfg.Server.Port)
+	glog.V(1).Infoln("V1")
+	glog.V(2).Infoln("V2")
+	glog.V(3).Infoln("V3")
+	glog.V(4).Infoln("V4")
 
 	oshelper := openstack.OpenStack{}
 	oshelper.IdentityEndpoint = cfg.OpenStack.IdentityEndpoint
@@ -171,7 +174,7 @@ func main() {
 			OriginValidator: func(origin string, request *rest.Request) bool {
 				return origin == cfg.Server.Origin
 			},
-			AllowedMethods: []string{"GET", "POST", "PUT"},
+			AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
 			AllowedHeaders: []string{
 				"Accept", "Content-Type", "X-Custom-Header", "Origin", "accept", "authorization"},
 			AccessControlAllowCredentials: true,
@@ -242,7 +245,7 @@ func main() {
 		rest.Get("/projects/:pid/stacks/:sid", storage.GetStack),
 		rest.Delete("/projects/:pid/stacks/:sid", storage.DeleteStack),
 		rest.Get("/projects/:pid/volumes", storage.GetAllVolumes),
-		rest.Put("/projects/:pid/volumes", storage.CreateVolume),
+		rest.Post("/projects/:pid/volumes", storage.CreateVolume),
 		rest.Put("/projects/:pid/volumes/:vid", storage.PutVolume),
 		rest.Get("/projects/:pid/volumes/:vid", storage.GetVolume),
 		rest.Delete("/projects/:pid/volumes/:vid", storage.DeleteVolume),
@@ -602,8 +605,8 @@ func (s *Storage) GetAllStacks(w rest.ResponseWriter, r *rest.Request) {
 				}
 			}
 
-			endpoints := make(map[string]string)
 			k8services, _ := s.getK8Services(pid, stack.Key)
+			endpoints := make(map[string]string)
 			for _, k8service := range k8services {
 				glog.V(4).Infof("Service : %s %s\n", k8service.Name, k8service.Spec.Type)
 				if k8service.Spec.Type == "NodePort" {
@@ -615,7 +618,9 @@ func (s *Storage) GetAllStacks(w rest.ResponseWriter, r *rest.Request) {
 				stackService := &stack.Services[i]
 				glog.V(4).Infof("Stack Service %s %s\n", stackService.Service, podStatus[stackService.Service])
 				stackService.Status = podStatus[stackService.Service]
-				stackService.Endpoints = append(stackService.Endpoints, endpoints[stackService.Service])
+				if len(endpoints) > 0 {
+					stackService.Endpoints = append(stackService.Endpoints, endpoints[stackService.Service])
+				}
 			}
 			stacks = append(stacks, stack)
 		}
@@ -1211,24 +1216,25 @@ func (s *Storage) GetAllVolumes(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
-	size := r.Request.FormValue("size")
-	stackService := r.Request.FormValue("uid")
-	name := r.Request.FormValue("name")
 
-	var err error
 	vol := api.Volume{}
-	vol.Name = name
-	vol.Size, err = strconv.Atoi(size)
+	err := r.DecodeJsonPayload(&vol)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	vol.Status = "available"
-	vol.Attached = stackService
+
+	if (vol.Attached == "") {
+		vol.Status = "available"
+	} else {
+		vol.Status = "attached"
+	}
 
 	if s.local {
+		glog.V(4).Infoln("Creating local volume")
 		uid, err := newUUID()
 		if err != nil {
+			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -1236,6 +1242,7 @@ func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
 
 		err = os.Mkdir(s.volDir+"/"+uid, 0755)
 		if err != nil {
+			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -1243,46 +1250,64 @@ func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
 
 	} else {
 		// Create volume via OpenStack API
+		glog.V(4).Infoln("Creating OpenStack volume")
 
 		token, err := s.os.Authenticate(s.os.Username, s.os.Password,
 			s.os.TenantId)
 		if err != nil {
-			fmt.Println(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		instanceId, err := s.os.GetInstanceId()
 		if err != nil {
-			fmt.Println(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
-		volumeId, err := s.os.CreateVolume(token.Id, s.os.TenantId, name, vol.Size)
+		osName := fmt.Sprintf("ndslabs-%s-%s\n", pid, vol.Name)
+		volumeId, err := s.os.CreateVolume(token.Id, s.os.TenantId, osName, vol.Size)
 		if err != nil {
-			fmt.Println(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 		vol.Id = volumeId
 		vol.Format = "cinder"
 
-		osVolume, err := s.os.GetVolume(token.Id, s.os.TenantId, volumeId)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		/*
-			attachments, err := s.os.GetVolumeAttachments(token.Id, tenantId, instanceId)
+		var osVolume *openstack.Volume
+		for true {
+			osVolume, err = s.os.GetVolume(token.Id, s.os.TenantId, volumeId)
 			if err != nil {
-				fmt.Println(err)
+				rest.Error(w, err.Error(), http.StatusInternalServerError)
+				return
 			}
-		*/
-
-		err = s.os.AttachVolume(token.Id, s.os.TenantId, instanceId,
-			volumeId, osVolume.Device)
-		if err != nil {
-			fmt.Println(err)
+			if (osVolume.Status == "available") {
+				break
+			}
 		}
+
+		err = s.os.AttachVolume(token.Id, s.os.TenantId, instanceId, volumeId)
+		if err != nil {
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		for true {
+			osVolume, err = s.os.GetVolume(token.Id, s.os.TenantId, volumeId)
+			if err != nil {
+				rest.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			if (osVolume.Status == "in-use") {
+				break
+			}
+		}
+		//time.Sleep(time.Second*2)
 
 		err = s.os.Mkfs(osVolume.Device, "xfs")
 		if err != nil {
 			fmt.Println(err)
+			return
 		}
 
 		err = s.os.DetachVolume(token.Id, s.os.TenantId, instanceId, volumeId)
@@ -1290,10 +1315,6 @@ func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
 			fmt.Println(err)
 		}
 
-		err = s.os.DeleteVolume(token.Id, s.os.TenantId, volumeId)
-		if err != nil {
-			fmt.Println(err)
-		}
 
 		vol.Format = "cinder"
 	}
@@ -1301,7 +1322,6 @@ func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
 	opts := client.SetOptions{Dir: true}
 	s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid, "/volumes", &opts)
 	data, _ := json.Marshal(vol)
-	glog.V(4).Infof("Json: " + string(data))
 	path := etcdBasePath + "/projects/" + pid + "/volumes/" + vol.Name
 	_, err = s.etcd.Set(context.Background(), path, string(data), nil)
 	w.WriteJson(&vol)
@@ -1325,39 +1345,49 @@ func (s *Storage) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	vid := r.PathParam("vid")
 
-	volume := api.Volume{}
-	err := r.DecodeJsonPayload(&volume)
+	vol := api.Volume{}
+	err := r.DecodeJsonPayload(&vol)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = s.putVolume(pid, vid, volume)
+	if (vol.Attached != "") {
+		vol.Status = "available"
+	} else {
+		vol.Status = "attached"
+	}
+
+	err = s.putVolume(pid, vid, vol)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteJson(&volume)
+	w.WriteJson(&vol)
+}
+
+func (s *Storage) getVolume(pid string, vid string) (*api.Volume, error) {
+	path := etcdBasePath + "/projects/" + pid + "/volumes/" + vid
+	resp, err := s.etcd.Get(context.Background(), path, nil)
+
+	if err != nil {
+		return nil, err
+	} else {
+		volume := api.Volume{}
+		json.Unmarshal([]byte(resp.Node.Value), &volume)
+		return &volume, nil
+	}
 }
 
 func (s *Storage) GetVolume(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	vid := r.PathParam("vid")
 
-	path := etcdBasePath + "/projects/" + pid + "/volumes/" + vid
-	resp, err := s.etcd.Get(context.Background(), path, nil)
-
+	volume, err := s.getVolume(pid, vid)
 	if err != nil {
-		if e, ok := err.(*etcderr.Error); ok {
-			if e.ErrorCode == etcderr.EcodeKeyNotFound {
-				rest.NotFound(w, r)
-			}
-		}
-		w.WriteJson(&err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
-		volume := api.Volume{}
-		json.Unmarshal([]byte(resp.Node.Value), &volume)
 		w.WriteJson(&volume)
 	}
 }
@@ -1366,11 +1396,43 @@ func (s *Storage) DeleteVolume(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	vid := r.PathParam("vid")
 
-	path := etcdBasePath + "/projects/" + pid + "/volumes/" + vid
-	_, err := s.etcd.Delete(context.Background(), path, nil)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	glog.V(4).Infof("Deleting volume %s\n", vid)
+	volume, err := s.getVolume(pid, vid)
+ 	if (volume == nil) {
+		glog.V(4).Infoln("No such volume")
+		if err != nil {
+			glog.Error(err)
+		}
+		rest.NotFound(w, r)
+	} else {
+		glog.V(4).Infof("Format %s\n", volume.Format)
+		if volume.Format == "hostPath" {
+			err = os.RemoveAll(s.volDir+"/"+volume.Id)
+			if err != nil {
+				rest.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		} else if volume.Format == "cinder" {
+			token, err := s.os.Authenticate(s.os.Username, s.os.Password,
+				s.os.TenantId)
+			if err != nil {
+				rest.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			err = s.os.DeleteVolume(token.Id, s.os.TenantId, volume.Id)
+			if err != nil {
+				rest.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		}
+
+		path := etcdBasePath + "/projects/" + pid + "/volumes/" + vid
+		_, err := s.etcd.Delete(context.Background(), path, nil)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)

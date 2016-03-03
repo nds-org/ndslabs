@@ -3,11 +3,10 @@ package openstack
 import (
 	"bytes"
 	"encoding/json"
-	//"flag"
+	"github.com/golang/glog"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	//sys "os"
 	"os/exec"
 	"strings"
 	"time"
@@ -24,13 +23,14 @@ type Volume struct {
 	Device   string
 	ServerId string
 	Size     int
+	Status     string
 }
 
 type Attachment struct {
-	id       string
-	device   string
-	serverId string
-	volumeId string
+	Id       string
+	Device   string
+	ServerId string
+	VolumeId string
 }
 
 type OpenStack struct {
@@ -44,54 +44,6 @@ type OpenStack struct {
 
 // OpenStack client for NDS Labs
 
-/*
-func main() {
-	flag.Parse()
-	os := OpenStack{}
-	os.IdentityEndpoint = "http://nebula.ncsa.illinois.edu:5000/v2.0/"
-	os.VolumesEndpoint = "http://nebula.ncsa.illinois.edu:8776/v2/"
-	os.ComputeEndpoint = "http://nebula.ncsa.illinois.edu:8774/v2/"
-	username := ""
-	password := ""
-	tenantId := ""
-
-	token, err := os.Authenticate(username, password, tenantId)
-	if err != nil {
-		fmt.Println(err)
-		sys.Exit(-1)
-	}
-
-	vols, _ := os.ListVolumes(tenantId, token.Id)
-	for _, vol := range vols {
-		fmt.Printf("%s %s\n", vol.Id, vol.Name)
-	}
-
-	//instanceId, _ := os.GetInstanceId()
-	instanceId := "e8bbb11f-fb9b-4edb-a718-9baf495af825"
-	fmt.Printf("Host instanceId: %s\n", instanceId)
-
-	//volumeId, _ := os.CreateVolume(token, tenantId, "nds-test-vol", 10)
-
-	attachments, _ := os.getVolumeAttachments(token.Id, tenantId, instanceId)
-	for _, attachment := range attachments {
-		fmt.Printf("%s %s\n", attachment.id, attachment.device)
-	}
-
-	//volumeId := "7935509a-9393-495e-b10b-35ba363c3809"
-	//os.GetVolume(token.Id, tenantId, volumeId)
-	// /etc/machine-id
-	//mountPoint := "/dev/vdf"
-	//os.AttachVolume(token, tenantId, instanceId, volumeId, mountPoint)
-	//time.Sleep(time.Second*10)
-	//os.GetVolume(token, tenantId, volumeId)
-	//os.Mkfs(mountPoint)
-	//os.DetachVolume(token, tenantId, volumeId, instanceId)
-	//os.GetVolume(token, tenantId, volumeId)
-	//attachmentId := "52ba6092-205a-443b-b36c-904b0e689b33"
-	//os.DetachVolume(token, tenantId, instanceId, volumeId)
-
-}
-*/
 
 // Returns the local host instanceId
 func (s *OpenStack) GetInstanceId() (string, error) {
@@ -112,15 +64,17 @@ func (s *OpenStack) GetInstanceId() (string, error) {
 }
 
 func (s *OpenStack) Mkfs(mountPoint string, fstype string) error {
+	glog.Infof("Mkfs %s %s\n", mountPoint, fstype)
 	cmd := exec.Command("mkfs", "-t", fstype, mountPoint)
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	err := cmd.Run()
 	if err != nil {
+		glog.Error(err)
+		glog.Errorf("Stdout: %s\n", out.String())
 		return err
 	}
 	return nil
-	//fmt.Printf("mkfs response: %s\n", out.String())
 }
 
 func (s *OpenStack) GetVolume(token string, tenantId string, volumeId string) (*Volume, error) {
@@ -151,6 +105,8 @@ func (s *OpenStack) GetVolume(token string, tenantId string, volumeId string) (*
 			volume.Id = volumeMap["id"].(string)
 			volume.Name = volumeMap["name"].(string)
 			volume.Size = int(volumeMap["size"].(float64))
+			volume.Status = volumeMap["status"].(string)
+			glog.V(4).Infof("GetVolume status=%s\n", volume.Status)
 
 			attachments := volumeMap["attachments"].([]interface{})
 			if attachments != nil && len(attachments) > 0 {
@@ -167,6 +123,7 @@ func (s *OpenStack) GetVolume(token string, tenantId string, volumeId string) (*
 }
 
 func (s *OpenStack) CreateVolume(token string, tenantId string, name string, size int) (string, error) {
+	glog.Infof("CreateVolume %s %d\n", name, size)
 
 	volumeMap := map[string]interface{}{
 		"size":        size,
@@ -176,7 +133,6 @@ func (s *OpenStack) CreateVolume(token string, tenantId string, name string, siz
 	volumeObj := map[string]interface{}{"volume": volumeMap}
 
 	data, _ := json.Marshal(volumeObj)
-	fmt.Print(string(data))
 
 	client := &http.Client{}
 	url := s.VolumesEndpoint + tenantId + "/volumes"
@@ -185,25 +141,27 @@ func (s *OpenStack) CreateVolume(token string, tenantId string, name string, siz
 	request.Header.Set("X-Auth-Token", token)
 	httpresp, httperr := client.Do(request)
 	if httperr != nil {
-		fmt.Println(httperr)
+		glog.Error(httperr)
 		return "", httperr
 	} else {
 		if httpresp.StatusCode == http.StatusAccepted {
 
 			data, err := ioutil.ReadAll(httpresp.Body)
 			if err != nil {
-				fmt.Print(err)
+				glog.Error(err)
 				return "", err
 			}
 
 			volumeResp := make(map[string]interface{})
 			json.Unmarshal([]byte(data), &volumeResp)
-			id := volumeResp["id"]
-			name := volumeResp["name"]
-			fmt.Printf("%s %s\n", id, name)
+			volumeMap := volumeResp["volume"].(map[string]interface{})
+			id := volumeMap["id"]
+			glog.V(4).Infof("Created volume %s\n", id)
 			return id.(string), nil
 		} else {
-			fmt.Println("Error %s\n", httpresp.Status)
+			err := fmt.Errorf("Error %s\n", httpresp.Status)
+			glog.Error(err)
+			return "", err
 		}
 	}
 	return "", nil
@@ -251,7 +209,7 @@ func (s *OpenStack) ListVolumes(tenantId string, token string) ([]Volume, error)
 
 func (s *OpenStack) Authenticate(username string, password string, tenantId string) (*Token, error) {
 
-	fmt.Printf("Authenticate %s %s\n", username, tenantId)
+	glog.V(4).Infof("Authenticate %s %s\n", username, tenantId)
 	client := &http.Client{}
 
 	authMap := make(map[string]interface{})
@@ -269,7 +227,7 @@ func (s *OpenStack) Authenticate(username string, password string, tenantId stri
 	request.Header.Set("Content-Type", "application/json")
 	httpresp, httperr := client.Do(request)
 	if httperr != nil {
-		fmt.Println(httperr)
+		glog.Error(httperr)
 		return nil, httperr
 	} else {
 		if httpresp.StatusCode == http.StatusOK {
@@ -291,7 +249,9 @@ func (s *OpenStack) Authenticate(username string, password string, tenantId stri
 
 			return &token, nil
 		} else {
-			fmt.Println("Error %s\n", httpresp.Status)
+			err := fmt.Errorf("Error %s\n", httpresp.Status)
+			glog.Error(err)
+			return nil, err
 		}
 	}
 	return nil, nil
@@ -300,20 +260,24 @@ func (s *OpenStack) Authenticate(username string, password string, tenantId stri
 // DELETE powervc/openstack/compute/v2/{tenant_id}/servers/{server_id}/os-volume_attachments/{attachment_id}
 func (s *OpenStack) DetachVolume(token string, tenantId string, instanceId string, attachmentId string) error {
 
+	glog.V(4).Infof("DetachVolume %s %s\n", instanceId, attachmentId)
 	client := &http.Client{}
 	url := s.ComputeEndpoint + tenantId + "/servers/" + instanceId + "/os-volume_attachments/" + attachmentId
-	fmt.Println(url)
+	//glog.V(4).Infof("Detach URL: %s\n", url)
 	request, _ := http.NewRequest("DELETE", url, nil)
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("X-Auth-Token", token)
 	httpresp, httperr := client.Do(request)
 	if httperr != nil {
+		glog.Error(httperr)
 		return httperr
 	} else {
-		if httpresp.StatusCode == http.StatusOK {
-			fmt.Printf("Deleted %s\n", httpresp.Status)
+		if httpresp.StatusCode == http.StatusAccepted {
+			glog.V(4).Infoln("Detach succeeded")
 		} else {
-			fmt.Printf("Error %s\n", httpresp.Status)
+			err := fmt.Errorf("Detach failed %s\n", httpresp.Status)
+			glog.Error(err)
+			return err
 		}
 	}
 	return nil
@@ -345,10 +309,10 @@ func (s *OpenStack) GetVolumeAttachments(token string, tenantId string, instance
 			attachArray := attachResp["volumeAttachments"].([]interface{})
 			for _, attach := range attachArray {
 				attachment := Attachment{}
-				attachment.id = attach.(map[string]interface{})["id"].(string)
-				attachment.device = attach.(map[string]interface{})["device"].(string)
-				attachment.serverId = attach.(map[string]interface{})["serverId"].(string)
-				attachment.volumeId = attach.(map[string]interface{})["volumeId"].(string)
+				attachment.Id = attach.(map[string]interface{})["id"].(string)
+				attachment.Device = attach.(map[string]interface{})["device"].(string)
+				attachment.ServerId = attach.(map[string]interface{})["serverId"].(string)
+				attachment.VolumeId = attach.(map[string]interface{})["volumeId"].(string)
 				attachments = append(attachments, attachment)
 
 			}
@@ -361,30 +325,32 @@ func (s *OpenStack) GetVolumeAttachments(token string, tenantId string, instance
 }
 
 // POST powervc/openstack/compute/v2/{tenant_id}/servers/{server_id}/os-volume_attachments/{attachment_id}
-func (s *OpenStack) AttachVolume(token string, tenantId string, instanceId string, volumeId string, mountPoint string) error {
+func (s *OpenStack) AttachVolume(token string, tenantId string, instanceId string, volumeId string) error {
+	glog.V(4).Infof("Attaching volume %s, %s, %s, %s\n", token, tenantId, instanceId, volumeId)
 	attachMap := map[string]interface{}{
 		"serverId": instanceId,
 		"volumeId": volumeId,
-		"device":   mountPoint,
 	}
 	attachObj := map[string]interface{}{"volumeAttachment": attachMap}
 
 	data, _ := json.Marshal(attachObj)
-	fmt.Println(string(data))
 
 	client := &http.Client{}
 	url := s.ComputeEndpoint + tenantId + "/servers/" + instanceId + "/os-volume_attachments"
+
 	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("X-Auth-Token", token)
 	httpresp, httperr := client.Do(request)
 	if httperr != nil {
-		fmt.Println(httperr)
+		glog.Error(httperr)
 	} else {
 		if httpresp.StatusCode == http.StatusOK {
-			fmt.Printf("Success %s\n", httpresp.Status)
+			glog.V(4).Infoln("Attach succeeded")
 		} else {
-			fmt.Printf("Error %s\n", httpresp.Status)
+			err := fmt.Errorf("Attach failed %s\n", httpresp.Status)
+			glog.Error(err)
+			return err
 		}
 	}
 	return nil

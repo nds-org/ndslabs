@@ -54,7 +54,7 @@ type StackService struct {
 	Stack       string   `json:"stack"`
 	Service     string   `json:"service"`
 	Status      string   `json:"status"`
-	Endpoints   []string `json:"endpoints"`
+	Endpoints   []string `json:"endpoints,omitempty"`
 	CreatedTime int      `json:"createdTime"`
 	UpdatedTime int      `json:"updateTime"`
 }
@@ -63,6 +63,7 @@ type Volume struct {
 	Id          string `json:"id"`
 	Name        string `json:"name"`
 	Size        int    `json:"size"`
+	SizeUnit        string    `json:"sizeUnit"`
 	Format      string `json:"format"`
 	Attached    string `json:"attached"`
 	Service     string `json:"service"`
