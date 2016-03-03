@@ -540,6 +540,42 @@
                     }
                 }
             }
+        },
+        "/projects/{project-id}/start/{stack-service-id}": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/project-id"
+                },
+                {
+                    "$ref": "#/parameters/stack-service-id"
+                }
+            ],
+            "get": {
+                "description": "Starts the specified stack\n",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/projects/{project-id}/stop/{stack-service-id}": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/project-id"
+                },
+                {
+                    "$ref": "#/parameters/stack-service-id"
+                }
+            ],
+            "get": {
+                "description": "Starts the specified stack\n",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -724,8 +760,14 @@
                 "id": {
                     "type": "string"
                 },
+                "name": {
+                    "type": "string"
+                },
                 "size": {
                     "type": "integer"
+                },
+                "sizeUnit": {
+                    "type": "string"
                 },
                 "format": {
                     "type": "string"
@@ -733,7 +775,10 @@
                 "attached": {
                     "type": "string"
                 },
-                "serviceId": {
+                "service": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 },
                 "formatted": {

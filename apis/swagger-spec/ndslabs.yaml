@@ -388,6 +388,30 @@ paths:
             properties:
               data:
                 $ref: '#/definitions/Log'
+
+  /projects/{project-id}/start/{stack-service-id}:
+    parameters: 
+      - $ref: '#/parameters/project-id'
+      - $ref: '#/parameters/stack-service-id'  
+    get:
+      description: |
+        Starts the specified stack
+      responses:
+        200:
+          description: OK
+
+  /projects/{project-id}/stop/{stack-service-id}:
+    parameters: 
+      - $ref: '#/parameters/project-id'
+      - $ref: '#/parameters/stack-service-id'
+    get:
+      description: |
+        Starts the specified stack
+      responses:
+        200:
+          description: OK
+
+
 definitions:
   Auth:
     type: object
@@ -514,14 +538,20 @@ definitions:
     properties:
       id:
         type: string
+      name:
+        type: string
       size:
         type: integer
+      sizeUnit:
+        type: string
       format:
         type: string
       attached:
-        type: string  # ServiceStack.id
-      serviceId:
-        type: string  # Original service Id
+        type: string  # ServiceStack UID
+      service:
+        type: string  # Original service key
+      status:
+        type: string
       formatted:
         type: boolean
       createTime:
