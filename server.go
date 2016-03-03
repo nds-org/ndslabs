@@ -1,7 +1,6 @@
 package main
 
 import (
-	"gopkg.in/gcfg.v1"
 	"bytes"
 	"crypto/rand"
 	"encoding/json"
@@ -12,8 +11,10 @@ import (
 	"github.com/coreos/etcd/client"
 	etcderr "github.com/coreos/etcd/error"
 	"github.com/golang/glog"
+	openstack "github.com/nds-labs/apiserver/openstack"
 	api "github.com/nds-labs/apiserver/types"
 	"golang.org/x/net/context"
+	gcfg "gopkg.in/gcfg.v1"
 	"io"
 	"io/ioutil"
 	k8api "k8s.io/kubernetes/pkg/api"
@@ -67,62 +68,108 @@ func (e Error) Error() string {
 	return e.Message
 }
 
+type Config struct {
+	Server struct {
+		Port         string
+		Origin       string
+		VolDir       string
+		JwtKey       string
+		Host         string
+		VolumeSource string
+	}
+	Etcd struct {
+		Address string
+	}
+	Kubernetes struct {
+		Address string
+	}
+	OpenStack struct {
+		IdentityEndpoint string
+		ComputeEndpoint  string
+		VolumesEndpoint  string
+		TenantId         string
+		Username         string
+		Password         string
+	}
+}
+
 func main() {
 
-	var port, etcdAddress, kubeAddress, corsOrigin, openStackAddress, volDir string
-	var jwtKeyPath, host string
-	flag.StringVar(&port, "port", "8083", "Server port")
-	flag.StringVar(&etcdAddress, "etcd", "localhost:4001", "etcd server address")
-	flag.StringVar(&kubeAddress, "kube", "localhost:8080", "kube-api server address")
-	flag.StringVar(&openStackAddress, "openstack", "", "OpenStack api server address")
-	flag.StringVar(&corsOrigin, "origin", "", "CORS origin")
-	flag.StringVar(&volDir, "vol-dir", "/tmp/volumes", "Directory for hostPath volumes")
-	flag.StringVar(&jwtKeyPath, "jwtKeyPath", "jwt.pem", "Path to JWT signing key")
-	flag.StringVar(&host, "host", "localhost", "Hostname of API server")
 	flag.Parse()
+	cfg := Config{}
+	err := gcfg.ReadFileInto(&cfg, "apiserver.conf")
+	if err != nil {
+		glog.Error(err)
+		os.Exit(-1)
+	}
+
+	if cfg.Server.Port == "" {
+		cfg.Server.Port = "8083"
+	}
+	if cfg.Server.JwtKey == "" {
+		cfg.Server.JwtKey = "jwt.pem"
+	}
+	if cfg.Server.Host == "" {
+		cfg.Server.Host = "localhost"
+	}
+	if cfg.Etcd.Address == "" {
+		cfg.Etcd.Address = "localhost:4001"
+	}
+	if cfg.Kubernetes.Address == "" {
+		cfg.Kubernetes.Address = "localhost:4001"
+	}
 
 	glog.Info("Starting NDS Labs API server")
-	glog.Infof("etcd %s ", etcdAddress)
-	glog.Infof("kube-apiserver %s", kubeAddress)
-	glog.Infof("openstack api%s ", openStackAddress)
-	glog.Infof("volume dir %s", volDir)
-	glog.Infof("JWT key %s ", jwtKeyPath)
-	glog.Infof("host %s ", host)
-	glog.Infof("port %s", port)
+	glog.Infof("etcd %s ", cfg.Etcd.Address)
+	glog.Infof("kube-apiserver %s", cfg.Kubernetes.Address)
+	glog.Infof("volume dir %s", cfg.Server.VolDir)
+	glog.Infof("JWT key %s ", cfg.Server.JwtKey)
+	glog.Infof("host %s ", cfg.Server.Host)
+	glog.Infof("port %s", cfg.Server.Port)
+
+	oshelper := openstack.OpenStack{}
+	oshelper.IdentityEndpoint = cfg.OpenStack.IdentityEndpoint
+	oshelper.VolumesEndpoint = cfg.OpenStack.VolumesEndpoint
+	oshelper.ComputeEndpoint = cfg.OpenStack.ComputeEndpoint
+	oshelper.Username = cfg.OpenStack.Username
+	oshelper.Password = cfg.OpenStack.Password
+	oshelper.TenantId = cfg.OpenStack.TenantId
 
 	storage := Storage{}
-	etcd, err := GetEtcdClient(etcdAddress)
+	etcd, err := GetEtcdClient(cfg.Etcd.Address)
 	if err != nil {
 		glog.Fatal(err)
 	}
 	storage.etcd = etcd
-	storage.kubeBase = "http://" + kubeAddress //Todo: use Kube client
-	if len(openStackAddress) > 0 {
+	storage.kubeBase = "http://" + cfg.Kubernetes.Address //Todo: use Kube client
+	if cfg.Server.VolumeSource == "openstack" {
 		storage.local = false
-		storage.openStackEndpoint = openStackAddress
+		storage.os = oshelper
+		glog.Infoln("Using OpenStack storage")
 	} else {
 		storage.local = true
-		storage.volDir = volDir
+		storage.volDir = cfg.Server.VolDir
+		glog.Infoln("Using local storage")
 	}
 
-	jwtKey, err := ioutil.ReadFile(jwtKeyPath)
+	jwtKey, err := ioutil.ReadFile(cfg.Server.JwtKey)
 	if err != nil {
 		glog.Fatal(err)
 	}
 
 	storage.jwtKey = jwtKey
-	storage.host = host
+	storage.host = cfg.Server.Host
 
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 
-	if len(corsOrigin) > 0 {
-		glog.Infof("CORS origin %s\n", corsOrigin)
+	if len(cfg.Server.Origin) > 0 {
+		glog.Infof("CORS origin %s\n", cfg.Server.Origin)
 
 		api.Use(&rest.CorsMiddleware{
 			RejectNonCorsRequests: false,
 			OriginValidator: func(origin string, request *rest.Request) bool {
-				return origin == corsOrigin
+				return origin == cfg.Server.Origin
 			},
 			AllowedMethods: []string{"GET", "POST", "PUT"},
 			AllowedHeaders: []string{
@@ -208,19 +255,19 @@ func main() {
 	}
 	api.SetApp(router)
 
-	glog.Infof("Listening on %s", port)
-	glog.Fatal(http.ListenAndServe(":"+port, api.MakeHandler()))
+	glog.Infof("Listening on %s:%s", cfg.Server.Host, cfg.Server.Port)
+	glog.Fatal(http.ListenAndServe(":"+cfg.Server.Port, api.MakeHandler()))
 }
 
 type Storage struct {
-	etcd              client.KeysAPI
-	kubeBase          string
-	Namespace         string
-	openStackEndpoint string
-	local             bool
-	volDir            string
-	host              string
-	jwtKey            []byte
+	etcd      client.KeysAPI
+	kubeBase  string
+	Namespace string
+	os        openstack.OpenStack
+	local     bool
+	volDir    string
+	host      string
+	jwtKey    []byte
 }
 
 func GetPaths(w rest.ResponseWriter, r *rest.Request) {
@@ -849,6 +896,13 @@ func (s *Storage) startController(pid string, serviceKey string, stack *api.Stac
 					k8vols = append(k8vols, k8vol)
 
 					glog.V(4).Infof("Attaching %s\n", s.volDir+"/"+volume.Id)
+				} else if volume.Format == "cinder" {
+					k8cinder := k8api.CinderVolumeSource{}
+					k8cinder.VolumeID = volume.Id
+					k8cinder.FSType = "xfs"
+					k8vol.Cinder = &k8cinder
+					k8vols = append(k8vols, k8vol)
+					glog.V(4).Infof("Attaching cinder %s\n", volume.Id)
 				} else {
 					glog.Warning("Invalid volume format\n")
 				}
@@ -1161,67 +1215,97 @@ func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
 	stackService := r.Request.FormValue("uid")
 	name := r.Request.FormValue("name")
 
+	var err error
+	vol := api.Volume{}
+	vol.Name = name
+	vol.Size, err = strconv.Atoi(size)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	vol.Status = "available"
+	vol.Attached = stackService
+
 	if s.local {
 		uid, err := newUUID()
 		if err != nil {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		vol.Id = uid
 
 		err = os.Mkdir(s.volDir+"/"+uid, 0755)
 		if err != nil {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
-		vol := api.Volume{}
-		vol.Id = uid
-		vol.Name = name
-		vol.Size, err = strconv.Atoi(size)
-		if err != nil {
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
 		vol.Format = "hostPath"
-		vol.Status = "available"
-		vol.Attached = stackService
 
-		opts := client.SetOptions{Dir: true}
-		s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid, "/volumes", &opts)
+	} else {
+		// Create volume via OpenStack API
 
-		data, _ := json.Marshal(vol)
-		glog.V(4).Infof("Json: " + string(data))
-		path := etcdBasePath + "/projects/" + pid + "/volumes/" + vol.Name
-		_, err = s.etcd.Set(context.Background(), path, string(data), nil)
-		w.WriteJson(&vol)
-	}
-	// Create volume via OpenStack API
-
-	// Create volume via Openstack API
-	// Attach volume to current host
-	// run mkfs
-	// detach volume
-	/*
-		cmd := exec.Command("tr", "a-z", "A-Z")
-		cmd.Stdin = strings.NewReader("some input")
-		var out bytes.Buffer
-		cmd.Stdout = &out
-		err := cmd.Run()
+		token, err := s.os.Authenticate(s.os.Username, s.os.Password,
+			s.os.TenantId)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 		}
-		fmt.Printf("in all caps: %q\n", out.String())
-	*/
+
+		instanceId, err := s.os.GetInstanceId()
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		volumeId, err := s.os.CreateVolume(token.Id, s.os.TenantId, name, vol.Size)
+		if err != nil {
+			fmt.Println(err)
+		}
+		vol.Id = volumeId
+		vol.Format = "cinder"
+
+		osVolume, err := s.os.GetVolume(token.Id, s.os.TenantId, volumeId)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		/*
+			attachments, err := s.os.GetVolumeAttachments(token.Id, tenantId, instanceId)
+			if err != nil {
+				fmt.Println(err)
+			}
+		*/
+
+		err = s.os.AttachVolume(token.Id, s.os.TenantId, instanceId,
+			volumeId, osVolume.Device)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = s.os.Mkfs(osVolume.Device, "xfs")
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = s.os.DetachVolume(token.Id, s.os.TenantId, instanceId, volumeId)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = s.os.DeleteVolume(token.Id, s.os.TenantId, volumeId)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		vol.Format = "cinder"
+	}
+
+	opts := client.SetOptions{Dir: true}
+	s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid, "/volumes", &opts)
+	data, _ := json.Marshal(vol)
+	glog.V(4).Infof("Json: " + string(data))
+	path := etcdBasePath + "/projects/" + pid + "/volumes/" + vol.Name
+	_, err = s.etcd.Set(context.Background(), path, string(data), nil)
+	w.WriteJson(&vol)
 }
-
-//func (s *Storage) createOpenstackVolume(tenant string) {
-// Authenticate with openstack
-//url := s.openStackAddress + "/v2.0/tokens"
-// Post
-// {"auth": {"tenantName": "tenant", "passwordCredentials": {"username": "username", "password": "password"}}}
-
-//	url := s.openStackAddress + "/v2/" + tenant + "/volumes"
-//}
 
 func (s *Storage) putVolume(pid string, name string, volume api.Volume) error {
 	opts := client.SetOptions{Dir: true}
