@@ -1,5 +1,84 @@
 angular
 .module('ndslabs')
+.factory('Project', [function() {
+  // An empty place-holder for our project data
+  return {};
+}])
+.factory('Specs', [function() {
+  // An empty place-holder for our service/stack specs
+  return {
+    all: [],
+    stacks: [],
+    deps: []
+  };
+}])
+.factory('Volumes', [function() {
+  // An empty place-holder for our volumes
+  return {
+    all: [],
+    attached: [],
+    orphans: []
+  };
+}])
+.factory('Stacks', [function() {
+  // An empty place-holder for our deployed stacks
+  return {
+    all: [],
+    configured: [],
+    deployed: []
+  };
+}])
+.service('Stack', [ 'Stacks', function(Stacks) {
+    // TODO: This should be a service
+  return function(template) {
+    var stack = {
+      id: "",
+      name: "",
+      key: template.key,
+      status: "Suspended",
+      services: []
+    };
+    
+    Stacks.all.push(stack);
+    
+    return stack;
+  };
+}])
+.service('Volume', [ 'Volumes', function(Volumes) {
+    // TODO: This should be a service
+  return function(stack, service) { 
+    var volume = {
+      id: '',
+      stackId: stack.name,
+      serviceId: service.key,
+      format: 'Raw',
+      size: 10,
+      sizeUnit: 'GB',
+      attachment: stack.name + '-' + service.key
+    };
+    
+    Volumes.all.push(volume);
+    
+    return volume;
+  };
+}])
+.service('StackService', [ function() {
+    // TODO: This should be a service
+  return function(stack, spec) {
+    var svc = {
+      id: "",
+      stackId: stack.name,
+      serviceId: spec.key,
+      status: "Suspended",
+      replicas: 1,
+      endpoints: []
+    };
+    
+    stack.services.push(svc);
+    
+    return svc;
+  };
+}])
 .filter('isRecursivelyRequired', function() {
   return function(services, service, stacks, deps) {
     var result = false;
@@ -15,49 +94,60 @@ angular
     return result;
   };
 })
-.filter('missingDeps', function() {
-  // Returns true iff service list provided does not contain all of the specified dependencies
-  return function(services, stacks, stackKey, reqOpt) {
-    var svc = _.find(stacks, _.matchesProperty('key', stackKey));
+.filter('missingDeps', [ '$log', 'Specs', function($log, Specs) {
+  // Returns any options missing from a stack
+  return function(stack) {
+    if (!Specs.all || !Specs.all.length) {
+      return [];
+    }
     
-    if (svc) {
-      var inverted = _.invertBy(_.mapValues(_.keyBy(svc.depends, function(o) {
-        return o.key;
-      }), 'required'));
+    var spec = _.find(Specs.all, ['key', stack.key]);
+    if (spec) {
+      var options = _.filter(spec.depends, [ 'required', false ]);
       
-      // Given a list of dependency names, check for their existence in services
-      var areDepsMissing = function(dependencySet) {
-        var missingDeps = [];
-        angular.forEach(dependencySet, function(service) {
-          var exists = _.find(services, { 'serviceId': service });
-          if (!exists) {
-            missingDeps.push(service);
-          }
-        });
-        return missingDeps;
-      };
+      // TODO: Remove any entries present in stack.services
       
-      // Get one set of dependencies, or a map of all of them
-      if (reqOpt === 'required') {
-        // Only diff against required deps
-        return areDepsMissing(inverted['true']);
-      } else if (reqOpt === 'optional') {
-        // Only diff against optional deps
-        return areDepsMissing(inverted['false']);
-      } else {
-        // Get both diffs, concat them, and return
-        return _.concat(inverted['true'], inverted['false']);
-      }
-    } 
+      return options;
+    } else {
+      $log.error("Cannot locate dependencies - key not found: " + stack.key);
+    }
     return false;
   };
-})
-.filter('contains', function() {
-  return function(collection, label, key) {
-    debugger;
-    return _.find(collection, _.matchesProperty(label, key));
-  }
-})
+}])
+.filter('options', [ '$log', 'Specs', function($log, Specs) {
+  // Returns a list of options for a spec
+  return function(key) {
+    if (!Specs.all || !Specs.all.length) {
+      return [];
+    }
+    
+    var spec = _.find(Specs.all, ['key', key]);
+    if (spec) {
+      var options = _.filter(spec.depends, [ 'required', false ]);
+      return options;
+    } else {
+      $log.error("Cannot locate options - key not found: " + key);
+    }
+    return [];
+  };
+}])
+.filter('requirements', [ '$log', 'Specs', function($log, Specs) {
+  // Return a list of requirements for a spec
+  return function(key) {
+    if (!Specs.all || !Specs.all.length) {
+      return [];
+    }
+    
+    var spec = _.find(Specs.all, ['key', key]);
+    if (spec) {
+      var requirements = _.filter(spec.depends, [ 'required', true ]);
+      return requirements;
+    } else {
+      $log.error("Cannot locate requirements - key not found: " + key);
+    }
+    return [];
+  };
+}])
 .filter('orphansExist', function() {
   return function(orphans, serviceId) {
     var matches = [];
@@ -69,43 +159,9 @@ angular
     return matches;
   };
 })
-.controller('ConfigurationWizardCtrl', [ '$scope', '$log', '$uibModalInstance', 'Grid', 'Wizard', 'WizardPage', 'template', 'stacks', 'deps', 'configuredStacks', 'configuredVolumes',
-    function($scope, $log, $uibModalInstance, Grid, Wizard, WizardPage, template, stacks, deps, configuredStacks, configuredVolumes) {
-  // TODO: This should be a service
-  var createStack = function(template) {
-    return {
-      id: "",
-      name: "",
-      key: template.key,
-      status: "Suspended",
-      services: []
-    };
-  };
+.controller('ConfigurationWizardCtrl', [ '$scope', '$log', '$uibModalInstance', 'Stack', 'Volume', 'StackService', 'Grid', 'Wizard', 'WizardPage', 'template', 'stacks', 'deps', 'configuredStacks', 'configuredVolumes',
+    function($scope, $log, $uibModalInstance, Stack, Volume, StackService, Grid, Wizard, WizardPage, template, stacks, deps, configuredStacks, configuredVolumes) {
 
-  // TODO: This should be a service
-  var createStackSvc = function(stack, svc) {
-    return {
-      id: "",
-      stackId: stack.name,
-      serviceId: svc.key,
-      status: "Suspended",
-      replicas: 1,
-      endpoints: []
-    };
-  };
-
-  // TODO: This should be a service
-  var createVolume = $scope.createVolume = function(stackName, svcSpecKey) { 
-    return {
-      id: '',
-      stackId: stackName,
-      serviceId: svcSpecKey,
-      format: 'Raw',
-      size: 10,
-      sizeUnit: 'GB',
-      attachment: stackName + '-' + svcSpecKey
-    };
-  };
   
   $scope.discoverVolumeReqs = function(stack) {
     var reusableVolumes = [];
@@ -119,7 +175,7 @@ angular
             reusableVolumes.push(volume);
           }
         });
-        requiredVolumes.push(createVolume(stack.name, svcSpec.key));
+        requiredVolumes.push(new Volume(stack, svcSpec));
       }
     });
 
@@ -148,7 +204,7 @@ angular
       var key = dependency.key;
       var required = dependency.required;
       var svc = _.find(deps, function(svc) { return svc.key === key });
-      var stackSvc = createStackSvc($scope.newStack, svc);
+      var stackSvc = new StackService($scope.newStack, svc);
       var targetArray = null;
       if (required) {
           targetArray = $scope.newStack.services;
@@ -212,7 +268,7 @@ angular
           angular.forEach($scope.optionalLinksGrid.selector.selection, function(option) {
             var svc = _.find(deps, function(svc) { return svc.key === option.serviceId });
             $scope.collectDependencies(svc);
-            $scope.newStack.services.push(createStackSvc($scope.newStack, svc));
+            $scope.newStack.services.push(new StackService($scope.newStack, svc));
           });
 
           $log.debug("Discovering volume requirements...");
@@ -251,7 +307,7 @@ angular
   // Create a new Wizard to display
   $scope.wizard = new Wizard(configPages, initDelay);
   
-  $scope.newStack = createStack(template);
+  $scope.newStack = new Stack(template);
   $scope.newStackLabel = template.label;
   $scope.newStackOptions = [];
   var pageSize = 100;
@@ -259,7 +315,7 @@ angular
 
   // Add our base service to the stack
   var base = _.find(_.concat(deps, stacks), function(svc) { return svc.key === template.key });
-  $scope.newStack.services.push(createStackSvc($scope.newStack, base));
+  $scope.newStack.services.push(new StackService($scope.newStack, base));
 
   // Add required dependencies to the stack
   $scope.collectDependencies(template);
@@ -277,20 +333,10 @@ angular
     $uibModalInstance.dismiss('cancel');
   };
 }])
-.controller('ExpertSetupController', [ '$scope', '$log', '$uibModal', '_', 'DEBUG', 'NdsLabsApi', 
-    function($scope, $log, $uibModal, _, DEBUG, NdsLabsApi) {
-  // TODO: This should be a service
-  var createStackSvc = function(stack, svc) {
-    return {
-      id: "",
-      stackId: stack.name,
-      serviceId: svc.key,
-      status: "Suspended",
-      replicas: 1,
-      endpoints: []
-    };
-  };
-  
+.controller('ExpertSetupController', [ '$scope', '$log', '$uibModal', '_', 'AuthInfo', 'Project', 'Volumes', 'Stacks', 'Specs', 
+    'DEBUG', 'StackService', 'NdsLabsApi', function($scope, $log, $uibModal, _, AuthInfo, Project, Volumes, Stacks, Specs, DEBUG, 
+    StackService, NdsLabsApi) {
+
   // Wire in DEBUG mode
   $scope.DEBUG = DEBUG;
 
@@ -370,27 +416,43 @@ angular
   
   $scope.stacks = [];
 
-  // TODO: Investigate options / caching
+  // Grab our namespace/project
+  NdsLabsApi.getProjectById(AuthInfo.namespace).then(function(project, xhr) {
+    $log.debug("successfully grabbed from /projects/" + AuthInfo.namespace +"!");
+    Project = project;
+  }, function(headers) {
+    $log.debug("error!");
+    console.debug(headers);
+  });
   
-  // Grab our list of services
-  NdsLabsApi.getServices().then(function(data, xhr) {
-    $log.debug("success!");
-    $scope.allServices = data;
-    $scope.deps = angular.copy(data);
-    $scope.stacks = _.remove($scope.deps, function(svc) { return svc.stack === true  });
+  // Grab the list of services available at our site
+  NdsLabsApi.getServices().then(function(specs, xhr) {
+    $log.debug("successfully grabbed from /services!");
+    Specs.all = $scope.allServices = specs;
+    Specs.deps = $scope.deps = angular.copy(specs);
+    Specs.stacks = $scope.stacks = _.remove($scope.deps, function(svc) { return svc.stack === true  });
   }, function (headers) {
     $log.debug("error!");
     console.debug(headers);
   });
-  /*Services.query(function(data, xhr) {
-    $log.debug("success!");
-    $scope.allServices = data;
-    $scope.deps = angular.copy(data);
-    $scope.stacks = _.remove($scope.deps, function(svc) { return svc.stack === true  });
-  }, function (headers) {
+  
+  // Grab the list of configured stacks
+  NdsLabsApi.getProjectByProjectIdStacks(AuthInfo.namespace).then(function(stacks, xhr) {
+    $log.debug("successfully grabbed from /projects/" + AuthInfo.namespace + "/stacks!");
+    Stacks.all = stacks;
+  }, function(headers) {
     $log.debug("error!");
     console.debug(headers);
-  });*/
+  });
+  
+  // Grab the list of volumes
+  NdsLabsApi.getProjectByProjectIdVolumes(AuthInfo.namespace).then(function(volumes, xhr) {
+    $log.debug("successfully grabbed from /projects/" + AuthInfo.namespace + "/volumes!");
+    Volumes.all = volumes;
+  }, function(headers) {
+    $log.debug("error!");
+    console.debug(headers);
+  });
   
   // TODO: This could be a service
   $scope.openWizard = function(template) {
@@ -468,13 +530,14 @@ angular
     }
   };
   
-  $scope.addStackSvc = function(stack, svcName) {
-    var spec = _.find($scope.deps, { 'key': svcName });
+  $scope.addStackSvc = function(stack, svc) {
+    var spec = _.find(Specs.all, [ 'key', svc.key ]);
+    debugger;
     if (spec) {
       // Ensure this does not require new dependencies
       angular.forEach(spec.depends, function(dependency) {
-        var svc = _.find($scope.deps, function(svc) { return svc.key === dependency.key });
-        var stackSvc = createStackSvc(stack, svc);
+        var svc = _.find(Specs.all, function(svc) { return svc.key === dependency.key });
+        var stackSvc = new StackService(stack, svc);
         
         // Check if this service is already present on our proposed stack
         var exists = _.find(stack.services, function(svc) { return svc.serviceId === dependency.key });
@@ -488,9 +551,9 @@ angular
       });
       
       // Now that we have all required dependencies, add our target service
-      stack.services.push(createStackSvc(stack, spec));
+      stack.services.push(new StackService(stack, spec));
     } else {
-      $log.error("spec not found: " + svcName);
+      $log.error("spec not found: " + svc.key);
     }
   };
   

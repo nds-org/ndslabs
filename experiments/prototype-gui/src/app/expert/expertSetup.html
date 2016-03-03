@@ -65,15 +65,15 @@
             <uib-accordion-heading>
               <!-- Stack Enable / Disable -->
               <div class="row">
-                <div class="col-md-1">
+                <div class="col-md-2 text-center">
                   <i class="pull-left fa fa-fw fa-2x" 
                     ng-class="{ 'fa-check-circle-o': stack.status, 'fa-times-circle-o': !stack.status }"
                     ng-style="{ 'color': stack.status ? 'green' : 'red' }"></i>
                 </div>
-                <div class="col-md-10">
+                <div class="col-md-9">
                   <h4>{{ _.capitalize(stack.name) }}</h4>
                 </div>
-                <div class="col-md-1">
+                <div class="col-md-1" style="vertical-align:middle;">
                   <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': open, 'glyphicon-chevron-right': !open}"></i>
                 </div>
               </div>
@@ -91,7 +91,7 @@
                 <!-- The "Add Service" Button -->
                 <div class="col-md-2">
                   <a class="btn btn-xs btn-success" tabindex="0" uib-popover-template="'/app/expert/subviews/serviceAddPopover.html'" 
-                     popover-title="OPTIONAL SERVICES" ng-if="!stack.status && (stack.services | missingDeps:allServices:stack.name:'optional').length > 0"
+                     popover-title="OPTIONAL SERVICES" ng-if="!stack.status && (stack | missingDeps).length > 0"
                      popover-placement="bottom-left" popover-trigger="outsideClick">
                     <i class="fa fa-plus fa-fw"></i><i class="fa fa-fw fa-caret-down"></i>
                   </a>
@@ -166,7 +166,7 @@
                         <button type="button" class="btn btn-xs btn-info" uib-tooltip="View Logs"><i class="fa fa-fw fa-search"></i></button>
                     
                         <button type="button" ng-disabled="stack.services | isRecursivelyRequired:svc:stacks:deps" 
-                        ng-if="svc.serviceId !== stack.key && (stack.services | missingDeps:allServices:stack.key:'required').indexOf(svc.serviceId) === -1" 
+                        ng-if="svc.serviceId !== stack.key && (stack.key | requirements).indexOf(svc.serviceId) === -1" 
                             class="btn btn-xs btn-danger" ng-click="removeStackSvc(stack, svc)" 
                             uib-tooltip="Remove Service from Stack" tooltip-placement="left">
                           <i class="fa fa-fw fa-times"></i>

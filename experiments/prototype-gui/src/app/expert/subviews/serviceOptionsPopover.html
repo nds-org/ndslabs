@@ -9,7 +9,7 @@
         <button type="button" class="btn btn-xs btn-info" uib-tooltip="Execute a Command"><i class="fa fa-fw fa-terminal"></i></button>
     
         <button type="button" ng-disabled="stack.services | isRecursivelyRequired:svc:stacks:deps" 
-        ng-if="svc.serviceId !== stack.key && (stack.services | missingDeps:allServices:stack.key:'required').indexOf(svc.serviceId) === -1" 
+        ng-if="svc.serviceId !== stack.key && (stack.key | requirements).indexOf(svc.serviceId) === -1" 
             class="btn btn-xs btn-danger pull-right" ng-click="removeStackSvc(stack, svc)" 
             uib-tooltip="Remove Service from Stack" tooltip-placement="left">
           <i class="fa fa-fw fa-times"></i>

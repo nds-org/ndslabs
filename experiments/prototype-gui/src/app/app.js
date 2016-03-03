@@ -12,24 +12,25 @@ angular
 .constant('ExpertRoute', '/home')
 .constant('ManageRoute', '/deployments')
 .factory('NdsLabsApi', [ 'ApiUri', 'ApiServer', function(ApiUri, ApiServer) {
+  // TODO: Investigate options / caching
   return new ApiServer(ApiUri);
 }])
 .provider('AuthInfo', function() {
-    this.authInfo = {
-      authenticated: false,
-      namespace: '',
-      password: '',
-      saveCookie: false
-    };
+  this.authInfo = {
+    authenticated: false,
+    namespace: '',
+    password: '',
+    saveCookie: false
+  };
 
-    this.$get = function() {
-        var authInfo = this.authInfo;
-        return {
-            isAuth: function() { return authInfo.authenticated; },
-            get: function() { return authInfo; },
-            setAuth: function(authCookie) { authInfo = angular.fromJson(authCookie); }
-        }
-    };
+  this.$get = function() {
+      var authInfo = this.authInfo;
+      return {
+          isAuth: function() { return authInfo.authenticated; },
+          get: function() { return authInfo; },
+          setAuth: function(authCookie) { authInfo = angular.fromJson(authCookie); }
+      }
+  };
 })
 .config([ '$routeProvider', '$httpProvider', 'AuthInfoProvider', 'LoginRoute', 'ExpressRoute', 'ExpertRoute', 'ManageRoute',
     function($routeProvider, $httpProvider, authInfo, LoginRoute, ExpressRoute, ExpertRoute, ManageRoute) {
