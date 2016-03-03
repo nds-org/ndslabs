@@ -14,6 +14,7 @@ angular
   
   $scope.login = function() {
     $log.debug("Logging in!");
+    $scope.progressMessage = 'Please wait...';
     $scope.errorMessage = '';
     NdsLabsApi.postAuthenticate({
       "auth": { 
@@ -30,9 +31,10 @@ angular
       $cookies.put('namespace', $scope.settings.namespace);
       $location.path(HomeRoute);
     }, function(response) {
-      $scope.errorCode = response.status;
-      $scope.errorMessage = "Invalid credentials.";
+      $scope.errorMessage = response.status === 401 ? 'Invalid namespace or password' : response.body.Error;
       $log.error("Error logging in!");
+    }).finally(function() {
+      $scope.progressMessage = '';
     });
   };
 

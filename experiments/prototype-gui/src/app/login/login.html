@@ -49,7 +49,10 @@
             <div class="text-center">
               <p class="text-danger" ng-if="errorMessage">
                 {{ errorMessage }}
-              </span>
+              </p>
+              <p class="text-primary" ng-if="progressMessage">
+                <i class="fa fa-fw fa-spinner fa-spin"></i>{{ progressMessage }}
+              </p>
             </div>
           </form>
         </div>
