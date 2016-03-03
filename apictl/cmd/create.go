@@ -17,12 +17,14 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"bytes"
 	api "github.com/nds-labs/apiserver/types"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 var createCmd = &cobra.Command{
@@ -35,14 +37,17 @@ var createCmd = &cobra.Command{
 		}
 
 		fmt.Printf("%s %s %s %s\n", args[0], args[1], args[2])
-		name := args[0]
-		size := args[1]
-		uid := args[2]
 
-		url := apiServer + "projects/" + apiUser.username + "/volumes?size=" + size + "&uid=" + uid + "&name=" + name
+		vol := api.Volume{}
+		vol.Name = args[0]
+		vol.Size, _ = strconv.Atoi(args[1])
+		vol.Attached = args[2]
 
+		url := apiServer + "projects/" + apiUser.username + "/volumes"
+
+		data, _ := json.Marshal(vol)
 		client := &http.Client{}
-		request, err := http.NewRequest("PUT", url, nil)
+		request, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(data)))
 		request.Header.Set("Content-Type", "application/json")
 		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
 		resp, err := client.Do(request)
