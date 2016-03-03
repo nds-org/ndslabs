@@ -1,6 +1,7 @@
 package main
 
 import (
+	"gopkg.in/gcfg.v1"
 	"bytes"
 	"crypto/rand"
 	"encoding/json"
@@ -177,9 +178,9 @@ func main() {
 		rest.Post("/authenticate", jwt.LoginHandler),
 		rest.Get("/refresh_token", jwt.RefreshHandler),
 		rest.Get("/projects", storage.GetAllProjects),
-		rest.Put("/projects/:pid/project", storage.PutProject),
-		rest.Get("/projects/:pid/project", storage.GetProject),
-		rest.Delete("/projects/:pid/project", storage.DeleteProject),
+		rest.Put("/projects/:pid", storage.PutProject),
+		rest.Get("/projects/:pid", storage.GetProject),
+		rest.Delete("/projects/:pid", storage.DeleteProject),
 		rest.Get("/services", storage.GetAllServices),
 		rest.Post("/services", storage.PostService),
 		rest.Put("/services/:key", storage.PutService),
