@@ -4,13 +4,19 @@ angular
   // An empty place-holder for our project data
   return {};
 }])
-.factory('Specs', [function() {
+.factory('Specs', [ '$log', '$q', '$http', 'MOCKDATA', 'NdsLabsApi', function($log, $q, $http, MOCKDATA, NdsLabsApi) {
+  var promise = $q.defer();
+      
   // An empty place-holder for our service/stack specs
-  return {
+  var specs = {
     all: [],
     stacks: [],
     deps: []
   };
+  
+  // specs.populate();
+  
+  return specs;
 }])
 .factory('Volumes', [function() {
   // An empty place-holder for our volumes
@@ -414,16 +420,7 @@ angular
     }
   ];
   
-  $scope.stacks = [];
-
-  // Grab our namespace/project
-  NdsLabsApi.getProjectById(AuthInfo.namespace).then(function(project, xhr) {
-    $log.debug("successfully grabbed from /projects/" + AuthInfo.namespace +"!");
-    Project = project;
-  }, function(headers) {
-    $log.debug("error!");
-    console.debug(headers);
-  });
+  var projectId = AuthInfo.get().namespace;
   
   // Grab the list of services available at our site
   NdsLabsApi.getServices().then(function(specs, xhr) {
@@ -437,8 +434,8 @@ angular
   });
   
   // Grab the list of configured stacks
-  NdsLabsApi.getProjectByProjectIdStacks(AuthInfo.namespace).then(function(stacks, xhr) {
-    $log.debug("successfully grabbed from /projects/" + AuthInfo.namespace + "/stacks!");
+  NdsLabsApi.getProjectsByProjectIdStacks({ "projectId": projectId }).then(function(stacks, xhr) {
+    $log.debug("successfully grabbed from /projects/" + projectId + "/stacks!");
     Stacks.all = stacks;
   }, function(headers) {
     $log.debug("error!");
@@ -446,8 +443,8 @@ angular
   });
   
   // Grab the list of volumes
-  NdsLabsApi.getProjectByProjectIdVolumes(AuthInfo.namespace).then(function(volumes, xhr) {
-    $log.debug("successfully grabbed from /projects/" + AuthInfo.namespace + "/volumes!");
+  NdsLabsApi.getProjectsByProjectIdVolumes({ "projectId": projectId }).then(function(volumes, xhr) {
+    $log.debug("successfully grabbed from /projects/" + projectId + "/volumes!");
     Volumes.all = volumes;
   }, function(headers) {
     $log.debug("error!");

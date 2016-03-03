@@ -28,11 +28,13 @@ angular
     return filtered;
   };
 })
-.controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'ExpressRoute', 'ExpertRoute', 'ManageRoute', 
-    function($scope, $location, LoginRoute, ExpressRoute, ExpertRoute, ManageRoute) {
+.controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'ExpressRoute', 'ExpertRoute', 'ManageRoute', 'DEBUG', 
+    function($scope, $location, LoginRoute, ExpressRoute, ExpertRoute, ManageRoute, DEBUG) {
   $scope.$on('$routeChangeSuccess', function(event, current, previous){
     $scope.path = current.$$route.originalPath;
   });
+
+  $scope.DEBUG = DEBUG;
 
   // TODO: This is probably horrible, performance-wise
   $scope.isArray = angular.isArray;
