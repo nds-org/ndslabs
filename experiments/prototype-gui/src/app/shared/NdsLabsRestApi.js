@@ -1,4 +1,4 @@
-/*jshint -W069 */
+^[[A^[[A/*jshint -W069 */
 /*global angular:false */
 angular.module('ndslabs-api', [])
     .factory('ApiServer', ['$q', '$http', '$rootScope', function($q, $http, $rootScope) {
@@ -1859,19 +1859,19 @@ angular.module('ndslabs-api', [])
              * Starts the specified stack
 
              * @method
-             * @name ApiServer#getProjectsByProjectIdStartByStackServiceId
+             * @name ApiServer#getProjectsByProjectIdStartByStackId
              * @param {string} projectId - The unique project identifier
-             * @param {string} stackServiceId - The unique stack service identifier
+             * @param {string} stackId - The unique stack identifier
              * 
              */
-            ApiServer.prototype.getProjectsByProjectIdStartByStackServiceId = function(parameters) {
+            ApiServer.prototype.getProjectsByProjectIdStartByStackId = function(parameters) {
                 if (parameters === undefined) {
                     parameters = {};
                 }
                 var deferred = $q.defer();
 
                 var domain = this.domain;
-                var path = '/projects/{project-id}/start/{stack-service-id}';
+                var path = '/projects/{project-id}/start/{stack-id}';
 
                 var body;
                 var queryParameters = {};
@@ -1885,10 +1885,10 @@ angular.module('ndslabs-api', [])
                     return deferred.promise;
                 }
 
-                path = path.replace('{stack-service-id}', parameters['stackServiceId']);
+                path = path.replace('{stack-id}', parameters['stackId']);
 
-                if (parameters['stackServiceId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: stackServiceId'));
+                if (parameters['stackId'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: stackId'));
                     return deferred.promise;
                 }
 
@@ -1938,22 +1938,22 @@ angular.module('ndslabs-api', [])
                 return deferred.promise;
             };
             /**
-             * Starts the specified stack
+             * Stops the specified stack
 
              * @method
-             * @name ApiServer#getProjectsByProjectIdStopByStackServiceId
+             * @name ApiServer#getProjectsByProjectIdStopByStackId
              * @param {string} projectId - The unique project identifier
-             * @param {string} stackServiceId - The unique stack service identifier
+             * @param {string} stackId - The unique stack identifier
              * 
              */
-            ApiServer.prototype.getProjectsByProjectIdStopByStackServiceId = function(parameters) {
+            ApiServer.prototype.getProjectsByProjectIdStopByStackId = function(parameters) {
                 if (parameters === undefined) {
                     parameters = {};
                 }
                 var deferred = $q.defer();
 
                 var domain = this.domain;
-                var path = '/projects/{project-id}/stop/{stack-service-id}';
+                var path = '/projects/{project-id}/stop/{stack-id}';
 
                 var body;
                 var queryParameters = {};
@@ -1967,10 +1967,10 @@ angular.module('ndslabs-api', [])
                     return deferred.promise;
                 }
 
-                path = path.replace('{stack-service-id}', parameters['stackServiceId']);
+                path = path.replace('{stack-id}', parameters['stackId']);
 
-                if (parameters['stackServiceId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: stackServiceId'));
+                if (parameters['stackId'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: stackId'));
                     return deferred.promise;
                 }
 

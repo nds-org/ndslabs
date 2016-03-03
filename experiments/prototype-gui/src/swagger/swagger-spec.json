@@ -541,13 +541,13 @@
                 }
             }
         },
-        "/projects/{project-id}/start/{stack-service-id}": {
+        "/projects/{project-id}/start/{stack-id}": {
             "parameters": [
                 {
                     "$ref": "#/parameters/project-id"
                 },
                 {
-                    "$ref": "#/parameters/stack-service-id"
+                    "$ref": "#/parameters/stack-id"
                 }
             ],
             "get": {
@@ -559,17 +559,17 @@
                 }
             }
         },
-        "/projects/{project-id}/stop/{stack-service-id}": {
+        "/projects/{project-id}/stop/{stack-id}": {
             "parameters": [
                 {
                     "$ref": "#/parameters/project-id"
                 },
                 {
-                    "$ref": "#/parameters/stack-service-id"
+                    "$ref": "#/parameters/stack-id"
                 }
             ],
             "get": {
-                "description": "Starts the specified stack\n",
+                "description": "Stops the specified stack\n",
                 "responses": {
                     "200": {
                         "description": "OK"
