@@ -331,6 +331,15 @@ angular
     'DEBUG', 'StackService', 'NdsLabsApi', function($scope, $log, $uibModal, _, AuthInfo, Project, Volumes, Stacks, Specs, DEBUG, 
     StackService, NdsLabsApi) {
 
+  $scope.app = _.sample([ 
+    { name: 'StackMaster',      tagline: 'Become one with the stack' }, 
+    { name: 'StackBlaster',     tagline: 'Stack the odds in your favor' },
+    { name: 'MasterBlaster',    tagline: 'Find your inner stack' },
+    { name: 'NOOBernetes',      tagline: 'For teh noobs!' },
+    { name: "DrStack",          tagline: 'One stack, two stack, red stack, blue stack?' },
+    { name: "Stackster",        tagline: 'It\'s where the stacks go' }
+  ]);
+  
   // Wire in DEBUG mode
   $scope.DEBUG = DEBUG;
 
