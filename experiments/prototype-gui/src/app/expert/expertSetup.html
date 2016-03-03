@@ -62,8 +62,9 @@
               <div class="row">
                 <div class="col-md-2 text-center">
                   <i class="pull-left fa fa-fw fa-2x" 
-                    ng-class="{ 'fa-check-circle-o': stack.status, 'text-success': stack.status,
-                        'fa-times-circle-o': !stack.status, 'text-danger':!stack.status }"></i>
+                    ng-class="{ 'fa-check-circle-o': stack.status === 'started', 'text-success': stack.status === 'started',
+                        'fa-times-circle-o': stack.status === 'stopped', 'text-danger': stack.status === 'stopped',
+                        'fa-spinner fa-spin': stack.status !== 'stopped' && stack.status !== 'started' }"></i>
                 </div>
                 <div class="col-md-9">
                   <h4>{{ _.capitalize(stack.name) }}</h4>
@@ -79,7 +80,15 @@
                 <!-- Stack Enable / Disable -->
                 <div class="col-md-2">
                   <div style="horizontal-align:middle;vertical-align:middle;">
-                     <toggle-switch ng-model="stack.status" ng-changed="toggleStatus(stack)"><toggle-switch>
+                     <!--<toggle-switch ng-model="stack.status" ng-changed="toggleStatus(stack)"><toggle-switch>-->
+                     <button class="btn btn-lg btn-block" ng-if="stack.status === 'stopped'" ng-click="startStack(stack)">
+                       Start
+                     </button>
+                     <button class="btn btn-lg btn-block" ng-if="stack.status === 'started'" ng-click="stopStack(stack)">
+                       Stop
+                     </button>
+                     <i class="fa fa-fw fa-2x fa-circle-o-notch fa-spin" 
+                      ng-if="stack.status !== 'started' && stack.status !== 'stopped'"></i>
                   </div>
                 </div>
                     
@@ -122,8 +131,9 @@
                              
                           {{ svc.service }}
                           
-                          <a ng-repeat="endpt in svc.endpoints" ng-if="stack.status && svc.status" href="{{ endpt }}"
-                              uib-tooltip="Navigate to {{ _.capitalize(svc.service) }} ({{ endpt }})">
+                          <a ng-repeat="endpt in svc.endpoints" uib-tooltip="Navigate to {{ _.capitalize(svc.service) }} ({{ endpt }})"
+                              ng-if="stack.status === 'started' && svc.status === 'Running' && svc.endpoints.length > 0 && svc.endpoints[0] !== ''"
+                              href="{{ endpt }}">
                             <i class="fa fa-fw fa-chain"></i>
                           </a>
                              
@@ -183,6 +193,12 @@
           </uib-accordion-group>
         </uib-accordion>
       </div>
+    </div>
+  </div>
+  
+  <div class="row" ng-if="DEBUG">
+    <div class="col-md-12">
+      <pre>{{ configuredVolumes | json }}</pre>
     </div>
   </div>
   

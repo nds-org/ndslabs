@@ -76,7 +76,7 @@ angular
       id: "",
       stack: stack.key,
       service: spec.key,
-      status: "Suspended",
+      status: "",
       replicas: 1,
       endpoints: []
     };
@@ -385,7 +385,8 @@ angular
   (query.volumes = function() {
     return NdsLabsApi.getProjectsByProjectIdVolumes({ "projectId": projectId }).then(function(volumes, xhr) {
       $log.debug("successfully grabbed from /projects/" + projectId + "/volumes!");
-      Volumes.all = volumes || [];
+      //Volumes.all = volumes || [];
+      $scope.configuredVolumes = volumes || [];
     }, function(headers) {
       $log.error("error grabbing from /projects/" + projectId + "/volumes!");
     })
@@ -412,39 +413,78 @@ angular
       $log.debug('Modal accepted at: ' + new Date());
       
       // Create the stack inside our project first
-      NdsLabsApi.postProjectsByProjectIdStacks({ 'stack': newEntities.stack, 'projectId': projectId }).then(function(response, xhr) {
+      NdsLabsApi.postProjectsByProjectIdStacks({ 'stack': newEntities.stack, 'projectId': projectId }).then(function(stack, xhr) {
         $log.debug("successfully posted to /projects/" + projectId + "/stacks!");
         //$scope.configuredStacks.push($scope.newStack);
+        debugger;
+    
+        $scope.configuredStacks.push(stack);
         
-        NdsLabsApi.getProjectsByProjectIdStacksByStackId({ 'projectId': projectId, 'stackId': newEntities.stack.key }).then(function(stack, headers) {
-          $scope.configuredStacks.push(stack);
+        // Then attach our necessary volumes
+        angular.forEach(newEntities.volumes, function(vol) {
+          var service = _.find(stack.services, ['service', vol.service]);
           
-          // Then attach our necessary volumes
-          angular.forEach(newEntities.volumes, function(vol) {
+          debugger;
+          if (service) {
+            vol.attached = service.id;
             NdsLabsApi.postProjectsByProjectIdVolumes({ 'volume': vol, 'projectId': projectId }).then(function(response, xhr) {
               $log.debug("successfully posted to /projects/" + projectId + "/volumes!");
-              query.volumes();
-              //$scope.configuredStacks.push($scope.newStack);
+              
+              $scope.configuredVolumes.push(vol);
+                
+              // Orphaned volumes are already in the list
+                /* var exists = _.find($scope.configuredVolumes, function(volume) { return vol.name === volume.name; });
+              if (!exists) {
+                $scope.configuredVolumes.push(vol);
+              } else {
+                exists.stack = $scope.newStack.name;
+                exists.attachment = $scope.stack + '-' + exists.service;
+              }*/
             }, function(headers) {
               $log.error("error posting to /projects/" + projectId + "/volumes!");
             });
-            // Orphaned volumes are already in the list
-            /* var exists = _.find($scope.configuredVolumes, function(volume) { return vol.name === volume.name; });
-            if (!exists) {
-              $scope.configuredVolumes.push(vol);
-            } else {
-              exists.stack = $scope.newStack.name;
-              exists.attachment = $scope.stack + '-' + exists.service;
-            }*/
-          });
-        }, function(headers) {
-          $log.error("errorgrabbing new stack from /projects/" + projectId + "/stacks/" + $scope.newStack.key + "!");
+          }
         });
       }, function(headers) {
         $log.error("error posting to /projects/" + projectId + "/stacks!");
       });
     }, function() {
       $log.debug('Modal dismissed at: ' + new Date());
+    });
+  };
+  
+  $scope.startStack = function(stack) {
+    stack.status = 'starting';
+    NdsLabsApi.getProjectsByProjectIdStartByStackId({
+      'projectId': projectId,
+      'stackId': stack.key
+    }).then(function(data, xhr) {
+      $log.debug('successfully started ' + stack.name);
+      
+      // TODO: This is sort of hacky
+      stack.status = data.status;
+      stack.services = data.services;
+    }, function(headers) {
+      $log.error('failed to start ' + stack.name);
+    });
+  };
+  
+  $scope.stopStack = function(stack) {
+    stack.status = 'stopping';
+    NdsLabsApi.getProjectsByProjectIdStopByStackId({
+      'projectId': projectId,
+      'stackId': stack.key
+    }).then(function(data, xhr) {
+      $log.debug('successfully stopped ' + stack.name);
+      
+      // TODO: this is really hacky
+      stack.status = 'stopped';
+      angular.forEach(stack.services, function(svc) {
+        svc.status = "";
+        svc.endpoints = [];
+      });
+    }, function(headers) {
+      $log.error('failed to stop ' + stack.name);
     });
   };
   
@@ -464,7 +504,7 @@ angular
   $scope.showVolume = function(stack, svc) {
     var volume = null;
     angular.forEach($scope.configuredVolumes, function(vol) {
-      if (stack.name === vol.stack && svc.service === vol.service) {
+      if (svc.id === vol.attached) {
         volume = vol;
       }
     });

@@ -42,8 +42,8 @@
                 <div class="panel panel-default">
                   <div class="panel-heading">{{ settings.namespace | uppercase }}</div>
                     <div class="panel-body">
-                      <pre if="DEBUG">{{ settings | json }}</pre>
-                      <button type="button" class="btn btn-xl btn-danger btn-block" ng-click="logout()">Sign Out</button>
+                      <pre ng-if="DEBUG">{{ settings | json }}</pre>
+                      <button type="button" class="btn btn-xl btn-danger btn-block" ng-click="logout()">Sign Out <i class="fa fa-fw fa-sign-out"></i></button>
                     </div>
                   </div>
                 </div>
