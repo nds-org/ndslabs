@@ -90,9 +90,10 @@
                     
                 <!-- The "Add Service" Button -->
                 <div class="col-md-2">
-                  <a class="btn btn-xs btn-success" tabindex="0" uib-popover-template="'/app/expert/subviews/serviceAddPopover.html'" 
+                  <a class="btn btn-xs btn-success" tabindex="0" 
+                     uib-popover-template="'/app/expert/subviews/serviceAddPopover.html'" popover-append-to-body
                      popover-title="OPTIONAL SERVICES" ng-if="!stack.status && (stack | missingDeps).length > 0"
-                     popover-placement="bottom-left" popover-trigger="outsideClick">
+                     popover-placement="right-top" popover-trigger="outsideClick">
                     <i class="fa fa-plus fa-fw"></i><i class="fa fa-fw fa-caret-down"></i>
                   </a>
                 </div>
@@ -107,10 +108,10 @@
               
               <!-- Stack Services -->
               <div class="row">
-                <div class="col-md-offset-2 col-md-4">
+                <div class="col-md-offset-2 col-md-3">
                   <ul class="fa-ul">
                     <!-- List off our stack's services here -->
-                    <li ng-repeat="svc in stack.services">
+                    <li ng-repeat="svc in stack.services track by svc.serviceId">
                       <div class="row" style="margin:5px;">
                           <!-- show status icon if no volume(s) present -->
                           <i ng-if="!showVolume(stack, svc)" class="fa-li fa fa-fw" 
@@ -150,9 +151,9 @@
                 </div>
                 
                 <!-- Service Options -->
-                <div class="col-md-6">
+                <div class="col-md-7">
                   <ul class="fa-ul">
-                  <li ng-repeat="svc in stack.services">
+                  <li ng-repeat="svc in stack.services track by svc.serviceId">
                     <div class="row" style="margin:5px;">
                       <!-- TODO: Can we even start/stop individual services?? -->
                        <!-- <button type="button" class="btn btn-xs btn-success" uib-tooltip="Start / Stop Service"><i class="fa fa-fw fa-play"></i></button>-->
@@ -165,8 +166,8 @@
                     
                         <button type="button" class="btn btn-xs btn-info" uib-tooltip="View Logs"><i class="fa fa-fw fa-search"></i></button>
                     
-                        <button type="button" ng-disabled="stack.services | isRecursivelyRequired:svc:stacks:deps" 
-                        ng-if="svc.serviceId !== stack.key && (stack.key | requirements).indexOf(svc.serviceId) === -1" 
+                        <button type="button" ng-disabled="stack.services | isRecursivelyRequired:svc" 
+                            ng-if="svc.serviceId !== stack.key && (stack.key | requirements).indexOf(svc.serviceId) === -1" 
                             class="btn btn-xs btn-danger" ng-click="removeStackSvc(stack, svc)" 
                             uib-tooltip="Remove Service from Stack" tooltip-placement="left">
                           <i class="fa fa-fw fa-times"></i>

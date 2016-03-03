@@ -21,7 +21,9 @@ angular
     authenticated: false,
     namespace: '',
     password: '',
-    saveCookie: false
+    saveCookie: false,
+    project: null,
+    token: null
   };
 
   this.$get = function() {
@@ -36,8 +38,8 @@ angular
 .config([ '$routeProvider', '$httpProvider', 'AuthInfoProvider', 'LoginRoute', 'ExpressRoute', 'ExpertRoute', 'ManageRoute',
     function($routeProvider, $httpProvider, authInfo, LoginRoute, ExpressRoute, ExpertRoute, ManageRoute) {
   // Setup default behaviors for encountering errors
-  $httpProvider.interceptors.push(['$rootScope', '$cookies', '$q', '$location', '$log', '_', 'DEBUG', 'ApiUri', 
-      function (scope, $cookies, $q, $location, $log, _, DEBUG, ApiUri) {
+  $httpProvider.interceptors.push(['$rootScope', '$cookies', '$q', '$location', '$log', '_', 'DEBUG', 'ApiUri', 'AuthInfo',
+      function (scope, $cookies, $q, $location, $log, _, DEBUG, ApiUri, AuthInfo) {
     return {
       'request': function(config) {
         if (DEBUG) {
@@ -65,10 +67,10 @@ angular
           $log.debug("Response:")
           console.debug(response);
         }
-        if (_.includes(response.url, ApiUri)) {
+        if (_.includes(response.config.url, ApiUri)) {
           // This is a response from our API server
-          if ((response.config.url.indexOf('/authenticate') !== -1 && response.config.method === 'POST')
-              || (response.config.url.indexOf('/refresh_token') !== -1 && response.config.method === 'GET')) {
+          if ((_.includes(response.config.url, '/authenticate') && response.config.method === 'POST')
+              || (_.includes(response.config.url, '/refresh_token') && response.config.method === 'GET')) {
             // This response should contain a new token, so save it
             $cookies.put('token', response.data.token);
           }
@@ -131,6 +133,15 @@ angular
 }])
 .run([ '$rootScope', '$location', '$log', '$cookies', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', 
     function($rootScope, $location, $log, $cookies, authInfo, LoginRoute, ExpertRoute, NdsLabsApi) {
+  var token = $cookies.get('token');
+  var namespace = $cookies.get('namespace');
+  if (token && namespace) {
+    // Pull our token / namespace from cookies
+    authInfo.get().token = token;
+    authInfo.get().namespace = namespace;
+  }
+      
+      
   var HomeRoute = ExpertRoute;
   
   // TODO: Investigate performance concerns here...
@@ -138,27 +149,31 @@ angular
   $rootScope.google = window.google;
   
   $rootScope.$on( "$routeChangeStart", function(event, next, current) {
-    var redirectToLogin = function() {
+    var terminateSession = function() {
       // user needs to log in, redirect to /login
       if (next.templateUrl !== "/app/login/login.html") {
+        authInfo.get().token = null;
+        $cookies.remove('token');
+        $cookies.remove('namespace');
         $location.path(LoginRoute);
       }
     };
     
-    authInfo.token = $cookies.get('token');
-    authInfo.namespace = $cookies.get('token');
-    if (authInfo.token) {
+    if (authInfo.get().token = $cookies.get('token')) {
+      authInfo.get().namespace = $cookies.get('namespace');
       NdsLabsApi.getRefresh_token().then(function() {
-        $log.debug('Token refreshed: ' + authInfo.token);
+        $log.debug('Token refreshed: ' + authInfo.get().token);
         $location.path(HomeRoute);
       }, function() {
         $log.debug('Failed to refresh token!');
+        
         // TODO: Allow login page to reroute user to destination?
         //authInfo.returnRoute = next.$$route.originalPath;
-        redirectToLogin();
+        
+        terminateSession();
       });
     } else {
-      redirectToLogin();
+      terminateSession();
     }
   });
 }]);

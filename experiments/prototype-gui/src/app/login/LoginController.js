@@ -23,10 +23,11 @@ angular
     }).then(function(data, xhr) {
       $log.debug("Logged in!");
       $scope.errorMessage = '';
-      $scope.settings.authenticated = true;
+      //$scope.settings.authenticated = true;
       /*if ($scope.settings.saveCookie === true) {
         $cookies.putObject('auth', $scope.settings);
       }*/
+      $cookies.put('namespace', $scope.settings.namespace);
       $location.path(HomeRoute);
     }, function(response) {
       $scope.errorCode = response.status;
@@ -38,7 +39,8 @@ angular
   $scope.logout = function() {
     $log.debug("Logged out!");
     $scope.settings.authenticated = false;
-    $cookies.remove('auth');
+    $cookies.remove('token');
+    $cookies.remove('namespace');
     $location.path(LoginRoute);
   };
 }]);

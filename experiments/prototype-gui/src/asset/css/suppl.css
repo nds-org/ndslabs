@@ -43,3 +43,11 @@ body {
   padding-bottom:10px
   width:100%;
 }
+
+.popover {
+  width:500px;
+}
+
+.popover-content {
+  width:500px;
+}

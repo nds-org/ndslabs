@@ -32,7 +32,7 @@
           </li>
 
 	        <!-- Then draw our account settings button -->
-          <li ng-controller="LoginController" ng-show="settings" ng-if="navFilter === 'right'">
+          <li ng-controller="LoginController" ng-show="settings.token" ng-if="navFilter === 'right'">
             <a id="dropDownButton" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
               <i class="fa fa-user fa-fw"></i><i class="fa fa-fw fa-caret-down"></i>
             </a>
@@ -43,7 +43,7 @@
                   <div class="panel-heading">{{ settings.namespace | uppercase }}</div>
                     <div class="panel-body">
                       <pre if="DEBUG">{{ settings | json }}</pre>
-                      <button type="button" class="btn btn-xl btn-danger" ng-click="logout()">Logout</button>
+                      <button type="button" class="btn btn-xl btn-danger btn-block" ng-click="logout()">Logout</button>
                     </div>
                   </div>
                 </div>

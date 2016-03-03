@@ -45,7 +45,7 @@ angular
       services: []
     };
     
-    Stacks.all.push(stack);
+    //Stacks.all.push(stack);
     
     return stack;
   };
@@ -63,7 +63,7 @@ angular
       attachment: stack.name + '-' + service.key
     };
     
-    Volumes.all.push(volume);
+    //Volumes.all.push(volume);
     
     return volume;
   };
@@ -80,16 +80,16 @@ angular
       endpoints: []
     };
     
-    stack.services.push(svc);
+    //stack.services.push(svc);
     
     return svc;
   };
 }])
-.filter('isRecursivelyRequired', function() {
-  return function(services, service, stacks, deps) {
+.filter('isRecursivelyRequired', [ 'Specs', function(Specs) {
+  return function(services, service) {
     var result = false;
     angular.forEach(services, function(svc) {
-      var spec = _.find(_.concat(stacks, deps), { 'key': svc.serviceId });
+      var spec = _.find(Specs.all, { 'key': svc.serviceId });
       if (spec) {
         var dep = _.find(spec.depends, _.matchesProperty('key', service.serviceId));
         if (dep && dep.required === true) {
@@ -99,7 +99,7 @@ angular
     });
     return result;
   };
-})
+}])
 .filter('missingDeps', [ '$log', 'Specs', function($log, Specs) {
   // Returns any options missing from a stack
   return function(stack) {
@@ -109,13 +109,16 @@ angular
     
     var spec = _.find(Specs.all, ['key', stack.key]);
     if (spec) {
-      var options = _.filter(spec.depends, [ 'required', false ]);
-      
-      // TODO: Remove any entries present in stack.services
-      
-      return options;
+      var options = _.filter(angular.copy(spec.depends), [ 'required', false ]);
+      var missing = [];
+      angular.forEach(options, function(op) {
+        if (!_.find(stack.services, [ 'serviceId', op.key ])) {
+          missing.push(op);
+        }
+      });
+      return missing;
     } else {
-      $log.error("Cannot locate dependencies - key not found: " + stack.key);
+      $log.error("Cannot locate missing optional dependencies - key not found: " + stack.key);
     }
     return false;
   };
@@ -422,30 +425,39 @@ angular
   
   var projectId = AuthInfo.get().namespace;
   
-  // Grab the list of services available at our site
-  NdsLabsApi.getServices().then(function(specs, xhr) {
-    $log.debug("successfully grabbed from /services!");
-    Specs.all = $scope.allServices = specs;
-    Specs.deps = $scope.deps = angular.copy(specs);
-    Specs.stacks = $scope.stacks = _.remove($scope.deps, function(svc) { return svc.stack === true  });
-  }, function (headers) {
-    $log.debug("error!");
-    console.debug(headers);
-  });
-  
-  // Grab the list of configured stacks
-  NdsLabsApi.getProjectsByProjectIdStacks({ "projectId": projectId }).then(function(stacks, xhr) {
-    $log.debug("successfully grabbed from /projects/" + projectId + "/stacks!");
-    Stacks.all = stacks;
+  // Grab the current project
+  NdsLabsApi.getProjectsByProjectId({ "projectId": projectId }).then(function(project, xhr) {
+    $log.debug("successfully grabbed from /projects/" + projectId + "!");
+    AuthInfo.project = Project = project;
   }, function(headers) {
     $log.debug("error!");
     console.debug(headers);
   });
   
-  // Grab the list of volumes
+  // Grab the list of services available at our site
+  NdsLabsApi.getServices().then(function(specs, xhr) {
+    $log.debug("successfully grabbed from /services!");
+    Specs.all = $scope.allServices = specs;
+    Specs.deps = $scope.deps = angular.copy(specs);
+    Specs.stacks = $scope.stacks = _.remove($scope.deps, function(svc) { return svc.stack === true; });
+  }, function (headers) {
+    $log.debug("error!");
+    console.debug(headers);
+  });
+  
+  // Grab the list of configured stacks in our namespace
+  NdsLabsApi.getProjectsByProjectIdStacks({ "projectId": projectId }).then(function(stacks, xhr) {
+    $log.debug("successfully grabbed from /projects/" + projectId + "/stacks!");
+    Stacks.all = stacks || [];
+  }, function(headers) {
+    $log.debug("error!");
+    console.debug(headers);
+  });
+  
+  // Grab the list of volumes in our namespace
   NdsLabsApi.getProjectsByProjectIdVolumes({ "projectId": projectId }).then(function(volumes, xhr) {
     $log.debug("successfully grabbed from /projects/" + projectId + "/volumes!");
-    Volumes.all = volumes;
+    Volumes.all = volumes || [];
   }, function(headers) {
     $log.debug("error!");
     console.debug(headers);
@@ -529,7 +541,7 @@ angular
   
   $scope.addStackSvc = function(stack, svc) {
     var spec = _.find(Specs.all, [ 'key', svc.key ]);
-    debugger;
+    
     if (spec) {
       // Ensure this does not require new dependencies
       angular.forEach(spec.depends, function(dependency) {
