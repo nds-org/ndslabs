@@ -1,4 +1,4 @@
-^[[A^[[A/*jshint -W069 */
+/*jshint -W069 */
 /*global angular:false */
 angular.module('ndslabs-api', [])
     .factory('ApiServer', ['$q', '$http', '$rootScope', function($q, $http, $rootScope) {
