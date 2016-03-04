@@ -226,6 +226,7 @@ func main() {
 	router, err := rest.MakeRouter(
 		rest.Get("/", GetPaths),
 		rest.Post("/authenticate", jwt.LoginHandler),
+		rest.Delete("/authenticate", storage.Logout),
 		rest.Get("/refresh_token", jwt.RefreshHandler),
 		rest.Get("/projects", storage.GetAllProjects),
 		rest.Put("/projects/:pid", storage.PutProject),
@@ -251,6 +252,7 @@ func main() {
 		rest.Delete("/projects/:pid/volumes/:vid", storage.DeleteVolume),
 		rest.Get("/projects/:pid/start/:sid", storage.StartStack),
 		rest.Get("/projects/:pid/stop/:sid", storage.StopStack),
+		rest.Get("/projects/:pid/logs/:sid/:ssid", storage.GetLogs),
 	)
 
 	if err != nil {
@@ -279,6 +281,10 @@ func GetPaths(w rest.ResponseWriter, r *rest.Request) {
 	paths = append(paths, "/projects")
 	paths = append(paths, "/services")
 	w.WriteJson(&paths)
+}
+
+func (s *Storage) Logout(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Storage) GetAllProjects(w rest.ResponseWriter, r *rest.Request) {
@@ -618,12 +624,14 @@ func (s *Storage) GetAllStacks(w rest.ResponseWriter, r *rest.Request) {
 				stackService := &stack.Services[i]
 				glog.V(4).Infof("Stack Service %s %s\n", stackService.Service, podStatus[stackService.Service])
 				stackService.Status = podStatus[stackService.Service]
-				if len(endpoints) > 0 {
+				if len(endpoints[stackService.Service]) > 0 {
 					stackService.Endpoints = append(stackService.Endpoints, endpoints[stackService.Service])
 				}
 			}
 			stacks = append(stacks, stack)
 		}
+		data, _ := json.MarshalIndent(stacks, "", "    ")
+		fmt.Println(string(data))
 		w.WriteJson(&stacks)
 	}
 }
@@ -671,23 +679,6 @@ func (s *Storage) GetStack(w rest.ResponseWriter, r *rest.Request) {
 	} else {
 		w.WriteJson(&stack)
 	}
-	/*
-		path := "/projects/" + pid + "/stacks/" + sid
-		resp, err := s.etcd.Get(context.Background(), path, nil)
-
-		if err != nil {
-			if e, ok := err.(*etcderr.Error); ok {
-				if e.ErrorCode == etcderr.EcodeKeyNotFound {
-					rest.NotFound(w, r)
-				}
-			}
-			w.WriteJson(&err)
-		} else {
-			stack := api.Stack{}
-			json.Unmarshal([]byte(resp.Node.Value), &stack)
-			w.WriteJson(&stack)
-		}
-	*/
 }
 
 func (s *Storage) PostStack(w rest.ResponseWriter, r *rest.Request) {
@@ -948,15 +939,29 @@ func (s *Storage) startController(pid string, serviceKey string, stack *api.Stac
 
 	// Wait for pods in ready state
 	ready := 0
-
 	pods, _ = s.getPods(pid, "name", service.Key)
 	glog.V(4).Infof("Waiting for pod to be ready %s %d\n", service.Key, len(pods))
 	for ready < len(pods) {
 		for _, pod := range pods {
 			if len(pod.Status.Conditions) > 0 {
 				condition := pod.Status.Conditions[0]
-				glog.V(4).Infof("Waiting for %s (%s=%s)\n", pod.Name, condition.Type, condition.Status)
+				phase := pod.Status.Phase
+				containerState := ""
+				if len(pod.Status.ContainerStatuses) > 0 {
+					state := pod.Status.ContainerStatuses[0].State
+					switch {
+					case state.Running != nil:
+						containerState = "running"
+					case state.Waiting != nil:
+						containerState = "waiting"
+					case state.Terminated != nil:
+						containerState = "terminated"
+					}
+				}
+
+				glog.V(4).Infof("Waiting for %s (%s=%s) [%s, %#v]\n", pod.Name, condition.Type, condition.Status, phase, containerState)
 				stackService.Status = string(pod.Status.Phase)
+
 				if condition.Type == "Ready" && condition.Status == "True" {
 					ready++
 				} else {
@@ -1022,9 +1027,47 @@ func (s *Storage) StartStack(w rest.ResponseWriter, r *rest.Request) {
 		s.startController(pid, stackService.Service, stack)
 	}
 
+	// TODO: Get Stack Status
 	stack.Status = "started"
 	s.putStack(pid, sid, stack)
+
+	stack, _ = s.getStackWithStatus(pid, sid)
 	w.WriteJson(&stack)
+}
+
+func (s *Storage) getStackWithStatus(pid string, sid string) (*api.Stack, error) {
+
+	stack, _ := s.getStack(pid, sid)
+	// Get the pods for this stack
+	podStatus := make(map[string]string)
+	pods, _ := s.getPods(pid, "stack", stack.Key)
+	for _, pod := range pods {
+		label := pod.Labels["name"]
+		glog.V(4).Infof("Pod %s %d\n", label, len(pod.Status.Conditions))
+		if len(pod.Status.Conditions) > 0 {
+			podStatus[label] = string(pod.Status.Phase)
+		}
+	}
+
+	k8services, _ := s.getK8Services(pid, stack.Key)
+	endpoints := make(map[string]string)
+	for _, k8service := range k8services {
+		glog.V(4).Infof("Service : %s %s\n", k8service.Name, k8service.Spec.Type)
+		if k8service.Spec.Type == "NodePort" {
+			endpoints[k8service.GetName()] = fmt.Sprintf("http://%s:%d", s.host, k8service.Spec.Ports[0].NodePort)
+		}
+	}
+
+	for i := range stack.Services {
+		stackService := &stack.Services[i]
+		glog.V(4).Infof("Stack Service %s %s\n", stackService.Service, podStatus[stackService.Service])
+		stackService.Status = podStatus[stackService.Service]
+		if len(endpoints[stackService.Service]) > 0 {
+			stackService.Endpoints = append(stackService.Endpoints, endpoints[stackService.Service])
+		}
+	}
+
+	return stack, nil
 }
 
 func (s *Storage) getK8Services(pid string, stack string) ([]k8api.Service, error) {
@@ -1103,16 +1146,18 @@ func (s *Storage) StopStack(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	err = s.stopStack(pid, sid)
+	stack, err = s.stopStack(pid, sid)
 	if err == nil {
-		w.WriteHeader(http.StatusOK)
+		//w.WriteHeader(http.StatusOK)
+		w.WriteJson(&stack)
 	} else {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+
 }
 
-func (s *Storage) stopStack(pid string, sid string) error {
+func (s *Storage) stopStack(pid string, sid string) (*api.Stack, error) {
 
 	path := "/projects/" + pid + "/stacks/" + sid
 	glog.V(4).Infof("Stopping stack %s\n", path)
@@ -1122,7 +1167,7 @@ func (s *Storage) stopStack(pid string, sid string) error {
 	if stack.Status == stackStatus[Stopping] || stack.Status == stackStatus[Stopped] {
 		// Can't stop a stopped service
 		glog.V(4).Infof("Can't stop a stopped service")
-		return nil
+		return nil, nil
 	}
 
 	stack.Status = stackStatus[Stopping]
@@ -1141,7 +1186,7 @@ func (s *Storage) stopStack(pid string, sid string) error {
 		httpresp, httperr := client.Do(request)
 		if httperr != nil {
 			glog.Error(httperr)
-			return httperr
+			return nil, httperr
 		} else {
 			if httpresp.StatusCode == http.StatusOK {
 				glog.V(4).Infof("Deleted service " + service.Key)
@@ -1157,7 +1202,7 @@ func (s *Storage) stopStack(pid string, sid string) error {
 		httpresp, httperr = client.Do(request)
 		if httperr != nil {
 			glog.Error(httperr)
-			return httperr
+			return nil, httperr
 		} else {
 			if httpresp.StatusCode == http.StatusOK {
 				glog.V(4).Infof("Deleted controller " + service.Key)
@@ -1177,7 +1222,7 @@ func (s *Storage) stopStack(pid string, sid string) error {
 		httpresp, httperr := client.Do(request)
 		if httperr != nil {
 			glog.Error(httperr)
-			return httperr
+			return nil, httperr
 		} else {
 			if httpresp.StatusCode == http.StatusOK {
 				glog.V(4).Infof("Deleted pod " + pod.Name)
@@ -1187,9 +1232,53 @@ func (s *Storage) stopStack(pid string, sid string) error {
 		}
 	}
 
+	//TODO: Wait for pods
+	pods, _ = s.getPods(pid, "name", stack.Key)
+	glog.V(4).Infof("Waiting for pods to be terminate %s %d\n", stack.Key, len(pods))
+	for len(pods) > 0 {
+		for _, pod := range pods {
+			if len(pod.Status.Conditions) > 0 {
+				condition := pod.Status.Conditions[0]
+				phase := pod.Status.Phase
+				containerState := ""
+				if len(pod.Status.ContainerStatuses) > 0 {
+					state := pod.Status.ContainerStatuses[0].State
+					switch {
+					case state.Running != nil:
+						containerState = "running"
+					case state.Waiting != nil:
+						containerState = "waiting"
+					case state.Terminated != nil:
+						containerState = "terminated"
+					}
+				}
+
+				glog.V(4).Infof("Waiting for %s (%s=%s) [%s, %s]\n", pod.Name, condition.Type, condition.Status, phase, containerState)
+			}
+		}
+		pods, _ = s.getPods(pid, "name", stack.Key)
+		time.Sleep(time.Second * 5)
+	}
+
+	podStatus := make(map[string]string)
+	pods, _ = s.getPods(pid, "stack", stack.Key)
+	for _, pod := range pods {
+		label := pod.Labels["name"]
+		glog.V(4).Infof("Pod %s %d\n", label, len(pod.Status.Conditions))
+		if len(pod.Status.Conditions) > 0 {
+			podStatus[label] = string(pod.Status.Phase)
+		}
+	}
+	for i := range stack.Services {
+		stackService := &stack.Services[i]
+		stackService.Status = podStatus[stackService.Service]
+	}
+
 	stack.Status = stackStatus[Stopped]
 	s.putStack(pid, sid, stack)
-	return nil
+
+	stack, _ = s.getStackWithStatus(pid, sid)
+	return stack, nil
 }
 
 func (s *Storage) GetAllVolumes(w rest.ResponseWriter, r *rest.Request) {
@@ -1224,7 +1313,7 @@ func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	if (vol.Attached == "") {
+	if vol.Attached == "" {
 		vol.Status = "available"
 	} else {
 		vol.Status = "attached"
@@ -1281,7 +1370,7 @@ func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
 				rest.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			if (osVolume.Status == "available") {
+			if osVolume.Status == "available" {
 				break
 			}
 		}
@@ -1298,7 +1387,7 @@ func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
 				rest.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			if (osVolume.Status == "in-use") {
+			if osVolume.Status == "in-use" {
 				break
 			}
 		}
@@ -1314,7 +1403,6 @@ func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
 		if err != nil {
 			fmt.Println(err)
 		}
-
 
 		vol.Format = "cinder"
 	}
@@ -1352,7 +1440,7 @@ func (s *Storage) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	if (vol.Attached != "") {
+	if vol.Attached != "" {
 		vol.Status = "available"
 	} else {
 		vol.Status = "attached"
@@ -1398,7 +1486,7 @@ func (s *Storage) DeleteVolume(w rest.ResponseWriter, r *rest.Request) {
 
 	glog.V(4).Infof("Deleting volume %s\n", vid)
 	volume, err := s.getVolume(pid, vid)
- 	if (volume == nil) {
+	if volume == nil {
 		glog.V(4).Infoln("No such volume")
 		if err != nil {
 			glog.Error(err)
@@ -1407,7 +1495,7 @@ func (s *Storage) DeleteVolume(w rest.ResponseWriter, r *rest.Request) {
 	} else {
 		glog.V(4).Infof("Format %s\n", volume.Format)
 		if volume.Format == "hostPath" {
-			err = os.RemoveAll(s.volDir+"/"+volume.Id)
+			err = os.RemoveAll(s.volDir + "/" + volume.Id)
 			if err != nil {
 				rest.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -1450,4 +1538,75 @@ func newUUID() (string, error) {
 	// version 4 (pseudo-random); see section 4.1.3
 	uuid[6] = uuid[6]&^0xf0 | 0x40
 	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
+}
+
+func (s *Storage) GetLogs(w rest.ResponseWriter, r *rest.Request) {
+	pid := r.PathParam("pid")
+	sid := r.PathParam("sid")
+	ssid := r.PathParam("ssid")
+
+	logs, err := s.getLogs(pid, sid, ssid)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	} else {
+		w.WriteJson(&logs)
+	}
+}
+
+func (s *Storage) getLogs(pid string, sid string, ssid string) (string, error) {
+
+	stack, err := s.getStack(pid, sid)
+	if err != nil {
+		return "", err
+	}
+
+	pods, err := s.getPods(pid, "stack", stack.Key)
+	if err != nil {
+		return "", err
+	}
+
+	for _, ss := range stack.Services {
+		if ss.Id == ssid {
+			// Find the pod for this service
+			for _, pod := range pods {
+				if pod.Labels["name"] == ss.Service {
+					log, err := s.getLog(pid, pod.Name)
+					if err != nil {
+						return "", err
+					} else {
+						return log, nil
+					}
+				}
+			}
+		}
+	}
+	return "", nil
+}
+
+func (s *Storage) getLog(pid string, podName string) (string, error) {
+	glog.V(4).Infof("Get log for %s %s\n", pid, podName)
+
+	client := &http.Client{}
+
+	url := s.kubeBase + "/api/v1/namespaces/" + pid + "/pods/" + podName + "/log"
+
+	glog.V(4).Infoln(url)
+	request, _ := http.NewRequest("GET", url, nil)
+	resp, err := client.Do(request)
+	if err != nil {
+		glog.Error(err)
+		return "", err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return "", err
+			}
+			return string(data), nil
+		} else {
+			glog.Warningf("Failed to get Kubernetes services: %s %d", resp.Status, resp.StatusCode)
+		}
+	}
+	return "", err
 }

@@ -110,7 +110,7 @@ var listStacksCmd = &cobra.Command{
 				fmt.Fprintf(w, "%s\t\t%s\n", stack.Key, stack.Status)
 				for _, service := range stack.Services {
 					endpoint := ""
-					if (len(service.Endpoints) > 0) {
+					if len(service.Endpoints) > 0 {
 						endpoint = service.Endpoints[0]
 					}
 					fmt.Fprintf(w, "\t%s\t%s\t%s\t%s\n", service.Service, service.Status, endpoint, service.Id)
