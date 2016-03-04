@@ -171,7 +171,7 @@ angular
 })
 .controller('ConfigurationWizardCtrl', [ '$scope', '$log', '$uibModalInstance', 'Stack', 'Volume', 'StackService', 'Grid', 'Wizard', 'WizardPage', 'template', 'stacks', 'deps', 'configuredStacks', 'configuredVolumes',
     function($scope, $log, $uibModalInstance, Stack, Volume, StackService, Grid, Wizard, WizardPage, template, stacks, deps, configuredStacks, configuredVolumes) {
-
+  $scope.showVolumePane = false;
   
   $scope.discoverVolumeReqs = function(stack) {
     var reusableVolumes = [];
@@ -337,7 +337,7 @@ angular
     { name: 'MasterBlaster',    tagline: 'Find your inner stack' },
     { name: 'NOOBernetes',      tagline: 'For teh noobs!' },
     { name: "DrStack",          tagline: 'One stack, two stack, red stack, blue stack?' },
-    { name: "Stackster",        tagline: 'It\'s where the stacks go' }
+    { name: "Stackstr",        tagline: 'It\'s where the stacks go' }
   ]);
   
   // Wire in DEBUG mode
@@ -356,52 +356,53 @@ angular
   
   var query = {};
   
-  // Grab the current project
-  (query.project = function() {
-    return NdsLabsApi.getProjectsByProjectId({ "projectId": projectId }).then(function(project, xhr) {
-      $log.debug("successfully grabbed from /projects/" + projectId + "!");
-      $scope.project = AuthInfo.project = Project = project;
-    }, function(headers) {
-      $log.debug("error!");
-      console.debug(headers);
-    })
+  ($scope.refreshAll = function() {
+    // Grab the current project
+    (query.project = function() {
+      return NdsLabsApi.getProjectsByProjectId({ "projectId": projectId }).then(function(project, xhr) {
+        $log.debug("successfully grabbed from /projects/" + projectId + "!");
+        $scope.project = AuthInfo.project = Project = project;
+      }, function(headers) {
+        $log.debug("error!");
+        console.debug(headers);
+      })
+    })();
+    
+    // Grab the list of services available at our site
+    (query.services = function() {
+      return NdsLabsApi.getServices().then(function(specs, xhr) {
+        $log.debug("successfully grabbed from /services!");
+        Specs.all = $scope.allServices = specs;
+        Specs.deps = $scope.deps = angular.copy(specs);
+        Specs.stacks = $scope.stacks = _.remove($scope.deps, function(svc) { return svc.stack === true; });
+      }, function (headers) {
+        $log.error("error grabbing from /services!");
+      })
+    })();
+    
+    (query.stacks = function() {
+      // Grab the list of configured stacks in our namespace
+      return NdsLabsApi.getProjectsByProjectIdStacks({ "projectId": projectId }).then(function(stacks, xhr) {
+        $log.debug("successfully grabbed from /projects/" + projectId + "/stacks!");
+        //Stacks.all = stacks || [];
+        Stacks.all = $scope.configuredStacks = stacks || [];
+      }, function(headers) {
+        $log.error("error grabbing from /projects/" + projectId + "/stacks!");
+      });
+    })();
+    
+    // Grab the list of volumes in our namespace
+    (query.volumes = function() {
+      return NdsLabsApi.getProjectsByProjectIdVolumes({ "projectId": projectId }).then(function(volumes, xhr) {
+        $log.debug("successfully grabbed from /projects/" + projectId + "/volumes!");
+        //Volumes.all = volumes || [];
+        Volumes.all = $scope.configuredVolumes = volumes || [];
+      }, function(headers) {
+        $log.error("error grabbing from /projects/" + projectId + "/volumes!");
+      })
+    })();
   })();
   
-  // Grab the list of services available at our site
-  (query.services = function() {
-    return NdsLabsApi.getServices().then(function(specs, xhr) {
-      $log.debug("successfully grabbed from /services!");
-      Specs.all = $scope.allServices = specs;
-      Specs.deps = $scope.deps = angular.copy(specs);
-      Specs.stacks = $scope.stacks = _.remove($scope.deps, function(svc) { return svc.stack === true; });
-    }, function (headers) {
-      $log.error("error grabbing from /services!");
-    })
-  })();
-  
-  (query.stacks = function() {
-    // Grab the list of configured stacks in our namespace
-    return NdsLabsApi.getProjectsByProjectIdStacks({ "projectId": projectId }).then(function(stacks, xhr) {
-      $log.debug("successfully grabbed from /projects/" + projectId + "/stacks!");
-      //Stacks.all = stacks || [];
-      $scope.configuredStacks = stacks || [];
-    }, function(headers) {
-      $log.error("error grabbing from /projects/" + projectId + "/stacks!");
-    });
-  })();
-  
-  // Grab the list of volumes in our namespace
-  (query.volumes = function() {
-    return NdsLabsApi.getProjectsByProjectIdVolumes({ "projectId": projectId }).then(function(volumes, xhr) {
-      $log.debug("successfully grabbed from /projects/" + projectId + "/volumes!");
-      //Volumes.all = volumes || [];
-      $scope.configuredVolumes = volumes || [];
-    }, function(headers) {
-      $log.error("error grabbing from /projects/" + projectId + "/volumes!");
-    })
-  })();
-  
-  // TODO: This could be a service
   $scope.openWizard = function(template) {
     var modalInstance = $uibModal.open({
       animation: true,
@@ -485,13 +486,10 @@ angular
       'stackId': stack.key
     }).then(function(data, xhr) {
       $log.debug('successfully stopped ' + stack.name);
-      
-      // TODO: this is really hacky
-      stack.status = 'stopped';
-      angular.forEach(stack.services, function(svc) {
-        svc.status = "";
-        svc.endpoints = [];
-      });
+
+      // TODO: This is sort of hacky
+      stack.status = data.status;
+      stack.services = data.services;
     }, function(headers) {
       $log.error('failed to stop ' + stack.name);
     });
@@ -544,7 +542,7 @@ angular
       $log.debug('successfully deleted stack: ' + stack.name);
       $scope.configuredStacks.splice($scope.configuredStacks.indexOf(stack), 1);
     }, function(headers) {
-      
+      $log.error('failed to delete stack: ' + stack.name);
     });
     
     /*var toRemove = [];
@@ -610,5 +608,17 @@ angular
         }
       });
     }
+  };
+  
+  $scope.deleteVolume = function(volume) {
+    NdsLabsApi.deleteProjectsByProjectIdVolumesByVolumeId({
+      'projectId': projectId,
+      'volumeId': volume.id
+    }).then(function(data, xhr) {
+      $log.debug('successfully deleted stack: ' + volume.name);
+      $scope.configuredVolumes.splice($scope.configuredVolumes.indexOf(volume), 1);
+    }, function(headers) {
+      $log.error('failed to delete volume: ' + volume.name);
+    });
   };
 }]);

@@ -2,8 +2,8 @@
 
 angular
 .module('ndslabs', [ 'navbar', 'footer', 'ndslabs-api', 'ngWizard', 'ngGrid', 
-    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'toggle-switch', 'ui.bootstrap' ])
-.constant('DEBUG', true)
+    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'toggle-switch', 'pageslide-directive', 'ui.bootstrap' ])
+.constant('DEBUG', false)
 .constant('MOCKDATA', false)
 .constant('_', window._)
 .constant('Google', window.google)
@@ -42,11 +42,11 @@ angular
       function (scope, $cookies, $q, $location, $log, _, DEBUG, ApiUri, AuthInfo) {
     return {
       'request': function(config) {
-        if (DEBUG) {
-          $log.debug('Request:');
-          console.debug(config);
-        }
         if (_.includes(config.url, ApiUri)) {
+          if (DEBUG) {
+            $log.debug('Request:');
+            console.debug(config);
+          }
           // This is a request for our API server
           if (!_.includes(config.url, '/authenticate')) {
             // We need to attach our token to this request
@@ -56,19 +56,22 @@ angular
         return config;
       },
       'requestError': function(rejection) {
-        if (DEBUG) {
-          $log.debug('Request Rejection:');
-          console.debug(rejection);
+        if (rejection.config.url.indexOf(ApiUri) !== -1) {
+          if (DEBUG) {
+            $log.debug('Request Rejection:');
+            console.debug(rejection);
+          }
         }
         return $q.reject(rejection);
       },
       'response': function(response) {
-        if (DEBUG) {
-          $log.debug("Response:")
-          console.debug(response);
-        }
         if (_.includes(response.config.url, ApiUri)) {
           // This is a response from our API server
+          if (DEBUG) {
+            $log.debug("Response:")
+            console.debug(response);
+          }
+        
           if ((_.includes(response.config.url, '/authenticate') && response.config.method === 'POST')
               || (_.includes(response.config.url, '/refresh_token') && response.config.method === 'GET')) {
             // This response should contain a new token, so save it
@@ -79,13 +82,13 @@ angular
         return response;
       },
       'responseError': function(rejection) {
-        if (DEBUG) {
-          $log.debug("Response Rejection:");
-          console.debug(rejection);
-        }
-        
         // Ignore local communication errors?
         if (rejection.config.url.indexOf(ApiUri) !== -1) {
+          if (DEBUG) {
+            $log.debug("Response Rejection:");
+            console.debug(rejection);
+          }
+        
           var status = rejection.status;
           if (status == 401) {
             //window.location = "/account/login?redirectUrl=" + Base64.encode(document.URL);

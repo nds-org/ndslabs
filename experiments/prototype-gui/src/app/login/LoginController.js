@@ -31,7 +31,8 @@ angular
       $cookies.put('namespace', $scope.settings.namespace);
       $location.path(HomeRoute);
     }, function(response) {
-      $scope.errorMessage = response.status === 401 ? 'Invalid namespace or password' : response.body.Error;
+      $scope.errorMessage = (response.status === 401 ? 'Invalid namespace or password' : response.body.Error)
+          || 'Something went wrong. Is the server running?';
       $log.error("Error logging in!");
     }).finally(function() {
       $scope.progressMessage = '';

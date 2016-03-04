@@ -1,12 +1,10 @@
 angular
 .module('footer', [])
-.controller('FooterController', [ '$scope', function($scope) {
+.controller('FooterController', [ '$scope', 'DEBUG', 'Volumes', function($scope, DEBUG, Volumes) {
+  $scope.DEBUG = DEBUG;
   $scope.showVolumes = false;
   
-  $scope.volumes = [
-    { name: 'volume1', format:'raw', size:'100', sizeUnits:'GB', attachment:'Clowder-01' },
-    { name: 'volume2', format:'raw', size:'100', sizeUnits:'GB', attachment:null }
-  ];
+  $scope.volumes = Volumes;
   
   $scope.toggleVolumes = function() { $scope.showVolumes = !$scope.showVolumes; };
 }]);

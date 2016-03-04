@@ -36,6 +36,7 @@
     <!-- Load third-party angular modules / CSS-->
     <script src="/bower_components/angular-bootstrap-toggle-switch/angular-toggle-switch.js"></script>
     <link rel="stylesheet" type="text/css" href="/bower_components/angular-bootstrap-toggle-switch/style/bootstrap3/angular-toggle-switch-bootstrap-3.css" />
+    <script src="/bower_components/angular-pageslide-directive/dist/angular-pageslide-directive.min.js"></script>
 
     <!-- Load our own custom modules -->
     <script src="/bower_components/angular-wizard/angular-wizard.js"></script>
@@ -54,14 +55,14 @@
   </head>
 
   <!-- Display the actual contents of the app down here -->
-  <body ng-controller="FooterController" ng-style="{ 'margin-bottom': showVolumes ? '200px' : '60px' }">
+  <body> <!-- ng-controller="FooterController" ng-style="{ 'margin-bottom': showVolumes ? '200px' : '61px' }"> -->
     <!-- This syntax can be used to isolate smaller page templates (such as our navbar and footer) -->
     <!-- NOTE: This method does not produce a navigatable route. For another full page/route, we need to add the route to app.js -->
     <div ng-include src="'/app/shared/navbar.html'" ng-controller="NavbarController" ></div> 
     
     <!-- ng-view tells angular that we will swap in templates for the route specified by app.js (via ngRoute) -->
-    <div class="container" ng-view></div>
+    <div class="container-fluid" ng-view></div>
   
-    <!--<div ng-include src="'/app/shared/footer.html'" ng-controller="FooterController"></div>-->
+    <!--<div ng-include src="'/app/shared/footer.html'"></div>-->
   </body>
 </html>
