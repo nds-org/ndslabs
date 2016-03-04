@@ -15,22 +15,30 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 )
 
-// stopCmd represents the stop command
-var stopCmd = &cobra.Command{
-	Use:   "stop",
-	Short: "Stop the specified resource",
+// logsCmd represents the log command
+var logsCmd = &cobra.Command{
+	Use:   "logs [stackName] [serviceId]",
+	Short: "Print logs for the stack",
 	Run: func(cmd *cobra.Command, args []string) {
-		stack := args[0]
 
-		url := apiServer + "projects/" + apiUser.username + "/stop/" + stack
-		fmt.Println(url)
+		if len(args) < 2 {
+			cmd.Usage()
+			os.Exit(-1)
+		}
+
+		stackKey := args[0]
+		serviceId := args[1]
+
+		url := apiServer + "projects/" + apiUser.username + "/logs/" + stackKey + "/" + serviceId
 
 		client := &http.Client{}
 		request, err := http.NewRequest("GET", url, nil)
@@ -41,22 +49,22 @@ var stopCmd = &cobra.Command{
 			log.Fatal(err)
 		} else {
 			if resp.StatusCode == http.StatusOK {
-				fmt.Printf("Stopped %s\n", stack)
-
 				defer resp.Body.Close()
 				body, err := ioutil.ReadAll(resp.Body)
 				if err != nil {
 					log.Fatal(err)
 				}
-				fmt.Printf("%s\n", string(body))
+				var log string
+				json.Unmarshal(body, &log)
+				fmt.Printf("%s\n", log)
 
 			} else {
-				fmt.Printf("Error stopping %s: %s\n", stack, resp.Status)
+				fmt.Printf("Error getting logs %s: %s\n", stackKey, resp.Status)
 			}
 		}
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(stopCmd)
+	RootCmd.AddCommand(logsCmd)
 }
