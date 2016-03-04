@@ -1,5 +1,36 @@
 package types
 
+type ServiceSpec struct {
+	Key            string              `json:"key"`
+	Label          string              `json:"label"`
+	Description    string              `json:"description"`
+	Maintainer     string              `json:"maintainer"`
+	RequiresVolume bool                `json:"requiresVolume"`
+	IsStack        bool                `json:"isStack"`
+	IsService      bool                `json:"isService"`
+	Dependencies   []ServiceDependency `json:"depends"`
+	Config         map[string]string   `json:"config"`
+	Image          string              `json:"image"`
+	Ports          map[int]string      `json:"ports"`
+	CreatedTime    int                 `json:"createdTime"`
+	UpdatedTime    int                 `json:"updateTime"`
+	ReadyProbe     ReadyProbe          `json:"readinessProbe"`
+	VolumeMounts   []VolumeMount       `json:"volumeMounts"`
+	Args           []string            `json:"args"`
+}
+
+type VolumeMount struct {
+	MountPath string `json:"mountPath"`
+	Name      string `json:"name"`
+}
+type ReadyProbe struct {
+	Path         string `json:"path"`
+	Port         int    `json:"port"`
+	Scheme       string `json:"scheme"`
+	InitialDelay int    `json:"initialDelay"`
+	Timeout      int    `json:"timeout"`
+}
+
 type ProjectList struct {
 	Items []Project `json:"items"`
 }
@@ -63,7 +94,7 @@ type Volume struct {
 	Id          string `json:"id"`
 	Name        string `json:"name"`
 	Size        int    `json:"size"`
-	SizeUnit        string    `json:"sizeUnit"`
+	SizeUnit    string `json:"sizeUnit"`
 	Format      string `json:"format"`
 	Attached    string `json:"attached"`
 	Service     string `json:"service"`
