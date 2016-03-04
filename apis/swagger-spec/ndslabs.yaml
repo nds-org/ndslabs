@@ -373,8 +373,9 @@ paths:
           description: OK 
   
   # Stack service logs
-  /projects/{project-id}/logs/{stack-service-id}:
+  /projects/{project-id}/logs/{stack-id}/{stack-service-id}:
     parameters: 
+      - $ref: '#/parameters/stack-id'
       - $ref: '#/parameters/project-id'
       - $ref: '#/parameters/stack-service-id'
     get: 
@@ -560,8 +561,4 @@ definitions:
         type: integer
         
   Log:
-    type: object
-    properties:
-      text:
-        type: string
-        
+    type: string
