@@ -1,5 +1,11 @@
 angular
 .module('ndslabs')
+/**
+ * The Controller for our "Configuration Wizard" Modal Window
+ * 
+ * @author lambert8
+ * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
+ */
 .controller('ConfigurationWizardCtrl', [ '$scope', '$log', '$uibModalInstance', 'Stack', 'Volume', 
     'StackService', 'Grid', 'Wizard', 'WizardPage', 'template', 'stacks', 'deps', 'configuredStacks', 'configuredVolumes',
     function($scope, $log, $uibModalInstance, Stack, Volume, StackService, Grid, Wizard, WizardPage, template, 

@@ -1,16 +1,23 @@
-angular
-.module('ndslabs')
+/**
+ * This file defines shared data structures and constructors.
+ * 
+ * @author lambert8
+ * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/Services+and+Factories
+ */
+angular.module('ndslabs')
+
 /**
  * A shared store for our project metadata pulled from /projects/{namespace}
  */
-.factory('Project', [function() {
+.factory('Project', [ function() {
   // An empty place-holder for our project data
   return {};
 }])
+
 /**
  * A shared store for service specs pulled from /services
  */
-.factory('Specs', [ '$log', '$http', 'MOCKDATA', 'NdsLabsApi', function($log, $http, MOCKDATA, NdsLabsApi) {
+.factory('Specs', [ function(i) {
   // An empty place-holder for our service/stack specs
   var specs = {
     all: [],
@@ -23,10 +30,11 @@ angular
   
   return specs;
 }])
+
 /**
  * A shared store for stacks pulled from /projects/{namespace}/stacks
  */
-.factory('Stacks', [function() {
+.factory('Stacks', [ function() {
   // An empty place-holder for our deployed stacks
   return {
     all: [],
@@ -34,10 +42,11 @@ angular
     deployed: []
   };
 }])
+
 /**
  * A shared store for volumes pulled from /projects/{namespace}/volumes
  */
-.factory('Volumes', [function() {
+.factory('Volumes', [ function() {
   // An empty place-holder for our volumes
   return {
     all: [],
@@ -101,7 +110,6 @@ angular
  * @param {} spec - The service spec off of which to base this service
  */
 .service('StackService', [ function() {
-    // TODO: This should be a service
   return function(stack, spec) {
     var svc = {
       id: "",

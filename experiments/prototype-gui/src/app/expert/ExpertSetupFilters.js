@@ -1,5 +1,12 @@
-angular
-.module('ndslabs')
+/**
+ * This file defines filters that attach to bindings in 
+ * partial view templates and return a custom transformation
+ * of their input.
+ * 
+ * @author lambert8
+ * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/Filters
+ */
+angular.module('ndslabs')
 /**
  * Given a stack, return a list of ALL of its services' endpoints
  */

@@ -1,22 +1,11 @@
 angular
 .module('navbar', [])
+/**
+ * A simple filter to select only left-aligned or right-aligned navbar links
+ */
 .filter('navbar', function() {
   return function(input, pull) {
     var filtered = [];
-    
-    var matches;
-    switch (pull) {
-      case 'left':
-        matches = function(nav) { return !nav.right };
-        break;
-      case 'right':
-        matches = function(nav) { return !nav.right };
-        break;
-    }
-
-    if (!matches) {
-      return input;
-    }
     
     angular.forEach(input, function(nav) {
       if (pull === 'right' && nav.right === true) {
@@ -28,8 +17,14 @@ angular
     return filtered;
   };
 })
-.controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'ExpressRoute', 'ExpertRoute', 'ManageRoute', 'DEBUG', 
-    function($scope, $location, LoginRoute, ExpressRoute, ExpertRoute, ManageRoute, DEBUG) {
+/**
+ * The Controller for the Navigation Bar
+ * 
+ * @author lambert8
+ * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
+ */
+.controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'ExpressRoute', 'ExpertRoute', 'DEBUG', 
+    function($scope, $location, LoginRoute, ExpressRoute, ExpertRoute, DEBUG) {
   $scope.$on('$routeChangeSuccess', function(event, current, previous){
     $scope.path = current.$$route.originalPath;
   });
@@ -51,13 +46,8 @@ angular
       url: '#' + ExpressRoute
     },*/
     /*{
-      name: 'Setup',
+      name: 'Expert Setup',
       url: '#' + ExpertRoute
-    },
-    {
-      name: 'Manage Deployments',
-      url: '#' + ManageRoute,
-      right: true
     },*/
   ];
 }]);

@@ -1,32 +1,34 @@
 <section>
-  <form class="form-horizontal" role="form">
-    
-    <div class="form-group">
-      <label class="control-label col-xs-4" for="service">Service:</label>
-      <div class="col-xs-8">
-        <p class="form-control-static">{{ volume.service }}</p>
+  <div class="well">
+    <form class="form-horizontal" role="form">
+      
+      <div class="form-group">
+        <label class="control-label col-xs-4" for="service">Service: </label>
+        <div class="col-xs-8">
+          <p class="form-control-static">{{ volume.service }}</p>
+        </div>
       </div>
-    </div>
-    
-    <div class="form-group">
-      <label class="control-label col-xs-4" for="status">Status:</label>
-      <div class="col-xs-8">
-        <p class="form-control-static">{{ volume.status }}</p>
+      
+      <div class="form-group">
+        <label class="control-label col-xs-4" for="status">Status: </label>
+        <div class="col-xs-8">
+          <p class="form-control-static">{{ volume.status }}</p>
+        </div>
       </div>
-    </div>
-    
-    <div class="form-group">
-      <label class="control-label col-xs-4" for="size">Size:</label>
-      <div class="col-xs-8">
-        <p class="form-control-static">{{ volume.size }} {{ volume.sizeUnit }}</p>
+      
+      <div class="form-group">
+        <label class="control-label col-xs-4" for="size">Size: </label>
+        <div class="col-xs-8">
+          <p class="form-control-static">{{ volume.size }} {{ volume.sizeUnit }}</p>
+        </div>
       </div>
-    </div>
-    
-    <div class="form-group">
-      <label class="control-label col-xs-4" for="format">Format:</label>
-      <div class="col-xs-8">
-        <p class="form-control-static">{{ volume.formatted ? volume.format : 'unformatted' }}</p>
+      
+      <div class="form-group">
+        <label class="control-label col-xs-4" for="format">Format: </label>
+        <div class="col-xs-8">
+          <p class="form-control-static">{{ volume.formatted ? volume.format : 'unformatted' }}</p>
+        </div>
       </div>
-    </div>
-  </form>
+    </form>
+  </div>
 </section>
