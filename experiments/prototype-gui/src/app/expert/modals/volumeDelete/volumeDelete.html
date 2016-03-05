@@ -1,0 +1,16 @@
+<section>
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" ng-click="close()">&times;</span></button>
+    <h4 class="modal-title">Confirm Delete</h4>
+  </div>
+  
+  <div class="modal-body">
+    <p>All data on this volume will be deleted if you continue.</p>
+    <p>Are you <strong>sure</strong> that you would like to remove this volume?</p>
+  </div>
+  
+  <div class="modal-footer">
+    <button class='btn btn-default btn-xs pull-left' ng-click="close()">Cancel</button>
+    <button class="btn btn-danger btn-xs" ng-click="ok(volume)">Destroy All Data</button>
+  </div>
+</section>

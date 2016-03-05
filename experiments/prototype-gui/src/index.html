@@ -4,7 +4,7 @@
     <title>NDS Labs</title>
     <meta name="charset" value="utf-8" />
     <meta name="robots" value="nofollow noindex" />
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
     <link rel="stylesheet" type="text/css" href="/bower_components/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="/bower_components/font-awesome/css/font-awesome.min.css" />
@@ -29,6 +29,7 @@
     <script src="/bower_components/angular-resource/angular-resource.min.js"></script>
     <script src="/bower_components/angular-animate/angular-animate.min.js"></script>
     <script src="/bower_components/angular-cookies/angular-cookies.min.js"></script>
+    <!--<script src="/bower_components/angular-sanitize/angular-sanitize.min.js"></script>-->
 
     <!-- Bridge AngularJS with any external JS / CSS -->
     <script src="/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
@@ -37,6 +38,7 @@
     <script src="/bower_components/angular-bootstrap-toggle-switch/angular-toggle-switch.js"></script>
     <link rel="stylesheet" type="text/css" href="/bower_components/angular-bootstrap-toggle-switch/style/bootstrap3/angular-toggle-switch-bootstrap-3.css" />
     <script src="/bower_components/angular-pageslide-directive/dist/angular-pageslide-directive.min.js"></script>
+    <script src="/bower_components/ansi-to-html/ansi2html.js"></script>
 
     <!-- Load our own custom modules -->
     <script src="/bower_components/angular-wizard/angular-wizard.js"></script>
@@ -46,12 +48,28 @@
     <script src="/app/shared/FooterController.js"></script>
     <script src="/app/shared/NdsLabsRestApi.js"></script>
 
-    <!-- Then load the source for our app -->
+    <!-- Then load the config for our app -->
     <script src="/app/app.js"></script>
+    
+    <!-- Login View -->
     <script src="/app/login/LoginController.js"></script>
-    <script src="/app/express/ExpressSetupController.js"></script>
+    
+    <!-- Expert Setup Helper Structures / Functions -->
+    <script src="/app/expert/ExpertSetupServices.js"></script>
+    <script src="/app/expert/ExpertSetupFilters.js"></script>
+    
+    <!-- Expert Setup Main Controller -->
     <script src="/app/expert/ExpertSetupController.js"></script>
-    <script src="/app/deployments/DeploymentsController.js"></script>
+    
+    <!-- Expert Setup Modal Controllers -->
+    <script src="/app/expert/modals/configWizard/ConfigurationWizardController.js"></script>
+    <script src="/app/expert/modals/logViewer/LogViewerController.js"></script>
+    <script src="/app/expert/modals/stackStop/StackStopController.js"></script>
+    <script src="/app/expert/modals/stackDelete/StackDeleteController.js"></script>
+    <script src="/app/expert/modals/volumeDelete/VolumeDeleteController.js"></script>
+    
+    <!-- <script src="/app/express/ExpressSetupController.js"></script>
+    <script src="/app/deployments/DeploymentsController.js"></script> -->
   </head>
 
   <!-- Display the actual contents of the app down here -->

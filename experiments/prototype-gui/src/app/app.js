@@ -1,11 +1,11 @@
 'use strict';
 
 angular
-.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-api', 'ngWizard', 'ngGrid', 
-    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'toggle-switch', 'pageslide-directive', 'ui.bootstrap' ])
+.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-api', 'ngWizard', 'ngGrid', /* 'ngSanitize',*/
+    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'toggle-switch', 'pageslide-directive', 'ansiToHtml', 'ui.bootstrap' ])
     
 // Display verbose JSON debug data
-.constant('DEBUG', true)
+.constant('DEBUG', false)
 
 // TODO: Whether or not to use mock data (false if talking to live etcd)
 .constant('MOCKDATA', false)

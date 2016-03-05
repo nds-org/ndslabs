@@ -1,6 +1,15 @@
+<!-- The Configuration Wizard -->
+<!-- TODO: Lots of hacks in here... this needs work -->
 <section>
   <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <!-- Wizard progress bar here -->
+    <div class="progress">
+      <div class="progress-bar" ng-class="{ 'progress-bar-success': wizard.percentage == 100}" role="progressbar" aria-valuenow="{{ wizard.percentage }}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{ wizard.percentage }}%;">
+        {{ wizard.percentage | number:0 }}%
+      </div>
+    </div>
+
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" ng-click="close()">&times;</span></button>
     <h4 class="modal-title" id="wizardModalLabel">{{ newStackLabel }}: {{ wizard.currentPage.displayName }}</h4>
   </div>
   
@@ -81,7 +90,7 @@
 
               <!-- List usable orphaned volumes -->
               <div ng-show="volume.useOrphan">
-                <div class="radio" ng-repeat="orphan in newStackOrphanedVolumes | orphansExist:volume.service" ng-click="volume.useOrphan=true;volume.name = orphan.name">
+                <div class="radio" ng-repeat="orphan in newStackOrphanedVolumes | orphansExist:volume.service" ng-click="volume.useOrphan=true;volume.name = orphan.name;volume.id = orphan.id;">
                   <label>
                     <input type="radio" ng-checked="volume.name === orphan.name" name="orphaned{{ volume.service }}OrphanVolumeRadio">{{ orphan.name }} (Source: {{ orphan.stack }})</label>
                 </div>
@@ -158,13 +167,6 @@
   
   <!-- Progress / Button Bar at the bottom -->
   <div class="modal-footer">
-    <!-- Wizard progress bar here -->
-    <div class="progress">
-      <div class="progress-bar" ng-class="{ 'progress-bar-success': wizard.percentage == 100}" role="progressbar" aria-valuenow="{{ wizard.percentage }}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{ wizard.percentage }}%;">
-        {{ wizard.percentage | number:0 }}%
-      </div>
-    </div>
-
     <!-- "Cancel" button (close modal with success === false) -->
     <button class="btn btn-danger pull-left" ng-click="close()">
       <i class="fa fa-fw fa-times"></i>

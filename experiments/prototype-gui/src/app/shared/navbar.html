@@ -34,7 +34,7 @@
 	        <!-- Then draw our account settings button -->
           <li ng-controller="LoginController" ng-show="settings.token" ng-if="navFilter === 'right'">
             <a id="dropDownButton" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-              <i class="fa fa-user fa-fw"></i><i class="fa fa-fw fa-caret-down"></i>
+              <i class="fa fa-user fa-fw"></i>  {{ settings.namespace | uppercase }} <i class="fa fa-fw fa-caret-down"></i>
             </a>
             <ul class="dropdown-menu form-popover pullDown" role="menu" aria-labelledby="dropDownButton" ng-click="$event.stopPropagation();">
               <li>

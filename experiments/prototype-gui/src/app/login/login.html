@@ -1,62 +1,46 @@
-<section class="container-fluid">
-  <div class="row" style="margin:75px;">
-   <div class="col-sm-4 col-sm-offset-4">
+<section class="container">
+   <!-- Main Panel -->
+  <div class="panel panel-primary" id="loginPanel">
+    <div class="panel-heading">
+      <h3 class="panel-title"><i class="fa fa-fw fa-lock"></i> Sign In</h3>
+    </div>
+    
+    <!-- Login form -->
+    <div class="panel-body">
+      <form class="form-horizontal">
 
-      <!-- Main Panel -->
-      <div class="panel panel-primary">
-        <div class="panel-heading">
-          <h3 class="panel-title">Login</h3>
+        <!-- Namespace Field -->
+        <div class="form-group">
+          <label for="inputNamespace" class="col-sm-4 control-label">Namespace</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" id="inputNamespace" placeholder="Namespace" ng-model="settings.namespace">
+          </div>
         </div>
-        <div class="panel-body">
 
-          <!-- Login form -->
-          <form class="form-horizontal">
-
-            <!-- Namespace Field -->
-            <div class="form-group">
-              <label for="inputNamespace" class="col-sm-4 control-label">Namespace</label>
-              <div class="col-sm-8">
-                <input type="text" class="form-control" id="inputNamespace" placeholder="Namespace" ng-model="settings.namespace">
-              </div>
-            </div>
-
-            <!-- Password Field -->
-            <div class="form-group">
-              <label for="inputPassword" class="col-sm-4 control-label">Password</label>
-              <div class="col-sm-8">
-                <input type="password" class="form-control" id="inputPassword" placeholder="Password" ng-model="settings.password">
-              </div>
-            </div>
-
-            <!-- Save Cookie Checkbox -->
-            <!--<div class="form-group">
-              <div class="col-sm-offset-4 col-sm-8">
-                <div class="checkbox">
-                  <label>
-                    <input type="checkbox" ng-model="settings.saveCookie"> Remember me
-                  </label>
-                </div>
-              </div>
-            </div>-->
-
-            <!-- Login Button -->
-            <div class="form-group">
-              <div class="col-sm-offset-4 col-sm-8">
-                <button type="submit" class="btn btn-default" ng-click="login()">Sign in <i class="fa fa-fw fa-sign-in"></i></button>
-              </div>
-            </div>
-
-            <div class="text-center">
-              <p class="text-danger" ng-if="errorMessage">
-                {{ errorMessage }}
-              </p>
-              <p class="text-primary" ng-if="progressMessage">
-                <i class="fa fa-fw fa-spinner fa-spin"></i>{{ progressMessage }}
-              </p>
-            </div>
-          </form>
+        <!-- Password Field -->
+        <div class="form-group">
+          <label for="inputPassword" class="col-sm-4 control-label">Password</label>
+          <div class="col-sm-8">
+            <input type="password" class="form-control" id="inputPassword" placeholder="Password" ng-model="settings.password">
+          </div>
         </div>
-      </div>
+
+        <!-- Login Button -->
+        <div class="form-group">
+          <div class="col-sm-offset-4 col-sm-8">
+            <button type="submit" class="btn btn-default" ng-click="login()">Sign in <i class="fa fa-fw fa-sign-in"></i></button>
+          </div>
+        </div>
+
+        <div class="text-center">
+          <p class="text-danger" ng-if="errorMessage">
+            {{ errorMessage }}
+          </p>
+          <p class="text-primary" ng-if="progressMessage">
+            <i class="fa fa-fw fa-spinner fa-spin"></i>{{ progressMessage }}
+          </p>
+        </div>
+      </form>
     </div>
   </div>
 </section>

@@ -30,6 +30,12 @@ body {
   cursor: pointer;
 }
 
+#loginPanel {
+  margin: 10% auto;
+  min-width:150px;
+  max-width:300px;
+}
+
 /* Other custom page styling */
 #navbar {
   margin: 50px;
@@ -42,8 +48,8 @@ body {
 .jumbotron {
   margin-left:-15px;
   margin-right:-15px;
-  padding-top:15px;
-  padding-bottom:15px;
+  padding-top:5px;
+  padding-bottom:5px;
 }
 
 .popover {
@@ -59,7 +65,7 @@ body {
     background: #eee;
 }
 
-body.ng-pageslide-body-open::before {
+.ng-pageslide-body-open::before {
     content: '.';
     display: block;
     position: absolute;
@@ -72,7 +78,7 @@ body.ng-pageslide-body-open::before {
     opacity: 0.5;
     transition: opacity 1s;
 }
-body.ng-pageslide-body-closed::before {
+.ng-pageslide-body-closed::before {
     transition: opacity 1s;
     opacity: 0;
     content: '.';
@@ -85,4 +91,10 @@ body.ng-pageslide-body-closed::before {
     bottom: 0;
     z-index: 1;
     pointer-events: none;
+}
+
+.center-block {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
