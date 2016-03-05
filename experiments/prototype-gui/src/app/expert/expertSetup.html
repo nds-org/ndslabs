@@ -160,9 +160,9 @@
                     <div class="row">
                       <div class="col-sm-1 text-center">
                         <i class="pull-left fa fa-fw fa-2x" 
-                          ng-class="{ 'fa-check-circle-o text-success': stack.status === 'started', 
-                              'fa-times-circle-o text-danger': stack.status === 'stopped',
-                              'fa-spinner fa-spin fa-pulse text-primary': stack.status.indexOf('ed') === -1 }"></i>
+                          ng-class="{ 'fa-check-circle-o text-success': stack.status === 'started' && !intervals.stop[stack.id], 
+                              'fa-times-circle-o text-danger': stack.status === 'stopped' && !intervals.start[stack.id],
+                              'fa-spinner fa-spin fa-pulse text-primary': intervals.start[stack.id] || intervals.stop[stack.id] }"></i>
                       </div>
                       <div class="col-sm-10">
                         <h4>{{ stack.name | capitalize}}</h4>
@@ -193,9 +193,7 @@
                           </thead>
                           <tbody>
                             <tr ng-repeat="svc in stack.services track by svc.id" 
-                              ng-class="{ 'danger':svc.status === '' && stack.status.indexOf('ing') === -1, 
-                                'success':svc.status === 'Running' && stack.status.indexOf('ing') === -1, 
-                                'warning':stack.status.indexOf('ing') !== -1 }">
+                              ng-class="{ 'danger':svc.status === '', 'success':svc.status === 'Running', 'warning': svc.status === 'Pending' }">
                               <!-- Volume details for this service -->
                               <td class="text-center">
                                 <button class="btn btn-link btn-xs faa-pulse animated-hover" uib-popover-template="'/app/expert/popovers/volumeDetails.html'" 
@@ -217,9 +215,8 @@
                                 </a>
                                 
                                 <a type="button" class="btn btn-link btn-xs" ng-if="$index !== 0" ng-repeat="endpt in svc.endpoints track by $index" uib-tooltip="Navigate to {{ svc.service | capitalize }} ({{ endpt }})"
-                                    ng-if="(stack.status === 'started' || stack.status === 'stopping') && svc.status === 'Running' 
-                                        && svc.endpoints.length > 0 && svc.endpoints[0] !== ''"
-                                    href="{{ endpt }}" ng-disabled="stack.status === 'stopping' && svc.status === 'Running'">
+                                    ng-if="svc.status === 'Running' && svc.endpoints.length > 0 && svc.endpoints[0] !== ''"
+                                    href="{{ endpt }}" ng-disabled="svc.status !== 'Running'">
                                   <i class="fa fa-fw fa-external-link"></i>
                                 </a>
                               </td>
@@ -289,7 +286,6 @@
                       Stop Stack
                     </button>
                   </div>
-                  
                 </uib-accordion-group>
               </uib-accordion>
             </div>

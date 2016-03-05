@@ -136,8 +136,6 @@ angular.module('ndslabs')
    */ 
   $scope.startStack = function(stack) {
       // Signal to the UI that we are starting this stack
-    stack.status = 'starting';
-  
     $scope.intervals.start[stack.id] = $interval($scope.softRefresh, 2000);
     
       // Then send the "start" command to the API server
@@ -176,8 +174,6 @@ angular.module('ndslabs')
     // Define what we should do when the modal is closed
     modalInstance.result.then(function(stack) {
       // Signal to the UI that we are stopping this stack
-      stack.status = 'stopping';
-      
       $scope.intervals.stop[stack.id] = $interval($scope.softRefresh, 2000);
       
       // Then send the "stop" command to the API server
