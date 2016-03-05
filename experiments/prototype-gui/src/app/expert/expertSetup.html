@@ -198,11 +198,11 @@
                                 'warning':stack.status.indexOf('ing') !== -1 }">
                               <!-- Volume details for this service -->
                               <td class="text-center">
-                                <button class="btn btn-link btn-xs" uib-popover-template="'/app/expert/popovers/volumeDetails.html'" 
+                                <button class="btn btn-link btn-xs faa-pulse animated-hover" uib-popover-template="'/app/expert/popovers/volumeDetails.html'" 
                                      popover-title="{{ showVolume(stack, svc).name | uppercase }}"
                                      popover-placement="right" popover-trigger="outsideClick">
                                   <!-- show volume details if we find a volume -->
-                                  <i ng-if="(volume = showVolume(stack, svc))" class="fa fa-fw fa-database" style="cursor:pointer;"></i>
+                                  <i ng-if="(volume = showVolume(stack, svc))" class="fa fa-fw fa-database  animated faa-slow" style="cursor:pointer;"></i>
                                 </button>
                               </td>
                               
@@ -213,7 +213,7 @@
                                     ng-if="(stack.status === 'started') && svc.status === 'Running' 
                                         && svc.endpoints.length > 0 && svc.endpoints[0] !== ''"
                                     href="{{ endpt }}" ng-disabled="stack.status === 'stopping' && svc.status === 'Running'">
-                                  {{ svc.service | serviceLabelFromSpec }} <i class="fa fa-fw fa-external-link"></i>
+                                  {{ svc.service | serviceLabelFromSpec }}&nbsp;&nbsp;&nbsp;&nbsp;<i class="fa fa-fw fa-external-link faa-tada faa-slow animated"></i>
                                 </a>
                                 
                                 <a type="button" class="btn btn-link btn-xs" ng-if="$index !== 0" ng-repeat="endpt in svc.endpoints track by $index" uib-tooltip="Navigate to {{ svc.service | capitalize }} ({{ endpt }})"
