@@ -4,9 +4,9 @@ angular
     function($scope, $log, $uibModalInstance, _, stack) {
   $scope.stack = stack;
 
-  $scope.ok = function() {
+  $scope.ok = function(removeVolumes) {
     $log.debug("Closing modal with success!");
-    $uibModalInstance.close(stack);
+    $uibModalInstance.close(removeVolumes);
   };
 
   $scope.close = function() {

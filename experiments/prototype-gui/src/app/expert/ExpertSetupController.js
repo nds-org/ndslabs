@@ -4,8 +4,8 @@ angular
  * The main view of our app, this controller houses the
  * "Deploy" and "Manage" portions of the interface
  */
-.controller('ExpertSetupController', [ '$scope', '$log', '$uibModal', '_', 'AuthInfo', 'Project', 'Volumes', 'Stacks', 'Specs', 
-    'DEBUG', 'StackService', 'NdsLabsApi', function($scope, $log, $uibModal, _, AuthInfo, Project, Volumes, Stacks, Specs, DEBUG, 
+.controller('ExpertSetupController', [ '$scope', '$log', '$interval', '$uibModal', '_', 'AuthInfo', 'Project', 'Volumes', 'Stacks', 'Specs', 
+    'DEBUG', 'StackService', 'NdsLabsApi', function($scope, $log, $interval, $uibModal, _, AuthInfo, Project, Volumes, Stacks, Specs, DEBUG, 
     StackService, NdsLabsApi) {
       
   /**
@@ -314,33 +314,16 @@ angular
   };
   
   $scope.showLogs = function(service) {
-    NdsLabsApi.getProjectsByProjectIdLogsByStackIdByStackServiceId({ 
-      'stackId': service.stack,
-      'projectId': projectId,
-      'stackServiceId': service.id
-    }).then(function(data, xhr) {
-      $log.debug('successfully grabbed logs for serviceId ' + service.id);
-      
-      // See '/app/expert/modals/logViewer/logViewer.html'
-      var modalInstance = $uibModal.open({
-        animation: true,
-        templateUrl: '/app/expert/modals/logViewer/logViewer.html',
-        controller: 'LogViewerCtrl',
-        size: 'lg',
-        resolve: {
-          serviceLog: function() { return data; },
-          service: function() { return service; }
-        }
-      });
-  
-      // Define what we should do when the modal is closed
-      modalInstance.result.then(function(serviceLog) {
-        $log.debug('Log Viewer Modal dismissed at: ' + new Date());
-      }, function() {
-        $log.error('Log Viewer Modal dismissed at: ' + new Date());
-      });
-    }, function(headers) {
-      $log.error('error grabbing logs for service ' + service.id);
+    // See '/app/expert/modals/logViewer/logViewer.html'
+    var modalInstance = $uibModal.open({
+      animation: true,
+      templateUrl: '/app/expert/modals/logViewer/logViewer.html',
+      controller: 'LogViewerCtrl',
+      size: 'lg',
+      resolve: {
+        service: function() { return service; },
+        projectId: function() { return projectId; }
+      }
     });
   };
   
@@ -352,7 +335,7 @@ angular
         animation: true,
         templateUrl: '/app/expert/modals/stackDelete/stackDelete.html',
         controller: 'StackDeleteCtrl',
-        size: 'sm',
+        size: 'lg',
         resolve: {
           stack: function() { return stack; },
         }
