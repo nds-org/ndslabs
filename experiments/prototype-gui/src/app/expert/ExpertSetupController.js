@@ -169,10 +169,10 @@ angular
     return matches;
   };
 })
-.controller('ConfigurationWizardCtrl', [ '$scope', '$log', '$uibModalInstance', 'Stack', 'Volume', 'StackService', 'Grid', 'Wizard', 'WizardPage', 'template', 'stacks', 'deps', 'configuredStacks', 'configuredVolumes',
-    function($scope, $log, $uibModalInstance, Stack, Volume, StackService, Grid, Wizard, WizardPage, template, stacks, deps, configuredStacks, configuredVolumes) {
-  $scope.showVolumePane = false;
-  
+.controller('ConfigurationWizardCtrl', [ '$scope', '$log', '$uibModalInstance', 'Stack', 'Volume', 
+    'StackService', 'Grid', 'Wizard', 'WizardPage', 'template', 'stacks', 'deps', 'configuredStacks', 'configuredVolumes',
+    function($scope, $log, $uibModalInstance, Stack, Volume, StackService, Grid, Wizard, WizardPage, template, 
+    stacks, deps, configuredStacks, configuredVolumes) {
   $scope.discoverVolumeReqs = function(stack) {
     var reusableVolumes = [];
     var requiredVolumes = [];
@@ -330,7 +330,9 @@ angular
 .controller('ExpertSetupController', [ '$scope', '$log', '$uibModal', '_', 'AuthInfo', 'Project', 'Volumes', 'Stacks', 'Specs', 
     'DEBUG', 'StackService', 'NdsLabsApi', function($scope, $log, $uibModal, _, AuthInfo, Project, Volumes, Stacks, Specs, DEBUG, 
     StackService, NdsLabsApi) {
-
+      
+  $scope.showVolumePane = false;
+  
   $scope.app = _.sample([ 
     { name: 'StackMaster',      tagline: 'Become one with the stack' }, 
     { name: 'StackBlaster',     tagline: 'Stack the odds in your favor' },
@@ -406,7 +408,7 @@ angular
   $scope.openWizard = function(template) {
     var modalInstance = $uibModal.open({
       animation: true,
-      templateUrl: '/app/expert/subviews/wizardModal.html',
+      templateUrl: '/app/expert/subviews/configurationWizard.html',
       controller: 'ConfigurationWizardCtrl',
       size: 'lg',
       resolve: {
@@ -496,7 +498,8 @@ angular
   };
   
   $scope.showLogs = function(service) {
-    NdsLabsApi.getProjectsByProjectIdLogsByStackServiceId({ 
+    NdsLabsApi.getProjectsByProjectIdLogsByStackIdByStackServiceId({ 
+      'stackId': service.stack,
       'projectId': projectId,
       'stackServiceId': service.id
     }).then(function(data, xhr) {
@@ -534,6 +537,7 @@ angular
     $('#confirmModal').modal('show');
   };*/
 
+  // Deletes a stack from etcd, if successful it is removed from the UI
   $scope.removeCandidateStack = function(stack, removeVolumes) {
     NdsLabsApi.deleteProjectsByProjectIdStacksByStackId({
       'projectId': projectId,
@@ -541,84 +545,155 @@ angular
     }).then(function(data, xhr) {
       $log.debug('successfully deleted stack: ' + stack.name);
       $scope.configuredStacks.splice($scope.configuredStacks.indexOf(stack), 1);
+      
+      var toRemove = [];
+      angular.forEach(stack.services, function(service) {
+        angular.forEach($scope.configuredVolumes, function(volume) {
+          if (volume.attached === service.id) {
+            if (removeVolumes) {
+              toRemove.push(volume);
+            } else {
+              volume.attached = null;
+            }
+          }
+          
+          // If specified, remove any volumes associated, if asked 
+          if (removeVolumes) {
+            angular.forEach(toRemove, function(volume) {
+              $scope.deleteVolume(volume);
+            });
+          }
+        });
+      });
+      
+      
     }, function(headers) {
       $log.error('failed to delete stack: ' + stack.name);
     });
-    
-    /*var toRemove = [];
-
-    // Loop to find any associated volumes
-    angular.forEach($scope.configuredVolumes, function(volume) {
-      if (volume.stack === stack.name) {
-        if (removeVolumes) {
-          toRemove.push(volume);
-        } else {
-          volume.attachment = null;
-        }
-      }
-    });
-    
-    // Then remove the stack itself
-    $scope.configuredStacks.splice($scope.configuredStacks.indexOf(stack), 1);
-
-    // Remove any volumes associated, if asked 
-    if (removeVolumes) {
-      angular.forEach(toRemove, function(volume) {
-        $scope.configuredVolumes.splice($scope.configuredVolumes.indexOf(volume), 1);
-      });
-    }*/
   };
   
   $scope.addStackSvc = function(stack, svc) {
+    // Add this service to our stack locally
     var spec = _.find(Specs.all, [ 'key', svc.key ]);
     
-    if (spec) {
-      // Ensure this does not require new dependencies
-      angular.forEach(spec.depends, function(dependency) {
-        var svc = _.find(Specs.all, function(svc) { return svc.key === dependency.key });
-        var stackSvc = new StackService(stack, svc);
-        
-        // Check if this service is already present on our proposed stack
-        var exists = _.find(stack.services, function(svc) { return svc.service === dependency.key });
-        if (!exists) {
-          // Add the service if it has not already been added
-          stack.services.push(stackSvc);
-        } else {
-          // Skip this service if we see it in the list already
-          $log.debug("Skipping duplicate service: " + svc.key);
-        }
-      });
+    // Ensure that adding this service does not require new dependencies
+    angular.forEach(spec.depends, function(dependency) {
+      var svc = _.find(Specs.all, function(svc) { return svc.key === dependency.key });
+      var stackSvc = new StackService(stack, svc);
       
-      // Now that we have all required dependencies, add our target service
-      stack.services.push(new StackService(stack, spec));
-    } else {
-      $log.error("spec not found: " + svc.key);
-    }
+      // Check if this required dependency is already present on our proposed stack
+      var exists = _.find(stack.services, function(svc) { return svc.service === dependency.key });
+      if (!exists) {
+        // Add the service if it has not already been added
+        stack.services.push(stackSvc);
+      } else {
+        // Skip this service if we see it in the list already
+        $log.debug("Skipping duplicate service: " + svc.key);
+      }
+    });
+    
+    // Now that we have all required dependencies, add our target service
+    stack.services.push(new StackService(stack, spec));
+    
+    // Then update the entire stack in etcd
+    NdsLabsApi.putProjectsByProjectIdStacksByStackId({
+      'stack': stack,
+      'projectId': projectId,
+      'stackId': stack.name
+    }).then(function(data, xhr) {
+      $log.debug('successfully add service ' + svc.key + ' from stack ' + stack.name);
+    }, function(headers) {
+      $log.error('failed to add service ' + svc.key + ' from stack ' + stack.name);
+      
+      // Restore our state from etcd
+      query.stacks();
+    });
   };
   
   $scope.removeStackSvc = function(stack, svc) {
-    var spec = _.find($scope.stacks, _.matchesProperty('key', stack.key));
-    
+    // Remove this services locally
     stack.services.splice(stack.services.indexOf(svc), 1);
-    var volume = $scope.showVolume(stack, svc);
-    if (volume) {
-      angular.forEach($scope.configuredVolumes, function(volume) {
-        if (volume.stack === stack.name) {
-          volume.attachment = null;
-        }
-      });
-    }
+    
+    // Then update the entire stack in etcd
+    NdsLabsApi.putProjectsByProjectIdStacksByStackId({
+      'stack': stack,
+      'projectId': projectId,
+      'stackId': stack.name
+    }).then(function(data, xhr) {
+      $log.debug('successfully removed service' + svc.key + '  from stack ' + stack.name);
+      
+      // TODO: Do we need to manually dettach volumes?
+      /*var volume = $scope.showVolume(stack, svc);
+      if (volume) {
+        angular.forEach($scope.configuredVolumes, function(volume) {
+          if (volume.stack === stack.name) {
+            volume.attached = null;
+          }
+        });
+      }*/
+    }, function(headers) {
+      $log.error('failed to remove service ' + svc.key + ' from stack ' + stack.name);
+      
+      // Restore our state from etcd
+      query.stacks();
+    });
   };
   
+  // Deletes a volume from etcd, if successful it is removed from the UI
   $scope.deleteVolume = function(volume) {
-    NdsLabsApi.deleteProjectsByProjectIdVolumesByVolumeId({
-      'projectId': projectId,
-      'volumeId': volume.id
-    }).then(function(data, xhr) {
-      $log.debug('successfully deleted stack: ' + volume.name);
-      $scope.configuredVolumes.splice($scope.configuredVolumes.indexOf(volume), 1);
-    }, function(headers) {
-      $log.error('failed to delete volume: ' + volume.name);
+    var modalInstance = $uibModal.open({
+      animation: true,
+      templateUrl: '/app/expert/subviews/volumeDelete.html',
+      controller: 'VolumeDeleteCtrl',
+      size: 'sm',
+      resolve: {
+        volume: function() { return volume; },
+      }
     });
+
+    // Define what we should do when the modal is closed
+    modalInstance.result.then(function(volume) {
+      $log.debug('User has chosen to delete volume: ' + volume.name);
+      
+      NdsLabsApi.deleteProjectsByProjectIdVolumesByVolumeId({
+        'projectId': projectId,
+        'volumeId': volume.name
+      }).then(function(data, xhr) {
+        $log.debug('successfully deleted volume: ' + volume.name);
+        $scope.configuredVolumes.splice($scope.configuredVolumes.indexOf(volume), 1);
+      }, function(headers) {
+        $log.error('failed to delete volume: ' + volume.name);
+      });
+    }, function() {
+      $log.debug('Volume Delete Modal dismissed at: ' + new Date());
+    });
+  };
+}])
+.controller('VolumeDeleteCtrl', [ '$scope', '$log', '$uibModalInstance', '_', 'volume',
+    function($scope, $log, $uibModalInstance, _, volume) {
+  $scope.volume = volume;
+
+  $scope.ok = function () {
+    $log.debug("Closing modal with success!");
+    $uibModalInstance.close(volume);
+  };
+
+  $scope.close = function () {
+    $log.debug("Closing modal with dismissal!");
+    $uibModalInstance.dismiss('cancel');
+  };
+}])
+.controller('StackStopCtrl', [ '$scope', '$log', '$uibModalInstance', '_', 'stack',
+    function($scope, $log, $uibModalInstance, _, stack) {
+  $scope.stack = stack;
+
+  $scope.ok = function () {
+    $log.debug("Closing modal with success!");
+    $uibModalInstance.close(stack);
+  };
+
+  $scope.close = function () {
+    $log.debug("Closing modal with dismissal!");
+    $uibModalInstance.dismiss('cancel');
   };
 }]);

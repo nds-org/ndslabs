@@ -74,24 +74,39 @@
             </div>
           </div>
           
+          <!-- The "Volumes" Slide-Out Panel -->
           <pageslide ps-open="showVolumePane" ps-side="right" ps-squeeze>
               <div style="border:solid 2px gray;margin:0px">
+                <button class="btn btn-default btn-lg pull-left" ng-click="showVolumePane = false;">
+                  <i class="fa fa-angle-double-right"></i>
+                </button>
                 <h3 class="text-muted text-center">DATA</h3>
               </div>
         
               <!-- Slide-Out Panel Contents -->
               <div style="background-image: url('/asset/png/symphony.png');border:solid 2px gray;margin:0px;height:100%;width:100%;">
-                <div class="row" ng-repeat="volume in configuredVolumes">
-                  <div class="col-md-9 col-md-offset-1">
-                    <strong>{{ volume.name }}</strong> ({{ volume.size }})
-                  </div>
-                  
-                  <div class="col-md-1">
-                    <button class="btn btn-xs btn-danger" ng-if="!volume.attached" ng-click="deleteVolume(volume)">
-                      <i class="fa fa-fw fa-times"></i>
-                    </button>
-                  </div>
-                </div>
+                <table class="table table-condensed">
+                  <thead>
+                    <tr>
+                      <td width="70%"><strong>Name</strong></td>
+                      <td width="20%"><strong>Size</strong></td>
+                      <td width="10%"><strong></strong></td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="volume in configuredVolumes | orderBy:'name'">
+                      <td><strong>{{ volume.name }}</strong></td>
+                      <td>{{ volume.size }} {{ volume.sizeUnit }}</td>
+                      <td>
+                       <button class="btn btn-xs btn-danger" ng-if="!volume.attached" 
+                           popover-title="WARNING!" popover-placement="left" popover-trigger="outsideClick"
+                           uib-popover-template="'/app/expert/subviews/volumeDeletePopover.html'">
+                          <i class="fa fa-fw fa-times"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
           </pageslide>
           
@@ -101,7 +116,7 @@
             <h4>You can add services from the left-side of this page!</h4>
           </div>
           <uib-accordion ng-if="configuredStacks.length > 0" close-others="true">
-            <uib-accordion-group ng-repeat="stack in configuredStacks" is-open="open">
+            <uib-accordion-group ng-repeat="stack in configuredStacks | orderBy:'name'" is-open="open">
               <uib-accordion-heading>
                 <!-- Stack Enable / Disable -->
                 <div class="row">
@@ -144,8 +159,8 @@
                   <!-- The "Add Service" Button -->
                   <div class="col-md-2">
                     <a class="btn btn-xs btn-success" tabindex="0" 
-                       uib-popover-template="'/app/expert/subviews/serviceAddPopover.html'" popover-append-to-body
-                       popover-title="OPTIONAL SERVICES" ng-if="!stack.status && (stack | missingDeps).length > 0"
+                       uib-popover-template="'/app/expert/subviews/serviceAdd.html'" popover-append-to-body
+                       popover-title="OPTIONAL SERVICES" ng-if="stack.status === 'stopped' && (stack | missingDeps).length > 0"
                        popover-placement="right-top" popover-trigger="outsideClick">
                       <i class="fa fa-plus fa-fw"></i><i class="fa fa-fw fa-caret-down"></i>
                     </a>
@@ -162,11 +177,12 @@
                 
                 <!-- Stack Services -->
                 <div class="row">
-                  <div class="col-md-offset-2 col-md-3">
+                  <div class="col-md-offset-2 col-md-9">
                     <ul class="fa-ul">
                       <!-- List off our stack's services here -->
                       <li ng-repeat="svc in stack.services track by svc.service">
                         <div class="row" style="margin:5px;">
+                          <div class="col-md-4">
                             <!-- show status icon if services are started / stopped -->
                             <i ng-if="!showVolume(stack, svc)" class="fa-li fa fa-fw"
                               ng-class="{ 'fa-check-circle-o text-success':svc.status && stack.status.indexOf('ed') !== -1,
@@ -174,8 +190,8 @@
                                   'fa-exclamation-circle text-warning': stack.status.indexOf('ed') === -1 }"></i>
                               
                             <!-- show volume details if we find a volume -->
-                            <i ng-if="showVolume(stack, svc)" class="fa-li fa fa-fw fa-database" style="cursor:pointer;"
-                               uib-popover-template="'/app/expert/subviews/volumeDetailsPopover.html'" 
+                            <i ng-if="(volume = showVolume(stack, svc))" class="fa-li fa fa-fw fa-database" style="cursor:pointer;"
+                               uib-popover-template="'/app/expert/subviews/volumeDetails.html'" 
                                ng-class="{ 'text-success': svc.status, 'text-danger': !svc.status  }"
                                popover-title="{{ showVolume(stack, svc).name | uppercase }}"
                                popover-placement="right" popover-trigger="outsideClick"></i>
@@ -185,11 +201,30 @@
                             <a ng-repeat="endpt in svc.endpoints" uib-tooltip="Navigate to {{ _.capitalize(svc.service) }} ({{ endpt }})"
                                 ng-if="(stack.status === 'started' || stack.status === 'stopping') && svc.status === 'Running' 
                                     && svc.endpoints.length > 0 && svc.endpoints[0] !== ''"
-                                href="{{ endpt }}" ng-disabled="stack.status === 'stopping'">
+                                href="{{ endpt }}" ng-disabled="stack.status === 'stopping' && svc.status === 'Running'">
                               <i class="fa fa-fw" ng-class="{ 'fa-chain': svc.status === 'Running', 
                                   'fa-chain-broken': stack.status === 'stopping' && svc.status === 'Running' }"></i>
                             </a>
-                               
+                          </div>
+                          
+                          <!-- View logs button -->
+                          <div class="col-md-1">
+                            <button type="button" class="btn btn-xs btn-info" uib-tooltip="View Service Logs" 
+                                tooltip-placement="left" ng-click="showLogs(svc)">
+                              <i class="fa fa-fw fa-search"></i>
+                            </button>
+                          </div>
+                          
+                          <!-- Remove service from stack button -->
+                          <div class="col-md-1">
+                            <button type="button" ng-disabled="stack.services | isRecursivelyRequired:svc" 
+                                ng-if="svc.service !== stack.key && (stack.key | requirements).indexOf(svc.service) === -1" 
+                                class="btn btn-xs btn-danger" ng-click="removeStackSvc(stack, svc)" 
+                                uib-tooltip="Remove Service from Stack" tooltip-placement="left">
+                              <i class="fa fa-fw fa-times"></i>
+                            </button>
+                          </div>
+                        </div>
                             <!-- link to endpoint, if one exists -->
                             <!--<div>
                               <a ng-if="svc.endpoints.length > 0" href="svc.endpoints[0]" style="margin-left:20px;">{{ svc.service }}</a>
@@ -209,7 +244,7 @@
                   </div>
                   
                   <!-- Service Options -->
-                  <div class="col-md-7">
+                  <div class="col-md-1">
                     <ul class="fa-ul">
                     <li ng-repeat="svc in stack.services track by svc.service">
                       <div class="row">
@@ -221,18 +256,6 @@
                               uib-tooltip="Navigate to Endpoint: {{ endpoint }}">
                             <i class="fa fa-fw fa-chain" ng-class="{ 'fa-chain': svc.status, 'fa-chain-broken':!svc.status }"></i>
                           </button>-->
-                      
-                          <button type="button" class="btn btn-xs btn-info" uib-tooltip="View Logs" ng-click="showLogs(svc)">
-                            <i class="fa fa-fw fa-search"></i>
-                          </button>
-                      
-                          <button type="button" ng-disabled="stack.services | isRecursivelyRequired:svc" 
-                              ng-if="svc.service !== stack.key && (stack.key | requirements).indexOf(svc.service) === -1" 
-                              class="btn btn-xs btn-danger" ng-click="removeStackSvc(stack, svc)" 
-                              uib-tooltip="Remove Service from Stack" tooltip-placement="left">
-                            <i class="fa fa-fw fa-times"></i>
-                          </button>
-                        </div>
                       </li>
                     </ul>
                   </div>

@@ -6,7 +6,7 @@ angular
   
   var HomeRoute = ExpertRoute; //ExpressRoute;
   
-  if ($scope.settings.authenticated) {
+  if ($scope.settings.token) {
     $location.path(HomeRoute);
   } else {
     $location.path(LoginRoute);
@@ -31,8 +31,8 @@ angular
       $cookies.put('namespace', $scope.settings.namespace);
       $location.path(HomeRoute);
     }, function(response) {
-      $scope.errorMessage = (response.status === 401 ? 'Invalid namespace or password' : response.body.Error)
-          || 'Something went wrong. Is the server running?';
+      var body = response.body || { 'Error': 'Something went wrong. Is the server running?' };
+      $scope.errorMessage = response.status === 401 ? 'Invalid namespace or password' : body.Error;
       $log.error("Error logging in!");
     }).finally(function() {
       $scope.progressMessage = '';
@@ -44,6 +44,7 @@ angular
     //NdsLabsApi.deleteAuthenticate().then(function(data, xhr) {
       $log.debug("Logged out!");
       $scope.errorMessage = '';
+      $scope.settings.token = null;
       $cookies.remove('token');
       $cookies.remove('namespace');
       $location.path(LoginRoute);

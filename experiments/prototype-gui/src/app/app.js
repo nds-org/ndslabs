@@ -3,22 +3,32 @@
 angular
 .module('ndslabs', [ 'navbar', 'footer', 'ndslabs-api', 'ngWizard', 'ngGrid', 
     'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'toggle-switch', 'pageslide-directive', 'ui.bootstrap' ])
-.constant('DEBUG', false)
+    
+// Display verbose JSON debug data
+.constant('DEBUG', true)
+
+// TODO: Whether or not to use mock data (false if talking to live etcd)
 .constant('MOCKDATA', false)
+
+// Define some global constants to inject (third-party libraries)
 .constant('_', window._)
 .constant('Google', window.google)
-.constant('ApiUri', 'http://141.142.209.154:8083')
+
+// Define the routes for our app here to easily parameterize them
 .constant('LoginRoute', '/login')
 .constant('ExpressRoute', '/express')
 .constant('ExpertRoute', '/home')
 .constant('ManageRoute', '/deployments')
+
+// Logic for communicating with etcd (powered by swagger-js-codegen)
+.constant('ApiUri', 'http://141.142.209.154:8083')
 .factory('NdsLabsApi', [ 'ApiUri', 'ApiServer', function(ApiUri, ApiServer) {
   // TODO: Investigate options / caching
   return new ApiServer(ApiUri);
 }])
+
 .provider('AuthInfo', function() {
   this.authInfo = {
-    authenticated: false,
     namespace: '',
     password: '',
     saveCookie: false,
@@ -29,12 +39,12 @@ angular
   this.$get = function() {
       var authInfo = this.authInfo;
       return {
-          isAuth: function() { return authInfo.authenticated; },
-          get: function() { return authInfo; },
-          setAuth: function(authCookie) { authInfo = angular.fromJson(authCookie); }
+          get: function() { return authInfo; }
       }
   };
 })
+
+// Configure routes / HTTP for our app using what we defined above
 .config([ '$routeProvider', '$httpProvider', 'AuthInfoProvider', 'LoginRoute', 'ExpressRoute', 'ExpertRoute', 'ManageRoute',
     function($routeProvider, $httpProvider, authInfo, LoginRoute, ExpressRoute, ExpertRoute, ManageRoute) {
   // Setup default behaviors for encountering errors
@@ -91,7 +101,10 @@ angular
         
           var status = rejection.status;
           if (status == 401) {
+            
+            // TODO: If we want to intercept the route to redirect them after a successful login
             //window.location = "/account/login?redirectUrl=" + Base64.encode(document.URL);
+            
             authInfo.authInfo.token = null;
             $cookies.remove('token')
             if ($location.path() !== LoginRoute) {
@@ -124,18 +137,14 @@ angular
     controller: 'DeploymentsController',
     templateUrl: '/app/deployments/manage.html'
   })*/
-  .otherwise({
-    redirectTo: function() {
-      if (authInfo.authInfo.authenticated === true) {
-        return ExpertRoute; //ExpressRoute;
-      } else {
-        return LoginRoute;
-      }
-    }
-  });
+  .otherwise({ redirectTo: LoginRoute });
 }])
+
+// Once configured, run this section of code to finish bootstrapping our app
 .run([ '$rootScope', '$location', '$log', '$cookies', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', 
     function($rootScope, $location, $log, $cookies, authInfo, LoginRoute, ExpertRoute, NdsLabsApi) {
+      
+  // Grab saved auth data from cookies and attempt to use the leftover session
   var token = $cookies.get('token');
   var namespace = $cookies.get('namespace');
   if (token && namespace) {
@@ -144,14 +153,15 @@ angular
     authInfo.get().namespace = namespace;
   }
       
-      
   var HomeRoute = ExpertRoute;
   
   // TODO: Investigate performance concerns here...
   $rootScope._ = window._;
   $rootScope.google = window.google;
   
+  // When we change routes, check that we are still authed
   $rootScope.$on( "$routeChangeStart", function(event, next, current) {
+    // Define the logic for
     var terminateSession = function() {
       // user needs to log in, redirect to /login
       if (next.templateUrl !== "/app/login/login.html") {
@@ -162,7 +172,10 @@ angular
       }
     };
     
-    if (authInfo.get().token = $cookies.get('token')) {
+    // Check if our token is still valid
+    var token = $cookies.get('token');
+    if (token) {
+      authInfo.get().token = token;
       authInfo.get().namespace = $cookies.get('namespace');
       NdsLabsApi.getRefresh_token().then(function() {
         $log.debug('Token refreshed: ' + authInfo.get().token);
@@ -171,6 +184,7 @@ angular
         $log.debug('Failed to refresh token!');
         
         // TODO: Allow login page to reroute user to destination?
+        // XXX: This would matter more if there are multiple views
         //authInfo.returnRoute = next.$$route.originalPath;
         
         terminateSession();
