@@ -105,6 +105,8 @@ angular
   $scope.startStack = function(stack) {
       // Signal to the UI that we are starting this stack
     stack.status = 'starting';
+  
+    var interval = $interval($scope.softRefresh, 2000);
     
       // Then send the "start" command to the API server
     NdsLabsApi.getProjectsByProjectIdStartByStackId({
@@ -112,9 +114,12 @@ angular
       'stackId': stack.key
     }).then(function(data, xhr) {
       $log.debug('successfully started ' + stack.name);
-      query.stacks();
     }, function(headers) {
       $log.error('failed to start ' + stack.name);
+    }).finally(function() {
+      $scope.softRefresh();
+      $interval.cancel(interval);
+      interval = null;
     });
   };
   
@@ -138,15 +143,20 @@ angular
       // Signal to the UI that we are stopping this stack
       stack.status = 'stopping';
       
+      var interval = $interval($scope.softRefresh, 2000);
+      
       // Then send the "stop" command to the API server
       NdsLabsApi.getProjectsByProjectIdStopByStackId({
         'projectId': projectId,
         'stackId': stack.key
       }).then(function(data, xhr) {
         $log.debug('successfully stopped ' + stack.name);
-        query.stacks();
       }, function(headers) {
         $log.error('failed to stop ' + stack.name);
+      }).finally(function() {
+        $scope.softRefresh();
+        $interval.cancel(interval);
+        interval = null;
       });
     });
   };
