@@ -630,8 +630,8 @@ func (s *Storage) GetAllStacks(w rest.ResponseWriter, r *rest.Request) {
 			}
 			stacks = append(stacks, stack)
 		}
-		data, _ := json.MarshalIndent(stacks, "", "    ")
-		fmt.Println(string(data))
+		//data, _ := json.MarshalIndent(stacks, "", "    ")
+		//fmt.Println(string(data))
 		w.WriteJson(&stacks)
 	}
 }
@@ -1395,13 +1395,14 @@ func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
 
 		err = s.os.Mkfs(osVolume.Device, "xfs")
 		if err != nil {
-			fmt.Println(err)
+			glog.Error(err)
 			return
 		}
 
 		err = s.os.DetachVolume(token.Id, s.os.TenantId, instanceId, volumeId)
 		if err != nil {
-			fmt.Println(err)
+			glog.Error(err)
+			return
 		}
 
 		vol.Format = "cinder"
