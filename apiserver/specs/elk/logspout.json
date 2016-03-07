@@ -1,0 +1,18 @@
+{
+    "depends": [
+        {
+            "key": "logstash",
+            "required": true
+        }
+    ],
+    "key": "logspout",
+    "isStack": false,
+    "isService": false,
+    "label": "LogSpout",
+    "image": "gliderlabs/logspout",
+    "command": [ "bin/logspout" ],
+    "args": [ "syslog://$(LOGSTASH_PORT_9200_TCP_ADDR):$(LOGSTASH_PORT_9200_TCP_ADDR) ],
+    "volumeMounts":[
+        { "mountPath": "/tmp/docker.sock", "name": "docker" }
+    ]
+}

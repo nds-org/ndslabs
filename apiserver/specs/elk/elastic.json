@@ -1,0 +1,14 @@
+{
+    "key": "elasticsearch",
+    "isStack": false,
+    "isService": true,
+    "requiresVolume": true,
+    "label": "ElasticSearch",
+    "image": "elasticsearch:2.1",
+    "ports": [
+        { "port": 9300, "protocol": "TCP" }
+    ],
+    "volumeMounts":[
+        { "mountPath": "/usr/share/elasticsearch/data", "name": "elasticsearch" }
+    ]
+}
