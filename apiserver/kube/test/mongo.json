@@ -1,0 +1,11 @@
+{
+    "key": "mongo",
+    "isStack": false,
+    "isService": false,
+    "label": "MongoDB",
+    "image": "mongo:latest",
+    "ports": [
+        { "port": 27017, "protocol": "TCP" },
+        { "port": 28017, "protocol": "TCP" }
+    ]
+}

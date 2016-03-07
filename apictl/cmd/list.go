@@ -105,9 +105,9 @@ var listStacksCmd = &cobra.Command{
 			json.Unmarshal([]byte(body), &stacks)
 			w := new(tabwriter.Writer)
 			w.Init(os.Stdout, 10, 4, 3, ' ', 0)
-			fmt.Fprintln(w, "STACK\tSERVICE\tSTATUS\tENDPOINT\tUID")
+			fmt.Fprintln(w, "STACK\tSERVICE\tSTATUS\tENDPOINT\tID")
 			for _, stack := range stacks {
-				fmt.Fprintf(w, "%s\t\t%s\n", stack.Key, stack.Status)
+				fmt.Fprintf(w, "%s\t\t%s\t\t%s\n", stack.Name, stack.Status, stack.Id)
 				for _, service := range stack.Services {
 					endpoint := ""
 					if len(service.Endpoints) > 0 {

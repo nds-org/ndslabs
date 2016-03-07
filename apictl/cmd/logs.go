@@ -24,21 +24,27 @@ import (
 	"os"
 )
 
+var (
+	lines int
+)
+
 // logsCmd represents the log command
 var logsCmd = &cobra.Command{
-	Use:   "logs [stackName] [serviceId]",
+	Use:   "logs [serviceId]",
 	Short: "Print logs for the stack",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		if len(args) < 2 {
+		if len(args) < 1 {
 			cmd.Usage()
 			os.Exit(-1)
 		}
 
-		stackKey := args[0]
-		serviceId := args[1]
+		serviceId := args[0]
 
-		url := apiServer + "projects/" + apiUser.username + "/logs/" + stackKey + "/" + serviceId
+		url := apiServer + "projects/" + apiUser.username + "/logs/" + serviceId
+		if lines > 0 {
+			url += fmt.Sprintf("?lines=%d", lines)
+		}
 
 		client := &http.Client{}
 		request, err := http.NewRequest("GET", url, nil)
@@ -59,12 +65,13 @@ var logsCmd = &cobra.Command{
 				fmt.Printf("%s\n", log)
 
 			} else {
-				fmt.Printf("Error getting logs %s: %s\n", stackKey, resp.Status)
+				fmt.Printf("Error getting logs %s: %s\n", serviceId, resp.Status)
 			}
 		}
 	},
 }
 
 func init() {
+	logsCmd.Flags().IntVar(&lines, "lines", -1, "Number of lines of the tail of the log to output")
 	RootCmd.AddCommand(logsCmd)
 }

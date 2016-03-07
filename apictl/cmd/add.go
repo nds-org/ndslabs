@@ -41,20 +41,20 @@ func init() {
 }
 
 var addCmd = &cobra.Command{
-	Use:   "add",
+	Use:   "add [stack] [name]",
 	Short: "Add the specified resource",
 }
 
 var addStackCmd = &cobra.Command{
-	Use:   "stack [stackName]",
+	Use:   "stack [serviceKey] [name]",
 	Short: "Add the specified stack to your project",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
+		if len(args) < 2 {
 			cmd.Usage()
 			os.Exit(-1)
 		}
 
-		addStack(apiUser.username, args[0], opts)
+		addStack(apiUser.username, args[0], args[1], opts)
 	},
 }
 
@@ -68,7 +68,8 @@ func getService(serviceName string) *api.Service {
 	//fmt.Println(apiUser)
 	resp, err := client.Do(request)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Error getting service: %s\n", err.Error())
+		os.Exit(-1)
 	}
 
 	if resp.StatusCode == http.StatusOK {
@@ -77,15 +78,18 @@ func getService(serviceName string) *api.Service {
 		body, err := ioutil.ReadAll(resp.Body)
 		//fmt.Printf("%s", string(body))
 		if err != nil {
-			log.Fatal(err)
+			fmt.Printf("Error getting service: %s\n", err.Error())
+			os.Exit(-1)
 		}
 
 		service := api.Service{}
 		json.Unmarshal([]byte(body), &service)
 		return &service
 	} else {
-		return nil
+		fmt.Printf("Error getting service: %s\n", resp.Status)
+		os.Exit(-1)
 	}
+	return nil
 }
 
 func contains(s []string, e string) bool {
@@ -112,7 +116,7 @@ func addRequiredDependencies(stackKey string, stack *api.Stack) {
 	}
 }
 
-func addStack(project string, serviceKey string, opt string) {
+func addStack(project string, serviceKey string, name string, opt string) {
 
 	service := getService(serviceKey)
 	optional := strings.Split(opt, ",")
@@ -120,6 +124,7 @@ func addStack(project string, serviceKey string, opt string) {
 	// Add this service
 	stack := api.Stack{}
 	stack.Key = serviceKey
+	stack.Name = name
 
 	stackService := api.StackService{}
 	stackService.Service = serviceKey
@@ -163,14 +168,14 @@ func addStack(project string, serviceKey string, opt string) {
 
 			w := new(tabwriter.Writer)
 			w.Init(os.Stdout, 20, 30, 0, '\t', 0)
-			fmt.Fprintln(w, "SERVICE\tUID")
+			fmt.Fprintln(w, "SERVICE\tSID")
 			for _, stackService := range stack.Services {
 				fmt.Fprintf(w, "%s\t%s\n", stackService.Service, stackService.Id)
 			}
 			w.Flush()
 
 		} else {
-			fmt.Printf("Unable to add stack %s: %s \n", serviceKey, resp.Status)
+			fmt.Printf("Unable to add stack %s %s: %s \n", name, serviceKey, resp.Status)
 		}
 
 	}

@@ -11,12 +11,18 @@ type ServiceSpec struct {
 	Dependencies   []ServiceDependency `json:"depends"`
 	Config         map[string]string   `json:"config"`
 	Image          string              `json:"image"`
-	Ports          map[int]string      `json:"ports"`
+	Ports          []Port              `json:"ports"`
 	CreatedTime    int                 `json:"createdTime"`
 	UpdatedTime    int                 `json:"updateTime"`
 	ReadyProbe     ReadyProbe          `json:"readinessProbe"`
 	VolumeMounts   []VolumeMount       `json:"volumeMounts"`
 	Args           []string            `json:"args"`
+	IsPublic       bool                `json:"isPublic"`
+}
+
+type Port struct {
+	Port     int    `json:"port"`
+	Protocol string `json:"protocol"`
 }
 
 type VolumeMount struct {
@@ -26,7 +32,6 @@ type VolumeMount struct {
 type ReadyProbe struct {
 	Path         string `json:"path"`
 	Port         int    `json:"port"`
-	Scheme       string `json:"scheme"`
 	InitialDelay int    `json:"initialDelay"`
 	Timeout      int    `json:"timeout"`
 }
