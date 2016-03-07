@@ -1,0 +1,29 @@
+{
+    "depends": [
+        {
+            "key": "mongo",
+            "required": true
+        },
+        {
+            "key": "image-preview",
+            "required": false
+        }
+    ],
+    "config":  {
+       "SMTP_HOST": "smtp.ncsa.illinois.edu",
+       "ELASTICSEARCH_CLUSTERNAME": "clowder",
+       "RABBITMQ_EXCHANGE": "clowder"
+	},
+    "image": "ndslabs/clowder:0.9.1",
+    "isStack": true,
+    "isService": true,
+    "key": "clowder",
+    "label": "Clowder",
+	"isPublic": true,
+    "ports": [
+        {
+            "port": 9000,
+            "protocol": "TCP"
+        }
+    ]
+}
