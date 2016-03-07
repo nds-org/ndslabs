@@ -373,9 +373,8 @@ paths:
           description: OK 
   
   # Stack service logs
-  /projects/{project-id}/logs/{stack-id}/{stack-service-id}:
+  /projects/{project-id}/logs/{stack-service-id}:
     parameters: 
-      - $ref: '#/parameters/stack-id'
       - $ref: '#/parameters/project-id'
       - $ref: '#/parameters/stack-service-id'
     get: 
@@ -428,6 +427,14 @@ definitions:
       token:
         type: string
         
+  VolumeMount:
+    type: object
+    properties:
+      mountPath:
+        type: string
+      name:
+        type: string        
+        
   Service:
     type: object
     properties: 
@@ -445,28 +452,54 @@ definitions:
         type: boolean
       isStack:  
         type: boolean
-      tags: 
-        type: array
-        items:
-          type: object
-          properties:
-            tag:
-              type: string
-      exposePorts:
-        type: array
-        items:
-          type: object
-          properties:
-            port:
-              type: integer
+      isService:
+        type: boolean
+      isPublic:
+        type: boolean
+      readinessProbe:
+        $ref: '#/definitions/ReadyProbe'
       depends:
         type: array
         items:
           $ref: '#/definitions/ServiceDependency'
+      image: 
+        type: string
+      ports:
+        type: array
+        items:
+          $ref: '#/definitions/Port'
+      volumeMounts:
+        type: array
+        items:
+          $ref: '#/definitions/VolumeMount'
+      args:
+        type: array
+        items:
+          type: string         
       createdTime:
         type: integer
       updatedTime:
         type: integer
+      
+  ReadyProbe:
+    type: object
+    properties:
+      path:
+        type: string
+      port:
+        type: integer
+      initialDelay:
+        type: integer
+      timeout:
+        type: integer
+        
+  Port:
+    type: object
+    properties:
+      port:
+        type: integer
+      protocol:
+        type: string
         
   ServiceDependency:
     type: object
@@ -561,4 +594,8 @@ definitions:
         type: integer
         
   Log:
-    type: string
+    type: object
+    properties:
+      text:
+        type: string
+        
