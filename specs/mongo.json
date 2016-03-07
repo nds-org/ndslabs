@@ -8,5 +8,8 @@
     "ports": [
         { "port": 27017, "protocol": "TCP" },
         { "port": 28017, "protocol": "TCP" }
+    ],
+    "volumeMounts":[
+        { "mountPath": "/data/db", "name": "mongo" }
     ]
 }

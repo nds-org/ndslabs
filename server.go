@@ -95,9 +95,11 @@ type Config struct {
 
 func main() {
 
+	var confPath string
+	flag.StringVar(&confPath, "conf", "apiserver.conf", "Configuration path")
 	flag.Parse()
 	cfg := Config{}
-	err := gcfg.ReadFileInto(&cfg, "apiserver.conf")
+	err := gcfg.ReadFileInto(&cfg, confPath)
 	if err != nil {
 		glog.Error(err)
 		os.Exit(-1)
@@ -721,7 +723,7 @@ func (s *Storage) PostStack(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	sid := s.kube.GenerateName(stack.Key, 5)
+	sid := s.kube.GenerateName(5)
 	stack.Id = sid
 	stack.Status = stackStatus[Stopped]
 
@@ -807,6 +809,7 @@ func (s *Storage) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 			if volume.Attached == ss.Id {
 				glog.V(4).Infof("Detaching volume %s\n", volume.Id)
 				volume.Attached = ""
+				volume.Status = "available"
 				s.putVolume(pid, volume.Name, volume)
 				// detach the volume
 			}
@@ -991,7 +994,7 @@ func (s *Storage) StartStack(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	stack.Status = stackStatus[Starting]
-	s.putStack(sid, sid, stack)
+	s.putStack(pid, sid, stack)
 
 	stackServices := stack.Services
 
@@ -1123,19 +1126,22 @@ func (s *Storage) stopStack(pid string, sid string) (*api.Stack, error) {
 
 		name := fmt.Sprintf("%s-%s", stack.Id, stackService.Service)
 		glog.V(4).Infof("Stopping service %s\n", name)
-		err := s.kube.StopService(pid, name)
-		if err != nil {
-			return nil, err
+		spec, _ := s.getServiceSpec(stackService.Service)
+ 		if spec.IsService {
+			err := s.kube.StopService(pid, name)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		glog.V(4).Infof("Stopping controller %s\n", name)
-		err = s.kube.StopController(pid, name)
+		err := s.kube.StopController(pid, name)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	time.Sleep(time.Second * 5)
+	time.Sleep(time.Second * 10)
 
 	pods, _ := s.kube.GetPods(pid, "name", stack.Id)
 	glog.V(4).Infof("Waiting for pod to stop %s %d\n", stack.Id, len(pods))
@@ -1191,7 +1197,8 @@ func (s *Storage) GetAllVolumes(w rest.ResponseWriter, r *rest.Request) {
 	if err != nil {
 		if e, ok := err.(client.Error); ok {
 			if e.Code == client.ErrorCodeKeyNotFound {
-				rest.NotFound(w, r)
+				w.WriteJson(&[]api.Volume{})
+				return
 			} else {
 				glog.Error(err)
 				rest.Error(w, e.Error(), http.StatusInternalServerError)
@@ -1200,16 +1207,16 @@ func (s *Storage) GetAllVolumes(w rest.ResponseWriter, r *rest.Request) {
 			glog.Error(err)
 		}
 		w.WriteJson(&err)
-	} else {
-		volumes := []api.Volume{}
-		nodes := resp.Node.Nodes
-		for _, node := range nodes {
-			volume := api.Volume{}
-			json.Unmarshal([]byte(node.Value), &volume)
-			volumes = append(volumes, volume)
-		}
-		w.WriteJson(&volumes)
+		return
 	}
+	volumes := []api.Volume{}
+	nodes := resp.Node.Nodes
+	for _, node := range nodes {
+		volume := api.Volume{}
+		json.Unmarshal([]byte(node.Value), &volume)
+		volumes = append(volumes, volume)
+	}
+	w.WriteJson(&volumes)
 }
 
 func (s *Storage) PostVolume(w rest.ResponseWriter, r *rest.Request) {

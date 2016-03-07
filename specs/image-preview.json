@@ -1,9 +1,15 @@
 {
-    "key": "image-preview",
+    "key": "imagepreview",
     "isStack": false,
     "isService": false,
     "label": "Image preview extractor",
     "image": "ndslabs/image-preview:0.9.1",
+    "depends": [
+        {
+            "key": "rabbitmq",
+            "required": true
+        }
+    ],
     "config":  {
        "SMTP_HOST": "smtp.ncsa.illinois.edu",
        "ELASTICSEARCH_CLUSTERNAME": "clowder",
