@@ -1,0 +1,20 @@
+{
+    "depends": [
+        {
+            "key": "elasticsearch",
+            "required": true
+        }
+    ],
+    "key": "kibana",
+    "isStack": true,
+    "isService": true,
+    "isPublic": true,
+    "label": "Kibana",
+    "image": "kibana",
+    "ports": [
+        { "port": 5601, "protocol": "TCP" }
+    ],
+    "config":  {
+       "ELASTICSEARCH_URL": "http://$(ELASTICSEARCH_PORT_9200_TCP_ADDR):$(ELASTICSEARCH_PORT_9200_TCP_PORT)"
+    },
+}
