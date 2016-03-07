@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"crypto/rand"
 	"encoding/json"
 	"flag"
@@ -11,6 +10,7 @@ import (
 	"github.com/coreos/etcd/client"
 	etcderr "github.com/coreos/etcd/error"
 	"github.com/golang/glog"
+	kube "github.com/nds-labs/apiserver/kube"
 	openstack "github.com/nds-labs/apiserver/openstack"
 	api "github.com/nds-labs/apiserver/types"
 	"golang.org/x/net/context"
@@ -20,6 +20,8 @@ import (
 	k8api "k8s.io/kubernetes/pkg/api"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -138,13 +140,15 @@ func main() {
 	oshelper.Password = cfg.OpenStack.Password
 	oshelper.TenantId = cfg.OpenStack.TenantId
 
+	kube := kube.NewKubeHelper(cfg.Kubernetes.Address)
+
 	storage := Storage{}
 	etcd, err := GetEtcdClient(cfg.Etcd.Address)
 	if err != nil {
 		glog.Fatal(err)
 	}
 	storage.etcd = etcd
-	storage.kubeBase = "http://" + cfg.Kubernetes.Address //Todo: use Kube client
+	storage.kube = kube
 	if cfg.Server.VolumeSource == "openstack" {
 		storage.local = false
 		storage.os = oshelper
@@ -237,22 +241,19 @@ func main() {
 		rest.Put("/services/:key", storage.PutService),
 		rest.Get("/services/:key", storage.GetService),
 		rest.Delete("/services/:key", storage.DeleteService),
-		rest.Put("/templates/:key/:type", storage.PutServiceTemplate),
-		rest.Get("/templates/:key/:type", storage.GetServiceTemplate),
-		//rest.Delete("/services/:id/template/:type", storage.DeleteServiceTemplate),
 		rest.Get("/projects/:pid/stacks", storage.GetAllStacks),
 		rest.Post("/projects/:pid/stacks", storage.PostStack),
 		rest.Put("/projects/:pid/stacks/:sid", storage.PutStack),
 		rest.Get("/projects/:pid/stacks/:sid", storage.GetStack),
 		rest.Delete("/projects/:pid/stacks/:sid", storage.DeleteStack),
 		rest.Get("/projects/:pid/volumes", storage.GetAllVolumes),
-		rest.Post("/projects/:pid/volumes", storage.CreateVolume),
+		rest.Post("/projects/:pid/volumes", storage.PostVolume),
 		rest.Put("/projects/:pid/volumes/:vid", storage.PutVolume),
 		rest.Get("/projects/:pid/volumes/:vid", storage.GetVolume),
 		rest.Delete("/projects/:pid/volumes/:vid", storage.DeleteVolume),
 		rest.Get("/projects/:pid/start/:sid", storage.StartStack),
 		rest.Get("/projects/:pid/stop/:sid", storage.StopStack),
-		rest.Get("/projects/:pid/logs/:sid/:ssid", storage.GetLogs),
+		rest.Get("/projects/:pid/logs/:ssid", storage.GetLogs),
 	)
 
 	if err != nil {
@@ -266,7 +267,7 @@ func main() {
 
 type Storage struct {
 	etcd      client.KeysAPI
-	kubeBase  string
+	kube      *kube.KubeHelper
 	Namespace string
 	os        openstack.OpenStack
 	local     bool
@@ -342,12 +343,14 @@ func (s *Storage) PutProject(w rest.ResponseWriter, r *rest.Request) {
 	project := api.Project{}
 	err := r.DecodeJsonPayload(&project)
 	if err != nil {
+		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	data, err := json.Marshal(project)
 	if err != nil {
+		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -356,36 +359,18 @@ func (s *Storage) PutProject(w rest.ResponseWriter, r *rest.Request) {
 	s.etcd.Set(context.Background(), etcdBasePath+"/projects/", pid, &opts)
 	_, err = s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid+"/project", string(data), nil)
 	if err != nil {
+		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Create the K8 namespace
-	ns := k8api.Namespace{}
-	ns.SetName(pid)
-
-	client := &http.Client{}
-	data, _ = json.Marshal(ns)
-	url := s.kubeBase + "/api/v1/namespaces"
-	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
-
-	// POST /api/v1/namespaces v1.Namespace
-	request.Header.Set("Content-Type", "application/json")
-	httpresp, httperr := client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
+	_, err = s.kube.CreateNamespace(pid)
+	if err != nil {
+		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
 	} else {
-		if httpresp.StatusCode == http.StatusCreated {
-			glog.V(2).Infof("Added namespace %s\n", pid)
-		} else if httpresp.StatusCode == http.StatusConflict {
-			glog.V(2).Infof("Namespace exists for project %s\n", pid)
-		} else {
-			glog.Errorf("Error adding namespace for project %s: %s\n", pid, httpresp.Status)
-		}
+		w.WriteHeader(http.StatusCreated)
 	}
-	w.WriteHeader(http.StatusCreated)
 }
 
 func (s *Storage) DeleteProject(w rest.ResponseWriter, r *rest.Request) {
@@ -412,10 +397,10 @@ func (s *Storage) GetAllServices(w rest.ResponseWriter, r *rest.Request) {
 		}
 		w.WriteJson(&err)
 	} else {
-		services := []api.Service{}
+		services := []api.ServiceSpec{}
 		nodes := resp.Node.Nodes
 		for _, node := range nodes {
-			service := api.Service{}
+			service := api.ServiceSpec{}
 			json.Unmarshal([]byte(node.Value), &service)
 			services = append(services, service)
 		}
@@ -436,61 +421,20 @@ func (s *Storage) GetService(w rest.ResponseWriter, r *rest.Request) {
 		}
 		w.WriteJson(&err)
 	} else {
-		service := api.Service{}
+		service := api.ServiceSpec{}
 		json.Unmarshal([]byte(resp.Node.Value), &service)
 		w.WriteJson(&service)
 	}
 }
 
-func (s *Storage) getTemplate(key string, templateType string) (string, error) {
-
-	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/templates/"+key+"/"+templateType, nil)
-
-	if err != nil {
-		glog.Error(err)
-		return "", err
-	} else {
-		return resp.Node.Value, nil
-	}
-}
-
-func (s *Storage) GetServiceTemplate(w rest.ResponseWriter, r *rest.Request) {
-	key := r.PathParam("key")
-	t := r.PathParam("type")
-
-	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/templates/"+key+"/"+t, nil)
-
-	if err != nil {
-		if e, ok := err.(*etcderr.Error); ok {
-			if e.ErrorCode == etcderr.EcodeKeyNotFound {
-				rest.NotFound(w, r)
-			}
-		}
-		w.WriteJson(&err)
-	} else {
-		if t == "service" {
-			template := k8api.Service{}
-			json.Unmarshal([]byte(resp.Node.Value), &template)
-			w.WriteJson(&template)
-		} else if t == "controller" {
-			template := k8api.ReplicationController{}
-			json.Unmarshal([]byte(resp.Node.Value), &template)
-			w.WriteJson(&template)
-		}
-	}
-}
-
 func (s *Storage) PostService(w rest.ResponseWriter, r *rest.Request) {
 
-	service := api.Service{}
+	service := api.ServiceSpec{}
 	err := r.DecodeJsonPayload(&service)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	id, err := newUUID()
-	service.Id = id
 
 	data, _ := json.Marshal(service)
 	resp, err := s.etcd.Set(context.Background(), etcdBasePath+"/services/"+service.Key, string(data), nil)
@@ -500,33 +444,21 @@ func (s *Storage) PostService(w rest.ResponseWriter, r *rest.Request) {
 func (s *Storage) PutService(w rest.ResponseWriter, r *rest.Request) {
 	key := r.PathParam("key")
 
-	service := api.Service{}
+	service := api.ServiceSpec{}
 	err := r.DecodeJsonPayload(&service)
 	if err != nil {
+		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	data, _ := json.Marshal(service)
 	resp, err := s.etcd.Set(context.Background(), etcdBasePath+"/services/"+key, string(data), nil)
-	w.WriteJson(&resp)
-}
-
-func (s *Storage) PutServiceTemplate(w rest.ResponseWriter, r *rest.Request) {
-
-	template, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	key := r.PathParam("key")
-	t := r.PathParam("type")
-
-	opts := client.SetOptions{Dir: true}
-	s.etcd.Set(context.Background(), etcdBasePath+"/templates", key, &opts)
-
-	resp, err := s.etcd.Set(context.Background(), etcdBasePath+"/templates/"+key+"/"+t, string(template), nil)
 	w.WriteJson(&resp)
 }
 
@@ -568,14 +500,14 @@ func GetEtcdClient(etcdAddress string) (client.KeysAPI, error) {
 	return kapi, nil
 }
 
-func (s *Storage) getService(key string) (*api.Service, error) {
+func (s *Storage) getServiceSpec(key string) (*api.ServiceSpec, error) {
 
 	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/services/"+key, nil)
 	if err != nil {
 		glog.Error(err)
 		return nil, err
 	} else {
-		service := api.Service{}
+		service := api.ServiceSpec{}
 		node := resp.Node
 		json.Unmarshal([]byte(node.Value), &service)
 		return &service, nil
@@ -584,65 +516,130 @@ func (s *Storage) getService(key string) (*api.Service, error) {
 
 func (s *Storage) GetAllStacks(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
-	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/projects/"+pid+"/stacks", nil)
+
+	stacks, err := s.getStacks(pid)
 	if err != nil {
-		if e, ok := err.(*etcderr.Error); ok {
-			if e.ErrorCode == etcderr.EcodeKeyNotFound {
-				rest.NotFound(w, r)
-			}
-		}
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		w.WriteJson(&err)
 	} else {
+		w.WriteJson(&stacks)
+	}
+}
 
-		stacks := []api.Stack{}
+func (s *Storage) getStacks(pid string) (*[]api.Stack, error) {
+
+	stacks := []api.Stack{}
+
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/projects/"+pid+"/stacks", nil)
+
+	if err == nil {
 		nodes := resp.Node.Nodes
 		for _, node := range nodes {
 			stack := api.Stack{}
+
 			json.Unmarshal([]byte(node.Value), &stack)
 
 			// Get the pods for this stack
 			podStatus := make(map[string]string)
-			pods, _ := s.getPods(pid, "stack", stack.Key)
+			glog.V(4).Infof("Pods for %s\n", stack.Id)
+			pods, _ := s.kube.GetPods(pid, "stack", stack.Id)
 			for _, pod := range pods {
 				label := pod.Labels["name"]
-				glog.V(4).Infof("Pod %s %d\n", label, len(pod.Status.Conditions))
 				if len(pod.Status.Conditions) > 0 {
+					glog.V(4).Infof("Pod %s %s\n", label, string(pod.Status.Phase))
 					podStatus[label] = string(pod.Status.Phase)
 				}
 			}
 
-			k8services, _ := s.getK8Services(pid, stack.Key)
+			k8services, _ := s.kube.GetServices(pid, stack.Id)
 			endpoints := make(map[string]string)
 			for _, k8service := range k8services {
 				glog.V(4).Infof("Service : %s %s\n", k8service.Name, k8service.Spec.Type)
 				if k8service.Spec.Type == "NodePort" {
-					endpoints[k8service.GetName()] = fmt.Sprintf("http://%s:%d", s.host, k8service.Spec.Ports[0].NodePort)
+					glog.V(4).Infof("NodePort : %s %d\n", k8service.Name, k8service.Spec.Ports[0].NodePort)
+					endpoints[k8service.Name] = fmt.Sprintf("http://%s:%d", s.host, k8service.Spec.Ports[0].NodePort)
 				}
 			}
 
 			for i := range stack.Services {
 				stackService := &stack.Services[i]
-				glog.V(4).Infof("Stack Service %s %s\n", stackService.Service, podStatus[stackService.Service])
-				stackService.Status = podStatus[stackService.Service]
-				if len(endpoints[stackService.Service]) > 0 {
-					stackService.Endpoints = append(stackService.Endpoints, endpoints[stackService.Service])
+				glog.V(4).Infof("Stack Service %s %s\n", stackService.Id, podStatus[stackService.Id])
+				stackService.Status = podStatus[stackService.Id]
+				if len(endpoints[stackService.Id]) > 0 {
+					glog.V(4).Infof("Endpoint %s %s\n", stackService.Id, endpoints[stackService.Id])
+					stackService.Endpoints = append(stackService.Endpoints, endpoints[stackService.Id])
 				}
 			}
 			stacks = append(stacks, stack)
 		}
 		//data, _ := json.MarshalIndent(stacks, "", "    ")
 		//fmt.Println(string(data))
-		w.WriteJson(&stacks)
 	}
+	return &stacks, nil
 }
 
-func (s *Storage) stackExists(pid string, sid string) bool {
+func (s *Storage) getStackService(pid string, ssid string) *api.StackService {
+	sid := ssid[0:strings.LastIndex(ssid, "-")]
 	stack, _ := s.getStack(pid, sid)
-	if stack != nil {
-		return true
-	} else {
+	if stack == nil {
+		return nil
+	}
+
+	for _, stackService := range stack.Services {
+		if ssid == stackService.Id {
+			return &stackService
+		}
+	}
+	return nil
+}
+
+func (s *Storage) attachmentExists(pid string, ssid string) bool {
+	volumes, _ := s.getVolumes(pid)
+	if volumes == nil {
 		return false
 	}
+
+	exists := false
+	for _, volume := range *volumes {
+		if volume.Attached == ssid {
+			exists = true
+			break
+		}
+	}
+	return exists
+}
+
+func (s *Storage) volumeExists(pid string, name string) bool {
+	volumes, _ := s.getVolumes(pid)
+	if volumes == nil {
+		return false
+	}
+
+	exists := false
+	for _, volume := range *volumes {
+		if volume.Name == name {
+			exists = true
+			break
+		}
+	}
+	return exists
+}
+
+func (s *Storage) stackExists(pid string, name string) bool {
+	stacks, _ := s.getStacks(pid)
+	if stacks == nil {
+		return false
+	}
+
+	exists := false
+	for _, stack := range *stacks {
+		if stack.Name == name {
+			exists = true
+			break
+		}
+	}
+	return exists
 }
 
 func (s *Storage) getStack(pid string, sid string) (*api.Stack, error) {
@@ -691,32 +688,32 @@ func (s *Storage) PostStack(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	if s.stackExists(pid, stack.Key) {
+	glog.V(4).Infof("Adding stack %s %s\n", stack.Key, stack.Name)
+	if s.stackExists(pid, stack.Name) {
 		w.WriteHeader(http.StatusConflict)
 		return
 	}
 
-	_, err = s.getService(stack.Key)
+	_, err = s.getServiceSpec(stack.Key)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	sid, _ := newUUID()
+	sid := s.kube.GenerateName(stack.Key, 5)
 	stack.Id = sid
 	stack.Status = stackStatus[Stopped]
 
 	for i := range stack.Services {
-		sid, _ := newUUID()
 		stackService := &stack.Services[i]
-		stackService.Id = sid
+		stackService.Id = fmt.Sprintf("%s-%s", sid, stackService.Service)
 	}
 
 	opts := client.SetOptions{Dir: true}
 	s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid, "/stacks", &opts)
 
 	data, _ := json.Marshal(stack)
-	path := etcdBasePath + "/projects/" + pid + "/stacks/" + stack.Key
+	path := etcdBasePath + "/projects/" + pid + "/stacks/" + stack.Id
 	_, err = s.etcd.Set(context.Background(), path, string(data), nil)
 	w.WriteJson(&stack)
 }
@@ -784,7 +781,7 @@ func (s *Storage) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	volumes, err := s.getVolumes(pid)
-	for _, volume := range volumes {
+	for _, volume := range *volumes {
 		for _, ss := range stack.Services {
 			if volume.Attached == ss.Id {
 				glog.V(4).Infof("Detaching volume %s\n", volume.Id)
@@ -798,13 +795,13 @@ func (s *Storage) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *Storage) getVolumes(pid string) ([]api.Volume, error) {
+func (s *Storage) getVolumes(pid string) (*[]api.Volume, error) {
 
 	volumes := make([]api.Volume, 0)
 
 	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/projects/"+pid+"/volumes", nil)
 	if err != nil {
-		return volumes, err
+		return &volumes, err
 	} else {
 		nodes := resp.Node.Nodes
 		for _, node := range nodes {
@@ -815,23 +812,23 @@ func (s *Storage) getVolumes(pid string) ([]api.Volume, error) {
 		}
 	}
 
-	return volumes, nil
+	return &volumes, nil
 }
 
-func (s *Storage) startStackService(serviceKey string, pid string, stack *api.Stack) {
+func (s *Storage) startStackService(serviceKey string, pid string, stack *api.Stack, addrPortMap *map[string]kube.ServiceAddrPort) {
 
-	service, _ := s.getService(serviceKey)
+	service, _ := s.getServiceSpec(serviceKey)
 	for _, dep := range service.Dependencies {
 		if dep.Required {
 			glog.V(4).Infof("Starting required dependency %s\n", dep.DependencyKey)
-			s.startController(pid, dep.DependencyKey, stack)
+			s.startController(pid, dep.DependencyKey, stack, addrPortMap)
 		} else {
-			s.startStackService(dep.DependencyKey, pid, stack)
+			s.startStackService(dep.DependencyKey, pid, stack, addrPortMap)
 		}
 	}
 }
 
-func (s *Storage) startController(pid string, serviceKey string, stack *api.Stack) (bool, error) {
+func (s *Storage) startController(pid string, serviceKey string, stack *api.Stack, addrPortMap *map[string]kube.ServiceAddrPort) (bool, error) {
 
 	var stackService *api.StackService
 	found := false
@@ -846,7 +843,7 @@ func (s *Storage) startController(pid string, serviceKey string, stack *api.Stac
 		return false, nil
 	}
 
-	pods, _ := s.getPods(pid, "name", serviceKey)
+	pods, _ := s.kube.GetPods(pid, "name", fmt.Sprintf("%s-%s", stack.Id, serviceKey))
 	running := false
 	for _, pod := range pods {
 		if pod.Status.Phase == "Running" {
@@ -860,17 +857,10 @@ func (s *Storage) startController(pid string, serviceKey string, stack *api.Stac
 	}
 
 	glog.V(4).Infof("Starting controller for %s\n", serviceKey)
-	service, _ := s.getService(serviceKey)
+	service, _ := s.getServiceSpec(serviceKey)
 
-	rcTemplate, _ := s.getTemplate(stackService.Service, "controller")
-
-	k8rc := k8api.ReplicationController{}
-	e := json.Unmarshal([]byte(rcTemplate), &k8rc)
-	if e != nil {
-		glog.Error(e)
-		return true, e
-	}
-	//data, _ := json.Marshal(k8rc)
+	name := fmt.Sprintf("%s-%s", stack.Id, service.Key)
+	template := s.kube.CreateControllerTemplate(name, stack.Id, service, addrPortMap)
 
 	if service.RequiresVolume {
 		k8vols := make([]k8api.Volume, 0)
@@ -880,7 +870,7 @@ func (s *Storage) startController(pid string, serviceKey string, stack *api.Stac
 
 		volumes, _ := s.getVolumes(pid)
 		found := false
-		for _, volume := range volumes {
+		for _, volume := range *volumes {
 			if volume.Attached == stackService.Id {
 				glog.V(4).Infof("Found volume %s\n", volume.Attached)
 				found = true
@@ -910,28 +900,13 @@ func (s *Storage) startController(pid string, serviceKey string, stack *api.Stac
 			k8vol.EmptyDir = &k8empty
 			k8vols = append(k8vols, k8vol)
 		}
-		k8rc.Spec.Template.Spec.Volumes = k8vols
+		template.Spec.Template.Spec.Volumes = k8vols
 	}
 
-	data, _ := json.Marshal(k8rc)
-
-	client := &http.Client{}
-
-	url := s.kubeBase + "/api/v1/namespaces/" + pid + "/replicationcontrollers"
-	request, _ := http.NewRequest("POST", url, bytes.NewBuffer([]byte(data)))
-	//glog.V(4).Infof("%s\n", string(data))
-
-	request.Header.Set("Content-Type", "application/json")
-	httpresp, httperr := client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return true, httperr
-	} else {
-		if httpresp.StatusCode == http.StatusCreated {
-			glog.V(4).Infof("Created controller " + stackService.Service)
-		} else {
-			glog.V(4).Infof("Error starting controller (%d)\n", httpresp.StatusCode)
-		}
+	fmt.Printf("Starting controller %s\n", name)
+	_, err := s.kube.StartController(pid, template)
+	if err != nil {
+		return false, err
 	}
 
 	// Give Kubernetes time to create the pods for the RC
@@ -939,8 +914,9 @@ func (s *Storage) startController(pid string, serviceKey string, stack *api.Stac
 
 	// Wait for pods in ready state
 	ready := 0
-	pods, _ = s.getPods(pid, "name", service.Key)
-	glog.V(4).Infof("Waiting for pod to be ready %s %d\n", service.Key, len(pods))
+	name = fmt.Sprintf("%s-%s", stack.Id, serviceKey)
+	pods, _ = s.kube.GetPods(pid, "name", name)
+	glog.V(4).Infof("Waiting for pod to be ready %s %d\n", name, len(pods))
 	for ready < len(pods) {
 		for _, pod := range pods {
 			if len(pod.Status.Conditions) > 0 {
@@ -965,7 +941,7 @@ func (s *Storage) startController(pid string, serviceKey string, stack *api.Stac
 				if condition.Type == "Ready" && condition.Status == "True" {
 					ready++
 				} else {
-					pods, _ = s.getPods(pid, "name", service.Key)
+					pods, _ = s.kube.GetPods(pid, "name", name)
 					time.Sleep(time.Second * 5)
 				}
 			}
@@ -983,7 +959,7 @@ func (s *Storage) StartStack(w rest.ResponseWriter, r *rest.Request) {
 		rest.NotFound(w, r)
 		return
 	}
-	glog.V(4).Infof("Starting stack %s", stack.Key)
+	glog.V(4).Infof("Starting stack %s", stack.Id)
 
 	stack.Status = stackStatus[Starting]
 	s.putStack(sid, sid, stack)
@@ -991,40 +967,37 @@ func (s *Storage) StartStack(w rest.ResponseWriter, r *rest.Request) {
 	stackServices := stack.Services
 
 	// Start all Kubernetes services
+	addrPortMap := make(map[string]kube.ServiceAddrPort)
 	for _, stackService := range stackServices {
-		service, _ := s.getService(stackService.Service)
-		if service.IsService {
+		spec, _ := s.getServiceSpec(stackService.Service)
+		if spec.IsService {
+			name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
 
-			glog.V(4).Infof("Starting Kubernetes service %s\n", service.Key)
+			template := s.kube.CreateServiceTemplate(name, stack.Id, spec)
 
-			svcTemplate, _ := s.getTemplate(service.Key, "service")
+			glog.V(4).Infof("Starting Kubernetes service %s\n", name)
+			svc, err := s.kube.StartService(pid, template)
 
-			client := &http.Client{}
-
-			url := s.kubeBase + "/api/v1/namespaces/" + pid + "/services"
-			request, _ := http.NewRequest("POST", url, bytes.NewBuffer([]byte(svcTemplate)))
-
-			request.Header.Set("Content-Type", "application/json")
-			httpresp, httperr := client.Do(request)
-			if httperr != nil {
-				glog.Error(httperr)
-				rest.Error(w, httperr.Error(), http.StatusInternalServerError)
+			if err != nil {
+				fmt.Println("Error starting service")
 			} else {
-				if httpresp.StatusCode == http.StatusCreated {
-					glog.V(4).Infof("Created Kubernetes service " + service.Key)
-				} else {
-					glog.Warningf("Error starting Kubernetes service (%d): %s\n", httpresp.StatusCode, httpresp.Status)
+				fmt.Printf("Started service %s\n", name)
+				addrPort := kube.ServiceAddrPort{
+					Name: stackService.Service,
+					Host: svc.Spec.ClusterIP,
+					Port: svc.Spec.Ports[0].Port,
 				}
+				addrPortMap[stackService.Service] = addrPort
 			}
 		}
 	}
 
 	// Start required depedencies
-	s.startStackService(stack.Key, pid, stack)
+	s.startStackService(stack.Key, pid, stack, &addrPortMap)
 
 	// Start optional dependencies
 	for _, stackService := range stack.Services {
-		s.startController(pid, stackService.Service, stack)
+		s.startController(pid, stackService.Service, stack, &addrPortMap)
 	}
 
 	// TODO: Get Stack Status
@@ -1040,7 +1013,9 @@ func (s *Storage) getStackWithStatus(pid string, sid string) (*api.Stack, error)
 	stack, _ := s.getStack(pid, sid)
 	// Get the pods for this stack
 	podStatus := make(map[string]string)
-	pods, _ := s.getPods(pid, "stack", stack.Key)
+
+	pods, _ := s.kube.GetPods(pid, "stack", sid)
+	//pods, _ := s.getPods(pid, "stack", stack.Key)
 	for _, pod := range pods {
 		label := pod.Labels["name"]
 		glog.V(4).Infof("Pod %s %d\n", label, len(pod.Status.Conditions))
@@ -1049,7 +1024,7 @@ func (s *Storage) getStackWithStatus(pid string, sid string) (*api.Stack, error)
 		}
 	}
 
-	k8services, _ := s.getK8Services(pid, stack.Key)
+	k8services, _ := s.kube.GetServices(pid, sid)
 	endpoints := make(map[string]string)
 	for _, k8service := range k8services {
 		glog.V(4).Infof("Service : %s %s\n", k8service.Name, k8service.Spec.Type)
@@ -1068,68 +1043,6 @@ func (s *Storage) getStackWithStatus(pid string, sid string) (*api.Stack, error)
 	}
 
 	return stack, nil
-}
-
-func (s *Storage) getK8Services(pid string, stack string) ([]k8api.Service, error) {
-	client := &http.Client{}
-
-	url := s.kubeBase + "/api/v1/namespaces/" + pid + "/services?labelSelector=stack%3D" + stack
-	glog.V(4).Infoln(url)
-	request, _ := http.NewRequest("GET", url, nil)
-	resp, err := client.Do(request)
-	if err != nil {
-		glog.Error(err)
-		return nil, err
-	} else {
-		if resp.StatusCode == http.StatusOK {
-			data, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			serviceList := k8api.ServiceList{}
-			services := make([]k8api.Service, len(serviceList.Items))
-			json.Unmarshal(data, &serviceList)
-			for _, service := range serviceList.Items {
-				glog.V(4).Infof("Service %s\n", service.Name)
-				services = append(services, service)
-			}
-			return services, nil
-		} else {
-			glog.Warningf("Failed to get Kubernetes services: %s %d", resp.Status, resp.StatusCode)
-		}
-	}
-	return nil, nil
-}
-
-func (s *Storage) getPods(pid string, label string, value string) ([]k8api.Pod, error) {
-	client := &http.Client{}
-
-	url := s.kubeBase + "/api/v1/namespaces/" + pid + "/pods?labelSelector=" + label + "%3D" + value
-	request, _ := http.NewRequest("GET", url, nil)
-	resp, err := client.Do(request)
-	if err != nil {
-		glog.Error(err)
-		return nil, err
-	} else {
-		if resp.StatusCode == http.StatusOK {
-			data, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			podList := k8api.PodList{}
-			pods := make([]k8api.Pod, len(podList.Items))
-			json.Unmarshal(data, &podList)
-			for _, pod := range podList.Items {
-				pods = append(pods, pod)
-			}
-			return pods, nil
-		} else {
-			glog.Warningf("Get pods failed: %s %d", resp.Status, resp.StatusCode)
-		}
-	}
-	return nil, nil
 }
 
 func (s *Storage) StopStack(w rest.ResponseWriter, r *rest.Request) {
@@ -1167,7 +1080,7 @@ func (s *Storage) stopStack(pid string, sid string) (*api.Stack, error) {
 	if stack.Status == stackStatus[Stopping] || stack.Status == stackStatus[Stopped] {
 		// Can't stop a stopped service
 		glog.V(4).Infof("Can't stop a stopped service")
-		return nil, nil
+		return stack, nil
 	}
 
 	stack.Status = stackStatus[Stopping]
@@ -1176,65 +1089,25 @@ func (s *Storage) stopStack(pid string, sid string) (*api.Stack, error) {
 	stackServices := stack.Services
 
 	for _, stackService := range stackServices {
-		service, _ := s.getService(stackService.Service)
-		glog.V(4).Infof("Stopping service %s\n", service.Key)
 
-		client := &http.Client{}
-
-		url := s.kubeBase + "/api/v1/namespaces/" + pid + "/services/" + service.Key
-		request, _ := http.NewRequest("DELETE", url, nil)
-		httpresp, httperr := client.Do(request)
-		if httperr != nil {
-			glog.Error(httperr)
-			return nil, httperr
-		} else {
-			if httpresp.StatusCode == http.StatusOK {
-				glog.V(4).Infof("Deleted service " + service.Key)
-			} else {
-				glog.V(4).Infof("Error stopping service (%d)\n", httpresp.StatusCode)
-			}
+		name := fmt.Sprintf("%s-%s", stack.Id, stackService.Service)
+		glog.V(4).Infof("Stopping service %s\n", name)
+		err := s.kube.StopService(pid, name)
+		if err != nil {
+			return nil, err
 		}
 
-		glog.V(4).Infof("Stopping controller %s\n", service.Key)
-
-		url = s.kubeBase + "/api/v1/namespaces/" + pid + "/replicationcontrollers/" + service.Key
-		request, _ = http.NewRequest("DELETE", url, nil)
-		httpresp, httperr = client.Do(request)
-		if httperr != nil {
-			glog.Error(httperr)
-			return nil, httperr
-		} else {
-			if httpresp.StatusCode == http.StatusOK {
-				glog.V(4).Infof("Deleted controller " + service.Key)
-			} else {
-				glog.V(4).Infof("Error stopping controller (%d)\n", httpresp.StatusCode)
-			}
-		}
-	}
-	pods, _ := s.getPods(pid, "stack", stack.Key)
-	for _, pod := range pods {
-		glog.V(4).Infof("Stopping pod %s\n", pod.Name)
-
-		client := &http.Client{}
-
-		url := s.kubeBase + "/api/v1/namespaces/" + pid + "/pods/" + pod.Name
-		request, _ := http.NewRequest("DELETE", url, nil)
-		httpresp, httperr := client.Do(request)
-		if httperr != nil {
-			glog.Error(httperr)
-			return nil, httperr
-		} else {
-			if httpresp.StatusCode == http.StatusOK {
-				glog.V(4).Infof("Deleted pod " + pod.Name)
-			} else {
-				glog.V(4).Infof("Error stopping pod (%d)\n", httpresp.StatusCode)
-			}
+		glog.V(4).Infof("Stopping controller %s\n", name)
+		err = s.kube.StopController(pid, name)
+		if err != nil {
+			return nil, err
 		}
 	}
 
-	//TODO: Wait for pods
-	pods, _ = s.getPods(pid, "name", stack.Key)
-	glog.V(4).Infof("Waiting for pods to be terminate %s %d\n", stack.Key, len(pods))
+	time.Sleep(time.Second * 5)
+
+	pods, _ := s.kube.GetPods(pid, "name", stack.Id)
+	glog.V(4).Infof("Waiting for pod to stop %s %d\n", stack.Id, len(pods))
 	for len(pods) > 0 {
 		for _, pod := range pods {
 			if len(pod.Status.Conditions) > 0 {
@@ -1256,12 +1129,12 @@ func (s *Storage) stopStack(pid string, sid string) (*api.Stack, error) {
 				glog.V(4).Infof("Waiting for %s (%s=%s) [%s, %s]\n", pod.Name, condition.Type, condition.Status, phase, containerState)
 			}
 		}
-		pods, _ = s.getPods(pid, "name", stack.Key)
+		pods, _ = s.kube.GetPods(pid, "name", stack.Id)
 		time.Sleep(time.Second * 5)
 	}
 
 	podStatus := make(map[string]string)
-	pods, _ = s.getPods(pid, "stack", stack.Key)
+	pods, _ = s.kube.GetPods(pid, "stack", stack.Id)
 	for _, pod := range pods {
 		label := pod.Labels["name"]
 		glog.V(4).Infof("Pod %s %d\n", label, len(pod.Status.Conditions))
@@ -1303,20 +1176,26 @@ func (s *Storage) GetAllVolumes(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
+func (s *Storage) PostVolume(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 
 	vol := api.Volume{}
 	err := r.DecodeJsonPayload(&vol)
 	if err != nil {
+		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if vol.Attached == "" {
-		vol.Status = "available"
-	} else {
+	if s.volumeExists(pid, vol.Name) {
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+
+	if vol.Attached != "" {
 		vol.Status = "attached"
+	} else {
+		vol.Status = "available"
 	}
 
 	if s.local {
@@ -1344,12 +1223,14 @@ func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
 		token, err := s.os.Authenticate(s.os.Username, s.os.Password,
 			s.os.TenantId)
 		if err != nil {
+			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		instanceId, err := s.os.GetInstanceId()
 		if err != nil {
+			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -1357,6 +1238,7 @@ func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
 		osName := fmt.Sprintf("ndslabs-%s-%s\n", pid, vol.Name)
 		volumeId, err := s.os.CreateVolume(token.Id, s.os.TenantId, osName, vol.Size)
 		if err != nil {
+			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -1367,6 +1249,7 @@ func (s *Storage) CreateVolume(w rest.ResponseWriter, r *rest.Request) {
 		for true {
 			osVolume, err = s.os.GetVolume(token.Id, s.os.TenantId, volumeId)
 			if err != nil {
+				glog.Error(err)
 				rest.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
@@ -1441,10 +1324,19 @@ func (s *Storage) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
+	// Don't allow attaching to a service with an existing volume
 	if vol.Attached != "" {
-		vol.Status = "available"
+		if s.getStackService(pid, vol.Attached) == nil {
+			rest.NotFound(w, r)
+			return
+		} else if s.attachmentExists(pid, vol.Attached) {
+			w.WriteHeader(http.StatusConflict)
+			return
+		} else {
+			vol.Status = "attached"
+		}
 	} else {
-		vol.Status = "attached"
+		vol.Status = "available"
 	}
 
 	err = s.putVolume(pid, vid, vol)
@@ -1543,10 +1435,13 @@ func newUUID() (string, error) {
 
 func (s *Storage) GetLogs(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
-	sid := r.PathParam("sid")
 	ssid := r.PathParam("ssid")
+	lines := r.Request.FormValue("lines")
 
-	logs, err := s.getLogs(pid, sid, ssid)
+	tailLines, err := strconv.Atoi(lines)
+
+	sid := ssid[0:strings.LastIndex(ssid, "-")]
+	logs, err := s.getLogs(pid, sid, ssid, tailLines)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -1555,14 +1450,16 @@ func (s *Storage) GetLogs(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-func (s *Storage) getLogs(pid string, sid string, ssid string) (string, error) {
+func (s *Storage) getLogs(pid string, sid string, ssid string, tailLines int) (string, error) {
+
+	glog.V(4).Infof("Getting logs for %s %s %d", sid, ssid, tailLines)
 
 	stack, err := s.getStack(pid, sid)
 	if err != nil {
 		return "", err
 	}
 
-	pods, err := s.getPods(pid, "stack", stack.Key)
+	pods, err := s.kube.GetPods(pid, "stack", stack.Id)
 	if err != nil {
 		return "", err
 	}
@@ -1571,8 +1468,8 @@ func (s *Storage) getLogs(pid string, sid string, ssid string) (string, error) {
 		if ss.Id == ssid {
 			// Find the pod for this service
 			for _, pod := range pods {
-				if pod.Labels["name"] == ss.Service {
-					log, err := s.getLog(pid, pod.Name)
+				if pod.Labels["name"] == ssid {
+					log, err := s.kube.GetLog(pid, pod.Name, tailLines)
 					if err != nil {
 						return "", err
 					} else {
@@ -1583,31 +1480,4 @@ func (s *Storage) getLogs(pid string, sid string, ssid string) (string, error) {
 		}
 	}
 	return "", nil
-}
-
-func (s *Storage) getLog(pid string, podName string) (string, error) {
-	glog.V(4).Infof("Get log for %s %s\n", pid, podName)
-
-	client := &http.Client{}
-
-	url := s.kubeBase + "/api/v1/namespaces/" + pid + "/pods/" + podName + "/log"
-
-	glog.V(4).Infoln(url)
-	request, _ := http.NewRequest("GET", url, nil)
-	resp, err := client.Do(request)
-	if err != nil {
-		glog.Error(err)
-		return "", err
-	} else {
-		if resp.StatusCode == http.StatusOK {
-			data, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return "", err
-			}
-			return string(data), nil
-		} else {
-			glog.Warningf("Failed to get Kubernetes services: %s %d", resp.Status, resp.StatusCode)
-		}
-	}
-	return "", err
 }
