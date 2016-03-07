@@ -5,10 +5,9 @@
     "label": "ElasticSearch",
     "image": "elasticsearch:1.3",
     "ports": [
-        { "port": 9200, "protocol": "TCP" },
         { "port": 9300, "protocol": "TCP" }
     ],
-	"args" : [
+    "args" : [
         "-Des.cluster.name=clowder" 
-	]
+    ]
 }

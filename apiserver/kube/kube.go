@@ -512,6 +512,7 @@ func (k *KubeHelper) CreateControllerTemplate(name string, stack string, spec *n
 					Env:          env,
 					VolumeMounts: k8volMounts,
 					Ports:        k8cps,
+					Args:        spec.Args,
 				},
 			},
 		},
@@ -550,6 +551,12 @@ func (k *KubeHelper) GenerateName(stack string, service string, randomLength int
 }
 */
 
+/*
 func (k *KubeHelper) GenerateName(stack string, randomLength int) string {
 	return fmt.Sprintf("%s-%s", stack, utilrand.String(randomLength))
+}
+*/
+
+func (k *KubeHelper) GenerateName(randomLength int) string {
+	return fmt.Sprintf("s%s", utilrand.String(randomLength))
 }

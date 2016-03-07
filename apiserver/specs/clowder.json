@@ -5,16 +5,21 @@
             "required": true
         },
         {
-            "key": "image-preview",
+            "key": "imagepreview",
+            "required": false
+        },
+        {
+            "key": "elasticsearch",
             "required": false
         }
     ],
     "config":  {
        "SMTP_HOST": "smtp.ncsa.illinois.edu",
        "ELASTICSEARCH_CLUSTERNAME": "clowder",
-       "RABBITMQ_EXCHANGE": "clowder"
-	},
-    "image": "ndslabs/clowder:0.9.1",
+       "RABBITMQ_EXCHANGE": "clowder",
+       "TOOLMGR_URI": "http://141.142.209.108:8080"
+    },
+    "image": "ndslabs/clowder:terra",
     "isStack": true,
     "isService": true,
     "key": "clowder",
