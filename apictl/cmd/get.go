@@ -15,32 +15,123 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
-
+	api "github.com/nds-labs/apiserver/types"
 	"github.com/spf13/cobra"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"os"
 )
 
-// getCmd represents the get command
 var getCmd = &cobra.Command{
 	Use:   "get",
-	Short: "Get the specified resource",
+	Short: "Get service or resource details",
+}
+
+var getServiceCmd = &cobra.Command{
+	Use:   "service",
+	Short: "Get service details",
 	Run: func(cmd *cobra.Command, args []string) {
-		// TODO: Work your own magic here
-		fmt.Println("get called")
+		if len(args) == 0 {
+			cmd.Usage()
+			os.Exit(-1)
+		}
+		sid := args[0]
+
+		url := fmt.Sprintf("%sservices/%s", apiServer, sid)
+
+		client := &http.Client{}
+		request, err := http.NewRequest("GET", url, nil)
+
+		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
+		resp, err := client.Do(request)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if resp.StatusCode == http.StatusOK {
+
+			defer resp.Body.Close()
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				fmt.Printf("Error reading service spec %s\n", err.Error)
+				return
+			}
+
+			service := api.ServiceSpec{}
+			err = json.Unmarshal([]byte(body), &service)
+			if err != nil {
+				fmt.Printf("Error unmarshalling service spec %s\n", err.Error)
+				return
+			}
+
+			data, err := json.MarshalIndent(service, "", "   ")
+			if err != nil {
+				fmt.Printf("Error marshalling service spec %s\n", err.Error)
+				return
+			}
+			fmt.Println(string(data))
+		} else {
+			fmt.Printf("Get service failed: %s\n", resp.Status)
+		}
 	},
+	PostRun: RefreshToken,
+}
+
+var getStackCmd = &cobra.Command{
+	Use:   "stack",
+	Short: "Get stack details",
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			cmd.Usage()
+			os.Exit(-1)
+		}
+		sid := args[0]
+
+		url := fmt.Sprintf("%sprojects/%s/stacks/%s", apiServer, apiUser.username, sid)
+
+		client := &http.Client{}
+		request, err := http.NewRequest("GET", url, nil)
+
+		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
+		resp, err := client.Do(request)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if resp.StatusCode == http.StatusOK {
+
+			defer resp.Body.Close()
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				fmt.Printf("Error reading stack %s\n", err.Error)
+				return
+			}
+
+			stack := api.Stack{}
+			err = json.Unmarshal([]byte(body), &stack)
+			if err != nil {
+				fmt.Printf("Error unmarshalling stack %s\n", err.Error)
+				return
+			}
+
+			data, err := json.MarshalIndent(stack, "", "   ")
+			if err != nil {
+				fmt.Printf("Error marshalling stack %s\n", err.Error)
+				return
+			}
+			fmt.Println(string(data))
+		} else {
+			fmt.Printf("Get stack failed: %s\n", resp.Status)
+		}
+	},
+	PostRun: RefreshToken,
 }
 
 func init() {
 	RootCmd.AddCommand(getCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// getCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// getCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
+	getCmd.AddCommand(getServiceCmd)
+	getCmd.AddCommand(getStackCmd)
 }

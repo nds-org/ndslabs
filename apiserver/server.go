@@ -8,7 +8,6 @@ import (
 	"github.com/StephanDollberg/go-json-rest-middleware-jwt"
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/coreos/etcd/client"
-	etcderr "github.com/coreos/etcd/error"
 	"github.com/golang/glog"
 	kube "github.com/nds-labs/apiserver/kube"
 	openstack "github.com/nds-labs/apiserver/openstack"
@@ -292,12 +291,16 @@ func (s *Storage) GetAllProjects(w rest.ResponseWriter, r *rest.Request) {
 
 	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/projects", nil)
 	if err != nil {
-		if e, ok := err.(*etcderr.Error); ok {
-			if e.ErrorCode == etcderr.EcodeKeyNotFound {
+		if e, ok := err.(client.Error); ok {
+			if e.Code == client.ErrorCodeKeyNotFound {
 				rest.NotFound(w, r)
+			} else {
+				glog.Error(err)
+				rest.Error(w, e.Error(), http.StatusInternalServerError)
 			}
+		} else {
+			glog.Error(err)
 		}
-		w.WriteJson(&err)
 	} else {
 		projects := []api.Project{}
 		nodes := resp.Node.Nodes
@@ -390,10 +393,15 @@ func (s *Storage) GetAllServices(w rest.ResponseWriter, r *rest.Request) {
 
 	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/services", nil)
 	if err != nil {
-		if e, ok := err.(*etcderr.Error); ok {
-			if e.ErrorCode == etcderr.EcodeKeyNotFound {
+		if e, ok := err.(client.Error); ok {
+			if e.Code == client.ErrorCodeKeyNotFound {
 				rest.NotFound(w, r)
+			} else {
+				glog.Error(err)
+				rest.Error(w, e.Error(), http.StatusInternalServerError)
 			}
+		} else {
+			glog.Error(err)
 		}
 		w.WriteJson(&err)
 	} else {
@@ -410,17 +418,21 @@ func (s *Storage) GetAllServices(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Storage) GetService(w rest.ResponseWriter, r *rest.Request) {
 	key := r.PathParam("key")
+	glog.V(4).Infof("GetService %s\n", key)
 
 	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/services/"+key, nil)
 
 	if err != nil {
-		if e, ok := err.(*etcderr.Error); ok {
-			if e.ErrorCode == etcderr.EcodeKeyNotFound {
+		if e, ok := err.(client.Error); ok {
+			if e.Code == client.ErrorCodeKeyNotFound {
 				rest.NotFound(w, r)
+			} else {
+				rest.Error(w, e.Error(), http.StatusInternalServerError)
 			}
 		}
 		w.WriteJson(&err)
 	} else {
+		glog.V(4).Infof("Node.Value %s\n", resp.Node.Value)
 		service := api.ServiceSpec{}
 		json.Unmarshal([]byte(resp.Node.Value), &service)
 		w.WriteJson(&service)
@@ -579,6 +591,17 @@ func (s *Storage) getStacks(pid string) (*[]api.Stack, error) {
 	return &stacks, nil
 }
 
+func (s *Storage) isStackStopped(pid string, ssid string) bool {
+	sid := ssid[0:strings.LastIndex(ssid, "-")]
+	stack, _ := s.getStack(pid, sid)
+
+	if stack.Status == stackStatus[Stopped] {
+		return true
+	} else {
+		return false
+	}
+}
+
 func (s *Storage) getStackService(pid string, ssid string) *api.StackService {
 	sid := ssid[0:strings.LastIndex(ssid, "-")]
 	stack, _ := s.getStack(pid, sid)
@@ -644,22 +667,16 @@ func (s *Storage) stackExists(pid string, name string) bool {
 
 func (s *Storage) getStack(pid string, sid string) (*api.Stack, error) {
 
-	stack := api.Stack{}
 	path := "/projects/" + pid + "/stacks/" + sid
 	resp, err := s.etcd.Get(context.Background(), etcdBasePath+path, nil)
 
 	if err != nil {
-		if e, ok := err.(*etcderr.Error); ok {
-			if e.ErrorCode == etcderr.EcodeKeyNotFound {
-				return nil, NewError(NotFound)
-			}
-		} else {
-			return nil, err
-		}
+		return nil, err
 	} else {
+		stack := api.Stack{}
 		json.Unmarshal([]byte(resp.Node.Value), &stack)
+		return &stack, nil
 	}
-	return &stack, nil
 }
 
 func (s *Storage) GetStack(w rest.ResponseWriter, r *rest.Request) {
@@ -667,12 +684,15 @@ func (s *Storage) GetStack(w rest.ResponseWriter, r *rest.Request) {
 	sid := r.PathParam("sid")
 
 	stack, err := s.getStack(pid, sid)
+	if stack == nil {
+		rest.NotFound(w, r)
+		return
+	}
+
 	if err != nil {
-		if e, ok := err.(*Error); ok {
-			if e.ErrorCode == NotFound {
-				rest.NotFound(w, r)
-			}
-		}
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	} else {
 		w.WriteJson(&stack)
 	}
@@ -684,6 +704,7 @@ func (s *Storage) PostStack(w rest.ResponseWriter, r *rest.Request) {
 	stack := api.Stack{}
 	err := r.DecodeJsonPayload(&stack)
 	if err != nil {
+		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -961,6 +982,14 @@ func (s *Storage) StartStack(w rest.ResponseWriter, r *rest.Request) {
 	}
 	glog.V(4).Infof("Starting stack %s", stack.Id)
 
+	glog.V(4).Infof("Stack status %s\n", stack.Status)
+	if stack.Status != stackStatus[Stopped] {
+		// Can't start a stopping or started service
+		glog.V(4).Infof("Can't start a service with status %s\n", stack.Status)
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+
 	stack.Status = stackStatus[Starting]
 	s.putStack(sid, sid, stack)
 
@@ -1050,12 +1079,13 @@ func (s *Storage) StopStack(w rest.ResponseWriter, r *rest.Request) {
 	sid := r.PathParam("sid")
 
 	stack, err := s.getStack(pid, sid)
+	if stack == nil {
+		rest.NotFound(w, r)
+		return
+	}
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-	if stack == nil {
-		rest.NotFound(w, r)
 		return
 	}
 
@@ -1077,6 +1107,7 @@ func (s *Storage) stopStack(pid string, sid string) (*api.Stack, error) {
 
 	stack, _ := s.getStack(pid, sid)
 
+	glog.V(4).Infof("Stack status %s\n", stack.Status)
 	if stack.Status == stackStatus[Stopping] || stack.Status == stackStatus[Stopped] {
 		// Can't stop a stopped service
 		glog.V(4).Infof("Can't stop a stopped service")
@@ -1158,10 +1189,15 @@ func (s *Storage) GetAllVolumes(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/projects/"+pid+"/volumes", nil)
 	if err != nil {
-		if e, ok := err.(*etcderr.Error); ok {
-			if e.ErrorCode == etcderr.EcodeKeyNotFound {
+		if e, ok := err.(client.Error); ok {
+			if e.Code == client.ErrorCodeKeyNotFound {
 				rest.NotFound(w, r)
+			} else {
+				glog.Error(err)
+				rest.Error(w, e.Error(), http.StatusInternalServerError)
 			}
+		} else {
+			glog.Error(err)
 		}
 		w.WriteJson(&err)
 	} else {
@@ -1193,7 +1229,15 @@ func (s *Storage) PostVolume(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	if vol.Attached != "" {
-		vol.Status = "attached"
+		if s.getStackService(pid, vol.Attached) == nil {
+			rest.NotFound(w, r)
+			return
+		} else if s.attachmentExists(pid, vol.Attached) {
+			w.WriteHeader(http.StatusConflict)
+			return
+		} else {
+			vol.Status = "attached"
+		}
 	} else {
 		vol.Status = "available"
 	}
@@ -1332,6 +1376,10 @@ func (s *Storage) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 		} else if s.attachmentExists(pid, vol.Attached) {
 			w.WriteHeader(http.StatusConflict)
 			return
+		} else if !s.isStackStopped(pid, vol.Attached) {
+			glog.V(4).Infof("Can't attach to a running stack\n")
+			w.WriteHeader(http.StatusConflict)
+			return
 		} else {
 			vol.Status = "attached"
 		}
@@ -1366,7 +1414,9 @@ func (s *Storage) GetVolume(w rest.ResponseWriter, r *rest.Request) {
 	vid := r.PathParam("vid")
 
 	volume, err := s.getVolume(pid, vid)
-	if err != nil {
+	if volume == nil {
+		rest.NotFound(w, r)
+	} else if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 	} else {
 		w.WriteJson(&volume)
@@ -1379,41 +1429,47 @@ func (s *Storage) DeleteVolume(w rest.ResponseWriter, r *rest.Request) {
 
 	glog.V(4).Infof("Deleting volume %s\n", vid)
 	volume, err := s.getVolume(pid, vid)
+
 	if volume == nil {
 		glog.V(4).Infoln("No such volume")
 		if err != nil {
 			glog.Error(err)
 		}
 		rest.NotFound(w, r)
-	} else {
-		glog.V(4).Infof("Format %s\n", volume.Format)
-		if volume.Format == "hostPath" {
-			err = os.RemoveAll(s.volDir + "/" + volume.Id)
-			if err != nil {
-				rest.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		} else if volume.Format == "cinder" {
-			token, err := s.os.Authenticate(s.os.Username, s.os.Password,
-				s.os.TenantId)
-			if err != nil {
-				rest.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			err = s.os.DeleteVolume(token.Id, s.os.TenantId, volume.Id)
-			if err != nil {
-				rest.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		}
+		return
+	} else if volume.Attached != "" && !s.isStackStopped(pid, volume.Attached) {
+		glog.V(4).Infof("Can't attach to a running stack\n")
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
 
-		path := etcdBasePath + "/projects/" + pid + "/volumes/" + vid
-		_, err := s.etcd.Delete(context.Background(), path, nil)
+	glog.V(4).Infof("Format %s\n", volume.Format)
+	if volume.Format == "hostPath" {
+		err = os.RemoveAll(s.volDir + "/" + volume.Id)
 		if err != nil {
-			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+	} else if volume.Format == "cinder" {
+		token, err := s.os.Authenticate(s.os.Username, s.os.Password,
+			s.os.TenantId)
+		if err != nil {
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		err = s.os.DeleteVolume(token.Id, s.os.TenantId, volume.Id)
+		if err != nil {
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	path := etcdBasePath + "/projects/" + pid + "/volumes/" + vid
+	_, err = s.etcd.Delete(context.Background(), path, nil)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)

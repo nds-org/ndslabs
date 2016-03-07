@@ -39,6 +39,9 @@ var attachCmd = &cobra.Command{
 		ssid := args[1]
 
 		volume := getVolume(name)
+		if volume == nil {
+			return
+		}
 
 		volume.Attached = ssid
 
@@ -108,6 +111,7 @@ func getVolume(name string) *api.Volume {
 		json.Unmarshal([]byte(body), &volume)
 		return &volume
 	} else {
+		fmt.Printf("Get volume failed: %s\n", resp.Status)
 		return nil
 	}
 }

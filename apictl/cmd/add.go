@@ -46,10 +46,10 @@ var addCmd = &cobra.Command{
 }
 
 var addStackCmd = &cobra.Command{
-	Use:   "stack [stackName]",
+	Use:   "stack [serviceKey] [name]",
 	Short: "Add the specified stack to your project",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
+		if len(args) < 2 {
 			cmd.Usage()
 			os.Exit(-1)
 		}
@@ -68,7 +68,8 @@ func getService(serviceName string) *api.Service {
 	//fmt.Println(apiUser)
 	resp, err := client.Do(request)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Error getting service: %s\n", err.Error())
+		os.Exit(-1)
 	}
 
 	if resp.StatusCode == http.StatusOK {
@@ -77,15 +78,18 @@ func getService(serviceName string) *api.Service {
 		body, err := ioutil.ReadAll(resp.Body)
 		//fmt.Printf("%s", string(body))
 		if err != nil {
-			log.Fatal(err)
+			fmt.Printf("Error getting service: %s\n", err.Error())
+			os.Exit(-1)
 		}
 
 		service := api.Service{}
 		json.Unmarshal([]byte(body), &service)
 		return &service
 	} else {
-		return nil
+		fmt.Printf("Error getting service: %s\n", resp.Status)
+		os.Exit(-1)
 	}
+	return nil
 }
 
 func contains(s []string, e string) bool {
