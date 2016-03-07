@@ -30,7 +30,6 @@ var stopCmd = &cobra.Command{
 		stack := args[0]
 
 		url := apiServer + "projects/" + apiUser.username + "/stop/" + stack
-		fmt.Println(url)
 
 		client := &http.Client{}
 		request, err := http.NewRequest("GET", url, nil)

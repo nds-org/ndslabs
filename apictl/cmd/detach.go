@@ -26,21 +26,20 @@ import (
 	"os"
 )
 
-var attachCmd = &cobra.Command{
-	Use:   "attach [volumeName] [serviceId]",
-	Short: "Attach a volume to a stack service",
+var detachCmd = &cobra.Command{
+	Use:   "detach [volumeName]",
+	Short: "Detach a volume from a stack service",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 2 {
+		if len(args) < 1 {
 			cmd.Usage()
 			os.Exit(-1)
 		}
 
 		name := args[0]
-		ssid := args[1]
 
 		volume := getVolume(name)
 
-		volume.Attached = ssid
+		volume.Attached = ""
 
 		data, err := json.Marshal(&volume)
 		if err != nil {
@@ -53,7 +52,7 @@ var attachCmd = &cobra.Command{
 		client := &http.Client{}
 		request, err := http.NewRequest("PUT", url, bytes.NewBuffer(data))
 		if err != nil {
-			fmt.Printf("Attach failed: %s\n", err.Error())
+			fmt.Printf("Detach failed: %s\n", err.Error())
 			return
 		}
 
@@ -61,7 +60,7 @@ var attachCmd = &cobra.Command{
 		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
 		resp, err := client.Do(request)
 		if err != nil {
-			fmt.Printf("Attach failed: %s\n", err.Error())
+			fmt.Printf("Detach failed: %s\n", err.Error())
 			return
 		}
 
@@ -75,43 +74,13 @@ var attachCmd = &cobra.Command{
 			fmt.Print(string(body))
 			volume := api.Volume{}
 			json.Unmarshal([]byte(body), &volume)
-			fmt.Printf("Attached volume %s\n", volume.Name)
+			fmt.Printf("Detached volume %s\n", volume.Name)
 		} else {
-			fmt.Printf("Attach failed: %s\n", resp.Status)
+			fmt.Printf("Detach failed: %s\n", resp.Status)
 		}
 	},
 }
 
-func getVolume(name string) *api.Volume {
-
-	url := apiServer + "projects/" + apiUser.username + "/volumes/" + name
-
-	client := &http.Client{}
-	request, err := http.NewRequest("GET", url, nil)
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
-
-	//fmt.Println(apiUser)
-	resp, err := client.Do(request)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if resp.StatusCode == http.StatusOK {
-
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		volume := api.Volume{}
-		json.Unmarshal([]byte(body), &volume)
-		return &volume
-	} else {
-		return nil
-	}
-}
-
 func init() {
-	RootCmd.AddCommand(attachCmd)
+	RootCmd.AddCommand(detachCmd)
 }

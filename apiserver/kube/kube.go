@@ -45,6 +45,7 @@ func (k *KubeHelper) CreateNamespace(pid string) (*api.Namespace, error) {
 	}
 
 	url := k.kubeBase + apiBase + "/namespaces"
+	glog.V(4).Infoln(url)
 	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
 
 	// POST /api/v1/namespaces v1.Namespace
@@ -76,12 +77,14 @@ func (k *KubeHelper) CreateNamespace(pid string) (*api.Namespace, error) {
 func (k *KubeHelper) StartController(pid string, spec *api.ReplicationController) (bool, error) {
 
 	name := spec.Labels["name"]
+
 	// Get ReplicationController spec
-	data, err := json.Marshal(spec)
+	data, err := json.MarshalIndent(spec, "", "    ")
 	if err != nil {
 		return false, err
 	}
-	// Attach the volume
+
+	fmt.Println(string(data))
 	client := &http.Client{}
 
 	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers"
@@ -146,10 +149,11 @@ func (k *KubeHelper) StartService(pid string, spec *api.Service) (*api.Service, 
 
 	client := &http.Client{}
 
-	data, err := json.Marshal(spec)
+	data, err := json.MarshalIndent(spec, "", "    ")
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(string(data))
 
 	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services"
 	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
@@ -161,7 +165,7 @@ func (k *KubeHelper) StartService(pid string, spec *api.Service) (*api.Service, 
 		return nil, httperr
 	} else {
 		if httpresp.StatusCode == http.StatusCreated {
-			glog.V(4).Infof("Created KubeHelperrnetes service " + name)
+			glog.V(4).Infof("Created Kubernetes service " + name)
 
 			data, err := ioutil.ReadAll(httpresp.Body)
 			if err != nil {
@@ -281,7 +285,7 @@ func (k *KubeHelper) StopController(pid string, name string) error {
 		}
 	}
 
-	pods, _ := k.GetPods(pid, "rc", name)
+	pods, _ := k.GetPods(pid, "name", name)
 	for _, pod := range pods {
 		glog.V(4).Infof("Stopping pod %s\n", pod.Name)
 
@@ -303,8 +307,8 @@ func (k *KubeHelper) StopController(pid string, name string) error {
 	}
 
 	//TODO: Wait for pods
-	pods, _ = k.GetPods(pid, "rc", name)
-	glog.V(4).Infof("Waiting for pods to be terminate %s %d\n", name, len(pods))
+	pods, _ = k.GetPods(pid, "name", name)
+	glog.V(4).Infof("Waiting for pods to terminate %s %d\n", name, len(pods))
 	for len(pods) > 0 {
 		for _, pod := range pods {
 			if len(pod.Status.Conditions) > 0 {
@@ -326,18 +330,22 @@ func (k *KubeHelper) StopController(pid string, name string) error {
 				glog.V(4).Infof("Waiting for %s (%s=%s) [%s, %s]\n", pod.Name, condition.Type, condition.Status, phase, containerState)
 			}
 		}
-		pods, _ = k.GetPods(pid, "rc", name)
+		pods, _ = k.GetPods(pid, "name", name)
 		time.Sleep(time.Second * 5)
 	}
 	return nil
 }
 
-func (k *KubeHelper) GetLog(pid string, podName string) (string, error) {
+func (k *KubeHelper) GetLog(pid string, podName string, tailLines int) (string, error) {
 	glog.V(4).Infof("Get log for %s %s\n", pid, podName)
 
 	client := &http.Client{}
 
 	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + podName + "/log"
+
+	if tailLines > 0 {
+		url += fmt.Sprintf("?tailLines=%d", tailLines)
+	}
 
 	glog.V(4).Infoln(url)
 	request, _ := http.NewRequest("GET", url, nil)
@@ -381,6 +389,7 @@ func (k *KubeHelper) GetServiceEndpoints(pid string, stackKey string) (*map[stri
 	for _, k8service := range k8services {
 		glog.V(4).Infof("Service : %s %s\n", k8service.Name, k8service.Spec.Type)
 		if k8service.Spec.Type == "NodePort" {
+			glog.V(4).Infof("NodePort : %d\n", k8service.Spec.Ports[0].NodePort)
 			endpoints[k8service.GetName()] = fmt.Sprintf("%d", k8service.Spec.Ports[0].NodePort)
 		}
 	}
@@ -414,7 +423,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 		},
 	}
 
-	if spec.IsService {
+	if spec.IsPublic {
 		k8svc.Spec.Type = api.ServiceTypeNodePort
 	}
 
@@ -435,7 +444,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 }
 
 func (k *KubeHelper) CreateControllerTemplate(name string, stack string, spec *ndsapi.ServiceSpec,
-	links map[string]ServiceAddrPort) *api.ReplicationController {
+	links *map[string]ServiceAddrPort) *api.ReplicationController {
 
 	k8rc := api.ReplicationController{}
 	// Replication controller
@@ -453,7 +462,7 @@ func (k *KubeHelper) CreateControllerTemplate(name string, stack string, spec *n
 		env = append(env, api.EnvVar{Name: name, Value: value})
 	}
 
-	for name, addrPort := range links {
+	for name, addrPort := range *links {
 		if name == spec.Key {
 			continue
 		}

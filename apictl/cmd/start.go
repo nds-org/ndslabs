@@ -36,16 +36,20 @@ var startCmd = &cobra.Command{
 			os.Exit(-1)
 		}
 
-		stackKey := args[0]
+		stackId := args[0]
 
-		stack := getStack(apiUser.username, stackKey)
+		stack, err := getStack(apiUser.username, stackId)
+		if err != nil {
+			fmt.Printf("Start failed: %s\n", err.Error())
+			return
+		}
 
 		if stack.Status == "started" || stack.Status == "starting" {
 			fmt.Print("Stack already started\n")
 			return
 		}
 
-		url := apiServer + "projects/" + apiUser.username + "/start/" + stackKey
+		url := apiServer + "projects/" + apiUser.username + "/start/" + stackId
 
 		client := &http.Client{}
 		request, err := http.NewRequest("GET", url, nil)
@@ -56,9 +60,9 @@ var startCmd = &cobra.Command{
 			log.Fatal(err)
 		} else {
 			if resp.StatusCode == http.StatusOK {
-				fmt.Printf("Started %s\n", stackKey)
+				fmt.Printf("Started %s\n", stackId)
 			} else {
-				fmt.Printf("Error starting %s: %s\n", stackKey, resp.Status)
+				fmt.Printf("Error starting %s: %s\n", stackId, resp.Status)
 			}
 		}
 	},
@@ -68,7 +72,7 @@ func init() {
 	RootCmd.AddCommand(startCmd)
 }
 
-func getStack(pid string, stack string) *api.Stack {
+func getStack(pid string, stack string) (*api.Stack, error) {
 	url := apiServer + "projects/" + apiUser.username + "/stacks/" + stack
 
 	client := &http.Client{}
@@ -76,7 +80,7 @@ func getStack(pid string, stack string) *api.Stack {
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
 	resp, err := client.Do(request)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	if resp.StatusCode == http.StatusOK {
@@ -89,8 +93,8 @@ func getStack(pid string, stack string) *api.Stack {
 
 		stack := api.Stack{}
 		json.Unmarshal([]byte(body), &stack)
-		return &stack
+		return &stack, nil
 	} else {
-		return nil
+		return nil, fmt.Errorf("%s", resp.Status)
 	}
 }

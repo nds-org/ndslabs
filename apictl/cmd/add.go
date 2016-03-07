@@ -41,7 +41,7 @@ func init() {
 }
 
 var addCmd = &cobra.Command{
-	Use:   "add",
+	Use:   "add [stack] [name]",
 	Short: "Add the specified resource",
 }
 
@@ -54,7 +54,7 @@ var addStackCmd = &cobra.Command{
 			os.Exit(-1)
 		}
 
-		addStack(apiUser.username, args[0], opts)
+		addStack(apiUser.username, args[0], args[1], opts)
 	},
 }
 
@@ -112,7 +112,7 @@ func addRequiredDependencies(stackKey string, stack *api.Stack) {
 	}
 }
 
-func addStack(project string, serviceKey string, opt string) {
+func addStack(project string, serviceKey string, name string, opt string) {
 
 	service := getService(serviceKey)
 	optional := strings.Split(opt, ",")
@@ -120,6 +120,7 @@ func addStack(project string, serviceKey string, opt string) {
 	// Add this service
 	stack := api.Stack{}
 	stack.Key = serviceKey
+	stack.Name = name
 
 	stackService := api.StackService{}
 	stackService.Service = serviceKey
@@ -163,14 +164,14 @@ func addStack(project string, serviceKey string, opt string) {
 
 			w := new(tabwriter.Writer)
 			w.Init(os.Stdout, 20, 30, 0, '\t', 0)
-			fmt.Fprintln(w, "SERVICE\tUID")
+			fmt.Fprintln(w, "SERVICE\tSID")
 			for _, stackService := range stack.Services {
 				fmt.Fprintf(w, "%s\t%s\n", stackService.Service, stackService.Id)
 			}
 			w.Flush()
 
 		} else {
-			fmt.Printf("Unable to add stack %s: %s \n", serviceKey, resp.Status)
+			fmt.Printf("Unable to add stack %s %s: %s \n", name, serviceKey, resp.Status)
 		}
 
 	}

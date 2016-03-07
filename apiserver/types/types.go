@@ -17,6 +17,7 @@ type ServiceSpec struct {
 	ReadyProbe     ReadyProbe          `json:"readinessProbe"`
 	VolumeMounts   []VolumeMount       `json:"volumeMounts"`
 	Args           []string            `json:"args"`
+	IsPublic       bool                `json:"isPublic"`
 }
 
 type Port struct {
