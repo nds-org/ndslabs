@@ -1,0 +1,12 @@
+{
+    "key": "rabbitmq",
+    "isStack": false,
+    "isService": true,
+    "label": "RabbitMQ",
+    "image": "rabbit:management",
+    "ports": [
+        { "port": 5672, "protocol": "TCP" },
+        { "port": 15672, "protocol": "TCP" }
+    ]
+}
+
