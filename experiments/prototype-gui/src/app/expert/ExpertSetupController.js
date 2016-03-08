@@ -46,8 +46,8 @@ angular.module('ndslabs')
   
   // Storage structures
   $scope.currentProject = {};
-  $scope.configuredStacks = [];
-  $scope.configuredVolumes = [];
+  $scope.configuredStacks = Stacks.all;
+  $scope.configuredVolumes = Volumes.all;
   
   // Helpful stuff
   var projectId = AuthInfo.get().namespace;
@@ -99,7 +99,12 @@ angular.module('ndslabs')
       }).then(function(stacks, xhr) {
         $log.debug("successfully grabbed from /projects/" + projectId + "/stacks!");
         //Stacks.all = stacks || [];
-        Stacks.all = $scope.configuredStacks = stacks || [];
+        
+        if ($scope.configuredStacks === [] && stacks !== []) {
+          // Catch edge case here?
+        }
+        
+        $scope.configuredStacks = Stacks.all = stacks || [];
       }, function(headers) {
         $log.error("error grabbing from /projects/" + projectId + "/stacks!");
       });
@@ -111,7 +116,7 @@ angular.module('ndslabs')
     (query.volumes = function() {
       // Grab the list of configured volumes in our namespace
       return NdsLabsApi.getProjectsByProjectIdVolumes({ 
-        "projectId": projectId 
+        "projectId": projectId
       }).then(function(volumes, xhr) {
         $log.debug("successfully grabbed from /projects/" + projectId + "/volumes!");
         //Volumes.all = volumes || [];
@@ -141,7 +146,7 @@ angular.module('ndslabs')
       // Then send the "start" command to the API server
     NdsLabsApi.getProjectsByProjectIdStartByStackId({
       'projectId': projectId,
-      'stackId': stack.key
+      'stackId': stack.id
     }).then(function(data, xhr) {
       $log.debug('successfully started ' + stack.name);
     }, function(headers) {
@@ -163,7 +168,7 @@ angular.module('ndslabs')
       animation: true,
       templateUrl: '/app/expert/modals/stackStop/stackStop.html',
       controller: 'StackStopCtrl',
-      size: 'lg',
+      size: 'sm',
       keyboard: false,
       backdrop: 'static',
       resolve: {
@@ -179,7 +184,7 @@ angular.module('ndslabs')
       // Then send the "stop" command to the API server
       NdsLabsApi.getProjectsByProjectIdStopByStackId({
         'projectId': projectId,
-        'stackId': stack.key
+        'stackId': stack.id
       }).then(function(data, xhr) {
         $log.debug('successfully stopped ' + stack.name);
       }, function(headers) {
@@ -194,10 +199,9 @@ angular.module('ndslabs')
   
   /** 
    * Checks if a volume exists for the given stack and service and return it if it exists
-   * @param {Object} stack - the stack to check against the list of volumes - TODO: unused
    * @param {Object} svc - the service to check against the list of volumes
    */
-  $scope.showVolume = function(stack, svc) {
+  $scope.showVolume = function(svc) {
     var volume = null;
     angular.forEach($scope.configuredVolumes, function(vol) {
       if (svc.id === vol.attached) {
@@ -240,11 +244,11 @@ angular.module('ndslabs')
     NdsLabsApi.putProjectsByProjectIdStacksByStackId({
       'stack': stack,
       'projectId': projectId,
-      'stackId': stack.name
+      'stackId': stack.id
     }).then(function(data, xhr) {
-      $log.debug('successfully added service ' + svc.key + ' from stack ' + stack.name);
+      $log.debug('successfully added service ' + svc.key + ' to stack ' + stack.name);
     }, function(headers) {
-      $log.error('failed to add service ' + svc.key + ' from stack ' + stack.name);
+      $log.error('failed to add service ' + svc.key + ' to stack ' + stack.name);
       
       // Restore our state from etcd
       query.stacks();
@@ -264,19 +268,9 @@ angular.module('ndslabs')
     NdsLabsApi.putProjectsByProjectIdStacksByStackId({
       'stack': stack,
       'projectId': projectId,
-      'stackId': stack.name
+      'stackId': stack.id
     }).then(function(data, xhr) {
       $log.debug('successfully removed service' + svc.key + '  from stack ' + stack.name);
-      
-      // TODO: Do we need to manually dettach volumes?
-      /*var volume = $scope.showVolume(stack, svc);
-      if (volume) {
-        angular.forEach($scope.configuredVolumes, function(volume) {
-          if (volume.stack === stack.name) {
-            volume.attached = null;
-          }
-        });
-      }*/
     }, function(headers) {
       $log.error('failed to remove service ' + svc.key + ' from stack ' + stack.name);
       
@@ -325,7 +319,7 @@ angular.module('ndslabs')
             // Orphaned volumes are already in the list
             var exists = _.find($scope.configuredVolumes, function(volume) { return vol.id === volume.id; });
             
-            if (!exists) {
+            if (!vol.id) {
               // Volume does not exist, so we need to create a new volume
               vol.attached = service.id;
               NdsLabsApi.postProjectsByProjectIdVolumes({
@@ -333,7 +327,7 @@ angular.module('ndslabs')
                 'projectId': projectId
               }).then(function(data, xhr) {
                 $log.debug("successfully posted to /projects/" + projectId + "/volumes!");
-                $scope.configuredVolumes.push(data);
+                Volumes.all.push(data);
               }, function(headers) {
                 $log.error("error posting to /projects/" + projectId + "/volumes!");
               });
@@ -342,6 +336,7 @@ angular.module('ndslabs')
               exists.stack = stack.name;
               exists.attached = service.id;
               
+              // Attach existing volume to new service
               NdsLabsApi.putProjectsByProjectIdVolumesByVolumeId({ 
                 'volume': exists,
                 'volumeId': exists.name,
@@ -371,6 +366,7 @@ angular.module('ndslabs')
       animation: true,
       templateUrl: '/app/expert/modals/logViewer/logViewer.html',
       controller: 'LogViewerCtrl',
+      windowClass: 'log-modal-window',
       size: 'lg',
       keyboard: false,      // Force the user to explicitly click "Close"
       backdrop: 'static',   // Force the user to explicitly click "Close"
@@ -408,7 +404,7 @@ angular.module('ndslabs')
       // Delete the stack and orphan the volumes
       NdsLabsApi.deleteProjectsByProjectIdStacksByStackId({
         'projectId': projectId,
-        'stackId': stack.key
+        'stackId': stack.id
       }).then(function(data, xhr) {
         $log.debug('successfully deleted stack: ' + stack.name);
         

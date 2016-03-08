@@ -17,7 +17,7 @@ angular
       var svcSpec = _.find(_.concat(stacks, deps), function(svc) { return svc.key === requestedSvc.service });
       if (svcSpec.requiresVolume === true) {
         angular.forEach(configuredVolumes, function(volume) {
-          if (!volume.attachment && svcSpec.key === volume.service) {
+          if (!volume.attached && svcSpec.key === volume.service) {
             // This is an orphaned volume from this service... Prompt the user to reuse it
             reusableVolumes.push(volume);
           }

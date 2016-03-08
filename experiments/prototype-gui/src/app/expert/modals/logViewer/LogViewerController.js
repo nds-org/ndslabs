@@ -12,8 +12,7 @@ angular
   $scope.serviceLog = '';
   
   ($scope.refreshLog = function() {
-    NdsLabsApi.getProjectsByProjectIdLogsByStackIdByStackServiceId({ 
-      'stackId': service.stack,
+    NdsLabsApi.getProjectsByProjectIdLogsByStackServiceId({
       'projectId': projectId,
       'stackServiceId': service.id
     }).then(function(data, xhr) {

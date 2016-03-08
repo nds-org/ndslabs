@@ -98,3 +98,7 @@ body {
   margin-left: auto;
   margin-right: auto;
 }
+
+.log-modal-window .modal-dialog {
+  max-width:1200px;
+}

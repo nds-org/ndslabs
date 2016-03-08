@@ -92,7 +92,7 @@
               <div ng-show="volume.useOrphan">
                 <div class="radio" ng-repeat="orphan in newStackOrphanedVolumes | orphansExist:volume.service" ng-click="volume.useOrphan=true;volume.name = orphan.name;volume.id = orphan.id;">
                   <label>
-                    <input type="radio" ng-checked="volume.name === orphan.name" name="orphaned{{ volume.service }}OrphanVolumeRadio">{{ orphan.name }} (Source: {{ orphan.stack }})</label>
+                    <input type="radio" ng-checked="volume.id === orphan.id" name="orphaned{{ volume.service }}OrphanVolumeRadio">{{ orphan.name }} (Source: {{ orphan.stack }})</label>
                 </div>
               </div>
 
