@@ -397,7 +397,8 @@ func (s *Storage) GetAllServices(w rest.ResponseWriter, r *rest.Request) {
 	if err != nil {
 		if e, ok := err.(client.Error); ok {
 			if e.Code == client.ErrorCodeKeyNotFound {
-				rest.NotFound(w, r)
+				services := []api.ServiceSpec{}
+				w.WriteJson(&services)
 			} else {
 				glog.Error(err)
 				rest.Error(w, e.Error(), http.StatusInternalServerError)
@@ -1127,17 +1128,18 @@ func (s *Storage) stopStack(pid string, sid string) (*api.Stack, error) {
 		name := fmt.Sprintf("%s-%s", stack.Id, stackService.Service)
 		glog.V(4).Infof("Stopping service %s\n", name)
 		spec, _ := s.getServiceSpec(stackService.Service)
- 		if spec.IsService {
+		if spec.IsService {
 			err := s.kube.StopService(pid, name)
+			// Log and continue
 			if err != nil {
-				return nil, err
+				glog.Error(err)
 			}
 		}
 
 		glog.V(4).Infof("Stopping controller %s\n", name)
 		err := s.kube.StopController(pid, name)
 		if err != nil {
-			return nil, err
+			glog.Error(err)
 		}
 	}
 

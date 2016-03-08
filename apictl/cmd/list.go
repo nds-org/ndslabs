@@ -58,6 +58,7 @@ var listServicesCmd = &cobra.Command{
 
 			services := make([]api.Service, 0)
 			json.Unmarshal([]byte(body), &services)
+			fmt.Printf("SERVICE\tDEPENDENCY\n")
 			for _, service := range services {
 				if service.IsStack {
 					fmt.Printf("%s\n", service.Key)

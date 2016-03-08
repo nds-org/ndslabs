@@ -458,9 +458,6 @@ func (k *KubeHelper) CreateControllerTemplate(name string, stack string, spec *n
 	}
 
 	env := []api.EnvVar{}
-	for name, value := range spec.Config {
-		env = append(env, api.EnvVar{Name: name, Value: value})
-	}
 
 	for name, addrPort := range *links {
 		if name == spec.Key {
@@ -477,6 +474,10 @@ func (k *KubeHelper) CreateControllerTemplate(name string, stack string, spec *n
 				Name:  fmt.Sprintf("%s_PORT_%d_TCP_PORT", strings.ToUpper(name), addrPort.Port),
 				Value: fmt.Sprintf("%d", addrPort.Port),
 			})
+	}
+
+	for name, value := range spec.Config {
+		env = append(env, api.EnvVar{Name: name, Value: value})
 	}
 
 	k8volMounts := []api.VolumeMount{}
@@ -512,7 +513,8 @@ func (k *KubeHelper) CreateControllerTemplate(name string, stack string, spec *n
 					Env:          env,
 					VolumeMounts: k8volMounts,
 					Ports:        k8cps,
-					Args:        spec.Args,
+					Args:         spec.Args,
+					Command:      spec.Command,
 				},
 			},
 		},

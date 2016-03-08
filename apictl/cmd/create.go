@@ -17,7 +17,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"bytes"
 	api "github.com/nds-labs/apiserver/types"
 	"github.com/spf13/cobra"
 	"io/ioutil"
@@ -58,7 +57,7 @@ var createCmd = &cobra.Command{
 
 		url := apiServer + "projects/" + apiUser.username + "/volumes"
 
-		data, _ := json.Marshal(vol)
+		data, _ = json.Marshal(volume)
 		client := &http.Client{}
 		request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 		request.Header.Set("Content-Type", "application/json")

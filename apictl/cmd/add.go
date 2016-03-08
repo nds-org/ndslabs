@@ -109,11 +109,24 @@ func addRequiredDependencies(stackKey string, stack *api.Stack) {
 		if depends.Required {
 			stackService := api.StackService{}
 			stackService.Service = depends.DependencyKey
-			stack.Services = append(stack.Services, stackService)
-			//fmt.Printf("Adding required dependency %s\n", depends.DependencyKey)
-			addRequiredDependencies(depends.DependencyKey, stack)
+			if !containsService(stack.Services, stackService) {
+				stack.Services = append(stack.Services, stackService)
+				//fmt.Printf("Adding required dependency %s\n", depends.DependencyKey)
+				addRequiredDependencies(depends.DependencyKey, stack)
+			}
 		}
 	}
+}
+
+func containsService(list []api.StackService, service api.StackService) bool {
+	exists := false
+	for _, item := range list {
+		if item.Service == service.Service {
+			exists = true
+			break
+		}
+	}
+	return exists
 }
 
 func addStack(project string, serviceKey string, name string, opt string) {
