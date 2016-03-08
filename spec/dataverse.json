@@ -1,0 +1,44 @@
+{
+    "depends": [
+        {
+            "key": "mongo",
+            "required": true
+        },
+        {
+            "key": "image-preview",
+            "required": false
+        },
+        {
+            "key": "elasticsearch",
+            "required": false
+        }
+    ],
+    "config":  {
+       "SMTP_HOST": "smtp.ncsa.illinois.edu",
+       "ELASTICSEARCH_CLUSTERNAME": "clowder",
+       "RABBITMQ_EXCHANGE": "clowder"
+	},
+    "image": "ndslabs/clowder:0.9.1",
+    "isStack": true,
+    "isService": true,
+    "key": "clowder",
+    "label": "Clowder",
+    "ports": [
+        {
+            "port": 9000,
+            "protocol": "TCP"
+        }
+    ],
+    "readinessProbe": {
+        "path": "/resources/images/dataverseproject_logo.jpg",
+        "port": 8080,
+        "initialDelaySeconds": 60,
+        "timeoutSeconds": 120
+    },
+    "volumeMounts": [
+        {
+            "mountPath": "/var/lib/clowder/data",
+            "name": "clowder"
+        }
+    ]
+}

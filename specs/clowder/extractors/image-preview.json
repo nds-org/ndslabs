@@ -11,8 +11,6 @@
         }
     ],
     "config":  {
-       "SMTP_HOST": "smtp.ncsa.illinois.edu",
-       "ELASTICSEARCH_CLUSTERNAME": "clowder",
        "RABBITMQ_EXCHANGE": "clowder",
        "RABBITMQ_VHOST": "%2F",
        "RABBITMQ_QUEUE": "ncsa.image.preview"

@@ -1,0 +1,18 @@
+{
+    "key": "videopreview",
+    "isStack": false,
+    "isService": false,
+    "label": "Video preview extractor",
+    "image": "ndslabs/video-preview:0.9.1",
+    "depends": [
+        {
+            "key": "rabbitmq",
+            "required": true
+        }
+    ],
+    "config":  {
+       "RABBITMQ_EXCHANGE": "clowder",
+       "RABBITMQ_VHOST": "%2F",
+       "RABBITMQ_QUEUE": "ncsa.image.preview"
+    }
+}

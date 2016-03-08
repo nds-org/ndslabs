@@ -1,7 +1,15 @@
 {
     "depends": [
         {
-            "key": "elasticsearch",
+            "key": "elasticsearch2",
+            "required": true
+        },
+        {
+            "key": "logstash",
+            "required": true
+        },
+        {
+            "key": "logspout",
             "required": true
         }
     ],
@@ -15,6 +23,6 @@
         { "port": 5601, "protocol": "TCP" }
     ],
     "config":  {
-       "ELASTICSEARCH_URL": "http://$(ELASTICSEARCH_PORT_9200_TCP_ADDR):$(ELASTICSEARCH_PORT_9200_TCP_PORT)"
-    },
+       "ELASTICSEARCH_URL": "http://$(ELASTICSEARCH2_PORT_9200_TCP_ADDR):$(ELASTICSEARCH2_PORT_9200_TCP_PORT)"
+    }
 }
