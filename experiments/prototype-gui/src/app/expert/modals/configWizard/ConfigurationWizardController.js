@@ -77,6 +77,7 @@ angular
         prev: null,
         canPrev: false,
         canNext: function() {
+          debugger;
           return $scope.newStack && $scope.newStack.name !== '' && !_.find(configuredStacks, function(stack) { return stack.name === $scope.newStack.name; });
         },
         next: 'config',
@@ -111,15 +112,13 @@ angular
         prev: 'config',
         canPrev: true,
         canNext: function() {
-          var requiredParams = ['name', 'size', 'sizeUnit'];
           var volumeParamsSet = true;
           angular.forEach($scope.newStackVolumeRequirements, function(volume) {
-            angular.forEach(requiredParams, function (key) {
-              if (!volume[key] || volume[key] === '') {
+            // Check that all of our required parameters have been set
+              if (!volume.id && !volume.name) {
                 volumeParamsSet = false;
                 return;
               }
-            });
           });
           return volumeParamsSet;
         },

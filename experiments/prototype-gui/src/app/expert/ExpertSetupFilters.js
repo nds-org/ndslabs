@@ -24,7 +24,8 @@ angular.module('ndslabs')
  */
 .filter('serviceLabelFromSpec', ['Specs', '_', function(Specs, _) {
   return function(key) {
-    return _.find(Specs.all, ['key', key]).label;
+    var spec = _.find(Specs.all, ['key', key]);
+    return spec.label;
   };
 }])
 /**

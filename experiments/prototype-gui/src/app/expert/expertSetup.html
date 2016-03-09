@@ -257,16 +257,15 @@
                             <!-- Add an artificial row (if necessary) for optional services -->
                             <tr ng-if="stack.status === 'stopped' && (stack | missingDeps).length > 0">
                               <td></td>
+                              <td></td>
                               <td>
-                              <a class="btn btn-xs btn-info" tabindex="0" 
-                                 uib-popover-template="'/app/expert/popovers/serviceAdd.html'" popover-append-to-body
-                                 popover-title="OPTIONAL SERVICES" popover-placement="top-right" popover-trigger="outsideClick"
-                                 uib-tooltip="Add optional services" tooltip-placement="right">
-                                Add Service<i class="fa fa-fw fa-caret-down"></i>
-                              </a>
+                                <a class="btn btn-xs btn-info" tabindex="0" 
+                                   uib-popover-template="'/app/expert/popovers/serviceAdd.html'" popover-append-to-body
+                                   popover-title="OPTIONAL SERVICES" popover-placement="top-right" popover-trigger="outsideClick"
+                                   uib-tooltip="Add optional services" tooltip-placement="right">
+                                  Add Service<i class="fa fa-fw fa-caret-down"></i>
+                                </a>
                               </td>
-                              <td></td>
-                              <td></td>
                               <td></td>
                             </tr>
                           </tbody>
@@ -274,6 +273,8 @@
                       </div>
                     </div>
                   </div>
+                  
+                  <pre>{{ postedStack | json }}</pre>
                   
                   <!-- The Stack's "Button Bar" -->
                   <div class="pull-right" role="group" aria-label="...">
@@ -303,6 +304,7 @@
                   </div>
                 </uib-accordion-group>
               </uib-accordion>
+              <pre>{{ configuredVolumes | json }}</pre>
             </div>
           </div>
         </div>

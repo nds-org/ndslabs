@@ -68,21 +68,21 @@
           <p>It looks like you are adding {{ newStackVolumeRequirements.length }} service{{ newStackVolumeRequirements > 1 ? 's' : '' }} that require{{ newStackVolumeRequirements > 1 ? '' : 's' }} a volume.</p>
 
           <!-- Create New Volumes -->
-          <div class="panel panel-default" ng-repeat="volume in newStackVolumeRequirements">
+          <div class="panel panel-default" ng-repeat="volume in newStackVolumeRequirements track by volume.service">
             <div class="panel-heading">
               <h4 class="panel-title">{{ volume.service }}</h4></div>
 
 
             <div class="panel-body">
               <!-- Reuse Orphaned Volumes? -->
-              <div ng-if="newStackOrphanedVolumes && (newStackOrphanedVolumes | orphansExist:volume.service).length > 0">
+              <div ng-if="(newStackOrphanedVolumes | orphansExist:volume.service).length">
                 <p>Your namespace contains one or more detattached volumes that were previously associated with {{ volume.service }}.</p>
                 <p>Would you like to reuse the data on from volume, or create a new volume?</p>
-                <div class="radio" ng-click="volume.useOrphan=true;volume.name=''">
+                <div class="radio" ng-click="volume.useOrphan=true;volume.name=newStackOrphanedVolumes[0].name;volume.id = newStackOrphanedVolumes[0].id">
                   <label>
                     <input type="radio" ng-checked="volume.useOrphan" name="orphaned{{ volume.service }}VolumeRadio">Reuse Previous Data</label>
                 </div>
-                <div class="radio" ng-click="volume.useOrphan=false;volume.name=''">
+                <div class="radio" ng-click="volume.useOrphan=false;volume.id='';volume.name=''">
                   <label>
                     <input type="radio" ng-checked="!volume.useOrphan" name="orphaned{{ volume.service }}VolumeRadio">Create New Volume</label>
                 </div>
@@ -90,7 +90,7 @@
 
               <!-- List usable orphaned volumes -->
               <div ng-show="volume.useOrphan">
-                <div class="radio" ng-repeat="orphan in newStackOrphanedVolumes | orphansExist:volume.service" ng-click="volume.useOrphan=true;volume.name = orphan.name;volume.id = orphan.id;">
+                <div class="radio" ng-repeat="orphan in newStackOrphanedVolumes track by orphan.id | orphansExist:volume.service" ng-click="volume.useOrphan=true;volume.id = orphan.id;">
                   <label>
                     <input type="radio" ng-checked="volume.id === orphan.id" name="orphaned{{ volume.service }}OrphanVolumeRadio">{{ orphan.name }} (Source: {{ orphan.stack }})</label>
                 </div>

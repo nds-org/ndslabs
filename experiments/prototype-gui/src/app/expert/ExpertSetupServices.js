@@ -67,7 +67,9 @@ angular.module('ndslabs')
       name: "",
       key: spec.key,
       status: "Suspended",
-      services: []
+      services: [],
+  //    createdTime: new Date(),
+ //     updateTime: new Date()
     };
     
     // TODO: Manage this automatically? Seems like a bad idea...
@@ -80,20 +82,23 @@ angular.module('ndslabs')
 /**
  * Represents a volume.
  * @constructor
- * @param {} stack - The stack of the attached service
+ * @param {} stack - The stack of the attached service -- TODO: unused
  * @param {} service - The service to attach to this volume
  */
 .service('Volume', [ 'Volumes', function(Volumes) {
   return function(stack, service) { 
     var volume = {
       id: '',
-      key: service.key,
-      stack: stack.name,
-      service: service.key,
-      format: 'Raw',
+      name: '',
       size: 10,
       sizeUnit: 'GB',
-      attached: service.id
+      format: 'Raw',
+      attached: service.id,
+      service: service.key,
+      status: '',
+      formatted: false,
+  //    createdTime: new Date(),
+  //    updateTime: new Date()
     };
     
     // TODO: Manage this automatically? Seems like a bad idea...
@@ -116,8 +121,10 @@ angular.module('ndslabs')
       stack: stack.key,
       service: spec.key,
       status: "",
-      replicas: 1,
-      endpoints: []
+   //   createdTime: new Date(),
+   //   updatedTime: new Date()
+      //replicas: 1,
+      //endpoints: []
     };
     
     //stack.services.push(svc);

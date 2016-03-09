@@ -240,6 +240,9 @@ angular.module('ndslabs')
     // Now that we have all required dependencies, add our target service
     stack.services.push(new StackService(stack, spec));
     
+    // TODO: Should client or server handle this? My gut says server...
+    //stack.updatedTime = new Date();
+    
     // Then update the entire stack in etcd
     NdsLabsApi.putProjectsByProjectIdStacksByStackId({
       'stack': stack,
@@ -263,6 +266,7 @@ angular.module('ndslabs')
   $scope.removeStackSvc = function(stack, svc) {
     // Remove this services locally
     stack.services.splice(stack.services.indexOf(svc), 1);
+    //stack.updatedTime = new Date();
     
     // Then update the entire stack in etcd
     NdsLabsApi.putProjectsByProjectIdStacksByStackId({
@@ -309,6 +313,7 @@ angular.module('ndslabs')
       NdsLabsApi.postProjectsByProjectIdStacks({ 'stack': newEntities.stack, 'projectId': projectId }).then(function(stack, xhr) {
         $log.debug("successfully posted to /projects/" + projectId + "/stacks!");
         
+        // Add the new stack to the UI
         $scope.configuredStacks.push(stack);
         
         // Then attach our necessary volumes
@@ -316,11 +321,8 @@ angular.module('ndslabs')
           var service = _.find(stack.services, ['service', vol.service]);
           
           if (service) {
-            // Orphaned volumes are already in the list
-            var exists = _.find($scope.configuredVolumes, function(volume) { return vol.id === volume.id; });
-            
             if (!vol.id) {
-              // Volume does not exist, so we need to create a new volume
+              // Volume does not exist, so we need to create a new entry
               vol.attached = service.id;
               NdsLabsApi.postProjectsByProjectIdVolumes({
                 'volume': vol, 
@@ -332,8 +334,10 @@ angular.module('ndslabs')
                 $log.error("error posting to /projects/" + projectId + "/volumes!");
               });
             } else {
+              // Orphaned volumes are already in the list
+              var exists = _.find($scope.configuredVolumes, function(volume) { return vol.id === volume.id; });
+              
               // We need to update existing volume
-              exists.stack = stack.name;
               exists.attached = service.id;
               
               // Attach existing volume to new service
