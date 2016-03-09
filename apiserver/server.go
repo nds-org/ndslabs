@@ -763,14 +763,17 @@ func (s *Storage) PutStack(w rest.ResponseWriter, r *rest.Request) {
 	sid := r.PathParam("sid")
 
 	stack := api.Stack{}
-	err := r.DecodeJsonPayload(stack)
+
+	err := r.DecodeJsonPayload(&stack)
 	if err != nil {
+		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	stack.Status = stackStatus[Stopped]
 	err = s.putStack(pid, sid, &stack)
 	if err != nil {
+		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
