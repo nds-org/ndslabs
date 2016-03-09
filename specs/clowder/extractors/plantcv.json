@@ -3,7 +3,7 @@
     "isStack": false,
     "isService": false,
     "label": "PlantCV extractor",
-    "image": ""ndslabs/plantcv:0.9.1",
+    "image": "ndslabs/plantcv:0.9.1",
     "depends": [
         {
             "key": "rabbitmq",
