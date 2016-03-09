@@ -4,64 +4,76 @@ This is very very drafty.
 
 ## Building
 
+To build the apiserver binary:
+
+
 To build the apiserver binary, this assumes you have standard go workspace with the following structure:
 
 ```
-GOPATH
-  bin/   
-  pkg/
-  src/
-    github.com/
-      nds-labs/
+cd nds-labs
+docker run --rm -it -v `pwd`:/go/src/github.com/nds-labs golang bash
+# cd src/github.com/nds-labs/apiserver/
+# go get
+# go build
 ```
 
-The going line is that Go developers have a single workspace for all of their code.  This actually works pretty well, since each thing under src/ is basically a separate git (or other) repo.
+This will produce the apiserver binary.
 
-Next, you'll need to export GOPATH:
+### Configuration
+The apiserver.conf is the primary configuration file
+
 ```
-export GOPATH=/path/to/your/workspace
+[Server]
+Port=8083
+Origin=http://<CORS origin host>
+VolDir=/home/core/apiserver/volumes
+JwtKey=/home/core/apiserver/jwt.key
+Host=<your host ip>
+VolumeSource=local
+
+[Etcd]
+Address=localhost:4001
+
+[Kubernetes]
+Address=localhost:8080
+
+[OpenStack]
+Username=
+Password=
+TenantId=
+IdentityEndpoint=http://nebula.ncsa.illinois.edu:5000/v2.0/
+VolumesEndpoint=http://nebula.ncsa.illinois.edu:8776/v2/
+ComputeEndpoint=http://nebula.ncsa.illinois.edu:8774/v2/
 ```
 
-You'll want to add GOPATH/bin to your path:
-```
-export PATH=$PATH:/$GOPATH/bin
-```
-
-If you don't have golang installed, it's probably easiest to run the Docker container to build/install and run (for now):
-```
-docker run --rm -it -v /path/to/gopath/workspace/:/go/ -w /go/src/github.com/nds-labs/apiserver/  golang  bash
-$ go install
-```
-
-It is possible to cross-compile for another OS (Mac OS), if you really want to:
-```
-docker run -e GOOS=darwin -e GOARCH=amd64 --rm -it -v /Users/willis8/dev/go/:/go/ -w /go/src/github.com/nds-labs/apiserver/  golang  go install
-```
-
-Note that the binary will be installed to bin/darwin_amd64/apiserver.
+If VolumeSource is "local", the OpenStack section isn't used.
 
 
 ### Running the server
 
-This server requires a running etcd instance, so make sure you have one running that's accessible from the apiserver container.
+The server requires etcd and Kubernetes. You can either run a separate etcd or use the Kubernetes instance.
 
-The apiserver defaults to listening on 8083, but can be overridden on the command line. It also accepts an origin flag (e.g., http://somehost:port) for CORS support:
+To run
 ```
-apiserver -etcd <host:port> -port <port> -origin <origin>
+./apiserver -v <log verbosity 1-4>
+```
+
+To install a systemd service
+```
+cp apiserver.service /etc/systemd/system/apiserver.service
+systemdctl start apiserver
 ```
 
 ### Test data
 
-Loading services:
+Loading a project:
 ```
-curl --header "Content-Type:  application/json" -X PUT --data @test/clowder.json http://192.168.99.100:8083/services
-curl --header "Content-Type:  application/json" -X PUT --data @test/mongo.json http://192.168.99.100:8083/services
-curl --header "Content-Type:  application/json" -X PUT --data @test/elastic.json http://192.168.99.100:8083/services
+cd test
+./load-projects.sh
 ```
 
-Deleting services:
+Loading service specs:
 ```
-curl --header "Content-Type:  application/json" -X DELETE http://192.168.99.100:8083/services/clowder
-curl --header "Content-Type:  application/json" -X DELETE http://192.168.99.100:8083/services/elasticsearch
-curl --header "Content-Type:  application/json" -X DELETE http://192.168.99.100:8083/services/mongo
+cd specs/clowder
+./load-specs.sh
 ```
