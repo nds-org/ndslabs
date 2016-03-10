@@ -2,18 +2,23 @@
 <!-- TODO: Lots of hacks in here... this needs work -->
 <section>
   <div class="modal-header">
-    <!-- Wizard progress bar here -->
-    <div class="progress">
-      <div class="progress-bar" ng-class="{ 'progress-bar-success': wizard.percentage == 100}" role="progressbar" aria-valuenow="{{ wizard.percentage }}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{ wizard.percentage }}%;">
-        {{ wizard.percentage | number:0 }}%
+    <div class="row">
+      <div class="col-sm-10">
+        
+        <h4 class="modal-title" id="wizardModalLabel">{{ newStackLabel }}: {{ wizard.currentPage.displayName }}</h4>
       </div>
+      
+      <div class="col-sm-2">
+        
+        <button type="button" class="btn btn-danger pull-right btn-xs" data-dismiss="modal" aria-label="Close" ng-click="close()">
+          <i class="fa fa-fw fa-times"></i>
+        </button>
+      </div>
+      
     </div>
-
-    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" ng-click="close()">&times;</span></button>
-    <h4 class="modal-title" id="wizardModalLabel">{{ newStackLabel }}: {{ wizard.currentPage.displayName }}</h4>
-  </div>
+    </div>
   
-  <div class="modal-body">
+  <div class="modal-body" style="min-height:400px">
     <div class="row">
       <!-- Wizard Page selector -->
       <div class="col-md-12">
@@ -31,7 +36,7 @@
                       {{ req.service | specProperty:'label' }}
                     </div>
                     <div class="col-sm-3 pull-right">
-                      <i class="fa fa-fw fa-database faa-flash animated pull-right" tooltip-placement="left"
+                      <i class="fa fa-fw fa-database pull-right animated faa-slow faa-flash" tooltip-placement="left"
                       uib-tooltip="{{ req.service | specProperty:'label' }} requires a volume to house its 
                       data. You will be guided through setting up a volume as a part of this wizard."
                       ng-if="(req.service | specProperty:'requiresVolume') === true"></i>
@@ -41,14 +46,23 @@
               </ul>
             </div>
           </div>
+          
+          <div  class="row">
+            <div class="col-sm-12">
+              <div class="form-group">
+                <label for="exampleInputPassword1">Choose a unique name for your stack</label>
+                <input type="text" class="form-control" id="exampleInputPassword1" ng-model="newStack.name" placeholder="Name">
+              </div>
+            </div>
+          </div>
             
           <!-- Allow user to specify a unique name -->
-          <div class="row">
+        <!--  <div class="row">
             <div class="col-sm-12">
               <input class="form-control" autofocus type="text" ng-model="newStack.name"
                      required placeholder="Choose a unique name for this stack" />
             </div>
-          </div>
+          </div>-->
         </div>
         
         <!-- Options Page -->
@@ -59,24 +73,24 @@
               <p>{{ spec.label }} has {{ newStackOptions.length }} optional services associated with it.</p>
               <p>Select any optional services that you would like to enable:</p>
               <ul class="list-group">
-                <li ng-class="{ 'list-group-item-info':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }" 
+                <li ng-class="{ 'list-group-item-success':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }" 
                     ng-click="optionalLinksGrid.selector.select.toggle(opt)"
                     ng-repeat="opt in newStackOptions" class="list-group-item cursor-pointer">
                   <div class="row">
+                    <div class="col-sm-1 pull-left">
+                      <input class="cursor-pointer" type="checkbox" ng-checked="optionalLinksGrid.selector.selection.indexOf(opt) !== -1"/>
+                    </div>
                     <div class="col-sm-10">
                       {{ opt.service | specProperty:'label' }}
                     </div>
                     <div class="col-sm-1">
-                      <i class="fa fa-fw fa-warning faa-flash animated pull-right" tooltip-placement="left"
-                      uib-tooltip="{{ opt.service | specProperty:'label' }} requires 
-                      {{ newStackOptionalDeps[opt.service] | formatDependencies }}. 
-                      {{ newStackOptionalDeps[opt.service].length > 1 ? 'These' : 'This' }} 
-                      will automatically be added for you by this wizard when you select 
-                      {{ opt.service | specProperty:'label' }}."
-                      ng-if="newStackOptionalDeps[opt.service].length > 0"></i>
-                    </div>
-                    <div class="col-sm-1 pull-right">
-                      <input class="cursor-pointer" type="checkbox" ng-checked="optionalLinksGrid.selector.selection.indexOf(opt) !== -1"/>
+                      <i class="fa fa-fw fa-warning pull-right animated faa-slow faa-flash" tooltip-placement="left"
+                        ng-if="newStackOptionalDeps[opt.service].length > 0"
+                        uib-tooltip="{{ opt.service | specProperty:'label' }} requires 
+                          {{ newStackOptionalDeps[opt.service] | formatDependencies }}. 
+                          {{ newStackOptionalDeps[opt.service].length > 1 ? 'These' : 'This' }} 
+                          will automatically be added for you by this wizard when you select 
+                          {{ opt.service | specProperty:'label' }}."></i>
                     </div>
                   </div>
                 </li>
@@ -93,21 +107,16 @@
               <h4 class="panel-title">{{ volume.service | specProperty:'label' }}</h4>
             </div>
 
-
             <div class="panel-body">
               <div class="row">
-                <div class="col-sm-12">
-                  
+                <div class="col-sm-12" ng-if="(newStackOrphanedVolumes | orphansExist:volume.service).length">
+                  <p>Previous volumes found:</p>
                   <!-- Reuse Orphaned Volumes? -->
-                  <form class="form" ng-if="(newStackOrphanedVolumes | orphansExist:volume.service).length" 
-                  uib-tooltip="Your namespace contains one or more detattached volumes that were previously associated with {{ volume.service }}. Would you like to reuse the data on from volume, or create a new volume?">
+                  <form class="form">
                     <fieldset>
                       <div class="form-group">
                         <div class="radio" ng-repeat="orphan in newStackOrphanedVolumes | orphansExist:volume.service track by orphan.id" ng-click="volume.id=orphan.id;volume.name=orphan.name">
                           <label>
-                         <!--<input id="inlineradio1" name="sampleinlineradio" value="option1" type="radio">
-                           Radio 0</label>
-                           <label>-->
                             <input type="radio" ng-checked="volume.id === orphan.id" name="orphaned{{ volume.service }}VolumeRadio">
                              
                             Use existing data from <strong tooltip-placement="right" uib-tooltip="{{ orphan.size }} {{ orphan.sizeUnit }}">{{ orphan.name }}</strong>
@@ -133,14 +142,6 @@
                   <div class="col-sm-8">
                     <input style="width:100%;" type="text" class="form-control" id="inputVolumeName" placeholder="Enter a name for this volume" ng-model="volume.name">
                   </div>
-
-                  <!-- Volume Format -->
-                  <!--<div class="col-sm-2 form-group">
-                    <label for="inputVolumeFormat">Format</label>
-                    <select type="text" class="form-control" id="inputVolumeFormat" ng-model="volume.format">
-                      <option ng-repeat="format in ['Raw','HostPath','EXT4','FAT32']">{{ format }}</option>
-                    </select>
-                  </div>-->
 
                   <!-- Volume Size / Units -->
                   <div class="col-sm-4">
@@ -206,32 +207,52 @@
   <!-- Progress / Button Bar at the bottom -->
   <div class="modal-footer">
     <!-- "Cancel" button (close modal with success === false) -->
-    <button class="btn btn-danger pull-left" ng-click="close()">
+  <!--  <button class="btn btn-danger pull-left" ng-click="close()">
       <i class="fa fa-fw fa-times"></i>
       Cancel
-      </button>
-
-    <!-- Previous Page -->
-    <div class="pull-right">
-      <button class="btn btn-primary" ng-disabled="!wizard.canPrevPage()"
-          ng-click="wizard.prevPage()">
-        <i class="fa fa-fw fa-arrow-circle-left"></i>
-        Back
-      </button>
-  
-      <!-- Next Page -->
-      <button class="btn btn-primary" ng-disabled="!wizard.canNextPage()"
-          ng-click="wizard.nextPage()" ng-if="wizard.currentPage.key !== 'confirm'">
-        Next
-        <i class="fa fa-fw fa-arrow-circle-right"></i>
-      </button>
-  
-      <!-- "Finish" button (close modal with success === true) -->
-      <button class="btn btn-success" ng-disabled="!wizard.canPrevPage()"
-          ng-click="ok()" ng-if="wizard.currentPage.key === 'confirm'">
-        Confirm
-        <i class="fa fa-fw fa-check-circle"></i>
-      </button>
+      </button> -->
+      
+      <div class="row">
+          
+        <div class="col-sm-7">
+          
+          <!-- Wizard progress bar here -->
+          <div class="progress">
+            <div class="progress-bar" role="progressbar" aria-valuenow="{{ wizard.percentage }}" 
+            aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{ wizard.percentage }}%;">
+              <!--{{ wizard.percentage | number:0 }}%-->
+            </div>
+            <div class="text-center">
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-sm-5">
+            
+          <!-- Previous Page -->
+          <div class="pull-right">
+      
+            <button class="btn btn-default" ng-disabled="!wizard.canPrevPage()"
+                ng-click="wizard.prevPage()">
+              <i class="fa fa-fw fa-arrow-circle-left"></i>
+              Back
+            </button>
+            <!-- Next Page -->
+            <button class="btn btn-primary" ng-disabled="!wizard.canNextPage()"
+                ng-click="wizard.nextPage()" ng-if="wizard.currentPage.key !== 'confirm'">
+              Next
+              <i class="fa fa-fw fa-arrow-circle-right"></i>
+            </button>
+        
+            <!-- "Finish" button (close modal with success === true) -->
+            <button class="btn btn-success" ng-disabled="!wizard.canPrevPage()"
+                ng-click="ok()" ng-if="wizard.currentPage.key === 'confirm'">
+              Confirm
+              <i class="fa fa-fw fa-check-circle"></i>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>

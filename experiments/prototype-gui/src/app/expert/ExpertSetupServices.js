@@ -103,8 +103,7 @@ angular.module('ndslabs')
     
     var volume = {
       id: '',
-      defaultName: service.key + '-' + count,
-      name: service.key + '-' + count,
+      defaultName: service.label + '-' + count,
       size: 10,
       sizeUnit: 'GB',
       format: 'Raw',
@@ -115,6 +114,9 @@ angular.module('ndslabs')
   //    createdTime: new Date(),
   //    updateTime: new Date()
     };
+    
+    // Initially set our name ot the suggested default
+    volume.name = volume.defaultName;
     
     // TODO: Manage this automatically? Seems like a bad idea...
     //Volumes.all.push(volume);

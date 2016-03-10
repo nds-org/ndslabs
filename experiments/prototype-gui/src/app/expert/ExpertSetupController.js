@@ -23,13 +23,18 @@ angular.module('ndslabs')
    */ 
   $scope.showVolumePane = false;
   
+  $scope.selectVolume = function(volume) {
+    $scope.selectedVolume=volume;
+    $scope.selectedTab = 1;
+  };
+  
   /**
    * The name / tagline of our app
    * TODO: This will need to be moved to a constant when we add more pages
    */ 
   $scope.app = _.sample([ 
-    { name: 'StackMaster',      tagline: 'Become one with the stack' }, 
-    /* name: 'StackBlaster',     tagline: 'Stack the odds in your favor' },
+    { name: 'StackMagic',      tagline: 'Add and manage software stacks' }, 
+    /*{ name: 'StackBlaster',     tagline: 'Stack the odds in your favor' },
     { name: 'MasterBlaster',    tagline: 'Find your inner stack' },
     { name: 'NOOBernetes',      tagline: 'For teh noobs!' },
     { name: "DrStack",          tagline: 'One stack, two stack, red stack, blue stack?' },
@@ -168,7 +173,7 @@ angular.module('ndslabs')
       animation: true,
       templateUrl: '/app/expert/modals/stackStop/stackStop.html',
       controller: 'StackStopCtrl',
-      size: 'sm',
+      size: 'md',
       keyboard: false,
       backdrop: 'static',
       resolve: {
@@ -293,7 +298,7 @@ angular.module('ndslabs')
       animation: true,
       templateUrl: '/app/expert/modals/configWizard/configurationWizard.html',
       controller: 'ConfigurationWizardCtrl',
-      size: 'lg',
+      size: 'md',
       backdrop: 'static',
       keyboard: false,
       resolve: {
@@ -393,7 +398,7 @@ angular.module('ndslabs')
       animation: true,
       templateUrl: '/app/expert/modals/stackDelete/stackDelete.html',
       controller: 'StackDeleteCtrl',
-      size: 'lg',
+      size: 'md',
       keyboard: false,
       backdrop: 'static',
       resolve: {
@@ -460,7 +465,7 @@ angular.module('ndslabs')
         animation: true,
         templateUrl: '/app/expert/modals/volumeDelete/volumeDelete.html',
         controller: 'VolumeDeleteCtrl',
-        size: 'sm',
+        size: 'md',
         keyboard: false,
         backdrop: 'static',
         resolve: {

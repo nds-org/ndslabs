@@ -9,13 +9,17 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <div class="navbar-brand" style="padding:auto;">
+        <div style="padding:auto;">
           <!-- Draw the brand logo -->
-          <a href="{{ home.url }}">
+          <!--<a href="{{ home.url }}">
             <img style="margin-top:-5px;" src="/asset/png/favicon-32x32.png" alt="NDS Labs" height="32" width="32">
           </a>
         
-          <a href="{{ home.url }}" class="undecorate-link">NDS Labs</a>
+          <a href="{{ home.url }}" class="undecorate-link">NDS Labs</a>-->
+          <a href="#/home" class="undecorate-link navbar-brand animated-hover faa-parent">
+            StackMagic   
+            <i class="fa fa-fw fa-2x fa-magic pull-right faa-tada"></i>
+          </a>
         </div>
       </div>
       
@@ -41,13 +45,13 @@
 	        <!-- Then draw our account settings button -->
           <li ng-controller="LoginController" ng-show="settings.token" ng-if="navFilter === 'right'">
             <a id="dropDownButton" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-              <i class="fa fa-user fa-fw"></i>  {{ settings.namespace | uppercase }} <i class="fa fa-fw fa-caret-down"></i>
+              {{ settings.namespace | capitalize }} <i class="fa fa-fw fa-caret-down"></i>
             </a>
             <ul class="dropdown-menu form-popover pullDown" role="menu" aria-labelledby="dropDownButton" ng-click="$event.stopPropagation();">
               <li>
                 <!-- Sub-template for Auth Info Popout -->
                 <div class="panel panel-default">
-                  <div class="panel-heading">{{ settings.namespace | uppercase }}</div>
+                  <div class="panel-heading">{{ settings.namespace | capitalize }}</div>
                     <div class="panel-body">
                       <pre ng-if="DEBUG">{{ settings | json }}</pre>
                       <button type="button" class="btn btn-xl btn-danger btn-block" ng-click="logout()">Sign Out <i class="fa fa-fw fa-sign-out"></i></button>

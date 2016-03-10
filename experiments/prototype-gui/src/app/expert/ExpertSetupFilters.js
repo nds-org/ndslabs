@@ -63,6 +63,9 @@ angular.module('ndslabs')
  */
 .filter('stackSvcVolumes', ['Volumes', '_', function(Volumes, _) {
   return function(svcId) {
+    if (!svcId) {
+      return [];
+    }
     var volumes = _.filter(Volumes.all, [ 'attached', svcId ]);
     return volumes;
   };
