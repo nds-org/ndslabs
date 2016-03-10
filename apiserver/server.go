@@ -1019,9 +1019,10 @@ func (s *Storage) StartStack(w rest.ResponseWriter, r *rest.Request) {
 			} else {
 				fmt.Printf("Started service %s\n", name)
 				addrPort := kube.ServiceAddrPort{
-					Name: stackService.Service,
-					Host: svc.Spec.ClusterIP,
-					Port: svc.Spec.Ports[0].Port,
+					Name:     stackService.Service,
+					Host:     svc.Spec.ClusterIP,
+					Port:     svc.Spec.Ports[0].Port,
+					NodePort: svc.Spec.Ports[0].NodePort,
 				}
 				addrPortMap[stackService.Service] = addrPort
 			}
