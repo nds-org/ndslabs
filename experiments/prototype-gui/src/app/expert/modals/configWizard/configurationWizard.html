@@ -13,114 +13,138 @@
     <h4 class="modal-title" id="wizardModalLabel">{{ newStackLabel }}: {{ wizard.currentPage.displayName }}</h4>
   </div>
   
-  <!-- -->
   <div class="modal-body">
     <div class="row">
       <!-- Wizard Page selector -->
       <div class="col-md-12">
-        <!-- Wizard Pages shown here -->
-        <div ng-if="wizard.currentPage.key === 'intro'">
-          <p>This wizard will now guide you through the steps of choosing any required / optional plugins or configuration customizations for {{ newStackLabel }}.</p>
-          <p>Please choose a <strong>name</strong> for this stack:
-            <input class="form-control" type="text" ng-model="newStack.name" />
-          </p>
-        </div>
-
-        <!-- Configuration Page -->
-        <div ng-if="wizard.currentPage.key === 'config'">
-
-          <!-- List Required Services -->
-          <p>Stack services:</p>
-          <ul class="list-group">
-            <li ng-repeat="req in newStackRequirements" class="list-group-item disabled">
-              {{ req.service }}
-              <input class="pull-right" type="checkbox" checked="true" />
-            </li>
-          </ul>
-
-          <!-- List Optional Services -->
-          <p ng-show="newStackOptions.length > 0">Please choose the optional service plugins that you wish to enable below:</p>
-          <ul class="list-group" ng-class="{ 'active':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }">
-            <li ng-class="{ 'active':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }" ng-click="optionalLinksGrid.selector.select.toggle(opt)" ng-repeat="opt in newStackOptions" class="list-group-item">
-              <p>
-                <div class="row">
-                  <div class="col-md-4">{{ opt.service }}</div>
-                  <div class="col-md-4">
-                    <span ng-if="newStackOptionalDeps[opt.service].length > 0">
-                      Requirements: 
-                      <span ng-if="$index === 0" ng-repeat="dep in newStackOptionalDeps[opt.service]"><strong>{{ dep }}</strong></span>
-                      <span ng-if="$index !== 0" ng-repeat="dep in newStackOptionalDeps[opt.service]">, <strong>{{ dep }}</strong></span>
-                    </span>
-                  </div>
-                  <div class="col-md-1 col-offset-md-1 pull-right">
-                    <div class="pull-right">
-                      <input type="checkbox" ng-checked="optionalLinksGrid.selector.selection.indexOf(opt) !== -1" />
+        <!-- Requirements Page -->
+        <div ng-if="wizard.currentPage.key === 'require'">
+          <p>{{ spec.description || 'Insert Description Here' }}</p>
+          <p>Services which are required in order to run {{ spec.label }}:</p>
+              <!-- List Required Services -->
+          <div class="row">
+            <div class="col-sm-12">
+              <ul class="list-group">
+                <li ng-repeat="req in newStackRequirements" class="list-group-item disabled">
+                  <div class="row">
+                    <div class="col-sm-9">
+                      {{ req.service | specProperty:'label' }}
+                    </div>
+                    <div class="col-sm-3 pull-right">
+                      <i class="fa fa-fw fa-database faa-flash animated pull-right" tooltip-placement="left"
+                      uib-tooltip="{{ req.service | specProperty:'label' }} requires a volume to house its 
+                      data. You will be guided through setting up a volume as a part of this wizard."
+                      ng-if="(req.service | specProperty:'requiresVolume') === true"></i>
                     </div>
                   </div>
-                </div>
-              </p>
-            </li>
-          </ul>
+                </li>
+              </ul>
+            </div>
+          </div>
+            
+          <!-- Allow user to specify a unique name -->
+          <div class="row">
+            <div class="col-sm-12">
+              <input class="form-control" autofocus type="text" ng-model="newStack.name"
+                     required placeholder="Choose a unique name for this stack" />
+            </div>
+          </div>
+        </div>
+        
+        <!-- Options Page -->
+        <div ng-if="wizard.currentPage.key === 'options'">
+          <div class="row">
+            <div class="col-sm-12" ng-show="newStackOptions.length > 0">
+              <!-- List Optional Services -->
+              <p>{{ spec.label }} has {{ newStackOptions.length }} optional services associated with it.</p>
+              <p>Select any optional services that you would like to enable:</p>
+              <ul class="list-group">
+                <li ng-class="{ 'list-group-item-info':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }" 
+                    ng-click="optionalLinksGrid.selector.select.toggle(opt)"
+                    ng-repeat="opt in newStackOptions" class="list-group-item cursor-pointer">
+                  <div class="row">
+                    <div class="col-sm-10">
+                      {{ opt.service | specProperty:'label' }}
+                    </div>
+                    <div class="col-sm-1">
+                      <i class="fa fa-fw fa-warning faa-flash animated pull-right" tooltip-placement="left"
+                      uib-tooltip="{{ opt.service | specProperty:'label' }} requires 
+                      {{ newStackOptionalDeps[opt.service] | formatDependencies }}. 
+                      {{ newStackOptionalDeps[opt.service].length > 1 ? 'These' : 'This' }} 
+                      will automatically be added for you by this wizard when you select 
+                      {{ opt.service | specProperty:'label' }}."
+                      ng-if="newStackOptionalDeps[opt.service].length > 0"></i>
+                    </div>
+                    <div class="col-sm-1 pull-right">
+                      <input class="cursor-pointer" type="checkbox" ng-checked="optionalLinksGrid.selector.selection.indexOf(opt) !== -1"/>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
 
         <!-- Volumes Page -->
         <div ng-if="wizard.currentPage.key === 'volumes'">
-          <p>It looks like you are adding {{ newStackVolumeRequirements.length }} service{{ newStackVolumeRequirements > 1 ? 's' : '' }} that require{{ newStackVolumeRequirements > 1 ? '' : 's' }} a volume.</p>
-
           <!-- Create New Volumes -->
-          <div class="panel panel-default" ng-repeat="volume in newStackVolumeRequirements track by volume.service">
+          <div class="panel panel-info" ng-repeat="volume in newStackVolumeRequirements track by volume.service">
             <div class="panel-heading">
-              <h4 class="panel-title">{{ volume.service }}</h4></div>
+              <h4 class="panel-title">{{ volume.service | specProperty:'label' }}</h4>
+            </div>
 
 
             <div class="panel-body">
-              <!-- Reuse Orphaned Volumes? -->
-              <div ng-if="(newStackOrphanedVolumes | orphansExist:volume.service).length">
-                <p>Your namespace contains one or more detattached volumes that were previously associated with {{ volume.service }}.</p>
-                <p>Would you like to reuse the data on from volume, or create a new volume?</p>
-                <div class="radio" ng-click="volume.useOrphan=true;volume.name=newStackOrphanedVolumes[0].name;volume.id = newStackOrphanedVolumes[0].id">
-                  <label>
-                    <input type="radio" ng-checked="volume.useOrphan" name="orphaned{{ volume.service }}VolumeRadio">Reuse Previous Data</label>
-                </div>
-                <div class="radio" ng-click="volume.useOrphan=false;volume.id='';volume.name=''">
-                  <label>
-                    <input type="radio" ng-checked="!volume.useOrphan" name="orphaned{{ volume.service }}VolumeRadio">Create New Volume</label>
-                </div>
-              </div>
-
-              <!-- List usable orphaned volumes -->
-              <div ng-show="volume.useOrphan">
-                <div class="radio" ng-repeat="orphan in newStackOrphanedVolumes track by orphan.id | orphansExist:volume.service" ng-click="volume.useOrphan=true;volume.id = orphan.id;">
-                  <label>
-                    <input type="radio" ng-checked="volume.id === orphan.id" name="orphaned{{ volume.service }}OrphanVolumeRadio">{{ orphan.name }} (Source: {{ orphan.stack }})</label>
+              <div class="row">
+                <div class="col-sm-12">
+                  
+                  <!-- Reuse Orphaned Volumes? -->
+                  <form class="form" ng-if="(newStackOrphanedVolumes | orphansExist:volume.service).length" 
+                  uib-tooltip="Your namespace contains one or more detattached volumes that were previously associated with {{ volume.service }}. Would you like to reuse the data on from volume, or create a new volume?">
+                    <fieldset>
+                      <div class="form-group">
+                        <div class="radio" ng-repeat="orphan in newStackOrphanedVolumes | orphansExist:volume.service track by orphan.id" ng-click="volume.id=orphan.id;volume.name=orphan.name">
+                          <label>
+                         <!--<input id="inlineradio1" name="sampleinlineradio" value="option1" type="radio">
+                           Radio 0</label>
+                           <label>-->
+                            <input type="radio" ng-checked="volume.id === orphan.id" name="orphaned{{ volume.service }}VolumeRadio">
+                             
+                            Use existing data from <strong tooltip-placement="right" uib-tooltip="{{ orphan.size }} {{ orphan.sizeUnit }}">{{ orphan.name }}</strong>
+                          </label>
+                        </div>
+                        <div class="radio" ng-click="volume.id='';volume.name=volume.defaultName;">
+                          <label>
+                            <input type="radio" ng-checked="volume.id === ''" name="orphaned{{ volume.service }}VolumeRadio">
+                            Create a new volume
+                          </label>
+                        </div>
+                      </div>
+                    <!--form-group-->
+                    </fieldset>
+                  </form>
                 </div>
               </div>
 
               <!-- Create a New Volume -->
-              <form class="form-inline" ng-show="!volume.useOrphan">
+              <form class="form-inline" ng-show="volume.id === ''">
                 <!-- Volume Name -->
                 <div class="row">
-                  <div class="col-sm-12 form-group">
-                    <label for="inputVolumeName">Volume Name</label>
-                    <input type="text" class="form-control" id="inputVolumeName" placeholder="Volume Name" ng-model="volume.name">
+                  <div class="col-sm-8">
+                    <input style="width:100%;" type="text" class="form-control" id="inputVolumeName" placeholder="Enter a name for this volume" ng-model="volume.name">
                   </div>
-                </div>
-
-
-                <div class="row">
 
                   <!-- Volume Format -->
-                  <div class="col-sm-6 form-group">
-                    <label for="inputVolumeFormat">Volume Format</label>
+                  <!--<div class="col-sm-2 form-group">
+                    <label for="inputVolumeFormat">Format</label>
                     <select type="text" class="form-control" id="inputVolumeFormat" ng-model="volume.format">
                       <option ng-repeat="format in ['Raw','HostPath','EXT4','FAT32']">{{ format }}</option>
                     </select>
-                  </div>
+                  </div>-->
 
                   <!-- Volume Size / Units -->
-                  <div class="col-sm-6 form-group">
-                    <label for="inputVolumeSize">Volume Size:</label>
-                    <div class="input-group" id="inputVolumeSize">
+                  <div class="col-sm-4">
+                    <div class="input-group pull-right" id="inputVolumeSize">
                       <!-- Size -->
                       <input type="number" name="volumeSize" min="1" max="999" class="form-control" ng-model="volume.size" aria-label="Please enter desired Volume Size.">
 
@@ -147,19 +171,33 @@
 
         <!-- Ask the user for confirmation -->
         <div ng-if="wizard.currentPage.key === 'confirm'">
-          <p>Please confirm the configuration of your new stack below.</p></p>
-          <p>If the configuration looks correct, click <strong>Confirm</strong> to close the wizard and add these changes to your namespace.</p>
-        
-          <p>You have chosen to enable {{ optionalLinksGrid.selector.selection.length || "no" }} optional service plugins<span ng-show="newService.links.required">, along with the {{ newService.links.required.length }} required services</span>.</p>
-          <p>Services that will be added to the "{{ newStack.name }}" stack:</p>
-          <ul class="list-group">
-            <li class="list-group-item disabled" ng-repeat="req in newStack.services">{{ req.service }}</li>
-          </ul>
-
-          <p>Volumes that will be used within the "{{ newStack.name }}" stack:</p>
-          <ul class="list-group">
-            <li class="list-group-item disabled" ng-repeat="volume in newStackVolumeRequirements">{{ volume.name }}: {{ volume.size }} {{ volume.sizeUnit }}</li>
-          </ul>
+          <div class="row">
+            <div ng-class="{ 'col-sm-6':  newStackVolumeRequirements.length > 0, 
+                             'col-sm-12': newStackVolumeRequirements.length === 0 }">
+              <h4 class="text-center">Services</h4>
+              <ul class="list-group">
+                <li class="list-group-item disabled" ng-repeat="req in newStack.services">{{ req.service }}</li>
+              </ul>
+            </div>
+            <div class="col-sm-6" ng-if="newStackVolumeRequirements.length > 0">
+              <h4 class="text-center">Volumes</h4>
+              <ul class="list-group">
+                <li class="list-group-item disabled" ng-repeat="volume in newStackVolumeRequirements">{{ volume.name }}: {{ volume.size }} {{ volume.sizeUnit }}</li>
+              </ul>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12">
+              <p ng-if="newStackOptions.length > 0">You have chosen to enable {{ optionalLinksGrid.selector.selection.length || "no" }} 
+                  optional service plugins<span ng-show="newService.links.required">, along with the {{ newService.links.required.length }} 
+                  required services</span>.
+              </p>
+                  
+              <p>Please confirm the configuration of your new stack above.</p>
+              
+              <p>Clicking <strong>Confirm</strong> will close the wizard and add this new stack to your namespace.</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

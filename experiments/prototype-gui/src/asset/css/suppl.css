@@ -26,7 +26,7 @@ body {
   height:200px;
 }
 
-#volumeSlideOutFooter {
+.cursor-pointer {
   cursor: pointer;
 }
 
@@ -99,6 +99,29 @@ body {
   margin-right: auto;
 }
 
-.log-modal-window .modal-dialog {
-  max-width:1200px;
+.modal-content {
+  max-width: 600px;
+  margin:auto;
+}
+
+.log-modal-window {
+  max-width:1200px !important;
+}
+
+.helper-text {
+  border:dashed;
+  text-align:center;
+  padding-top:100px;
+  padding-bottom:100px;
+  vertical-align:middle;
+  height:100%;
+}
+
+.fill-height {
+  height:100% !important;
+}
+
+.undecorate-link {
+  text-decoration:none;
+  color:inherit;
 }

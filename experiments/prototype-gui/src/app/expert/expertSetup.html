@@ -3,7 +3,8 @@
     <div class="row" ng-if="showWelcomeMessage">
       <div class="col-sm-12">
        <div class="jumbotron">
-          <button class="btn btn-xs btn-link pull-right" ng-click="hideWelcomeMessage()">
+          <button class="btn btn-xs btn-danger pull-right" ng-click="hideWelcomeMessage()" 
+              uib-tooltip="Click here to hide this welcome message" tooltip-placement="bottom">
             <i class="fa fa-times fa-2x"></i>
           </button>
           
@@ -17,11 +18,11 @@
       </div>
     </div>
     
-    <!-- Selector(s) Pane -->
+    <!-- Left Half (Selector Pane) -->
     <div style="margin-top:15px;">
       <div class="row">
         <div class="col-sm-3">
-          <div class="panel panel-primary">
+          <div class="panel panel-default">
             <div class="panel-heading">
               <h3 class="panel-title">Services</h3>
             </div>
@@ -53,257 +54,242 @@
             </table>
           </div>
         </div>
-        
-        <!-- The "Volumes" Slide-Out Panel -->
-        <pageslide ps-open="showVolumePane" ps-side="right" ps-push>
-          <div class="panel panel-info" style="height:100%">
-            <div class="panel-heading">
-              <div class="row">
-                <!-- The Top-Right Button Bar -->
-                <div class="col-sm-5">
-                  <div class="pull-left">
-                    <button class="btn btn-link btn-xs" ng-click="showVolumePane = false;">
-                      <i class="fa fa-angle-double-right"></i>
-                    </button>
-                  </div>
-                </div>
-                <div class="col-sm-7">
-                  <h3 class="panel-title">Volumes</h3>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Helper text to display if the user has no yet configured any volumes -->
-            <div ng-if="configuredVolumes.length === 0" class="panel-body text-center" 
-                style="border:dashed;padding-top:100px;padding-bottom:100px;height:100%;vertical-align:middle;">
-              <h3>It looks like you haven't configured any volumes.</h3>
-              <h4>Once you add a stack, its volumes will appear here!</h4>
-            </div>
-            
-            <!-- Slide-Out Panel Contents -->
-            <table class="table table-condensed" ng-if="configuredVolumes.length > 0">
-              <thead>
-                <tr>
-                  <td width="40%"><strong>Name</strong></td>
-                  <td width="20%"><strong>Size</strong></td>
-                  <td width="30%"><strong>Status</strong></td>
-                  <td width="10%"><strong></strong></td>
-                </tr>
-              </thead>
-              <tbody>
-                <tr ng-repeat="volume in configuredVolumes | orderBy:'name' track by volume.id">
-                  <td><strong>{{ volume.name }}</strong></td>
-                  
-                  <td>{{ volume.size }} {{ volume.sizeUnit }}</td>
-                  
-                  <!-- TODO: Detattaching a volume still shows status as 'attached' -->
-                  <!--<td>{{ volume.status }}</td>-->
-                  <td>{{ volume.attached ? 'Attached' : 'Detattached' }}</td>
-                  
-                  <td>
-                   <button class="btn btn-xs btn-danger" ng-if="!volume.attached" ng-click="deleteVolume(volume)">
-                      <i class="fa fa-fw fa-times"></i>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </pageslide>
        
-        <!-- Configured Stacks --> 
-        <div class="col-sm-9">
-          
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <div class="row">
-                <div class="col-sm-4">
-                  <h3 class="panel-title">Stacks</h3>
-                </div>
-              
-                <!-- The Top-Right Button Bar -->
-                <div class="col-sm-8">
-                  <div class="pull-right">
-                    <button class="btn btn-default btn-xs" ng-click="softRefresh()" 
-                          ng-mouseenter="iconSpin = true" ng-mouseleave="iconSpin = false">
-                      <i class="fa fa-refresh" ng-class="{ 'fa-spin':iconSpin }"></i>
-                      Refresh
-                    </button>
-                    <button class="btn btn-default btn-xs" ng-click="showVolumePane=!showVolumePane">
-                      <i class="fa fa-fw fa-database"></i>
-                      Volumes
-                    </button>
-                   <!-- <button class="btn btn-default">
-                      Import
-                    </button>
-                    <button class="btn btn-default">
-                      Export
-                    </button> -->
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="panel-body">
-              <!-- Helper text to display if the user has no yet configured any stacks -->
-              <div ng-if="configuredStacks.length === 0" class="text-center" 
-                  style="border:dashed;padding-top:100px;padding-bottom:100px;vertical-align:middle;">
-                <h2>It looks like you haven't configured any stacks.</h2>
-                <h4>Search and add a stack of services to see and manage it here!</h4>
-              </div>
-              
-              <!-- The Accordion of Configured Stacks -->
-              <uib-accordion ng-if="configuredStacks.length > 0" close-others="true">
-                <uib-accordion-group ng-repeat="stack in configuredStacks | orderBy:'name' track by stack.id" is-open="open" class="{{ stack.status === 'started' ? 'panel-success' : (stack.status === 'stopped' ? 'panel-danger' : 'panel-warning')  }}">
-                  <uib-accordion-heading>
-                    <!--- ng-class="{ 'panel-success': stack.status === 'started', 'panel-danger': stack.status === 'stopped', 'panel-warning':stack.status !== 'started' && stack.status !== 'stopped' }" -->
-                    <!-- Stack Status Indicator -->
-                    <div class="row">
-                      <div class="col-sm-1 text-center">
-                        <i class="pull-left fa fa-fw fa-2x" 
-                          ng-class="{ 'fa-check-circle-o text-success': stack.status === 'started', 
-                              'fa-times-circle-o text-danger': stack.status === 'stopped',
-                              'fa-spinner fa-spin fa-pulse text-primary': stack.status !== 'started' && stack.status !== 'stopped' }"></i>
-                      </div>
-                      <div class="col-sm-10">
-                        <h4>{{ stack.name | capitalize}}</h4>
-                      </div>
-                      <div class="col-sm-1" style="vertical-align:middle;">
-                        <i class="pull-right fa fa-2x fa-fw" ng-class="{'fa-caret-down': open, 'fa-caret-right': !open}"></i>
-                      </div>
-                    </div>
-                  </uib-accordion-heading> 
-                    
-                  <!-- Stack Services -->
-                  <div class="row">
-                    <div class="col-sm-12">
-                      <!-- List off our stack's services here -->
-                      <div class="table-responsive">
-                        <table class="table table-condensed table-striped">
-                          <thead>
-                            <tr>
-                             <!-- <td width="10%" class="text-center"><strong>Status</strong></td> -->
-                             <!-- <td width="10%" class="text-center"><strong>Links</strong></td> -->
-                              <td width="10%" class="text-center"><strong>Status</strong></td>
-                              <td width="10%" class="text-center"><strong>Volumes</strong></td>
-                              <td width="60%"><strong>Name</strong></td>
-                              <td width="20%" class="text-center">
-                                <strong ng-if="stack.status === 'started' || intervals.start[stack.id]">Logs</strong>
-                                <strong ng-if="stack.status === 'stopped' && !intervals.start[stack.id]">Remove</strong>
-                              </td>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr ng-repeat="svc in stack.services track by svc.service">
-                              
-                              <td class="text-center">
-                                <i class="fa fa-fw" ng-class="{ 'fa-gear fa-spin text-info': svc.status === 'Pending',
-                                                                'fa-check text-success': svc.status === 'Running',
-                                                                'fa-power-off text-danger': svc.status === ''}"></i>
-                                {{  svc.status || 'Stopped' }}
-                              </td>
-                              
-                              <!--ng-class="{ 'danger':svc.status === '', 'success':svc.status === 'Running', 'warning': svc.status === 'Pending' }">-->
-                              <!-- Volume details for this service -->
-                              <td class="text-center">
-                                <button class="btn btn-link btn-xs faa-pulse animated-hover" uib-popover-template="'/app/expert/popovers/volumeDetails.html'" 
-                                    popover-title="{{ showVolume(svc).name | uppercase }}"
-                                    popover-placement="right" popover-trigger="outsideClick"
-                                    ng-if="(volume = showVolume(svc))">
-                                  <!-- show volume details if we find a volume -->
-                                  <i class="fa fa-fw fa-database animated faa-slow" style="cursor:pointer;"></i>
-                                </button>
-                              </td>
-                              
-                              <!-- The Name of the Running Service and link to endpoint, if applicable -->
-                              <td>
-                                <span ng-if="stack.status !== 'started' || !svc.endpoints || svc.endpoints.length === 0 || svc.endpoints[0] === ''">{{ svc.service | serviceLabelFromSpec }}</span>
-                                
-                                <a ng-repeat="endpt in svc.endpoints track by $index" uib-tooltip="Navigate to {{ svc.service | capitalize }} ({{ endpt }})"
-                                    ng-if="(stack.status === 'started') && svc.status === 'Running' 
-                                        && svc.endpoints.length > 0 && svc.endpoints[0] !== ''"  target="_blank"
-                                    href="{{ endpt }}" ng-disabled="stack.status === 'stopping' && svc.status === 'Running'">
-                                  {{ svc.service | serviceLabelFromSpec }}&nbsp;&nbsp;&nbsp;&nbsp;<i class="fa fa-fw fa-external-link faa-tada faa-slow animated"></i>
-                                </a>
-                                
-                                <a type="button" class="btn btn-link btn-xs" ng-if="$index !== 0" ng-repeat="endpt in svc.endpoints track by $index" uib-tooltip="Navigate to {{ svc.service | capitalize }} ({{ endpt }})"
-                                    ng-if="svc.status === 'Running' && svc.endpoints.length > 0 && svc.endpoints[0] !== ''"
-                                    href="{{ endpt }}" target="_blank" ng-disabled="svc.status !== 'Running'">
-                                  <i class="fa fa-fw fa-external-link faa-tada faa-slow animated"></i>
-                                </a>
-                              </td>
-                              
-                              <!-- View Logs of Running Service, or Remove Stopped Service -->
-                              <td class="text-center">
-                                <!-- View logs button -->
-                                <button type="button" class="btn btn-xs btn-info" 
-                                uib-tooltip="View {{ svc.service | serviceLabelFromSpec }} Logs" 
-                                ng-if="stack.status.indexOf('start') !== -1 || intervals.start[stack.id]"
-                                ng-disabled="svc.status === ''"
-                                    tooltip-placement="left" ng-click="showLogs(svc)">
-                                  <i class="fa fa-fw fa-file-text" ng-class="{ 'animated faa-vertical': stack.status === 'starting' && svc.status === 'Pending' }"></i>
-                                </button>
-                                
-                                <!-- Remove service from stack button -->
-                                <button type="button" ng-disabled="stack.services | isRecursivelyRequired:svc" 
-                                    ng-if="(stack.status === 'stopped' && !intervals.start[stack.id]) && svc.service !== stack.key && !_.find((stack.key | requirements), [ 'key', svc.service ])" 
-                                    class="btn btn-xs btn-danger" ng-click="removeStackSvc(stack, svc)" 
-                                    uib-tooltip="Remove Service from Stack" tooltip-placement="left">
-                                  <i class="fa fa-fw fa-times"></i>
-                                </button>
-                              </td>
-                            </tr>
-                            
-                            <!-- Add an artificial row (if necessary) for optional services -->
-                            <tr ng-if="stack.status === 'stopped' && (stack | missingDeps).length > 0">
-                              <td></td>
-                              <td></td>
-                              <td>
-                                <a class="btn btn-xs btn-info" tabindex="0" 
-                                   uib-popover-template="'/app/expert/popovers/serviceAdd.html'" popover-append-to-body
-                                   popover-title="OPTIONAL SERVICES" popover-placement="top-right" popover-trigger="outsideClick"
-                                   uib-tooltip="Add optional services" tooltip-placement="right">
-                                  Add Service<i class="fa fa-fw fa-caret-down"></i>
-                                </a>
-                              </td>
-                              <td></td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <!-- The Stack's "Button Bar" -->
-                  <div class="pull-right" role="group" aria-label="...">
-                    <!-- Launch Stack Button -->
-                    <button class="btn btn-sm btn-default" ng-disabled="intervals.stop[stack.id] || intervals.start[stack.id]" 
-                         ng-click="startStack(stack)" ng-if="stack.status.indexOf('start') === -1" uib-tooltip="Start all services in this stack"
-                        tooltip-placement="left">
-                      <i class="fa fa-fw fa-play"></i>
-                      Launch Stack
-                    </button>
-                
-                    <!-- Delete Stack Button -->
-                    <button class="btn btn-sm btn-danger" ng-disabled="intervals.stop[stack.id] || intervals.start[stack.id]" ng-if="stack.status.indexOf('start') === -1"
-                        ng-click="deleteStack(stack)" uib-tooltip="Delete this Stack"
-                        tooltip-placement="left">
-                      <i class="fa fa-times"></i>
-                      Delete Stack
-                    </button>
-                
-                    <!-- Stop Stack Button -->
-                    <button class="btn btn-sm btn-default" ng-disabled="intervals.stop[stack.id] || intervals.start[stack.id]" 
-                         ng-click="stopStack(stack)" ng-if="stack.status.indexOf('stop') === -1" uib-tooltip="Stop all services in this stack"
-                        tooltip-placement="left">
-                      <i class="fa fa-fw fa-stop"></i>
-                      Stop Stack
-                    </button>
-                  </div>
-                </uib-accordion-group>
-              </uib-accordion>
-            </div>
+        <!-- Right Half (Content Pane) -->
+        <div class="col-sm-9 fill-height">
+          <div class="pull-right">
+            <button class="btn btn-default btn-block btn-xs" ng-click="softRefresh()"
+                  ng-mouseenter="iconSpin = true" ng-mouseleave="iconSpin = false"
+                  uib-tooltip="Refresh the data on this page" tooltip-placement="left">
+              <i class="fa fa-refresh fa-3x" ng-class="{ 'fa-spin':iconSpin }"></i>
+            </button>
+           <!-- <button class="btn btn-default">
+              Import
+            </button>
+            <button class="btn btn-default">
+              Export
+            </button> -->
           </div>
+          
+          <!-- Tabs for Stacks / Volumes -->
+          <uib-tabset active="active" justified="true" type="pills">
+            
+            <!-- Configured Stacks --> 
+            <uib-tab index="0">
+              <uib-tab-heading>
+                <i class="fa fa-fw fa-align-justify"></i> Stacks
+              </uib-tab-heading>
+              <div class="well well-lg fill-height">
+                <!-- Helper text to display if the user has no yet configured any stacks -->
+                <div ng-if="configuredStacks.length === 0" class="helper-text">
+                  <h2>It looks like you haven't configured any stacks.</h2>
+                  <h4>Search and add a stack of services to see and manage it here!</h4>
+                </div>
+                
+                <!-- The Accordion of Configured Stacks -->
+                <uib-accordion ng-if="configuredStacks.length > 0" close-others="true">
+                  <uib-accordion-group ng-repeat="stack in configuredStacks | orderBy:'name' track by stack.id" is-open="open" class="{{ stack.status === 'started' ? 'panel-success' : (stack.status === 'stopped' ? 'panel-danger' : 'panel-warning')  }}">
+                    <uib-accordion-heading>
+                      <!--- ng-class="{ 'panel-success': stack.status === 'started', 'panel-danger': stack.status === 'stopped', 'panel-warning':stack.status !== 'started' && stack.status !== 'stopped' }" -->
+                      <!-- Stack Status Indicator -->
+                      <div class="row">
+                        <div class="col-sm-1 text-center">
+                          <i class="pull-left fa fa-fw fa-2x" 
+                            ng-class="{ 'fa-check-circle-o text-success': stack.status === 'started', 
+                                'fa-times-circle-o text-danger': stack.status === 'stopped',
+                                'fa-spinner fa-spin fa-pulse text-primary': stack.status !== 'started' && stack.status !== 'stopped' }"></i>
+                        </div>
+                        <div class="col-sm-10">
+                          <h4>{{ stack.name | capitalize}}</h4>
+                        </div>
+                        <div class="col-sm-1" style="vertical-align:middle;">
+                          <i class="pull-right fa fa-2x fa-fw" ng-class="{'fa-caret-down': open, 'fa-caret-right': !open}"></i>
+                        </div>
+                      </div>
+                    </uib-accordion-heading> 
+                      
+                    <!-- Stack Services -->
+                    <div class="row">
+                      <div class="col-sm-12">
+                        <!-- List off our stack's services here -->
+                        <div class="table-responsive">
+                          <table class="table table-striped table-hover">
+                            <thead>
+                              <tr>
+                               <!-- <td width="10%" class="text-center"><strong>Status</strong></td> -->
+                               <!-- <td width="10%" class="text-center"><strong>Links</strong></td> -->
+                                <td width="10%" class="text-center"><strong>Status</strong></td>
+                                <td width="10%" class="text-center"><strong>Volumes</strong></td>
+                                <td width="60%"><strong>Name</strong></td>
+                                <td width="20%" class="text-center">
+                                  <strong ng-if="stack.status === 'started' || intervals.start[stack.id]">Logs</strong>
+                                  <strong ng-if="stack.status === 'stopped' && !intervals.start[stack.id]">Remove</strong>
+                                </td>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr ng-repeat="svc in stack.services track by svc.service">
+                                
+                                <td class="text-center">
+                                  <i class="fa fa-fw" ng-class="{ 'fa-gear fa-spin text-info': svc.status === 'Pending',
+                                                                  'fa-check text-success': svc.status === 'Running',
+                                                                  'fa-power-off text-danger': svc.status === ''}"></i>
+                                  {{  svc.status || 'Stopped' }}
+                                </td>
+                                
+                                <!--ng-class="{ 'danger':svc.status === '', 'success':svc.status === 'Running', 'warning': svc.status === 'Pending' }">-->
+                                <!-- Volume details for this service -->
+                                <td class="text-center">
+                                  <button class="btn btn-link btn-xs faa-pulse animated-hover" uib-popover-template="'/app/expert/popovers/volumeDetails.html'" 
+                                      popover-title="{{ volume.name | uppercase }}"
+                                      popover-placement="right" popover-trigger="outsideClick"
+                                      ng-repeat="volume in svc.id | stackSvcVolumes track by volume.id" tooltip-placement="left"
+                                      uib-tooltip='Volume: "{{ volume.name }}"'>
+                                    <!-- show volume details if we find a volume -->
+                                    <i class="fa fa-fw fa-database animated faa-slow" style="cursor:pointer;"></i>
+                                  </button>
+                                </td>
+                                
+                                <!-- The Name of the Running Service and link to endpoint, if applicable -->
+                                <td>
+                                  <span ng-if="stack.status !== 'started' || !svc.endpoints || svc.endpoints.length === 0 || svc.endpoints[0] === ''">{{ svc.service | specProperty:'label' }}</span>
+                                  
+                                  <a ng-repeat="endpt in svc.endpoints track by $index" uib-tooltip="Navigate to {{ svc.service | capitalize }} ({{ endpt }})"
+                                      ng-if="(stack.status === 'started') && svc.status === 'Running' 
+                                          && svc.endpoints.length > 0 && svc.endpoints[0] !== ''"  target="_blank"
+                                      href="{{ endpt }}" ng-disabled="stack.status === 'stopping' && svc.status === 'Running'">
+                                    {{ svc.service | specProperty:'label' }}&nbsp;&nbsp;&nbsp;&nbsp;<i class="fa fa-fw fa-external-link faa-tada faa-slow animated"></i>
+                                  </a>
+                                  
+                                  <a type="button" class="btn btn-link btn-xs" ng-if="$index !== 0" ng-repeat="endpt in svc.endpoints track by $index" uib-tooltip="Navigate to {{ svc.service | capitalize }} ({{ endpt }})"
+                                      ng-if="svc.status === 'Running' && svc.endpoints.length > 0 && svc.endpoints[0] !== ''"
+                                      href="{{ endpt }}" target="_blank" ng-disabled="svc.status !== 'Running'">
+                                    <i class="fa fa-fw fa-external-link faa-tada faa-slow animated"></i>
+                                  </a>
+                                </td>
+                                
+                                <!-- View Logs of Running Service, or Remove Stopped Service -->
+                                <td class="text-center">
+                                  <!-- View logs button -->
+                                  <button type="button" class="btn btn-xs btn-default" 
+                                  uib-tooltip="View {{ svc.service | specProperty:'label' }} Logs" 
+                                  ng-if="stack.status.indexOf('start') !== -1 || intervals.start[stack.id]"
+                                  ng-disabled="svc.status === ''"
+                                      tooltip-placement="left" ng-click="showLogs(svc)">
+                                    <i class="fa fa-fw fa-file-text" ng-class="{ 'animated faa-vertical': stack.status === 'starting' && svc.status === 'Pending' }"></i>
+                                  </button>
+                                  
+                                  <!-- Remove service from stack button -->
+                                  <button type="button" ng-disabled="stack.services | isRecursivelyRequired:svc" 
+                                      ng-if="(stack.status === 'stopped' && !intervals.start[stack.id]) && svc.service !== stack.key && !_.find((stack.key | requirements), [ 'key', svc.service ])" 
+                                      class="btn btn-xs btn-danger" ng-click="removeStackSvc(stack, svc)" 
+                                      uib-tooltip="Remove Service from Stack" tooltip-placement="left">
+                                    <i class="fa fa-fw fa-times"></i>
+                                  </button>
+                                </td>
+                              </tr>
+                              
+                              <!-- Add an artificial row (if necessary) for optional services -->
+                              <tr ng-if="stack.status === 'stopped' && (stack | missingDeps).length > 0">
+                                <td></td>
+                                <td></td>
+                                <td>
+                                  <a class="btn btn-xs btn-info" tabindex="0" 
+                                     uib-popover-template="'/app/expert/popovers/serviceAdd.html'" popover-append-to-body
+                                     popover-title="OPTIONAL SERVICES" popover-placement="top-right" popover-trigger="outsideClick"
+                                     uib-tooltip="Add optional services" tooltip-placement="right">
+                                    Add Service<i class="fa fa-fw fa-caret-down"></i>
+                                  </a>
+                                </td>
+                                <td></td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- The Stack's "Button Bar" -->
+                    <div class="pull-right" role="group" aria-label="...">
+                      <!-- Launch Stack Button -->
+                      <button class="btn btn-sm btn-primary" ng-disabled="intervals.stop[stack.id] || intervals.start[stack.id]" 
+                           ng-click="startStack(stack)" ng-if="stack.status.indexOf('start') === -1" uib-tooltip="Start all services in this stack"
+                          tooltip-placement="left">
+                        <i class="fa fa-fw fa-play"></i>
+                        Launch Stack
+                      </button>
+                  
+                      <!-- Delete Stack Button -->
+                      <button class="btn btn-sm btn-danger" ng-disabled="intervals.stop[stack.id] || intervals.start[stack.id]" ng-if="stack.status.indexOf('start') === -1"
+                          ng-click="deleteStack(stack)" uib-tooltip="Delete this Stack"
+                          tooltip-placement="top">
+                        <i class="fa fa-times"></i>
+                        Delete Stack
+                      </button>
+                  
+                      <!-- Stop Stack Button -->
+                      <button class="btn btn-sm btn-primary" ng-disabled="intervals.stop[stack.id] || intervals.start[stack.id]" 
+                           ng-click="stopStack(stack)" ng-if="stack.status.indexOf('stop') === -1" uib-tooltip="Stop all services in this stack"
+                          tooltip-placement="left">
+                        <i class="fa fa-fw fa-stop"></i>
+                        Stop Stack
+                      </button>
+                    </div>
+                  </uib-accordion-group>
+                </uib-accordion>
+              </div>
+            </uib-tab>
+            
+            <!-- Configured Volumes -->
+            <uib-tab index="1">
+              <uib-tab-heading>
+                <i class="fa fa-fw fa-database"></i> Volumes
+              </uib-tab-heading>
+              
+              <div class="well well-lg" style="height:100%">
+                <!-- Helper text to display if the user has no yet configured any volumes -->
+                <div ng-if="configuredVolumes.length === 0" class="helper-text">
+                  <h2>It looks like you haven't configured any volumes.</h3>
+                  <h4>Once you add a stack, its volumes will appear here!</h4>
+                </div>
+                
+                <!-- Slide-Out Panel Contents -->
+                <div class="table-responsive">
+                  <table class="table table-striped table-hover" ng-if="configuredVolumes.length > 0">
+                    <thead>
+                      <tr>
+                        <td width="20%"><strong>Name</strong></td>
+                        <td width="20%"><strong>Type</strong></td>
+                        <td width="20%" class="text-center"><strong>Size</strong></td>
+                        <td width="30%"><strong>Status</strong></td>
+                        <td width="10%" class="text-center"><strong>Delete</strong></td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr ng-repeat="volume in configuredVolumes | orderBy:'name' track by volume.id">
+                        <td>{{ volume.name }}</td>
+                        
+                        <td>{{ volume.service }}</td>
+                        
+                        <td class="text-center">{{ volume.size }} {{ volume.sizeUnit }}</td>
+                        
+                        <!-- TODO: Detattaching a volume still shows status as 'attached' -->
+                        <!--<td>{{ volume.status }}</td>-->
+                        <td>{{ volume.attached ? 'Attached to ' + (volume.attached | stackProperty:'name') : 'Detattached' }}</td>
+                        
+                        <td class="text-center">
+                          <button class="btn btn-xs btn-danger faa-parent animated-hover" ng-if="!volume.attached" ng-click="deleteVolume(volume)"
+                              uib-tooltip="Destroy all Data on this Volume?" tooltip-placement="left">
+                            <i class="fa fa-fw fa-bomb animated-hover faa-slow faa-burst"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </uib-tab>
+          </uib-tabset>
         </div>
       </div>
     </div>

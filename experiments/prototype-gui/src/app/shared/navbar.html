@@ -1,7 +1,7 @@
 <section id="navbar">
   <!-- Fixed navbar -->
   <div sticky class="navbar navbar-default navbar-inverse navbar-fixed-top" role="navigation">
-    <div class="container">
+    <div class="container-fluid">
       <div class="navbar-header">
         <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
           <span class="sr-only">Toggle navigation</span>
@@ -9,7 +9,14 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="{{ home.url }}" ng-class="{ 'active':home.url.indexOf(path) !== -1 }">{{ home.name }}</a>
+        <div class="navbar-brand" style="padding:auto;">
+          <!-- Draw the brand logo -->
+          <a href="{{ home.url }}">
+            <img style="margin-top:-5px;" src="/asset/png/favicon-32x32.png" alt="NDS Labs" height="32" width="32">
+          </a>
+        
+          <a href="{{ home.url }}" class="undecorate-link">NDS Labs</a>
+        </div>
       </div>
       
       <div class="navbar-collapse collapse">
@@ -20,7 +27,7 @@
             <span ng-if="!nav.url">{{ nav.name }}</span>
             
             <!-- Navbar Link for a singular string URL -->
-            <a ng-if="nav.url && !isArray(nav.url)" href="{{ nav.url }}" >{{ nav.name }}</a>
+            <a ng-if="nav.url && !isArray(nav.url)" href="{{ nav.url }}">{{ nav.name }}</a>
             
             <!-- Dropdown Menu for a URL array -->
             <a ng-if="isArray(nav.url)" ng-mouseenter="nav.isOpen=!nav.isOpen" ng-mouseleave="nav.isOpen=!nav.isOpen" class="dropdown-toggle" data-toggle="dropdown">{{ nav.name }} <span class="caret"></span></a>

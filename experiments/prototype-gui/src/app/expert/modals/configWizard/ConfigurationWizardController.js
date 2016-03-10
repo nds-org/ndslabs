@@ -16,18 +16,28 @@ angular
     angular.forEach(stack.services, function(requestedSvc) {
       var svcSpec = _.find(_.concat(stacks, deps), function(svc) { return svc.key === requestedSvc.service });
       if (svcSpec.requiresVolume === true) {
+        var orphan = null;
         angular.forEach(configuredVolumes, function(volume) {
           if (!volume.attached && svcSpec.key === volume.service) {
             // This is an orphaned volume from this service... Prompt the user to reuse it
-            reusableVolumes.push(volume);
+            orphan = volume;
+            reusableVolumes.push(orphan);
           }
         });
-        requiredVolumes.push(new Volume(stack, svcSpec));
+        
+        var newVolume = new Volume(stack, svcSpec);
+        if (orphan !== null) {
+          newVolume.id = orphan.id;
+          newVolume.name = orphan.name;
+        }
+        requiredVolumes.push(newVolume);
       }
     });
 
     $scope.newStackOrphanedVolumes = reusableVolumes;
     $scope.newStackVolumeRequirements = requiredVolumes;
+    
+    // Select first orphan, in all cases
   };
 
   // TODO: Use queue for recursion?
@@ -56,45 +66,37 @@ angular
     });
   };
   
-  $scope.listRequiredDeps = function(svc) {
-    var spec = _.find(deps, function(service) { return service.key === svc.service });
-    var required = [];
-    angular.forEach(spec.depends, function(dep) {
-      if (dep.required === true) {
-        required.push(dep.key);
-      }
-    });
-    return required;
-  };
-
-  
   // The delay (in seconds) before allowing the user to click "Next"
   var initDelay = 0;
 
   // Define a big pile of logic for our wizard pages
   var configPages = [
-     new WizardPage("intro", "Introduction", {
+     new WizardPage("require", "Required Services", {
         prev: null,
         canPrev: false,
         canNext: function() {
-          debugger;
-          return $scope.newStack && $scope.newStack.name !== '' && !_.find(configuredStacks, function(stack) { return stack.name === $scope.newStack.name; });
+          return $scope.newStack && $scope.newStack.name !== '' 
+                    && !_.find(configuredStacks, function(stack) { 
+                      return stack.name === $scope.newStack.name;
+                    });
         },
-        next: 'config',
-        onNext: function() {
-          $log.debug("Verifying that the name " + $scope.newStack.name + " has not already been used by another service...");
-          $log.debug("Gathering optional dependencies and their requirements...");
-          $scope.newStackOptionalDeps = {};
-          angular.forEach($scope.newStackOptions, function(opt) {
-            $scope.newStackOptionalDeps[opt.service] = $scope.listRequiredDeps(opt);
-          });
+        next: function() { 
+          if ($scope.newStackOptions.length > 0) {
+            return 'options';
+          } else if ($scope.newStackVolumeRequirements.length > 0) {
+            return 'volumes';
+          } else {
+            return 'confirm';
+          }
+        },
+        onNext: function() { 
+          $scope.discoverVolumeReqs($scope.newStack); 
         }
-     }, false),
-     new WizardPage("config", "Configuration", {
-        prev: 'intro',
+     }, true),
+     new WizardPage("options", "Select Optional Services", {
+        prev: 'require',
         canPrev: true,
         canNext: true,
-        next: 'volumes',
         onNext: function() {
           $log.debug("Adding optional selections to stack...");
           $scope.newStack.services = angular.copy($scope.newStackRequirements);
@@ -106,10 +108,20 @@ angular
 
           $log.debug("Discovering volume requirements...");
           $scope.discoverVolumeReqs($scope.newStack); 
+        },
+        next: function() { 
+          console.debug($scope.newStackVolumeRequirements);
+          if ($scope.newStackVolumeRequirements.length === 0) {
+            $log.debug('Going to confirm');
+            return 'confirm';
+          } else {
+            $log.debug('Going to volumes');
+            return 'volumes';
+          }
         }
      }, true),
-     new WizardPage("volumes", "Volumes", {
-        prev: 'config',
+     new WizardPage("volumes", "Configure Volumes", {
+        prev: 'options',
         canPrev: true,
         canNext: function() {
           var volumeParamsSet = true;
@@ -127,7 +139,7 @@ angular
           $log.debug("Verifying that user has made valid 'Volume' selections...");
         }
      }, true),
-     new WizardPage("confirm", "Confirmation", {
+     new WizardPage("confirm", "Confirm New Stack", {
         prev: 'volumes',
         canPrev: true,
         canNext: false,
@@ -138,6 +150,7 @@ angular
   // Create a new Wizard to display
   $scope.wizard = new Wizard(configPages, initDelay);
   
+  $scope.spec = template;
   $scope.newStack = new Stack(template);
   $scope.newStackLabel = template.label;
   $scope.newStackOptions = [];
@@ -150,8 +163,20 @@ angular
 
   // Add required dependencies to the stack
   $scope.collectDependencies(template);
-
-  $scope.newStackRequirements = angular.copy($scope.newStack.services);
+  $scope.newStackRequirements = $scope.newStack.services;
+  
+  // Gather requirements of optional components
+  $scope.newStackOptionalDeps = {};
+  angular.forEach($scope.newStackOptions, function(opt) {
+    var spec = _.find(deps, function(service) { return service.key === opt.service });
+    var required = [];
+    angular.forEach(spec.depends, function(dep) {
+      if (dep.required === true) {
+        required.push(dep.key);
+      }
+    });
+    $scope.newStackOptionalDeps[opt.service] = required;
+  });
   
   $scope.ok = function () {
     $log.debug("Closing modal with success!");

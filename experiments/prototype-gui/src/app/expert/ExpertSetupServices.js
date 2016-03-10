@@ -60,11 +60,18 @@ angular.module('ndslabs')
  * @constructor
  * @param {} spec - The service spec from which to create the stack
  */
-.service('Stack', [ 'Stacks', function(Stacks) {
+.service('Stack', [ 'Stacks', '_', function(Stacks, _) {
   return function(spec) {
+    var counts= _.countBy(Stacks.all, 'key');
+    var count = (++counts[spec.key]) || 1;
+    
+    if (count < 10) {
+      count = '0' + count;
+    }
+    
     var stack = {
       id: "",
-      name: "",
+      name: spec.label + "-" + count,
       key: spec.key,
       status: "Suspended",
       services: [],
@@ -85,11 +92,19 @@ angular.module('ndslabs')
  * @param {} stack - The stack of the attached service -- TODO: unused
  * @param {} service - The service to attach to this volume
  */
-.service('Volume', [ 'Volumes', function(Volumes) {
+.service('Volume', [ 'Volumes', '_', function(Volumes, _) {
   return function(stack, service) { 
+    var counts = _.countBy(Volumes.all, 'service');
+    var count = (++counts[service.key]) || '1';
+    
+    if (count < 10) {
+      count = '0' + count;
+    }
+    
     var volume = {
       id: '',
-      name: '',
+      defaultName: service.key + '-' + count,
+      name: service.key + '-' + count,
       size: 10,
       sizeUnit: 'GB',
       format: 'Raw',

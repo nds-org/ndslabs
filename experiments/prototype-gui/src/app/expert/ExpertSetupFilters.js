@@ -22,10 +22,67 @@ angular.module('ndslabs')
 /**
  * Given a service spec key, retrieve its label
  */
-.filter('serviceLabelFromSpec', ['Specs', '_', function(Specs, _) {
-  return function(key) {
-    var spec = _.find(Specs.all, ['key', key]);
-    return spec.label;
+.filter('specProperty', ['Specs', '_', function(Specs, _) {
+  return function(key, propertyName) {
+    var spec = _.find(Specs.all, [ 'key', key ]);
+    
+    if (!spec) {
+      return '';
+    }
+    
+    return spec[propertyName];
+  };
+}])
+/**
+ * Given a stack id, retrieve the given property of the stack
+ */
+.filter('stackProperty', ['Stacks', '_', function(Stacks, _) {
+  return function(key, propertyName, serviceProperty) {
+    // Generic "find" that utilizes our hierarchical id scheme
+    var stack = _.find(Stacks.all, function(stk) {
+      if (key.indexOf(stk.id) !== -1) {
+        return stk;
+      }
+    });
+    
+    if (!stack) {
+      return '';
+    }
+    
+    // If this is a stack property, return it.. if not, drill down to services
+    if (!serviceProperty) {
+      return stack[propertyName];
+    }
+    
+    var svc = _.find(stack.services, ['id', key ]);
+    return svc[propertyName];
+  };
+}])
+/**
+ * Given a stack service id, retrieve attached volumes for the service
+ */
+.filter('stackSvcVolumes', ['Volumes', '_', function(Volumes, _) {
+  return function(svcId) {
+    var volumes = _.filter(Volumes.all, [ 'attached', svcId ]);
+    return volumes;
+  };
+}])
+/**
+ * Given a stack id, retrieve attached volumes for the entire stack
+ */
+.filter('stackVolumes', ['Stacks', 'Volumes', '_', function(Stacks, Volumes, _) {
+  return function(stackId) {
+    var stack = _.filter(Stacks.all, [ 'id', stackId ]);
+    
+    if (!stack) {
+      return [];
+    }
+    
+    var volumes = [];
+    angular.forEach(stack.services, function(svc) {
+      _.concat(volumes, _.filter(Volumes.all, [ 'attached', svc.id ]));
+    });
+    return volumes;
   };
 }])
 /**
@@ -130,6 +187,32 @@ angular.module('ndslabs')
       $log.error("Cannot locate requirements - key not found: " + key);
     }
     return [];
+  };
+}])
+.filter('formatDependencies', [ 'Specs', function(Specs) {
+  return function(deps) {
+    var getLabel = function(specKey) {
+      return _.find(Specs.all, [ 'key', specKey]).label;
+    }
+    
+    var ret = '';
+    switch(deps.length) {
+      case 0:
+        return '';
+      case 1:
+        return getLabel(deps[0]);
+      case 2:
+        return getLabel(deps[0]) + ' and ' + getLabel(deps[1]);
+      default:
+        angular.forEach(_.slice(deps, 1), function(dep) {
+          if (deps.indexOf(dep) === deps.length) {
+            ret += ', and ' + getLabel(dep);
+          } else {
+            ret += ', ' + getLabel(dep);
+          }
+        });
+        return ret;
+    }
   };
 }])
 /**

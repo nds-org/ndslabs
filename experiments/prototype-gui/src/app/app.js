@@ -5,8 +5,8 @@
  * Define our ndslabs module here. All other files will 
  * use the single-argument notation for angular.module()
  */
-angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-api', 'ngWizard', 'ngGrid', /* 'ngSanitize',*/
-    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'pageslide-directive', 'ansiToHtml', 'ui.bootstrap' ])
+angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-api', 'ngWizard', 'ngGrid',
+    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ansiToHtml', 'ui.bootstrap' ])
     
 /**
  * If true, display verbose debug data as JSON
@@ -95,7 +95,6 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-api', 'ngWizard', 'ngGr
         if (_.includes(config.url, ApiUri)) {
           if (DEBUG) {
             $log.debug('Request:');
-            console.debug(config);
           }
           
           // If this was *not* an attempt to authenticate
