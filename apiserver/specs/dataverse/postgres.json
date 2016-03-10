@@ -1,0 +1,14 @@
+{
+    "key": "postgres",
+    "isStack": false,
+    "isService": true,
+    "label": "PostgreSQL",
+    "requiresVolume": true,
+    "image": "postgres:9.3",
+    "ports": [
+        { "port": 5432, "protocol": "TCP" }
+    ],
+    "volumeMounts":[
+        { "mountPath": "/var/lib/postgresql/data", "name": "postgres" }
+    ]
+}

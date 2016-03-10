@@ -1,0 +1,40 @@
+{
+    "key": "dataverse",
+    "label": "Dataverse 4",
+  	"requiresVolume": true,
+    "image": "ndslabs/dataverse:latest",
+    "isService": true,
+    "isStack": true,
+	"isPublic": true,
+    "ports": [
+        {
+            "port": 8080,
+            "protocol": "TCP"
+        }
+    ],
+    "depends": [
+      { "key": "postgres", "required": true },
+      { "key": "solr", "required": true },
+      { "key": "rserve", "required": true},
+      { "key": "tworavens", "required": false }
+    ],
+    "config":  {
+       "HOST_DNS_ADDRESS": "localhost",
+       "GLASSFISH_DIRECTORY": "/usr/local/glassfish4",
+       "MAIL_SERVER": "smtp.ncsa.illinois.edu",
+       "POSTGRES_DATABASE": "dvndb",
+       "POSTGRES_USER": "dvnapp",
+       "POSTGRES_PASSWORD": "secret",
+       "RSERVE_USER": "reserve",
+       "RSERVE_PASSWORD": "reserve"
+    },
+	"volumeMounts":[
+	   { "mountPath": "/usr/local/glassfish4/glassfish/domains/domain1/files", "name": "dataverse" }
+    ], 
+	"readinessProbe" : {
+		"path" : "/resources/images/dataverseproject_logo.jpg",
+		"port" : 8080,
+		"initialDelay": 180,
+		"timeout" : 600
+	}
+}

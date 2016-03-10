@@ -1,0 +1,10 @@
+{
+    "key": "rserve",
+    "isStack": false,
+    "isService": true,
+    "label": "Rserve",
+    "image": "ndslabs/dataverse-rserve:latest",
+    "ports": [
+        { "port": 6311, "protocol": "TCP" }
+    ]
+}
