@@ -11,13 +11,17 @@
         {
             "key": "elasticsearch",
             "required": false
+        },
+        {
+            "key": "plantcv",
+            "required": false
         }
     ],
     "config":  {
        "SMTP_HOST": "smtp.ncsa.illinois.edu",
        "ELASTICSEARCH_CLUSTERNAME": "clowder",
        "RABBITMQ_EXCHANGE": "clowder",
-       "TOOLMGR_URI": "http://141.142.209.108:8080"
+       "TOOLMGR_URI": "http://141.142.209.154:8082"
     },
     "image": "ndslabs/clowder:terra",
     "isStack": true,

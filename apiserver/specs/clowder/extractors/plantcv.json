@@ -13,6 +13,6 @@
     "config":  {
        "RABBITMQ_EXCHANGE": "clowder",
        "RABBITMQ_VHOST": "%2F",
-       "RABBITMQ_QUEUE": "ncsa.image.preview"
+       "RABBITMQ_QUEUE": "terra.plantcv"
     }
 }
