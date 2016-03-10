@@ -19,9 +19,10 @@ import (
 var apiBase = "/api/v1"
 
 type ServiceAddrPort struct {
-	Name string
-	Host string
-	Port int
+	Name     string
+	Host     string
+	Port     int
+	NodePort int
 }
 
 type KubeHelper struct {
@@ -474,6 +475,13 @@ func (k *KubeHelper) CreateControllerTemplate(name string, stack string, spec *n
 				Name:  fmt.Sprintf("%s_PORT_%d_TCP_PORT", strings.ToUpper(name), addrPort.Port),
 				Value: fmt.Sprintf("%d", addrPort.Port),
 			})
+
+		env = append(env,
+			api.EnvVar{
+				Name:  fmt.Sprintf("%s_NODE_PORT", strings.ToUpper(name)),
+				Value: fmt.Sprintf("%d", addrPort.NodePort),
+			})
+
 	}
 
 	for name, value := range spec.Config {
