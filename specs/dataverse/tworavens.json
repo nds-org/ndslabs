@@ -1,0 +1,10 @@
+{
+    "key": "tworavens",
+    "isStack": false,
+    "isService": true,
+    "label": "TwoRavens",
+    "image": "ndslabs/tworavens:latest",
+    "ports": [
+        { "port": 80, "protocol": "TCP" }
+    ]
+}
