@@ -2,6 +2,7 @@
     "key": "tworavens",
     "isStack": false,
     "isService": true,
+    "isPublic": true,
     "label": "TwoRavens",
     "image": "ndslabs/tworavens:latest",
     "ports": [
