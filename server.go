@@ -143,20 +143,20 @@ func main() {
 
 	kube := kube.NewKubeHelper(cfg.Kubernetes.Address)
 
-	storage := Storage{}
+	server := Server{}
 	etcd, err := GetEtcdClient(cfg.Etcd.Address)
 	if err != nil {
 		glog.Fatal(err)
 	}
-	storage.etcd = etcd
-	storage.kube = kube
+	server.etcd = etcd
+	server.kube = kube
 	if cfg.Server.VolumeSource == "openstack" {
-		storage.local = false
-		storage.os = oshelper
+		server.local = false
+		server.os = oshelper
 		glog.Infoln("Using OpenStack storage")
 	} else {
-		storage.local = true
-		storage.volDir = cfg.Server.VolDir
+		server.local = true
+		server.volDir = cfg.Server.VolDir
 		glog.Infoln("Using local storage")
 	}
 
@@ -165,8 +165,8 @@ func main() {
 		glog.Fatal(err)
 	}
 
-	storage.jwtKey = jwtKey
-	storage.host = cfg.Server.Host
+	server.jwtKey = jwtKey
+	server.host = cfg.Server.Host
 
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
@@ -196,7 +196,7 @@ func main() {
 			if userId == "admin" && password == "12345" {
 				return true
 			} else {
-				project, err := storage.getProject(userId)
+				project, err := server.getProject(userId)
 				if err != nil {
 					glog.Error(err)
 					return false
@@ -205,7 +205,25 @@ func main() {
 				}
 			}
 		},
+		Authorizator: func(userId string, request * rest.Request) bool {
+			payload:= request.Env["JWT_PAYLOAD"].(map[string]interface{})
+
+			if (payload["server"] == cfg.Server.Host) {
+				return true
+			} else {
+				return false
+			}
+		},
+		PayloadFunc: func(userId string) map[string]interface{} {
+			payload := make(map[string]interface{})
+			if (userId == "admin") {
+				payload["admin"] = true
+			}
+			payload["server"] =  cfg.Server.Host
+			return payload
+		},
 	}
+	server.jwt = jwt
 
 	api.Use(&rest.IfMiddleware{
 		Condition: func(request *rest.Request) bool {
@@ -220,7 +238,7 @@ func main() {
 			Authenticator: func(userId string, password string) bool {
 				if userId == "demo" && password == "12345" {
 					log.Printf("%s = %s", userId, password)
-					storage.Namespace = userId
+					server.Namespace = userId
 					return true
 				}
 				return false
@@ -231,30 +249,32 @@ func main() {
 	router, err := rest.MakeRouter(
 		rest.Get("/", GetPaths),
 		rest.Post("/authenticate", jwt.LoginHandler),
-		rest.Delete("/authenticate", storage.Logout),
+		rest.Delete("/authenticate", server.Logout),
+		rest.Get("/checkToken", server.CheckToken),
 		rest.Get("/refresh_token", jwt.RefreshHandler),
-		rest.Get("/projects", storage.GetAllProjects),
-		rest.Put("/projects/:pid", storage.PutProject),
-		rest.Get("/projects/:pid", storage.GetProject),
-		rest.Delete("/projects/:pid", storage.DeleteProject),
-		rest.Get("/services", storage.GetAllServices),
-		rest.Post("/services", storage.PostService),
-		rest.Put("/services/:key", storage.PutService),
-		rest.Get("/services/:key", storage.GetService),
-		rest.Delete("/services/:key", storage.DeleteService),
-		rest.Get("/projects/:pid/stacks", storage.GetAllStacks),
-		rest.Post("/projects/:pid/stacks", storage.PostStack),
-		rest.Put("/projects/:pid/stacks/:sid", storage.PutStack),
-		rest.Get("/projects/:pid/stacks/:sid", storage.GetStack),
-		rest.Delete("/projects/:pid/stacks/:sid", storage.DeleteStack),
-		rest.Get("/projects/:pid/volumes", storage.GetAllVolumes),
-		rest.Post("/projects/:pid/volumes", storage.PostVolume),
-		rest.Put("/projects/:pid/volumes/:vid", storage.PutVolume),
-		rest.Get("/projects/:pid/volumes/:vid", storage.GetVolume),
-		rest.Delete("/projects/:pid/volumes/:vid", storage.DeleteVolume),
-		rest.Get("/projects/:pid/start/:sid", storage.StartStack),
-		rest.Get("/projects/:pid/stop/:sid", storage.StopStack),
-		rest.Get("/projects/:pid/logs/:ssid", storage.GetLogs),
+		rest.Get("/projects", server.GetAllProjects),
+		rest.Post("/projects/", server.PostProject),
+		rest.Put("/projects/:pid", server.PutProject),
+		rest.Get("/projects/:pid", server.GetProject),
+		rest.Delete("/projects/:pid", server.DeleteProject),
+		rest.Get("/services", server.GetAllServices),
+		rest.Post("/services", server.PostService),
+		rest.Put("/services/:key", server.PutService),
+		rest.Get("/services/:key", server.GetService),
+		rest.Delete("/services/:key", server.DeleteService),
+		rest.Get("/projects/:pid/stacks", server.GetAllStacks),
+		rest.Post("/projects/:pid/stacks", server.PostStack),
+		rest.Put("/projects/:pid/stacks/:sid", server.PutStack),
+		rest.Get("/projects/:pid/stacks/:sid", server.GetStack),
+		rest.Delete("/projects/:pid/stacks/:sid", server.DeleteStack),
+		rest.Get("/projects/:pid/volumes", server.GetAllVolumes),
+		rest.Post("/projects/:pid/volumes", server.PostVolume),
+		rest.Put("/projects/:pid/volumes/:vid", server.PutVolume),
+		rest.Get("/projects/:pid/volumes/:vid", server.GetVolume),
+		rest.Delete("/projects/:pid/volumes/:vid", server.DeleteVolume),
+		rest.Get("/projects/:pid/start/:sid", server.StartStack),
+		rest.Get("/projects/:pid/stop/:sid", server.StopStack),
+		rest.Get("/projects/:pid/logs/:ssid", server.GetLogs),
 	)
 
 	if err != nil {
@@ -266,7 +286,7 @@ func main() {
 	glog.Fatal(http.ListenAndServe(":"+cfg.Server.Port, api.MakeHandler()))
 }
 
-type Storage struct {
+type Server struct {
 	etcd      client.KeysAPI
 	kube      *kube.KubeHelper
 	Namespace string
@@ -275,6 +295,7 @@ type Storage struct {
 	volDir    string
 	host      string
 	jwtKey    []byte
+	jwt       *jwt.JWTMiddleware
 }
 
 func GetPaths(w rest.ResponseWriter, r *rest.Request) {
@@ -285,11 +306,20 @@ func GetPaths(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&paths)
 }
 
-func (s *Storage) Logout(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) CheckToken(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *Storage) GetAllProjects(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) Logout(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) GetAllProjects(w rest.ResponseWriter, r *rest.Request) {
+
+	if (! s.IsAdmin(r)) {
+		rest.Error(w, "", http.StatusUnauthorized)
+		return
+	}
 
 	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/projects", nil)
 	if err != nil {
@@ -315,8 +345,22 @@ func (s *Storage) GetAllProjects(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-func (s *Storage) GetProject(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) IsAdmin(r *rest.Request) bool {
+	payload:= r.Env["JWT_PAYLOAD"].(map[string]interface{})
+	if (payload["admin"] == true ) {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (s *Server) GetProject(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
+
+	if (! s.IsAdmin(r)) {
+		rest.Error(w, "", http.StatusUnauthorized)
+		return
+	}
 
 	project, err := s.getProject(pid)
 	if err != nil {
@@ -326,7 +370,7 @@ func (s *Storage) GetProject(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-func (s *Storage) getProject(pid string) (*api.Project, error) {
+func (s *Server) getProject(pid string) (*api.Project, error) {
 	path := etcdBasePath + "/projects/" + pid + "/project"
 
 	glog.Infof("getProject %s\n", path)
@@ -342,8 +386,12 @@ func (s *Storage) getProject(pid string) (*api.Project, error) {
 	}
 }
 
-func (s *Storage) PutProject(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.PathParam("pid")
+func (s *Server) PostProject(w rest.ResponseWriter, r *rest.Request) {
+
+	if (! s.IsAdmin(r)) {
+		rest.Error(w, "", http.StatusUnauthorized)
+		return
+	}
 
 	project := api.Project{}
 	err := r.DecodeJsonPayload(&project)
@@ -353,33 +401,78 @@ func (s *Storage) PutProject(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	data, err := json.Marshal(project)
+	if s.projectExists(project.Id) {
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+
+	err = s.putProject(project.Name, &project)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	opts := client.SetOptions{Dir: true}
-	s.etcd.Set(context.Background(), etcdBasePath+"/projects/", pid, &opts)
-	_, err = s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid+"/project", string(data), nil)
+	w.WriteJson(&project)
+}
+
+func (s *Server) PutProject(w rest.ResponseWriter, r *rest.Request) {
+	pid := r.PathParam("pid")
+
+	if (! s.IsAdmin(r)) {
+		rest.Error(w, "", http.StatusUnauthorized)
+		return
+	}
+
+	project := api.Project{}
+	err := r.DecodeJsonPayload(&project)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	if s.projectExists(project.Id) {
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+
+	err = s.putProject(pid, &project)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteJson(&project)
+}
+
+func (s *Server) putProject(pid string, project *api.Project) error {
+
+        data, _ := json.Marshal(project)
+	opts := client.SetOptions{Dir: true}
+	s.etcd.Set(context.Background(), etcdBasePath+"/projects/", pid, &opts)
+	_, err := s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid+"/project", string(data), nil)
+	if err != nil {
+		glog.Error(err)
+		return err
 	}
 
 	_, err = s.kube.CreateNamespace(pid)
 	if err != nil {
 		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-	} else {
-		w.WriteHeader(http.StatusCreated)
+		return err
 	}
+	return nil
 }
 
-func (s *Storage) DeleteProject(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) DeleteProject(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
+
+	if (! s.IsAdmin(r)) {
+		rest.Error(w, "", http.StatusUnauthorized)
+		return
+	}
 
 	glog.V(4).Infof("DeleteProject %s", pid)
 
@@ -391,7 +484,7 @@ func (s *Storage) DeleteProject(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *Storage) GetAllServices(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) GetAllServices(w rest.ResponseWriter, r *rest.Request) {
 
 	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/services", nil)
 	if err != nil {
@@ -419,7 +512,7 @@ func (s *Storage) GetAllServices(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-func (s *Storage) GetService(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) GetService(w rest.ResponseWriter, r *rest.Request) {
 	key := r.PathParam("key")
 	glog.V(4).Infof("GetService %s\n", key)
 
@@ -442,7 +535,12 @@ func (s *Storage) GetService(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-func (s *Storage) PostService(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
+
+	if (! s.IsAdmin(r)) {
+		rest.Error(w, "", http.StatusUnauthorized)
+		return
+	}
 
 	service := api.ServiceSpec{}
 	err := r.DecodeJsonPayload(&service)
@@ -456,8 +554,13 @@ func (s *Storage) PostService(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&resp)
 }
 
-func (s *Storage) PutService(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 	key := r.PathParam("key")
+
+	if (! s.IsAdmin(r)) {
+		rest.Error(w, "", http.StatusUnauthorized)
+		return
+	}
 
 	service := api.ServiceSpec{}
 	err := r.DecodeJsonPayload(&service)
@@ -477,8 +580,13 @@ func (s *Storage) PutService(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&resp)
 }
 
-func (s *Storage) DeleteService(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) DeleteService(w rest.ResponseWriter, r *rest.Request) {
 	key := r.PathParam("key")
+
+	if (! s.IsAdmin(r)) {
+		rest.Error(w, "", http.StatusUnauthorized)
+		return
+	}
 
 	_, err := s.etcd.Delete(context.Background(), etcdBasePath+"/services/"+key, nil)
 	if err != nil {
@@ -515,7 +623,7 @@ func GetEtcdClient(etcdAddress string) (client.KeysAPI, error) {
 	return kapi, nil
 }
 
-func (s *Storage) getServiceSpec(key string) (*api.ServiceSpec, error) {
+func (s *Server) getServiceSpec(key string) (*api.ServiceSpec, error) {
 
 	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/services/"+key, nil)
 	if err != nil {
@@ -529,7 +637,7 @@ func (s *Storage) getServiceSpec(key string) (*api.ServiceSpec, error) {
 	}
 }
 
-func (s *Storage) GetAllStacks(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) GetAllStacks(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 
 	stacks, err := s.getStacks(pid)
@@ -542,7 +650,27 @@ func (s *Storage) GetAllStacks(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-func (s *Storage) getStacks(pid string) (*[]api.Stack, error) {
+func (s *Server) getProjects() (*[]api.Project, error) {
+
+	projects := []api.Project{}
+
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/projects", nil)
+
+	if err == nil {
+		nodes := resp.Node.Nodes
+		for _, node := range nodes {
+			
+			resp, err = s.etcd.Get(context.Background(), node.Key + "/project", nil)
+			project	:= api.Project{}
+			json.Unmarshal([]byte(resp.Node.Value), &project)
+			projects = append(projects, project)
+		}
+	}
+	return &projects, nil
+}
+
+
+func (s *Server) getStacks(pid string) (*[]api.Stack, error) {
 
 	stacks := []api.Stack{}
 
@@ -594,7 +722,7 @@ func (s *Storage) getStacks(pid string) (*[]api.Stack, error) {
 	return &stacks, nil
 }
 
-func (s *Storage) isStackStopped(pid string, ssid string) bool {
+func (s *Server) isStackStopped(pid string, ssid string) bool {
 	sid := ssid[0:strings.LastIndex(ssid, "-")]
 	stack, _ := s.getStack(pid, sid)
 
@@ -605,7 +733,7 @@ func (s *Storage) isStackStopped(pid string, ssid string) bool {
 	}
 }
 
-func (s *Storage) getStackService(pid string, ssid string) *api.StackService {
+func (s *Server) getStackService(pid string, ssid string) *api.StackService {
 	sid := ssid[0:strings.LastIndex(ssid, "-")]
 	stack, _ := s.getStack(pid, sid)
 	if stack == nil {
@@ -620,7 +748,7 @@ func (s *Storage) getStackService(pid string, ssid string) *api.StackService {
 	return nil
 }
 
-func (s *Storage) attachmentExists(pid string, ssid string) bool {
+func (s *Server) attachmentExists(pid string, ssid string) bool {
 	volumes, _ := s.getVolumes(pid)
 	if volumes == nil {
 		return false
@@ -636,7 +764,7 @@ func (s *Storage) attachmentExists(pid string, ssid string) bool {
 	return exists
 }
 
-func (s *Storage) volumeExists(pid string, name string) bool {
+func (s *Server) volumeExists(pid string, name string) bool {
 	volumes, _ := s.getVolumes(pid)
 	if volumes == nil {
 		return false
@@ -652,7 +780,23 @@ func (s *Storage) volumeExists(pid string, name string) bool {
 	return exists
 }
 
-func (s *Storage) stackExists(pid string, name string) bool {
+func (s *Server) projectExists(pid string) bool {
+	projects, _ := s.getProjects()
+	if projects == nil {
+		return false
+	}
+
+	exists := false
+	for _, project := range *projects {
+		if project.Id == pid {
+			exists = true
+			break
+		}
+	}
+	return exists
+}
+
+func (s *Server) stackExists(pid string, name string) bool {
 	stacks, _ := s.getStacks(pid)
 	if stacks == nil {
 		return false
@@ -668,7 +812,7 @@ func (s *Storage) stackExists(pid string, name string) bool {
 	return exists
 }
 
-func (s *Storage) getStack(pid string, sid string) (*api.Stack, error) {
+func (s *Server) getStack(pid string, sid string) (*api.Stack, error) {
 
 	path := "/projects/" + pid + "/stacks/" + sid
 	resp, err := s.etcd.Get(context.Background(), etcdBasePath+path, nil)
@@ -682,7 +826,7 @@ func (s *Storage) getStack(pid string, sid string) (*api.Stack, error) {
 	}
 }
 
-func (s *Storage) GetStack(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) GetStack(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	sid := r.PathParam("sid")
 
@@ -701,7 +845,7 @@ func (s *Storage) GetStack(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-func (s *Storage) PostStack(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 
 	stack := api.Stack{}
@@ -742,7 +886,7 @@ func (s *Storage) PostStack(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&stack)
 }
 
-func (s *Storage) putStack(pid string, sid string, stack *api.Stack) error {
+func (s *Server) putStack(pid string, sid string, stack *api.Stack) error {
 	opts := client.SetOptions{Dir: true}
 	s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid, "/stacks", &opts)
 
@@ -758,7 +902,7 @@ func (s *Storage) putStack(pid string, sid string, stack *api.Stack) error {
 	}
 }
 
-func (s *Storage) PutStack(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	sid := r.PathParam("sid")
 
@@ -781,7 +925,7 @@ func (s *Storage) PutStack(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&stack)
 }
 
-func (s *Storage) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 
 	pid := r.PathParam("pid")
 	sid := r.PathParam("sid")
@@ -823,7 +967,7 @@ func (s *Storage) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *Storage) getVolumes(pid string) (*[]api.Volume, error) {
+func (s *Server) getVolumes(pid string) (*[]api.Volume, error) {
 
 	volumes := make([]api.Volume, 0)
 
@@ -843,7 +987,7 @@ func (s *Storage) getVolumes(pid string) (*[]api.Volume, error) {
 	return &volumes, nil
 }
 
-func (s *Storage) startStackService(serviceKey string, pid string, stack *api.Stack, addrPortMap *map[string]kube.ServiceAddrPort) {
+func (s *Server) startStackService(serviceKey string, pid string, stack *api.Stack, addrPortMap *map[string]kube.ServiceAddrPort) {
 
 	service, _ := s.getServiceSpec(serviceKey)
 	for _, dep := range service.Dependencies {
@@ -856,7 +1000,7 @@ func (s *Storage) startStackService(serviceKey string, pid string, stack *api.St
 	}
 }
 
-func (s *Storage) startController(pid string, serviceKey string, stack *api.Stack, addrPortMap *map[string]kube.ServiceAddrPort) (bool, error) {
+func (s *Server) startController(pid string, serviceKey string, stack *api.Stack, addrPortMap *map[string]kube.ServiceAddrPort) (bool, error) {
 
 	var stackService *api.StackService
 	found := false
@@ -978,7 +1122,7 @@ func (s *Storage) startController(pid string, serviceKey string, stack *api.Stac
 	return true, nil
 }
 
-func (s *Storage) StartStack(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) StartStack(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	sid := r.PathParam("sid")
 
@@ -1045,7 +1189,7 @@ func (s *Storage) StartStack(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&stack)
 }
 
-func (s *Storage) getStackWithStatus(pid string, sid string) (*api.Stack, error) {
+func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) {
 
 	stack, _ := s.getStack(pid, sid)
 	// Get the pods for this stack
@@ -1082,7 +1226,7 @@ func (s *Storage) getStackWithStatus(pid string, sid string) (*api.Stack, error)
 	return stack, nil
 }
 
-func (s *Storage) StopStack(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) StopStack(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	sid := r.PathParam("sid")
 
@@ -1108,7 +1252,7 @@ func (s *Storage) StopStack(w rest.ResponseWriter, r *rest.Request) {
 
 }
 
-func (s *Storage) stopStack(pid string, sid string) (*api.Stack, error) {
+func (s *Server) stopStack(pid string, sid string) (*api.Stack, error) {
 
 	path := "/projects/" + pid + "/stacks/" + sid
 	glog.V(4).Infof("Stopping stack %s\n", path)
@@ -1116,7 +1260,7 @@ func (s *Storage) stopStack(pid string, sid string) (*api.Stack, error) {
 	stack, _ := s.getStack(pid, sid)
 
 	glog.V(4).Infof("Stack status %s\n", stack.Status)
-	if stack.Status == stackStatus[Stopping] || stack.Status == stackStatus[Stopped] {
+	if stack.Status == stackStatus[Stopped] {
 		// Can't stop a stopped service
 		glog.V(4).Infof("Can't stop a stopped service")
 		return stack, nil
@@ -1197,7 +1341,7 @@ func (s *Storage) stopStack(pid string, sid string) (*api.Stack, error) {
 	return stack, nil
 }
 
-func (s *Storage) GetAllVolumes(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) GetAllVolumes(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/projects/"+pid+"/volumes", nil)
 	if err != nil {
@@ -1225,7 +1369,7 @@ func (s *Storage) GetAllVolumes(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&volumes)
 }
 
-func (s *Storage) PostVolume(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) PostVolume(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 
 	vol := api.Volume{}
@@ -1356,7 +1500,7 @@ func (s *Storage) PostVolume(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&vol)
 }
 
-func (s *Storage) putVolume(pid string, name string, volume api.Volume) error {
+func (s *Server) putVolume(pid string, name string, volume api.Volume) error {
 	opts := client.SetOptions{Dir: true}
 	s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid, "/volumes", &opts)
 
@@ -1370,7 +1514,7 @@ func (s *Storage) putVolume(pid string, name string, volume api.Volume) error {
 	}
 }
 
-func (s *Storage) PutVolume(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	vid := r.PathParam("vid")
 
@@ -1409,7 +1553,7 @@ func (s *Storage) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&vol)
 }
 
-func (s *Storage) getVolume(pid string, vid string) (*api.Volume, error) {
+func (s *Server) getVolume(pid string, vid string) (*api.Volume, error) {
 	path := etcdBasePath + "/projects/" + pid + "/volumes/" + vid
 	resp, err := s.etcd.Get(context.Background(), path, nil)
 
@@ -1422,7 +1566,7 @@ func (s *Storage) getVolume(pid string, vid string) (*api.Volume, error) {
 	}
 }
 
-func (s *Storage) GetVolume(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) GetVolume(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	vid := r.PathParam("vid")
 
@@ -1436,7 +1580,7 @@ func (s *Storage) GetVolume(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-func (s *Storage) DeleteVolume(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) DeleteVolume(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	vid := r.PathParam("vid")
 
@@ -1502,7 +1646,7 @@ func newUUID() (string, error) {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
 }
 
-func (s *Storage) GetLogs(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) GetLogs(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	ssid := r.PathParam("ssid")
 	lines := r.Request.FormValue("lines")
@@ -1519,7 +1663,7 @@ func (s *Storage) GetLogs(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-func (s *Storage) getLogs(pid string, sid string, ssid string, tailLines int) (string, error) {
+func (s *Server) getLogs(pid string, sid string, ssid string, tailLines int) (string, error) {
 
 	glog.V(4).Infof("Getting logs for %s %s %d", sid, ssid, tailLines)
 
