@@ -461,9 +461,12 @@ func (k *KubeHelper) CreateControllerTemplate(name string, stack string, spec *n
 	env := []api.EnvVar{}
 
 	for name, addrPort := range *links {
-		if name == spec.Key {
-			continue
-		}
+		env = append(env,
+			api.EnvVar{
+				Name:  fmt.Sprintf("%s_NODE_PORT", strings.ToUpper(name)),
+				Value: fmt.Sprintf("%d", addrPort.NodePort),
+			})
+
 		env = append(env,
 			api.EnvVar{
 				Name:  fmt.Sprintf("%s_PORT_%d_TCP_ADDR", strings.ToUpper(name), addrPort.Port),
@@ -475,13 +478,6 @@ func (k *KubeHelper) CreateControllerTemplate(name string, stack string, spec *n
 				Name:  fmt.Sprintf("%s_PORT_%d_TCP_PORT", strings.ToUpper(name), addrPort.Port),
 				Value: fmt.Sprintf("%d", addrPort.Port),
 			})
-
-		env = append(env,
-			api.EnvVar{
-				Name:  fmt.Sprintf("%s_NODE_PORT", strings.ToUpper(name)),
-				Value: fmt.Sprintf("%d", addrPort.NodePort),
-			})
-
 	}
 
 	for name, value := range spec.Config {
