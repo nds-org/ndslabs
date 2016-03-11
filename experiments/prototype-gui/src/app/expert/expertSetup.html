@@ -23,7 +23,7 @@
     </div>
     
     <!-- Left Half (Selector Pane) -->
-    <div style="margin-top:15px;">
+    <div style="margin-top:15px;" ng-cloak>
       <div class="row" style="display:table-row;">
         <div class="col-sm-2" style="display:table-cell;">
           <div class="panel panel-default" >
@@ -57,7 +57,7 @@
         </div>
        
         <!-- Right Half (Content Pane) -->
-        <div class="col-sm-10 fill-height" style="display:table-cell;">
+        <div class="col-sm-10 fill-height" style="display:table-cell;" ng-cloak>
           <div class="">
             
             <div class="panel-body" style="padding:0;">
@@ -79,7 +79,12 @@
                     
                     <!-- The Accordion of Configured Stacks -->
                     <uib-accordion ng-if="configuredStacks.length > 0" close-others="true">
-                      <uib-accordion-group ng-repeat="stack in configuredStacks | orderBy:'name' track by stack.id" is-open="open" class="{{ stack.status === 'started' ? 'panel-success' : (stack.status === 'stopped' ? 'panel-danger' : 'panel-warning')  }}">
+                      
+                      <!-- TODO: This is a silly hack, since we can't bind to the accordion's panel-class attribute, \
+                      and we apparently cannot use ng-class to do the same thing, due to an implementation detail. -->
+                      <!-- See https://github.com/angular-ui/bootstrap/issues/5368 -->
+                      <uib-accordion-group ng-repeat="stack in configuredStacks | orderBy:'name' track by stack.id" is-open="open" 
+                          class="{{ stack.status === 'started' ? 'panel-success' : (stack.status === 'stopped' ? 'panel-danger' : 'panel-warning')  }}">
                         <uib-accordion-heading>
                           <!--- ng-class="{ 'panel-success': stack.status === 'started', 'panel-danger': stack.status === 'stopped', 'panel-warning':stack.status !== 'started' && stack.status !== 'stopped' }" -->
                           <!-- Stack Status Indicator -->
@@ -164,8 +169,7 @@
                                       <button type="button" class="btn btn-xs btn-default" 
                                       uib-tooltip="View {{ svc.service | specProperty:'label' }} Logs" 
                                       ng-if="stack.status.indexOf('start') !== -1 || intervals.start[stack.id]"
-                                      ng-disabled="svc.status === ''"
-                                          tooltip-placement="left" ng-click="showLogs(svc)">
+                                      ng-disabled="svc.status === ''" tooltip-placement="left" ng-click="showLogs(svc)">
                                         <i class="fa fa-fw fa-file-text" ng-class="{ 'animated faa-vertical': stack.status === 'starting' && svc.status === 'Pending' }"></i>
                                       </button>
                                       
@@ -173,19 +177,21 @@
                                       <button type="button" ng-disabled="stack.services | isRecursivelyRequired:svc" 
                                           ng-if="(stack.status === 'stopped' && !intervals.start[stack.id]) && svc.service !== stack.key && !_.find((stack.key | requirements), [ 'key', svc.service ])" 
                                           class="btn btn-xs btn-default" ng-click="removeStackSvc(stack, svc)" 
-                                          uib-tooltip="Remove Service from Stack" tooltip-placement="left">
+                                          uib-tooltip="Remove {{ option.key | specProperty:'label' }} from this stack" tooltip-placement="left">
                                         <i class="fa fa-fw fa-times"></i>
                                       </button>
                                     </td>
                                   </tr>
                                   
                                   <!-- Add an artificial row (if necessary) for optional services -->
-                                  <tr ng-repeat="option in stack.key | options"
+                                  <tr ng-repeat="option in stack.key | options track by option.key"
                                       ng-if="stack.status === 'stopped' && !_.find(stack.services, [ 'service', option.key ])">
         
                                     <td class="text-center">
-                                      <button class="btn btn-xs btn-block btn-default" ng-click="addStackSvc(stack, option)">
-                                          <i class="fa fa-fw fa-plus-circle"></i> Add Service
+                                      <button class="btn btn-xs btn-block btn-default" ng-click="addStackSvc(stack, option)"
+                                        uib-tooltip="Add {{ option.key | specProperty:'label' }} to this stack"
+                                        tooltip-placement="right">
+                                        <i class="fa fa-fw fa-plus-circle"></i> Add Service
                                       </button>
                                     </td>
                                     <td></td>

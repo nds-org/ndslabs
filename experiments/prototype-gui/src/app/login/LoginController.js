@@ -6,8 +6,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('LoginController', [ '$scope', '$cookies', '$location', '$log', 'AuthInfo', 'NdsLabsApi', 'ExpressRoute', 'LoginRoute', 'ExpertRoute',
-    function($scope, $cookies, $location, $log, authInfo, NdsLabsApi, ExpressRoute, LoginRoute, ExpertRoute) {
+.controller('LoginController', [ '$scope', '$cookies', '$location', '$log', '$uibModal', 'AuthInfo', 'NdsLabsApi', 'ExpressRoute', 'LoginRoute', 'ExpertRoute',
+    function($scope, $cookies, $location, $log, $uibModal, authInfo, NdsLabsApi, ExpressRoute, LoginRoute, ExpertRoute) {
   // Grab our injected AuthInfo from the provider
   $scope.settings = authInfo.get();
   
@@ -74,5 +74,32 @@ angular
     }).finally(function() {*/
       $scope.progressMessage = '';
     //});
+  };
+
+  /**
+   * Create a new project in etcd (DEBUG / DEMO only!)
+   * TODO: Remove this ASAP!
+   */
+  $scope.signUp = function() {
+    // See '/app/login/modals/signUp/signUp.html
+      var modalInstance = $uibModal.open({
+        animation: true,
+        templateUrl: '/app/login/modals/signUp/signUp.html',
+        controller: 'SignUpController',
+        size: 'md',
+        keyboard: false,
+        backdrop: 'static',
+        resolve: {  }
+      });
+      
+      // Define what we should do when the modal is closed
+      modalInstance.result.then(function(project) {
+        $log.debug('User has successfully created a new project: ' + project.namespace);
+        
+        // Now log in to the new account
+        $scope.settings.namespace = project.namespace;
+        $scope.settings.password = project.password;
+        $scope.login();
+      });
   };
 }]);

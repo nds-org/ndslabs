@@ -32,8 +32,7 @@ body {
 
 #loginPanel {
   margin: 10% auto;
-  min-width:150px;
-  max-width:300px;
+  width:400px;
 }
 
 /* Other custom page styling */
