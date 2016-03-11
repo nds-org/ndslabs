@@ -679,45 +679,10 @@ func (s *Server) getStacks(pid string) (*[]api.Stack, error) {
 	if err == nil {
 		nodes := resp.Node.Nodes
 		for _, node := range nodes {
-			stack := api.Stack{}
-
-			json.Unmarshal([]byte(node.Value), &stack)
-
-			// Get the pods for this stack
-			podStatus := make(map[string]string)
-			glog.V(4).Infof("Pods for %s\n", stack.Id)
-			pods, _ := s.kube.GetPods(pid, "stack", stack.Id)
-			for _, pod := range pods {
-				label := pod.Labels["name"]
-				if len(pod.Status.Conditions) > 0 {
-					glog.V(4).Infof("Pod %s %s\n", label, string(pod.Status.Phase))
-					podStatus[label] = string(pod.Status.Phase)
-				}
-			}
-
-			k8services, _ := s.kube.GetServices(pid, stack.Id)
-			endpoints := make(map[string]string)
-			for _, k8service := range k8services {
-				glog.V(4).Infof("Service : %s %s\n", k8service.Name, k8service.Spec.Type)
-				if k8service.Spec.Type == "NodePort" {
-					glog.V(4).Infof("NodePort : %s %d\n", k8service.Name, k8service.Spec.Ports[0].NodePort)
-					endpoints[k8service.Name] = fmt.Sprintf("http://%s:%d", s.host, k8service.Spec.Ports[0].NodePort)
-				}
-			}
-
-			for i := range stack.Services {
-				stackService := &stack.Services[i]
-				glog.V(4).Infof("Stack Service %s %s\n", stackService.Id, podStatus[stackService.Id])
-				stackService.Status = podStatus[stackService.Id]
-				if len(endpoints[stackService.Id]) > 0 {
-					glog.V(4).Infof("Endpoint %s %s\n", stackService.Id, endpoints[stackService.Id])
-					stackService.Endpoints = append(stackService.Endpoints, endpoints[stackService.Id])
-				}
-			}
-			stacks = append(stacks, stack)
+			sid := node.Key[strings.LastIndex(node.Key, "/"):len(node.Key)]
+			stack, _ := s.getStackWithStatus(pid, sid)
+			stacks = append(stacks, *stack)
 		}
-		//data, _ := json.MarshalIndent(stacks, "", "    ")
-		//fmt.Println(string(data))
 	}
 	return &stacks, nil
 }
@@ -1109,7 +1074,6 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 
 				glog.V(4).Infof("Waiting for %s (%s=%s) [%s, %#v]\n", pod.Name, condition.Type, condition.Status, phase, containerState)
 				stackService.Status = string(pod.Status.Phase)
-
 				if condition.Type == "Ready" && condition.Status == "True" {
 					ready++
 				} else {
@@ -1196,7 +1160,6 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 	podStatus := make(map[string]string)
 
 	pods, _ := s.kube.GetPods(pid, "stack", sid)
-	//pods, _ := s.getPods(pid, "stack", stack.Key)
 	for _, pod := range pods {
 		label := pod.Labels["name"]
 		glog.V(4).Infof("Pod %s %d\n", label, len(pod.Status.Conditions))
