@@ -35,14 +35,27 @@ var (
 func init() {
 	RootCmd.AddCommand(addCmd)
 	addCmd.AddCommand(addStackCmd)
+	addCmd.AddCommand(addProjectCmd)
 
 	// add stack flags
 	addStackCmd.Flags().StringVar(&opts, "opt", "", "Comma-delimited list of optional services")
 }
 
 var addCmd = &cobra.Command{
-	Use:   "add [stack] [name]",
+	Use:   "add [resource] [args]",
 	Short: "Add the specified resource",
+}
+
+var addProjectCmd = &cobra.Command{
+	Use:   "project [name] [pasword]",
+	Short: "Add the specified project ",
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) < 2 {
+			cmd.Usage()
+			os.Exit(-1)
+		}
+		addProject(args[0], args[1])
+	},
 }
 
 var addStackCmd = &cobra.Command{
@@ -53,7 +66,6 @@ var addStackCmd = &cobra.Command{
 			cmd.Usage()
 			os.Exit(-1)
 		}
-
 		addStack(apiUser.username, args[0], args[1], opts)
 	},
 }
@@ -191,5 +203,48 @@ func addStack(project string, serviceKey string, name string, opt string) {
 			fmt.Printf("Unable to add stack %s %s: %s \n", name, serviceKey, resp.Status)
 		}
 
+	}
+}
+
+func addProject(name string, password string) {
+
+	project := api.Project{}
+	project.Id = name
+	project.Name = name
+	project.Namespace = name
+	project.Password = password
+	//project.StorageQuota = 
+	//project.Description = 
+	//project.EmailAddress = 
+
+
+	url := apiServer + "projects/"
+
+	client := &http.Client{}
+	data, err := json.Marshal(project)
+	request, err := http.NewRequest("POST",
+		url, bytes.NewBuffer(data))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
+	resp, err := client.Do(request)
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			defer resp.Body.Close()
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			fmt.Println("Added project " + name)
+
+			project := api.Project{}
+			json.Unmarshal([]byte(body), &project)
+			//fmt.Printf(string(body))
+
+		} else {
+			fmt.Printf("Unable to add project %s: %s \n", name, resp.Status)
+		}
 	}
 }
