@@ -343,10 +343,7 @@ func (s *Server) IsAdmin(r *rest.Request) bool {
 func (s *Server) GetProject(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 
-	if !s.IsAdmin(r) {
-		rest.Error(w, "", http.StatusUnauthorized)
-		return
-	}
+	// Check IsAdmin or pid = current user
 
 	project, err := s.getProject(pid)
 	if err != nil {
@@ -374,10 +371,12 @@ func (s *Server) getProject(pid string) (*api.Project, error) {
 
 func (s *Server) PostProject(w rest.ResponseWriter, r *rest.Request) {
 
+/*
 	if !s.IsAdmin(r) {
 		rest.Error(w, "", http.StatusUnauthorized)
 		return
 	}
+*/
 
 	project := api.Project{}
 	err := r.DecodeJsonPayload(&project)
