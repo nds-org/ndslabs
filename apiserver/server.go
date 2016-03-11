@@ -205,10 +205,10 @@ func main() {
 				}
 			}
 		},
-		Authorizator: func(userId string, request * rest.Request) bool {
-			payload:= request.Env["JWT_PAYLOAD"].(map[string]interface{})
+		Authorizator: func(userId string, request *rest.Request) bool {
+			payload := request.Env["JWT_PAYLOAD"].(map[string]interface{})
 
-			if (payload["server"] == cfg.Server.Host) {
+			if payload["server"] == cfg.Server.Host {
 				return true
 			} else {
 				return false
@@ -216,10 +216,10 @@ func main() {
 		},
 		PayloadFunc: func(userId string) map[string]interface{} {
 			payload := make(map[string]interface{})
-			if (userId == "admin") {
+			if userId == "admin" {
 				payload["admin"] = true
 			}
-			payload["server"] =  cfg.Server.Host
+			payload["server"] = cfg.Server.Host
 			return payload
 		},
 	}
@@ -316,7 +316,7 @@ func (s *Server) Logout(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) GetAllProjects(w rest.ResponseWriter, r *rest.Request) {
 
-	if (! s.IsAdmin(r)) {
+	if !s.IsAdmin(r) {
 		rest.Error(w, "", http.StatusUnauthorized)
 		return
 	}
@@ -346,8 +346,8 @@ func (s *Server) GetAllProjects(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) IsAdmin(r *rest.Request) bool {
-	payload:= r.Env["JWT_PAYLOAD"].(map[string]interface{})
-	if (payload["admin"] == true ) {
+	payload := r.Env["JWT_PAYLOAD"].(map[string]interface{})
+	if payload["admin"] == true {
 		return true
 	} else {
 		return false
@@ -357,7 +357,7 @@ func (s *Server) IsAdmin(r *rest.Request) bool {
 func (s *Server) GetProject(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 
-	if (! s.IsAdmin(r)) {
+	if !s.IsAdmin(r) {
 		rest.Error(w, "", http.StatusUnauthorized)
 		return
 	}
@@ -388,7 +388,7 @@ func (s *Server) getProject(pid string) (*api.Project, error) {
 
 func (s *Server) PostProject(w rest.ResponseWriter, r *rest.Request) {
 
-	if (! s.IsAdmin(r)) {
+	if !s.IsAdmin(r) {
 		rest.Error(w, "", http.StatusUnauthorized)
 		return
 	}
@@ -419,7 +419,7 @@ func (s *Server) PostProject(w rest.ResponseWriter, r *rest.Request) {
 func (s *Server) PutProject(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 
-	if (! s.IsAdmin(r)) {
+	if !s.IsAdmin(r) {
 		rest.Error(w, "", http.StatusUnauthorized)
 		return
 	}
@@ -449,7 +449,7 @@ func (s *Server) PutProject(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) putProject(pid string, project *api.Project) error {
 
-        data, _ := json.Marshal(project)
+	data, _ := json.Marshal(project)
 	opts := client.SetOptions{Dir: true}
 	s.etcd.Set(context.Background(), etcdBasePath+"/projects/", pid, &opts)
 	_, err := s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid+"/project", string(data), nil)
@@ -469,7 +469,7 @@ func (s *Server) putProject(pid string, project *api.Project) error {
 func (s *Server) DeleteProject(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 
-	if (! s.IsAdmin(r)) {
+	if !s.IsAdmin(r) {
 		rest.Error(w, "", http.StatusUnauthorized)
 		return
 	}
@@ -537,7 +537,7 @@ func (s *Server) GetService(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 
-	if (! s.IsAdmin(r)) {
+	if !s.IsAdmin(r) {
 		rest.Error(w, "", http.StatusUnauthorized)
 		return
 	}
@@ -557,7 +557,7 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 	key := r.PathParam("key")
 
-	if (! s.IsAdmin(r)) {
+	if !s.IsAdmin(r) {
 		rest.Error(w, "", http.StatusUnauthorized)
 		return
 	}
@@ -583,7 +583,7 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 func (s *Server) DeleteService(w rest.ResponseWriter, r *rest.Request) {
 	key := r.PathParam("key")
 
-	if (! s.IsAdmin(r)) {
+	if !s.IsAdmin(r) {
 		rest.Error(w, "", http.StatusUnauthorized)
 		return
 	}
@@ -659,16 +659,15 @@ func (s *Server) getProjects() (*[]api.Project, error) {
 	if err == nil {
 		nodes := resp.Node.Nodes
 		for _, node := range nodes {
-			
-			resp, err = s.etcd.Get(context.Background(), node.Key + "/project", nil)
-			project	:= api.Project{}
+
+			resp, err = s.etcd.Get(context.Background(), node.Key+"/project", nil)
+			project := api.Project{}
 			json.Unmarshal([]byte(resp.Node.Value), &project)
 			projects = append(projects, project)
 		}
 	}
 	return &projects, nil
 }
-
 
 func (s *Server) getStacks(pid string) (*[]api.Stack, error) {
 
@@ -679,7 +678,7 @@ func (s *Server) getStacks(pid string) (*[]api.Stack, error) {
 	if err == nil {
 		nodes := resp.Node.Nodes
 		for _, node := range nodes {
-			sid := node.Key[strings.LastIndex(node.Key, "/"):len(node.Key)]
+			sid := node.Key[strings.LastIndex(node.Key, "/")+1 : len(node.Key)]
 			stack, _ := s.getStackWithStatus(pid, sid)
 			stacks = append(stacks, *stack)
 		}
@@ -1047,21 +1046,22 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 	}
 
 	// Give Kubernetes time to create the pods for the RC
-	time.Sleep(time.Second * 5)
+	time.Sleep(time.Second * 3)
 
 	// Wait for pods in ready state
 	ready := 0
+	failed := 0
 	name = fmt.Sprintf("%s-%s", stack.Id, serviceKey)
 	pods, _ = s.kube.GetPods(pid, "name", name)
 	glog.V(4).Infof("Waiting for pod to be ready %s %d\n", name, len(pods))
-	for ready < len(pods) {
+	for (ready + failed) < len(pods) {
 		for _, pod := range pods {
 			if len(pod.Status.Conditions) > 0 {
 				condition := pod.Status.Conditions[0]
 				phase := pod.Status.Phase
 				containerState := ""
 				if len(pod.Status.ContainerStatuses) > 0 {
-					state := pod.Status.ContainerStatuses[0].State
+					state := pod.Status.ContainerStatuses[0].LastTerminationState
 					switch {
 					case state.Running != nil:
 						containerState = "running"
@@ -1072,18 +1072,25 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 					}
 				}
 
-				glog.V(4).Infof("Waiting for %s (%s=%s) [%s, %#v]\n", pod.Name, condition.Type, condition.Status, phase, containerState)
+				glog.V(4).Infof("Waiting for %s (%s=%s) [%s, %s] %d %d\n", pod.Name, condition.Type, condition.Status, phase, containerState, (ready + failed), len(pods))
 				stackService.Status = string(pod.Status.Phase)
 				if condition.Type == "Ready" && condition.Status == "True" {
 					ready++
+				} else if containerState == "terminated" {
+					failed++
 				} else {
 					pods, _ = s.kube.GetPods(pid, "name", name)
-					time.Sleep(time.Second * 5)
+					time.Sleep(time.Second * 3)
 				}
 			}
 		}
 	}
-	return true, nil
+
+	if failed > 0 {
+		return false, nil
+	} else {
+		return true, nil
+	}
 }
 
 func (s *Server) StartStack(w rest.ResponseWriter, r *rest.Request) {
@@ -1145,11 +1152,16 @@ func (s *Server) StartStack(w rest.ResponseWriter, r *rest.Request) {
 		s.startController(pid, stackService.Service, stack, &addrPortMap)
 	}
 
-	// TODO: Get Stack Status
 	stack.Status = "started"
+	stack, _ = s.getStackWithStatus(pid, sid)
+	for _, stackService := range stack.Services {
+		if stackService.Status == "error" {
+			stack.Status = "error"
+		}
+	}
+
 	s.putStack(pid, sid, stack)
 
-	stack, _ = s.getStackWithStatus(pid, sid)
 	w.WriteJson(&stack)
 }
 
@@ -1161,10 +1173,47 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 
 	pods, _ := s.kube.GetPods(pid, "stack", sid)
 	for _, pod := range pods {
-		label := pod.Labels["name"]
+		label := pod.Labels["service"]
 		glog.V(4).Infof("Pod %s %d\n", label, len(pod.Status.Conditions))
 		if len(pod.Status.Conditions) > 0 {
-			podStatus[label] = string(pod.Status.Phase)
+			// Node Condition describes the condition of a running node. Only condition it "Ready"
+			condition := pod.Status.Conditions[0]
+			phase := pod.Status.Phase
+			containerState := ""
+			//restarts := 0
+			if len(pod.Status.ContainerStatuses) > 0 {
+				state := pod.Status.ContainerStatuses[0].LastTerminationState
+				//restarts = pod.Status.ContainerStatuses[0].RestartCount
+				switch {
+				case state.Running != nil:
+					containerState = "running"
+				case state.Waiting != nil:
+					containerState = "waiting"
+				case state.Terminated != nil:
+					containerState = "terminated"
+				}
+			}
+
+			//fmt.Printf("Status: %s %s %s %s\n", label, phase, condition.Status, containerState)
+			status := ""
+			if phase == "Running" {
+				if condition.Type == "Ready" && condition.Status == "True" {
+					status = "ready"
+				} else if containerState == "running" || containerState == "waiting" {
+					status = "starting"
+				} else if containerState == "terminated" {
+					status = "error"
+				}
+			} else if phase == "Pending" {
+				status = "waiting"
+			} else if phase == "Terminated" {
+				status = "stopped"
+			} else if phase == "Failed" {
+				status = "failed"
+			}
+
+			// Final status
+			podStatus[label] = status
 		}
 	}
 
@@ -1265,7 +1314,7 @@ func (s *Server) stopStack(pid string, sid string) (*api.Stack, error) {
 				phase := pod.Status.Phase
 				containerState := ""
 				if len(pod.Status.ContainerStatuses) > 0 {
-					state := pod.Status.ContainerStatuses[0].State
+					state := pod.Status.ContainerStatuses[0].LastTerminationState
 					switch {
 					case state.Running != nil:
 						containerState = "running"
@@ -1280,13 +1329,13 @@ func (s *Server) stopStack(pid string, sid string) (*api.Stack, error) {
 			}
 		}
 		pods, _ = s.kube.GetPods(pid, "name", stack.Id)
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * 3)
 	}
 
 	podStatus := make(map[string]string)
 	pods, _ = s.kube.GetPods(pid, "stack", stack.Id)
 	for _, pod := range pods {
-		label := pod.Labels["name"]
+		label := pod.Labels["service"]
 		glog.V(4).Infof("Pod %s %d\n", label, len(pod.Status.Conditions))
 		if len(pod.Status.Conditions) > 0 {
 			podStatus[label] = string(pod.Status.Phase)
