@@ -74,6 +74,38 @@ func (k *KubeHelper) CreateNamespace(pid string) (*api.Namespace, error) {
 	return nil, nil
 }
 
+func (k *KubeHelper) DeleteNamespace(pid string) (*api.Namespace, error) {
+
+	client := &http.Client{}
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid
+	glog.V(4).Infoln(url)
+	request, _ := http.NewRequest("DELETE", url, nil)
+
+	// POST /api/v1/namespaces v1.Namespace
+	request.Header.Set("Content-Type", "application/json")
+	httpresp, httperr := client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusOK {
+			glog.V(2).Infof("Deleted namespace %s\n", pid)
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			ns := api.Namespace{}
+			json.Unmarshal(data, &ns)
+			return &ns, nil
+		} else {
+			return nil, fmt.Errorf("Error deleting namespace for project %s: %s\n", pid, httpresp.Status)
+		}
+	}
+	return nil, nil
+}
+
 // Start the specified replication controller
 func (k *KubeHelper) StartController(pid string, spec *api.ReplicationController) (bool, error) {
 
@@ -461,11 +493,18 @@ func (k *KubeHelper) CreateControllerTemplate(name string, stack string, spec *n
 	env := []api.EnvVar{}
 
 	for name, addrPort := range *links {
-		env = append(env,
-			api.EnvVar{
-				Name:  fmt.Sprintf("%s_NODE_PORT", strings.ToUpper(name)),
-				Value: fmt.Sprintf("%d", addrPort.NodePort),
-			})
+
+		if addrPort.NodePort > 0 {
+			env = append(env,
+				api.EnvVar{
+					Name:  fmt.Sprintf("%s_NODE_PORT", strings.ToUpper(name)),
+					Value: fmt.Sprintf("%d", addrPort.NodePort),
+				})
+		}
+
+		if name == spec.Key {
+			continue
+		}
 
 		env = append(env,
 			api.EnvVar{
