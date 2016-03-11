@@ -321,26 +321,12 @@ func (s *Server) GetAllProjects(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/projects", nil)
+	projects, err := s.getProjects()
 	if err != nil {
-		if e, ok := err.(client.Error); ok {
-			if e.Code == client.ErrorCodeKeyNotFound {
-				rest.NotFound(w, r)
-			} else {
-				glog.Error(err)
-				rest.Error(w, e.Error(), http.StatusInternalServerError)
-			}
-		} else {
-			glog.Error(err)
-		}
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		w.WriteJson(&err)
 	} else {
-		projects := []api.Project{}
-		nodes := resp.Node.Nodes
-		for _, node := range nodes {
-			project := api.Project{}
-			json.Unmarshal([]byte(node.Value), &project)
-			projects = append(projects, project)
-		}
 		w.WriteJson(&projects)
 	}
 }
@@ -476,8 +462,17 @@ func (s *Server) DeleteProject(w rest.ResponseWriter, r *rest.Request) {
 
 	glog.V(4).Infof("DeleteProject %s", pid)
 
-	_, err := s.etcd.Delete(context.Background(), etcdBasePath+"/projects/"+pid, nil)
+	// TODO: Delete the Namespace
+	_, err := s.kube.DeleteNamespace(pid)
 	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_, err = s.etcd.Delete(context.Background(), etcdBasePath+"/projects/"+pid, &client.DeleteOptions{Recursive: true})
+	if err != nil {
+		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -486,20 +481,20 @@ func (s *Server) DeleteProject(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) GetAllServices(w rest.ResponseWriter, r *rest.Request) {
 
+	services, err := s.getServices()
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteJson(&services)
+}
+
+func (s *Server) getServices() (*[]api.ServiceSpec, error) {
+
 	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/services", nil)
 	if err != nil {
-		if e, ok := err.(client.Error); ok {
-			if e.Code == client.ErrorCodeKeyNotFound {
-				services := []api.ServiceSpec{}
-				w.WriteJson(&services)
-			} else {
-				glog.Error(err)
-				rest.Error(w, e.Error(), http.StatusInternalServerError)
-			}
-		} else {
-			glog.Error(err)
-		}
-		w.WriteJson(&err)
+		return nil, err
 	} else {
 		services := []api.ServiceSpec{}
 		nodes := resp.Node.Nodes
@@ -508,7 +503,7 @@ func (s *Server) GetAllServices(w rest.ResponseWriter, r *rest.Request) {
 			json.Unmarshal([]byte(node.Value), &service)
 			services = append(services, service)
 		}
-		w.WriteJson(&services)
+		return &services, nil
 	}
 }
 
@@ -588,13 +583,47 @@ func (s *Server) DeleteService(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
+	if !s.serviceExists(key) {
+		rest.Error(w, "No such service", http.StatusNotFound)
+		return
+	}
+
+	if s.serviceIsDependency(key) > 0 {
+		glog.Warningf("Cannot delete service spec %s because it is required by one or more services\n", key)
+		rest.Error(w, "Required by another service", http.StatusConflict)
+		return
+	}
+
+	if s.serviceInUse(key) > 0 {
+		glog.Warningf("Cannot delete service spec %s because it is in use by one or more projects\n", key)
+		rest.Error(w, "Service is in use", http.StatusConflict)
+		return
+	}
+
 	_, err := s.etcd.Delete(context.Background(), etcdBasePath+"/services/"+key, nil)
 	if err != nil {
+		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) serviceInUse(sid string) int {
+	inUse := 0
+	projects, _ := s.getProjects()
+	for _, project := range *projects {
+		stacks, _ := s.getStacks(project.Namespace)
+		for _, stack := range *stacks {
+			for _, service := range stack.Services {
+				if service.Service == sid {
+					inUse++
+				}
+			}
+		}
+	}
+	return inUse
 }
 
 func GetEtcdClient(etcdAddress string) (client.KeysAPI, error) {
@@ -774,6 +803,27 @@ func (s *Server) stackExists(pid string, name string) bool {
 		}
 	}
 	return exists
+}
+func (s *Server) serviceIsDependency(sid string) int {
+	services, _ := s.getServices()
+	dependencies := 0
+	for _, service := range *services {
+		for _, dependency := range service.Dependencies {
+			if dependency.DependencyKey == sid {
+				dependencies++
+			}
+		}
+	}
+	return dependencies
+}
+
+func (s *Server) serviceExists(sid string) bool {
+	service, _ := s.getServiceSpec(sid)
+	if service == nil {
+		return false
+	} else {
+		return true
+	}
 }
 
 func (s *Server) getStack(pid string, sid string) (*api.Stack, error) {
