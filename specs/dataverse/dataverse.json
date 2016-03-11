@@ -25,8 +25,8 @@
        "POSTGRES_DATABASE": "dvndb",
        "POSTGRES_USER": "dvnapp",
        "POSTGRES_PASSWORD": "secret",
-       "RSERVE_USER": "reserve",
-       "RSERVE_PASSWORD": "reserve"
+       "RSERVE_USER": "rserve",
+       "RSERVE_PASSWORD": "rserve"
     },
 	"volumeMounts":[
 	   { "mountPath": "/usr/local/glassfish4/glassfish/domains/domain1/files", "name": "dataverse" }
@@ -34,7 +34,7 @@
 	"readinessProbe" : {
 		"path" : "/resources/images/dataverseproject_logo.jpg",
 		"port" : 8080,
-		"initialDelay": 180,
+		"initialDelay": 30,
 		"timeout" : 600
 	}
 }
