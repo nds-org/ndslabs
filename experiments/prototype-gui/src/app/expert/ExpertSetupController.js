@@ -24,7 +24,7 @@ angular.module('ndslabs')
   $scope.showVolumePane = false;
   
   $scope.selectVolume = function(volume) {
-    $scope.selectedVolume=volume;
+    $scope.selectedVolume=volume.id;
     $scope.selectedTab = 1;
   };
   

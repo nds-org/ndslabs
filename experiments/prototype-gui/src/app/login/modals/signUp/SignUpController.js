@@ -1,6 +1,6 @@
 angular
 .module('ndslabs')
-.controller('SignUpController', [ '$scope', '$log', '$uibModalInstance', 'NdsLabsApi', function($scope, $log, $uibModalInstance, api) {
+.controller('SignUpController', [ '$scope', '$uibModalInstance', '$log', 'NdsLabsApi', function($scope, $uibModalInstance, $log, api) {
   $scope.newProject = {
     name: '',
     description: '',
@@ -10,8 +10,9 @@ angular
   };
   
   $scope.validate = function(project) {
-    if (project )
-    if (project.password !== project.passwordConfirmation) {
+    if (project.namespace === '' || project.password === '') {
+      return false;
+    } else if (project.password !== project.passwordConfirmation) {
       return false;
     }
     
@@ -23,7 +24,7 @@ angular
       api.postProjects({ 'project': project }).then(function(data, xhr) {
         $uibModalInstance.close(data);
       }, function(headers) {
-        $log.error('Failed to create project: ' + project.namespace);
+        $log.error('Failed to create account: ' + project.namespace);
       });
       
     }
