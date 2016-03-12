@@ -14,13 +14,9 @@
 package cmd
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	api "github.com/nds-labs/apiserver/types"
 	"github.com/spf13/cobra"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"strconv"
 )
@@ -49,41 +45,12 @@ var createCmd = &cobra.Command{
 			volume.Attached = args[2]
 		}
 
-		data, err := json.Marshal(&volume)
+		vol, err := client.AddVolume(apiUser.username, &volume)
 		if err != nil {
 			fmt.Printf("Error creating volume: %s\n", err.Error())
 			return
-		}
-
-		url := apiServer + "projects/" + apiUser.username + "/volumes"
-
-		data, _ = json.Marshal(volume)
-		client := &http.Client{}
-		request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
-		request.Header.Set("Content-Type", "application/json")
-		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
-		resp, err := client.Do(request)
-		if err != nil {
-			fmt.Printf("Error creating volume: %s\n", err.Error())
-			return
-
 		} else {
-			if resp.StatusCode == http.StatusOK {
-				defer resp.Body.Close()
-				body, err := ioutil.ReadAll(resp.Body)
-				if err != nil {
-					fmt.Printf("Error creating volume: %s\n", err.Error())
-					return
-				}
-
-				fmt.Print(string(body))
-				volume := api.Volume{}
-				json.Unmarshal([]byte(body), &volume)
-				fmt.Printf("Created volume %s", volume.Name)
-			} else {
-				fmt.Printf("Error creating volume: %s\n", resp.Status)
-				return
-			}
+			fmt.Printf("Created volume %s\n", vol.Name)
 		}
 	},
 }

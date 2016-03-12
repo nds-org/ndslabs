@@ -15,18 +15,20 @@
 package cmd
 
 import (
-	"encoding/json"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"os/user"
 	"strings"
 
+	apiclient "github.com/nds-labs/apictl/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+var client *apiclient.Client
 
 var apiServer string //= "http://141.142.209.154:8083/"
 
@@ -47,31 +49,12 @@ var RootCmd = &cobra.Command{
 
 func RefreshToken(cmd *cobra.Command, args []string) {
 
-	url := apiServer + "refresh_token"
-	client := &http.Client{}
-	request, err := http.NewRequest("GET", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
-	resp, err := client.Do(request)
+	token, err := client.RefreshToken()
 	if err != nil {
-		fmt.Printf("Error in call to refresh_token: %s\n", err)
+		fmt.Printf("Error refreshing token: %s\n", err)
 		os.Exit(-1)
-	} else {
-		if resp.StatusCode == http.StatusOK {
-			defer resp.Body.Close()
-
-			body, err := ioutil.ReadAll(resp.Body)
-
-			err = json.Unmarshal(body, &jwt)
-			token := jwt["token"].(string)
-			if err != nil {
-				log.Fatal(err)
-			}
-			writePasswd(token)
-		} else {
-			//fmt.Printf("Login failed: %s \n", resp.Status)
-		}
 	}
+	writePasswd(token)
 }
 
 // Execute adds all child commands to the root command sets flags appropriately.
@@ -125,15 +108,19 @@ func init() {
 
 	readPasswd()
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports Persistent Flags, which, if defined here,
-	// will be global for your application.
-
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.apictl.yaml)")
-	RootCmd.PersistentFlags().StringVar(&apiServer, "host", "http://localhost:8083/", "API server host address")
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	RootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	RootCmd.PersistentFlags().StringVar(&apiServer, "host", "https://localhost:8083/", "API server host address")
+
+	if strings.LastIndex(apiServer, "/") < len(apiServer)-1 {
+		apiServer = apiServer + "/"
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	client = apiclient.NewClient(apiServer, &http.Client{Transport: tr}, apiUser.token)
+
 }
 
 // initConfig reads in config file and ENV variables if set.

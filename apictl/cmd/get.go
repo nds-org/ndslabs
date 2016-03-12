@@ -17,11 +17,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	api "github.com/nds-labs/apiserver/types"
 	"github.com/spf13/cobra"
-	"io/ioutil"
-	"log"
-	"net/http"
 	"os"
 )
 
@@ -40,42 +36,18 @@ var getServiceCmd = &cobra.Command{
 		}
 		sid := args[0]
 
-		url := fmt.Sprintf("%sservices/%s", apiServer, sid)
-
-		client := &http.Client{}
-		request, err := http.NewRequest("GET", url, nil)
-
-		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
-		resp, err := client.Do(request)
+		service, err := client.GetService(sid)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Printf("Get service failed: %s\n", err)
+			return
 		}
 
-		if resp.StatusCode == http.StatusOK {
-
-			defer resp.Body.Close()
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				fmt.Printf("Error reading service spec %s\n", err.Error)
-				return
-			}
-
-			service := api.ServiceSpec{}
-			err = json.Unmarshal([]byte(body), &service)
-			if err != nil {
-				fmt.Printf("Error unmarshalling service spec %s\n", err.Error)
-				return
-			}
-
-			data, err := json.MarshalIndent(service, "", "   ")
-			if err != nil {
-				fmt.Printf("Error marshalling service spec %s\n", err.Error)
-				return
-			}
-			fmt.Println(string(data))
-		} else {
-			fmt.Printf("Get service failed: %s\n", resp.Status)
+		data, err := json.MarshalIndent(service, "", "   ")
+		if err != nil {
+			fmt.Printf("Error marshalling service spec %s\n", err.Error)
+			return
 		}
+		fmt.Println(string(data))
 	},
 	PostRun: RefreshToken,
 }
@@ -90,42 +62,18 @@ var getStackCmd = &cobra.Command{
 		}
 		sid := args[0]
 
-		url := fmt.Sprintf("%sprojects/%s/stacks/%s", apiServer, apiUser.username, sid)
-
-		client := &http.Client{}
-		request, err := http.NewRequest("GET", url, nil)
-
-		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
-		resp, err := client.Do(request)
+		stack, err := client.GetStack(apiUser.username, sid)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Printf("Get stack failed: %s\n", err)
+			return
 		}
 
-		if resp.StatusCode == http.StatusOK {
-
-			defer resp.Body.Close()
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				fmt.Printf("Error reading stack %s\n", err.Error)
-				return
-			}
-
-			stack := api.Stack{}
-			err = json.Unmarshal([]byte(body), &stack)
-			if err != nil {
-				fmt.Printf("Error unmarshalling stack %s\n", err.Error)
-				return
-			}
-
-			data, err := json.MarshalIndent(stack, "", "   ")
-			if err != nil {
-				fmt.Printf("Error marshalling stack %s\n", err.Error)
-				return
-			}
-			fmt.Println(string(data))
-		} else {
-			fmt.Printf("Get stack failed: %s\n", resp.Status)
+		data, err := json.MarshalIndent(stack, "", "   ")
+		if err != nil {
+			fmt.Printf("Error marshalling stack %s\n", err.Error)
+			return
 		}
+		fmt.Println(string(data))
 	},
 	PostRun: RefreshToken,
 }

@@ -15,12 +15,8 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
-	"io/ioutil"
-	"log"
-	"net/http"
 	"os"
 )
 
@@ -41,34 +37,14 @@ var logsCmd = &cobra.Command{
 
 		serviceId := args[0]
 
-		url := apiServer + "projects/" + apiUser.username + "/logs/" + serviceId
-		if lines > 0 {
-			url += fmt.Sprintf("?lines=%d", lines)
-		}
-
-		client := &http.Client{}
-		request, err := http.NewRequest("GET", url, nil)
-		request.Header.Set("Content-Type", "application/json")
-		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
-		resp, err := client.Do(request)
+		logs, err := client.GetLogs(apiUser.username, serviceId, lines)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Printf("Error getting logs %s: %s\n", serviceId, err)
 		} else {
-			if resp.StatusCode == http.StatusOK {
-				defer resp.Body.Close()
-				body, err := ioutil.ReadAll(resp.Body)
-				if err != nil {
-					log.Fatal(err)
-				}
-				var log string
-				json.Unmarshal(body, &log)
-				fmt.Printf("%s\n", log)
-
-			} else {
-				fmt.Printf("Error getting logs %s: %s\n", serviceId, resp.Status)
-			}
+			fmt.Println(logs)
 		}
 	},
+	PostRun: RefreshToken,
 }
 
 func init() {

@@ -15,14 +15,12 @@
 package cmd
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	api "github.com/nds-labs/apiserver/types"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"strings"
 	"text/tabwriter"
@@ -30,15 +28,20 @@ import (
 
 var (
 	opts string
+	file string
 )
 
 func init() {
 	RootCmd.AddCommand(addCmd)
 	addCmd.AddCommand(addStackCmd)
 	addCmd.AddCommand(addProjectCmd)
+	addCmd.AddCommand(addServiceCmd)
 
 	// add stack flags
 	addStackCmd.Flags().StringVar(&opts, "opt", "", "Comma-delimited list of optional services")
+
+	addProjectCmd.Flags().StringVar(&file, "file", "", "Path to project definition (json)")
+	addServiceCmd.Flags().StringVar(&file, "file", "", "Path to service definition (json)")
 }
 
 var addCmd = &cobra.Command{
@@ -47,14 +50,52 @@ var addCmd = &cobra.Command{
 }
 
 var addProjectCmd = &cobra.Command{
-	Use:   "project [name] [pasword]",
-	Short: "Add the specified project ",
+	Use:   "project [name] [password]",
+	Short: "Add the specified project (admin users only)",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 2 {
+
+		project := api.Project{}
+		if len(file) > 0 {
+			data, err := ioutil.ReadFile(file)
+			if err != nil {
+				fmt.Printf("Error reading project file: %s\n", err.Error())
+				os.Exit(-1)
+			}
+			json.Unmarshal(data, &project)
+		} else if len(args) == 2 {
+			project.Id = args[0]
+			project.Name = args[0]
+			project.Namespace = args[0]
+			project.Password = args[1]
+			//project.StorageQuota =
+			//project.Description =
+			//project.EmailAddress =
+		} else {
 			cmd.Usage()
 			os.Exit(-1)
 		}
-		addProject(args[0], args[1])
+		addProject(project)
+	},
+}
+
+var addServiceCmd = &cobra.Command{
+	Use:   "service",
+	Short: "Add the specified service (admin users only)",
+	Run: func(cmd *cobra.Command, args []string) {
+
+		service := api.ServiceSpec{}
+		if len(file) > 0 {
+			data, err := ioutil.ReadFile(file)
+			if err != nil {
+				fmt.Printf("Error reading service file: %s\n", err.Error())
+				os.Exit(-1)
+			}
+			json.Unmarshal(data, &service)
+		} else {
+			cmd.Usage()
+			os.Exit(-1)
+		}
+		addService(service)
 	},
 }
 
@@ -70,40 +111,6 @@ var addStackCmd = &cobra.Command{
 	},
 }
 
-func getService(serviceName string) *api.Service {
-	url := apiServer + "services/" + serviceName
-
-	client := &http.Client{}
-	request, err := http.NewRequest("GET", url, nil)
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
-
-	//fmt.Println(apiUser)
-	resp, err := client.Do(request)
-	if err != nil {
-		fmt.Printf("Error getting service: %s\n", err.Error())
-		os.Exit(-1)
-	}
-
-	if resp.StatusCode == http.StatusOK {
-
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		//fmt.Printf("%s", string(body))
-		if err != nil {
-			fmt.Printf("Error getting service: %s\n", err.Error())
-			os.Exit(-1)
-		}
-
-		service := api.Service{}
-		json.Unmarshal([]byte(body), &service)
-		return &service
-	} else {
-		fmt.Printf("Error getting service: %s\n", resp.Status)
-		os.Exit(-1)
-	}
-	return nil
-}
-
 func contains(s []string, e string) bool {
 	for _, a := range s {
 		if a == e {
@@ -115,7 +122,7 @@ func contains(s []string, e string) bool {
 
 func addRequiredDependencies(stackKey string, stack *api.Stack) {
 
-	service := getService(stackKey)
+	service, _ := client.GetService(stackKey)
 
 	for _, depends := range service.Dependencies {
 		if depends.Required {
@@ -143,7 +150,7 @@ func containsService(list []api.StackService, service api.StackService) bool {
 
 func addStack(project string, serviceKey string, name string, opt string) {
 
-	service := getService(serviceKey)
+	service, _ := client.GetService(serviceKey)
 	optional := strings.Split(opt, ",")
 
 	// Add this service
@@ -166,85 +173,38 @@ func addStack(project string, serviceKey string, name string, opt string) {
 		}
 	}
 
-	url := apiServer + "projects/" + project + "/stacks"
-
-	client := &http.Client{}
-	data, err := json.Marshal(stack)
-	request, err := http.NewRequest("POST",
-		url, bytes.NewBuffer(data))
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
-	resp, err := client.Do(request)
+	err := client.AddStack(project, &stack)
 	if err != nil {
 		log.Fatal(err)
 	} else {
-		if resp.StatusCode == http.StatusOK {
-			defer resp.Body.Close()
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				log.Fatal(err)
-			}
+		fmt.Println("Added stack " + serviceKey)
 
-			fmt.Println("Added stack " + serviceKey)
-
-			stack := api.Stack{}
-			json.Unmarshal([]byte(body), &stack)
-			//fmt.Printf(string(body))
-
-			w := new(tabwriter.Writer)
-			w.Init(os.Stdout, 20, 30, 0, '\t', 0)
-			fmt.Fprintln(w, "SERVICE\tSID")
-			for _, stackService := range stack.Services {
-				fmt.Fprintf(w, "%s\t%s\n", stackService.Service, stackService.Id)
-			}
-			w.Flush()
-
-		} else {
-			fmt.Printf("Unable to add stack %s %s: %s \n", name, serviceKey, resp.Status)
+		w := new(tabwriter.Writer)
+		w.Init(os.Stdout, 20, 30, 0, '\t', 0)
+		fmt.Fprintln(w, "SERVICE\tSID")
+		for _, stackService := range stack.Services {
+			fmt.Fprintf(w, "%s\t%s\n", stackService.Service, stackService.Id)
 		}
-
+		w.Flush()
 	}
 }
 
-func addProject(name string, password string) {
+func addProject(project api.Project) {
 
-	project := api.Project{}
-	project.Id = name
-	project.Name = name
-	project.Namespace = name
-	project.Password = password
-	//project.StorageQuota = 
-	//project.Description = 
-	//project.EmailAddress = 
-
-
-	url := apiServer + "projects/"
-
-	client := &http.Client{}
-	data, err := json.Marshal(project)
-	request, err := http.NewRequest("POST",
-		url, bytes.NewBuffer(data))
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
-	resp, err := client.Do(request)
+	err := client.AddProject(&project)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Unable to add project %s: %s \n", project.Id, err)
 	} else {
-		if resp.StatusCode == http.StatusOK {
-			defer resp.Body.Close()
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				log.Fatal(err)
-			}
+		fmt.Println("Added project " + project.Id)
+	}
+}
 
-			fmt.Println("Added project " + name)
+func addService(service api.ServiceSpec) {
 
-			project := api.Project{}
-			json.Unmarshal([]byte(body), &project)
-			//fmt.Printf(string(body))
-
-		} else {
-			fmt.Printf("Unable to add project %s: %s \n", name, resp.Status)
-		}
+	_, err := client.AddService(&service)
+	if err != nil {
+		fmt.Printf("Unable to add service %s: %s \n", service.Label, err)
+	} else {
+		fmt.Println("Added service " + service.Label)
 	}
 }

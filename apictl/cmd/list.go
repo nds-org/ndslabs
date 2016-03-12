@@ -15,13 +15,9 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
-	api "github.com/nds-labs/apiserver/types"
 	"github.com/spf13/cobra"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"text/tabwriter"
 )
@@ -37,43 +33,27 @@ var listServicesCmd = &cobra.Command{
 	Short: "List available services",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		url := apiServer + "services"
-
-		client := &http.Client{}
-		request, err := http.NewRequest("GET", url, nil)
-
-		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
-		resp, err := client.Do(request)
+		services, err := client.ListServices()
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		if resp.StatusCode == http.StatusOK {
-
-			defer resp.Body.Close()
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			services := make([]api.Service, 0)
-			json.Unmarshal([]byte(body), &services)
-			fmt.Printf("SERVICE\tDEPENDENCY\n")
-			for _, service := range services {
-				if service.IsStack {
-					fmt.Printf("%s\n", service.Key)
-					for _, dependency := range service.Dependencies {
-						if dependency.Required {
-							fmt.Printf("\t %s (required)\n", dependency.DependencyKey)
-						} else {
-							fmt.Printf("\t %s (optional)\n", dependency.DependencyKey)
-						}
+		w := new(tabwriter.Writer)
+		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
+		fmt.Fprintln(w, "SERVICE\tDEPENDENCY\tREQUIRED")
+		for _, service := range *services {
+			if service.IsStack {
+				fmt.Fprintf(w, "%s\n", service.Key)
+				for _, dependency := range service.Dependencies {
+					if dependency.Required {
+						fmt.Fprintf(w, "\t%s\t(required)\n", dependency.DependencyKey)
+					} else {
+						fmt.Fprintf(w, "\t%s\t(optional)\n", dependency.DependencyKey)
 					}
 				}
 			}
-		} else {
-			fmt.Printf("List failed: %s\n", resp.Status)
 		}
+		w.Flush()
 	},
 	PostRun: RefreshToken,
 }
@@ -83,44 +63,25 @@ var listStacksCmd = &cobra.Command{
 	Short: "List existing stacks",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		url := apiServer + "projects/" + apiUser.username + "/stacks"
-
-		client := &http.Client{}
-		request, err := http.NewRequest("GET", url, nil)
-		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
-		resp, err := client.Do(request)
+		stacks, err := client.ListStacks(apiUser.username)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Printf("List failed: %s\n", err)
+			os.Exit(-1)
 		}
-
-		if resp.StatusCode == http.StatusOK {
-
-			defer resp.Body.Close()
-			body, err := ioutil.ReadAll(resp.Body)
-			//fmt.Printf("%s", string(body))
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			stacks := make([]api.Stack, 0)
-			json.Unmarshal([]byte(body), &stacks)
-			w := new(tabwriter.Writer)
-			w.Init(os.Stdout, 10, 4, 3, ' ', 0)
-			fmt.Fprintln(w, "STACK\tSERVICE\tSTATUS\tENDPOINT\tID")
-			for _, stack := range stacks {
-				fmt.Fprintf(w, "%s\t\t%s\t\t%s\n", stack.Name, stack.Status, stack.Id)
-				for _, service := range stack.Services {
-					endpoint := ""
-					if len(service.Endpoints) > 0 {
-						endpoint = service.Endpoints[0]
-					}
-					fmt.Fprintf(w, "\t%s\t%s\t%s\t%s\n", service.Service, service.Status, endpoint, service.Id)
+		w := new(tabwriter.Writer)
+		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
+		fmt.Fprintln(w, "STACK\tSERVICE\tSTATUS\tENDPOINT\tID")
+		for _, stack := range *stacks {
+			fmt.Fprintf(w, "%s\t\t%s\t\t%s\n", stack.Name, stack.Status, stack.Id)
+			for _, service := range stack.Services {
+				endpoint := ""
+				if len(service.Endpoints) > 0 {
+					endpoint = service.Endpoints[0]
 				}
+				fmt.Fprintf(w, "\t%s\t%s\t%s\t%s\n", service.Service, service.Status, endpoint, service.Id)
 			}
-			w.Flush()
-		} else {
-			fmt.Printf("List failed: %s\n", resp.Status)
 		}
+		w.Flush()
 	},
 	PostRun: RefreshToken,
 }
@@ -130,38 +91,42 @@ var listVolumesCmd = &cobra.Command{
 	Short: "List existing volumes",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		url := apiServer + "projects/" + apiUser.username + "/volumes"
-
-		client := &http.Client{}
-		request, err := http.NewRequest("GET", url, nil)
-		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
-		resp, err := client.Do(request)
+		volumes, err := client.ListVolumes(apiUser.username)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Printf("List failed: %s\n", err)
+			os.Exit(-1)
 		}
 
-		if resp.StatusCode == http.StatusOK {
-
-			defer resp.Body.Close()
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			volumes := make([]api.Volume, 0)
-			json.Unmarshal([]byte(body), &volumes)
-
-			w := new(tabwriter.Writer)
-			w.Init(os.Stdout, 10, 4, 3, ' ', 0)
-			fmt.Fprintln(w, "NAME\tATTACHED TO\tSIZE\tSTATUS")
-			for _, volume := range volumes {
-				fmt.Fprintf(w, "%s\t%s\t%d\t%s\n", volume.Name, volume.Attached, volume.Size, volume.Status)
-			}
-			w.Flush()
-
-		} else {
-			fmt.Printf("List failed: %s\n", resp.Status)
+		w := new(tabwriter.Writer)
+		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
+		fmt.Fprintln(w, "NAME\tATTACHED TO\tSIZE\tSTATUS")
+		for _, volume := range *volumes {
+			fmt.Fprintf(w, "%s\t%s\t%d\t%s\n", volume.Name, volume.Attached, volume.Size, volume.Status)
 		}
+		w.Flush()
+	},
+	PostRun: RefreshToken,
+}
+
+var listProjectsCmd = &cobra.Command{
+	Use:   "projects",
+	Short: "List existing projects (admin users only)",
+	Run: func(cmd *cobra.Command, args []string) {
+
+		projects, err := client.ListProjects()
+		if err != nil {
+			fmt.Printf("List failed: %s\n", err)
+			os.Exit(-1)
+		}
+
+		w := new(tabwriter.Writer)
+		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
+		fmt.Fprintln(w, "ID\tNAMESPACE")
+		for _, project := range *projects {
+			fmt.Fprintf(w, "%s\t%s\n", project.Id, project.Namespace)
+		}
+		w.Flush()
+
 	},
 	PostRun: RefreshToken,
 }
@@ -171,4 +136,5 @@ func init() {
 	listCmd.AddCommand(listServicesCmd)
 	listCmd.AddCommand(listStacksCmd)
 	listCmd.AddCommand(listVolumesCmd)
+	listCmd.AddCommand(listProjectsCmd)
 }

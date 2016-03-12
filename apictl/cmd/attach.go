@@ -15,14 +15,8 @@
 package cmd
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	api "github.com/nds-labs/apiserver/types"
 	"github.com/spf13/cobra"
-	"io/ioutil"
-	"log"
-	"net/http"
 	"os"
 )
 
@@ -38,82 +32,22 @@ var attachCmd = &cobra.Command{
 		name := args[0]
 		ssid := args[1]
 
-		volume := getVolume(name)
-		if volume == nil {
+		volume, err := client.GetVolume(apiUser.username, name)
+		if err != nil {
+			fmt.Printf("Attach failed: %s\n", err.Error())
 			return
 		}
 
 		volume.Attached = ssid
 
-		data, err := json.Marshal(&volume)
-		if err != nil {
-			fmt.Printf("Error creating volume: %s\n", err.Error())
-			return
-		}
-
-		url := apiServer + "projects/" + apiUser.username + "/volumes/" + name
-
-		client := &http.Client{}
-		request, err := http.NewRequest("PUT", url, bytes.NewBuffer(data))
+		vol, err := client.UpdateVolume(apiUser.username, volume)
 		if err != nil {
 			fmt.Printf("Attach failed: %s\n", err.Error())
-			return
-		}
-
-		request.Header.Set("Content-Type", "application/json")
-		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
-		resp, err := client.Do(request)
-		if err != nil {
-			fmt.Printf("Attach failed: %s\n", err.Error())
-			return
-		}
-
-		if resp.StatusCode == http.StatusOK {
-			defer resp.Body.Close()
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			fmt.Print(string(body))
-			volume := api.Volume{}
-			json.Unmarshal([]byte(body), &volume)
-			fmt.Printf("Attached volume %s\n", volume.Name)
 		} else {
-			fmt.Printf("Attach failed: %s\n", resp.Status)
+			fmt.Printf("Attached volume %s\n", vol.Name)
 		}
 	},
-}
-
-func getVolume(name string) *api.Volume {
-
-	url := apiServer + "projects/" + apiUser.username + "/volumes/" + name
-
-	client := &http.Client{}
-	request, err := http.NewRequest("GET", url, nil)
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiUser.token))
-
-	//fmt.Println(apiUser)
-	resp, err := client.Do(request)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if resp.StatusCode == http.StatusOK {
-
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		volume := api.Volume{}
-		json.Unmarshal([]byte(body), &volume)
-		return &volume
-	} else {
-		fmt.Printf("Get volume failed: %s\n", resp.Status)
-		return nil
-	}
+	PostRun: RefreshToken,
 }
 
 func init() {
