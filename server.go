@@ -76,6 +76,8 @@ type Config struct {
 		JwtKey       string
 		Host         string
 		VolumeSource string
+		SSLKey       string
+		SSLCert      string
 	}
 	Etcd struct {
 		Address string
@@ -220,6 +222,7 @@ func main() {
 				payload["admin"] = true
 			}
 			payload["server"] = cfg.Server.Host
+			payload["user"] = userId
 			return payload
 		},
 	}
@@ -250,7 +253,7 @@ func main() {
 		rest.Get("/", GetPaths),
 		rest.Post("/authenticate", jwt.LoginHandler),
 		rest.Delete("/authenticate", server.Logout),
-		rest.Get("/checkToken", server.CheckToken),
+		rest.Get("/check_token", server.CheckToken),
 		rest.Get("/refresh_token", jwt.RefreshHandler),
 		rest.Get("/projects", server.GetAllProjects),
 		rest.Post("/projects/", server.PostProject),
@@ -283,7 +286,11 @@ func main() {
 	api.SetApp(router)
 
 	glog.Infof("Listening on %s:%s", cfg.Server.Host, cfg.Server.Port)
-	glog.Fatal(http.ListenAndServe(":"+cfg.Server.Port, api.MakeHandler()))
+	if len(cfg.Server.SSLCert) > 0 {
+		glog.Fatal(http.ListenAndServeTLS(":"+cfg.Server.Port, cfg.Server.SSLCert, cfg.Server.SSLKey, api.MakeHandler()))
+	} else {
+		glog.Fatal(http.ListenAndServe(":"+cfg.Server.Port, api.MakeHandler()))
+	}
 }
 
 type Server struct {
@@ -331,6 +338,11 @@ func (s *Server) GetAllProjects(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
+func (s *Server) getUser(r *rest.Request) string {
+	payload := r.Env["JWT_PAYLOAD"].(map[string]interface{})
+	return payload["user"].(string)
+}
+
 func (s *Server) IsAdmin(r *rest.Request) bool {
 	payload := r.Env["JWT_PAYLOAD"].(map[string]interface{})
 	if payload["admin"] == true {
@@ -344,11 +356,16 @@ func (s *Server) GetProject(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 
 	// Check IsAdmin or pid = current user
+	if !(s.IsAdmin(r) || s.getUser(r) == pid) {
+		rest.Error(w, "", http.StatusUnauthorized)
+		return
+	}
 
 	project, err := s.getProject(pid)
 	if err != nil {
 		rest.NotFound(w, r)
 	} else {
+		project.Password = ""
 		w.WriteJson(project)
 	}
 }
@@ -371,12 +388,12 @@ func (s *Server) getProject(pid string) (*api.Project, error) {
 
 func (s *Server) PostProject(w rest.ResponseWriter, r *rest.Request) {
 
-/*
-	if !s.IsAdmin(r) {
-		rest.Error(w, "", http.StatusUnauthorized)
-		return
-	}
-*/
+	/*
+		if !s.IsAdmin(r) {
+			rest.Error(w, "", http.StatusUnauthorized)
+			return
+		}
+	*/
 
 	project := api.Project{}
 	err := r.DecodeJsonPayload(&project)
@@ -391,7 +408,7 @@ func (s *Server) PostProject(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	err = s.putProject(project.Name, &project)
+	err = s.putProject(project.Id, &project)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1045,10 +1062,22 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 	service, _ := s.getServiceSpec(serviceKey)
 
 	name := fmt.Sprintf("%s-%s", stack.Id, service.Key)
-	template := s.kube.CreateControllerTemplate(name, stack.Id, service, addrPortMap)
+	template := s.kube.CreateControllerTemplate(pid, name, stack.Id, service, addrPortMap)
 
 	if service.RequiresVolume {
 		k8vols := make([]k8api.Volume, 0)
+		for _, mount := range service.VolumeMounts {
+			if mount.Name == "docker" {
+				// Create a docker socket mount
+				k8vol := k8api.Volume{}
+				k8vol.Name = "docker"
+				k8hostPath := k8api.HostPathVolumeSource{}
+				k8hostPath.Path = "/var/run/docker.sock"
+				k8vol.HostPath = &k8hostPath
+				k8vols = append(k8vols, k8vol)
+			}
+		}
+
 		k8vol := k8api.Volume{}
 		k8vol.Name = stackService.Service
 		glog.V(4).Infof("Need volume for %s \n", stackService.Service)
@@ -1201,8 +1230,8 @@ func (s *Server) StartStack(w rest.ResponseWriter, r *rest.Request) {
 		s.startController(pid, stackService.Service, stack, &addrPortMap)
 	}
 
-	stack.Status = "started"
 	stack, _ = s.getStackWithStatus(pid, sid)
+	stack.Status = "started"
 	for _, stackService := range stack.Services {
 		if stackService.Status == "error" {
 			stack.Status = "error"
@@ -1269,9 +1298,11 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 	k8services, _ := s.kube.GetServices(pid, sid)
 	endpoints := make(map[string]string)
 	for _, k8service := range k8services {
-		glog.V(4).Infof("Service : %s %s\n", k8service.Name, k8service.Spec.Type)
+		label := k8service.Labels["service"]
+		glog.V(4).Infof("Service : %s %s (%s)\n", k8service.Name, k8service.Spec.Type, label)
 		if k8service.Spec.Type == "NodePort" {
-			endpoints[k8service.GetName()] = fmt.Sprintf("http://%s:%d", s.host, k8service.Spec.Ports[0].NodePort)
+			glog.V(4).Infof("NodePort : %s %d\n", s.host, k8service.Spec.Ports[0].NodePort)
+			endpoints[label] = fmt.Sprintf("http://%s:%d", s.host, k8service.Spec.Ports[0].NodePort)
 		}
 	}
 
@@ -1393,6 +1424,7 @@ func (s *Server) stopStack(pid string, sid string) (*api.Stack, error) {
 	for i := range stack.Services {
 		stackService := &stack.Services[i]
 		stackService.Status = podStatus[stackService.Service]
+		stackService.Endpoints = nil
 	}
 
 	stack.Status = stackStatus[Stopped]
