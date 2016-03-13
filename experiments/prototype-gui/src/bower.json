@@ -21,10 +21,10 @@
     "angular-grid": "https://github.com/bodom0015/angular-grid.git",
     "angular-alert": "https://github.com/bodom0015/angular-alert.git",
     "lodash": "^4.5.1",
-    "ansi-to-html": "https://github.com/jorgeecardona/ansi-to-html.git",
-    "font-awesome-animation": "^0.0.8"
+    "font-awesome-animation": "^0.0.8",
+    "angular-gage": "^0.1.0"
   },
   "resolutions": {
-    "angular": ">=1.3.0"
+    "angular": "~1.4.9"
   }
 }

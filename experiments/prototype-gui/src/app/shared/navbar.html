@@ -9,7 +9,7 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <div style="padding:auto;">
+        <div>
           <!-- Draw the brand logo -->
           <!--<a href="{{ home.url }}">
             <img style="margin-top:-5px;" src="/asset/png/favicon-32x32.png" alt="NDS Labs" height="32" width="32">
@@ -41,15 +41,22 @@
               </li>
             </ul>
           </li>
-
+          
+          <li ng-controller="LoginController" ng-show="settings.token" ng-if="navFilter === 'right'">
+            <a href="#">{{ settings.namespace | capitalize }}</a>
+          </li>
+          
 	        <!-- Then draw our account settings button -->
           <li ng-controller="LoginController" ng-show="settings.token" ng-if="navFilter === 'right'">
-            <a id="dropDownButton" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            <a id="dropDownButton" type="button" ng-click="logout()">
+              Sign Out <i class="fa fa-fw fa-sign-out"></i>
+            </a>
+            <!-- Sub-template for Auth Info Popout -->
+            <!--<a id="dropDownButton" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
               {{ settings.namespace | capitalize }} <i class="fa fa-fw fa-caret-down"></i>
             </a>
             <ul class="dropdown-menu form-popover pullDown" role="menu" aria-labelledby="dropDownButton" ng-click="$event.stopPropagation();">
               <li>
-                <!-- Sub-template for Auth Info Popout -->
                 <div class="panel panel-default">
                   <div class="panel-heading">{{ settings.namespace | capitalize }}</div>
                     <div class="panel-body">
@@ -59,7 +66,7 @@
                   </div>
                 </div>
               </li>
-            </ul>
+            </ul>-->
           </li>
         </ul>
       </div><!--/.nav-collapse eWFsZGEgd2FzIGhlcmU= <-- easter egg -->

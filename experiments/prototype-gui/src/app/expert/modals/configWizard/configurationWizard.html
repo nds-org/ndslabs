@@ -75,7 +75,7 @@
                       {{ opt.service | specProperty:'label' }}
                     </div>
                     <div class="col-sm-1">
-                      <i class="fa fa-fw fa-warning pull-right animated faa-slow faa-flash" tooltip-placement="left"
+                      <i class="fa fa-fw fa-warning pull-right" tooltip-placement="left"
                         ng-if="newStackOptionalDeps[opt.service].length > 0"
                         uib-tooltip="{{ opt.service | specProperty:'label' }} requires 
                           {{ newStackOptionalDeps[opt.service] | formatDependencies }}. 
@@ -92,13 +92,57 @@
 
         <!-- Volumes Page -->
         <div ng-if="wizard.currentPage.key === 'volumes'">
-          <!-- Create New Volumes -->
-          <div class="panel panel-info" ng-repeat="volume in newStackVolumeRequirements track by volume.service">
+          
+          <!-- Show a fancy volume quota pie chart -->
+          <div ng-controller="VolumeQuotaCtrl">
+            <div class="row">
+              <div class="col-sm-6">
+                <!--<div google-chart chart="chartObject" style="margin:0;padding:0;height:300px; width:100%;"></div>-->
+                <justgage width="175" height="175" value="{{ configuredVolumes | usedStorage }}" 
+                title="Current Usage" max="{{ project.storageQuota || 50 }}" label="GB"></justgage>
+              </div>
+              <div class="col-sm-6"  ng-if="availableSpace != 0 && availableSpace > 0">
+                <justgage width="175" height="175" relativeGuageSize="true"
+                value="{{ _.concat(configuredVolumes, newStackVolumeRequirements) | usedStorage }}" 
+                title="Projected Usage" max="{{ project.storageQuota || 50 }}" label="GB"></justgage>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-12">
+                <p>Your project is allowed to allocate <strong>{{ project.storageQuota || '50' }} GB</strong> of storage.</p>
+                <div ng-if="!availableSpace || availableSpace == 0 || availableSpace <= 0">
+                  <p>You have used all of your allocated storage.</p>
+                  <p>Remove other stacks to make room for this one, or 
+                  <a target="_self" ng-href="{{ mailToLink }}">Click here to contact an administrator</a> regarding increasing your storage quota.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Create New Volumes ng-repeat="volume in newStackVolumeRequirements track by volume.service" -->
+          <div class="panel panel-info" ng-if="availableSpace != 0 || availableSpace > 0">
             <div class="panel-heading">
-              <h4 class="panel-title">{{ volume.service | specProperty:'label' }}</h4>
+              <div class="row">
+                <div class="col-sm-4">
+                  <h4 class="panel-title">{{ volume.service | specProperty:'label' }}</h4>
+                </div>
+                <div class="col-offset-sm-6 col-sm-2 pull-right">
+                  <span class="input-group-btn" ng-if="newStackVolumeRequirements.length > 1">  
+                    <!-- Display our current page +/- 2 -->
+                    <button ng-disabled="currentPage === page" 
+                        ng-repeat="page in getPageRange()"
+                        ng-if="page >= 0 && page < newStackVolumeRequirements.length"
+                        class="btn btn-xs" ng-class="{ 'btn-primary':page === currentPage, 'btn-link':!currentPage === page }"
+                        ng-click="setCurrentPage(page)">
+                      {{ page + 1 }}
+                    </button>
+                  </span>
+                </div>
+              </div>
             </div>
 
             <div class="panel-body">
+              <!-- Prompt for Volume Details, assume sane defaults -->
               <div class="row">
                 <div class="col-sm-12" ng-if="(newStackOrphanedVolumes | orphansExist:volume.service).length">
                   <p>Previous volumes found:</p>
@@ -106,16 +150,19 @@
                   <form class="form">
                     <fieldset>
                       <div class="form-group">
-                        <div class="radio" ng-repeat="orphan in newStackOrphanedVolumes | orphansExist:volume.service track by orphan.id" ng-click="volume.id=orphan.id;volume.name=orphan.name">
+                        <!-- TODO: Fix this ugly hack -->
+                        <div class="radio" ng-repeat="orphan in newStackOrphanedVolumes | orphansExist:volume.service track by orphan.id" 
+                            ng-click="volume.id=orphan.id;volume.name=orphan.name">
                           <label>
-                            <input type="radio" ng-checked="volume.id === orphan.id" name="orphaned{{ volume.service }}VolumeRadio">
-                             
+                            <input type="radio" ng-checked="volume.id === orphan.id">
                             Use existing data from <strong tooltip-placement="right" uib-tooltip="{{ orphan.size }} {{ orphan.sizeUnit }}">{{ orphan.name }}</strong>
                           </label>
                         </div>
+                        
+                        <!-- TODO: Fix this ugly hack -->
                         <div class="radio" ng-click="volume.id='';volume.name=volume.defaultName;">
                           <label>
-                            <input type="radio" ng-checked="volume.id === ''" name="orphaned{{ volume.service }}VolumeRadio">
+                            <input type="radio" ng-checked="volume.id === ''">
                             Create a new volume
                           </label>
                         </div>
@@ -131,7 +178,7 @@
                 <!-- Volume Name -->
                 <div class="row">
                   <div class="col-sm-8">
-                    <input style="width:100%;" type="text" class="form-control" id="inputVolumeName" placeholder="Enter a name for this volume" ng-model="volume.name">
+                    <input type="text" class="form-control fill-width" id="inputVolumeName" placeholder="Enter a name for this volume" ng-model="volume.name">
                   </div>
 
                   <!-- Volume Size / Units -->

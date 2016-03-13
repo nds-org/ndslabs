@@ -8,6 +8,36 @@
  */
 angular.module('ndslabs')
 /**
+ * Given a string, capitalize it
+ */ 
+.filter('capitalize', [ '_', function(_) {
+  return function(input) {
+    return _.capitalize(input);
+  };
+}])
+/**
+ * Given a string, encode it so that it can be safely put into a URL
+ */
+.filter('urlEncode', [ function() {
+  return function(input) {
+    if(input) {
+      return window.encodeURIComponent(_.replace(input, '\s', '+')); 
+    }
+    return "";
+  }
+}])
+/**
+ * Given a string, decode it safely from URL form
+ */
+.filter('urlDecode', [ function() {
+  return function(input) {
+    if(input) {
+      return window.decodeURIComponent(input); 
+    }
+    return "";
+  }
+}])
+/**
  * Given a stack, return a list of ALL of its services' endpoints
  */
 .filter('allEndpoints', ['_', function(_) {
@@ -89,21 +119,29 @@ angular.module('ndslabs')
   };
 }])
 /**
- * Given a string, capitalize it
- */ 
-.filter('capitalize', [ '_', function(_) {
-  return function(input) {
-    return _.capitalize(input);
+ * Given a list of volumes, compute the total storage they are using
+ */
+.filter('usedStorage', [ function() {
+  return function(volumes) {
+    var used = 0;
+    angular.forEach(volumes, function(volume) {
+      used += volume.sizeUnit === 'TB' ? volume.size * 1000 : volume.size;
+    });
+    return used;
   };
 }])
 /**
- * Given a string, convert any ANSI control characters into HTML
- * 
- * TODO: How unsafe is this?
+ * Given a list of stacks, count how many are running
  */
-.filter('ansi', [ '$sce', 'ansi2html', function($sce, ansi) {
-  return function(input) {
-    return $sce.trustAsHtml(ansi.toHtml(input));
+.filter('runningStacksCount', [ function() {
+  return function(stacks) {
+    var running = 0;
+    angular.forEach(stacks, function(stack) {
+      if (stack.status !== 'stopped') {
+        running++;
+      }
+    });
+    return running;
   };
 }])
 /**
@@ -192,6 +230,10 @@ angular.module('ndslabs')
     return [];
   };
 }])
+/**
+ * Given a list of dependencies, format them and output 
+ * a comma-separated string of their labels
+ */
 .filter('formatDependencies', [ 'Specs', function(Specs) {
   return function(deps) {
     var getLabel = function(specKey) {

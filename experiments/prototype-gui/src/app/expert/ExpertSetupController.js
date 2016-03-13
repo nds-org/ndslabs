@@ -58,42 +58,61 @@ angular.module('ndslabs')
   var projectId = AuthInfo.get().namespace;
   var query = {};
   
+  
+  // Logic for the "Auto Refresh" toggle button
+  $scope.autoInterval = null;
+  $scope.startInterval = function (){
+    $scope.autoInterval = $interval($scope.softRefresh, 2000);
+  };
+  
+  $scope.stopInterval = function() {
+    $interval.cancel($scope.autoInterval);
+    $scope.autoInterval = null;
+  };
+  
+  $scope.toggleAutoRefresh = function() {
+    if ($scope.autoInterval === null) {
+      $scope.startInterval();
+    } else {
+      $scope.stopInterval();
+    }
+  };
+  
+  /**
+   * Grabs metadata about the current project
+   */ 
+  (query.project = function() {
+    // Grab the metadata associated with our current namespace
+    return NdsLabsApi.getProjectsByProjectId({ 
+      "projectId": projectId 
+    }).then(function(project, xhr) {
+      $log.debug("successfully grabbed from /projects/" + projectId + "!");
+      $scope.project = AuthInfo.project = Project.project = project;
+    }, function(headers) {
+      $log.debug("error!");
+      console.debug(headers);
+    });
+  })();
+  
+  /**
+   * Grabs metadata about the current site's available services
+   */ 
+  (query.services = function() {
+    // Grab the list of available services at our site
+    return NdsLabsApi.getServices().then(function(specs, xhr) {
+      $log.debug("successfully grabbed from /services!");
+      Specs.all = $scope.allServices = specs;
+      Specs.deps = $scope.deps = angular.copy(specs);
+      Specs.stacks = $scope.stacks = _.remove($scope.deps, function(svc) { return svc.stack === true; });
+    }, function (headers) {
+      $log.error("error grabbing from /services!");
+    })
+  })();
+  
   /**
    * Perform a "soft-refresh". That is, refresh the data without fully re-rendering the page
    */ 
   ($scope.softRefresh = function() {
-    
-    /**
-     * Grabs metadata about the current project
-     */ 
-    (query.project = function() {
-      // Grab the metadata associated with our current namespace
-      return NdsLabsApi.getProjectsByProjectId({ 
-        "projectId": projectId 
-      }).then(function(project, xhr) {
-        $log.debug("successfully grabbed from /projects/" + projectId + "!");
-        $scope.project = AuthInfo.project = Project = project;
-      }, function(headers) {
-        $log.debug("error!");
-        console.debug(headers);
-      })
-    })();
-    
-    /**
-     * Grabs metadata about the current site's available services
-     */ 
-    (query.services = function() {
-      // Grab the list of available services at our site
-      return NdsLabsApi.getServices().then(function(specs, xhr) {
-        $log.debug("successfully grabbed from /services!");
-        Specs.all = $scope.allServices = specs;
-        Specs.deps = $scope.deps = angular.copy(specs);
-        Specs.stacks = $scope.stacks = _.remove($scope.deps, function(svc) { return svc.stack === true; });
-      }, function (headers) {
-        $log.error("error grabbing from /services!");
-      })
-    })();
-    
     /**
      * Grabs metadata about the current project's stacks
      */ 
@@ -128,7 +147,7 @@ angular.module('ndslabs')
         Volumes.all = $scope.configuredVolumes = volumes || [];
       }, function(headers) {
         $log.error("error grabbing from /projects/" + projectId + "/volumes!");
-      })
+      });
     })();
   })();
   
@@ -319,22 +338,22 @@ angular.module('ndslabs')
         $log.debug("successfully posted to /projects/" + projectId + "/stacks!");
         
         // Add the new stack to the UI
-        $scope.configuredStacks.push(stack);
+        Stacks.all.push(stack);
         
         // Then attach our necessary volumes
         angular.forEach(newEntities.volumes, function(vol) {
-          var service = _.find(stack.services, ['service', vol.service]);
+          var service = _.find(newEntities.stack.services, ['service', vol.service]);
           
           if (service) {
             if (!vol.id) {
-              // Volume does not exist, so we need to create a new entry
+              // Volume does not exist, so we need to POST to create it
               vol.attached = service.id;
               NdsLabsApi.postProjectsByProjectIdVolumes({
                 'volume': vol, 
                 'projectId': projectId
               }).then(function(data, xhr) {
                 $log.debug("successfully posted to /projects/" + projectId + "/volumes!");
-                Volumes.all.push(data);
+                $scope.configuredVolumes.push(data);
               }, function(headers) {
                 $log.error("error posting to /projects/" + projectId + "/volumes!");
               });
@@ -342,7 +361,7 @@ angular.module('ndslabs')
               // Orphaned volumes are already in the list
               var exists = _.find($scope.configuredVolumes, function(volume) { return vol.id === volume.id; });
               
-              // We need to update existing volume
+              // We need to PUT to update existing volume
               exists.attached = service.id;
               
               // Attach existing volume to new service

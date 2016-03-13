@@ -1,9 +1,9 @@
 <footer class="footer" ng-class="{ 'expanded-footer': showVolumes }">
-  <div id="volumeSlideOutFooter" class="container-fluid" ng-click="toggleVolumes()" style="background: url('/asset/png/symphony.png') 50% 0 fixed;">
+  <div id="volumeSlideOutFooter" class="container-fluid" ng-click="toggleVolumes()" >
     <div class="container-fluid" style="cursor:pointer;">
       <div class="row">
         <!-- Left Expand Button -->
-        <div class="col-md-1" style="display:table-cell;vertical-align: middle;">
+        <div class="col-md-1">
           <button class="btn btn-primary btn-block btn-lg pull-left">
             <i class="fa fa-fw fa-2x" ng-class="{ 'fa-caret-up': !showVolumes, 'fa-caret-down': showVolumes}"></i>
           </button>
@@ -15,7 +15,7 @@
         </div>
         
         <!-- Right Expand Button -->
-        <div class="col-md-1" style="display:table-cell;vertical-align: middle;">
+        <div class="col-md-1">
           <button class="btn btn-primary btn-block btn-lg pull-right">
             <i class="fa fa-fw fa-2x" ng-class="{ 'fa-caret-up': !showVolumes, 'fa-caret-down': showVolumes}"></i>
           </button>

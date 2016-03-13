@@ -5,9 +5,9 @@
  * Define our ndslabs module here. All other files will 
  * use the single-argument notation for angular.module()
  */
-angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-api', 'ngWizard', 'ngGrid',
-    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ansiToHtml', 'ui.bootstrap' ])
-    
+angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-api', 'ngWizard', 'ngGrid', 'ngAlert', 
+    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ui.bootstrap', 'frapontillo.gage' ])
+
 /**
  * If true, display verbose debug data as JSON
  */ 
@@ -22,11 +22,6 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-api', 'ngWizard', 'ngGr
  * Make lodash available for injection into controllers
  */ 
 .constant('_', window._)
-
-/**
- * Make Google Charts available for injection into controllers
- */
-.constant('Google', window.google)
 
 /**
  * The route to our Login View
@@ -46,7 +41,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-api', 'ngWizard', 'ngGr
 /**
  * Hostname / Port for communicating with etcd
  */ 
-.constant('ApiUri', 'http://141.142.208.127:8083')
+.constant('ApiUri', 'http://141.142.209.154:8083')
 
 /**
  * Logic for communicating with etcd (powered by swagger-js-codegen)
@@ -202,10 +197,9 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-api', 'ngWizard', 'ngGr
       
   var HomeRoute = ExpertRoute;
   
-  // Make _ and google bindable in partial views
+  // Make _ bindable in partial views
   // TODO: Investigate performance concerns here...
   $rootScope._ = window._;
-  $rootScope.google = window.google;
   
   // When user changes routes, check that they are still authed
   $rootScope.$on( "$routeChangeStart", function(event, next, current) {

@@ -7,9 +7,9 @@
     <h4 class="modal-title">Logs for {{ service.service | specProperty:'label' }}</h4>
   </div>
     
-  <div id="logBody" class="modal-body" style="max-height:600px;overflow: auto;">
+  <div id="logBody" class="modal-body modal-body-scrollable">
     <a id="scrollTop"></a>
-    <pre ng-bind-html="serviceLog | ansi"></pre>
+    <pre ng-bind="serviceLog"></pre>
     <a id="scrollBottom"></a>
   </div>
   

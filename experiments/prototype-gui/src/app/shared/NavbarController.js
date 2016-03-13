@@ -26,7 +26,9 @@ angular
 .controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'ExpressRoute', 'ExpertRoute', 'DEBUG', 
     function($scope, $location, LoginRoute, ExpressRoute, ExpertRoute, DEBUG) {
   $scope.$on('$routeChangeSuccess', function(event, current, previous){
-    $scope.path = current.$$route.originalPath;
+    if (current.$$route) {
+      $scope.path = current.$$route.originalPath;
+    }
   });
 
   $scope.DEBUG = DEBUG;
