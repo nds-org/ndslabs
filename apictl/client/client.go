@@ -620,3 +620,34 @@ func (c *Client) StopStack(pid string, stack string) (*api.Stack, error) {
 		}
 	}
 }
+
+func (c *Client) GetProject(pid string) (*api.Project, error) {
+	url := fmt.Sprintf("%sprojects/%s", c.BasePath, pid)
+
+	request, err := http.NewRequest("GET", url, nil)
+
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode == http.StatusOK {
+
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		project := api.Project{}
+		err = json.Unmarshal([]byte(body), &project)
+		if err != nil {
+			return nil, err
+		}
+
+		return &project, nil
+	} else {
+		return nil, errors.New(resp.Status)
+	}
+}

@@ -78,8 +78,34 @@ var getStackCmd = &cobra.Command{
 	PostRun: RefreshToken,
 }
 
+var getProjectCmd = &cobra.Command{
+	Use:   "project",
+	Short: "Get project details",
+	Run: func(cmd *cobra.Command, args []string) {
+
+		pid := apiUser.username
+		if len(args) == 1 {
+			pid = args[0]
+		}
+		project, err := client.GetProject(pid)
+		if err != nil {
+			fmt.Printf("Get project failed: %s\n", err)
+			return
+		}
+
+		data, err := json.MarshalIndent(project, "", "   ")
+		if err != nil {
+			fmt.Printf("Error marshalling project %s\n", err.Error)
+			return
+		}
+		fmt.Println(string(data))
+	},
+	PostRun: RefreshToken,
+}
+
 func init() {
 	RootCmd.AddCommand(getCmd)
 	getCmd.AddCommand(getServiceCmd)
 	getCmd.AddCommand(getStackCmd)
+	getCmd.AddCommand(getProjectCmd)
 }
