@@ -8,10 +8,14 @@
     "key": "logspout",
     "isStack": false,
     "isService": false,
+    "requiresVolume": true,
     "label": "LogSpout",
-    "image": "gliderlabs/logspout",
+    "image": "ndslabs/logspout:latest",
+    "config":  {
+       "LABEL": "io.kubernetes.pod.name:^$(NAMESPACE)/.*"
+    },
     "command": [ "bin/logspout" ],
-    "args": [ "syslog://$(LOGSTASH_PORT_5000_TCP_ADDR):$(LOGSTASH_PORT_5000_TCP_ADDR)" ],
+    "args": [ "syslog+tcp://$(LOGSTASH_PORT_5000_TCP_ADDR):$(LOGSTASH_PORT_5000_TCP_PORT)" ],
     "volumeMounts":[
         { "mountPath": "/tmp/docker.sock", "name": "docker" }
     ]
