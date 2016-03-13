@@ -2,7 +2,7 @@
 swagger: '2.0'
 
 info:
-  title: NDS Labs Project API
+  title: ndslabs
   version: "0.1"
   
 basePath: /v1
@@ -94,7 +94,17 @@ paths:
               data:
                 $ref: '#/definitions/Token'
         401:
-          description: Not logged in        
+          description: Not logged in
+          
+  /check_token:
+    get:
+      description: |
+        Validate the JWT token
+      responses:
+        200:
+          description: OK
+        401:
+          description: Not logged in   
           
   # Services
   /services:

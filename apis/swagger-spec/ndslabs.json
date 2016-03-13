@@ -121,6 +121,19 @@
                 }
             }
         },
+        "/check_token": {
+            "get": {
+                "description": "Validate the JWT token\n",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Not logged in"
+                    }
+                }
+            }
+        },
         "/services": {
             "get": {
                 "description": "Retrieves a site-wide list of available service definitions.\n",
