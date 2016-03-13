@@ -476,7 +476,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 	return &k8svc
 }
 
-func (k *KubeHelper) CreateControllerTemplate(name string, stack string, spec *ndsapi.ServiceSpec,
+func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, spec *ndsapi.ServiceSpec,
 	links *map[string]ServiceAddrPort) *api.ReplicationController {
 
 	k8rc := api.ReplicationController{}
@@ -506,6 +506,7 @@ func (k *KubeHelper) CreateControllerTemplate(name string, stack string, spec *n
 			continue
 		}
 
+		env = append(env, api.EnvVar{Name: "NAMESPACE", Value: ns})
 		env = append(env,
 			api.EnvVar{
 				Name:  fmt.Sprintf("%s_PORT_%d_TCP_ADDR", strings.ToUpper(name), addrPort.Port),
