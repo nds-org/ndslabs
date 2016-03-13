@@ -3,8 +3,8 @@
     "isStack": false,
     "isService": true,
     "requiresVolume": true,
-    "label": "ElasticSearch 2.x",
-    "image": "elasticsearch:2.1",
+    "label": "ElasticSearch 2.2",
+    "image": "elasticsearch:2.2",
     "ports": [
         { "port": 9200, "protocol": "TCP" }
     ],
