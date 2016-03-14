@@ -52,11 +52,21 @@ angular.module('ndslabs')
 /**
  * Given a service spec key, retrieve its label
  */
-.filter('specProperty', ['Specs', '_', function(Specs, _) {
+.filter('specProperty', ['$log', 'Specs', '_', function($log, Specs, _) {
   return function(key, propertyName) {
-    var spec = _.find(Specs.all, [ 'key', key ]);
+    if (!key || !propertyName) {
+      return '';
+    }
     
+    var spec = _.find(Specs.all, [ 'key', key ]);
     if (!spec) {
+      $log.error('Spec not found: ' + key);
+      return '';
+    }
+    
+    if (!angular.isDefined(spec[propertyName])) {
+      $log.error('Property not found: ' + propertyName);
+      debugger;
       return '';
     }
     

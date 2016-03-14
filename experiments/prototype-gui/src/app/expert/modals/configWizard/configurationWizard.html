@@ -13,14 +13,14 @@
           <i class="fa fa-fw fa-times"></i>
         </button>
       </div>
-      
     </div>
-    </div>
+  </div>
   
   <div class="modal-body" style="min-height:400px">
     <div class="row">
       <!-- Wizard Page selector -->
       <div class="col-md-12">
+        
         <!-- Requirements Page -->
         <div ng-if="wizard.currentPage.key === 'require'">
           <p>{{ spec.description || 'Insert Description Here' }}</p>
@@ -46,12 +46,25 @@
             </div>
           </div>
           
-          <div  class="row">
+          <div class="row">
             <div class="col-sm-12">
-              <div class="form-group">
-                <label for="exampleInputPassword1">Choose a unique name for your stack</label>
-                <input type="text" class="form-control" id="exampleInputPassword1" ng-model="newStack.name" placeholder="Name">
-              </div>
+              <form name="stackNameForm" role="form">
+                <div class="form-group" 
+                ng-class="{ 'has-error has-feedback':stackNameForm.stackName.$invalid, 'has-success has-feedback': stackNameForm.stackName.$valid }">
+                  <label class="control-label" for="stackNameInput">Choose a unique name for your stack</label>
+                  <input type="text" name="stackName" class="form-control" minlength="1" maxlength="15" required
+                      ng-model="newStack.name" placeholder="Name" id="stackNameInput">
+                  <span class="form-control-feedback glyphicon" 
+                  ng-class="{ 'glyphicon-remove': stackNameForm.stackName.$invalid, 'glyphicon-ok': stackNameForm.stackName.$valid }"></span>
+                  
+                  <div ng-messages="stackNameForm.stackName.$error" role="alert" class="text-danger">
+                    <div ng-message="required">You must name this stack before continuing.</div>
+                    <div ng-message="minlength">You must name this stack before continuing.</div>
+                    <div ng-message="maxlength">Stack name can be at most 15 characters long.</div>
+                  </div>
+                </div>
+              </form>
+              <pre>{{ stackNameForm | json }}</pre>
             </div>
           </div>
         </div>
@@ -215,7 +228,7 @@
                              'col-sm-12': newStackVolumeRequirements.length === 0 }">
               <h4 class="text-center">Services</h4>
               <ul class="list-group">
-                <li class="list-group-item disabled" ng-repeat="req in newStack.services">{{ req.service }}</li>
+                <li class="list-group-item disabled" ng-repeat="req in newStack.services">{{ req.service | specProperty:'label' }}</li>
               </ul>
             </div>
             <div class="col-sm-6" ng-if="newStackVolumeRequirements.length > 0">
@@ -264,7 +277,6 @@
         </div>
         
         <div class="col-sm-5">
-            
           <!-- Previous Page -->
           <div class="pull-right">
       

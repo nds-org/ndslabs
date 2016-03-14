@@ -12,9 +12,22 @@
       </div>
     </div>
   </div>
+  
+  <!-- Top-Right Button Bar if we want any other buttons here -->
+  <div class="row flush-border">
+    <div class="col-sm-12 flush-border">
+      <button class="btn btn-default btn-sm pull-right" ng-click="toggleAutoRefresh()"
+           ng-class="{ 'btn-info':autoInterval !== null }"
+           ng-mouseenter="iconSpin = true" ng-mouseleave="iconSpin = false"
+           uib-tooltip="Automatically refresh the data on this page?" tooltip-placement="left">
+         <i class="fa fa-refresh fa-fw" ng-class="{ 'fa-spin':iconSpin || autoInterval !== null }"></i>
+         Auto Refresh
+      </button>
+    </div>
+  </div>
     
     <!-- Left Half (Selector Pane) -->
-    <div class="row top-margin" ng-cloak>
+    <div class="row">
       <div class="col-sm-3">
         <div class="panel panel-default" >
           <div class="panel-body">
@@ -49,24 +62,13 @@
       <!-- Right Half (Content Pane) -->
       <div class="col-sm-9 fill-height">
         <div class="row">
-          <div class="col-sm-2">
-            <justgage width="175" height="175" title="Used Storage" relativeGaugeSize="true" 
+          <div class="col-sm-12">
+            <!-- TODO: Refreshing data through nested AJAX does not seem to work well here... -->
+            <!-- <justgage width="175" height="175" title="Used Storage" relativeGaugeSize="true" 
             value="{{ configuredVolumes | usedStorage }}" max="{{ project.storageQuota || 50 }}" label="GB"></justgage>
-          </div>
-          <div class="col-sm-2" ng-if="configuredStacks.length > 0">
             <justgage width="175" height="175" title="Stacks Running" relativeGaugeSize="true"
-            value="{{ configuredStacks | runningStacksCount }}" max="{{ configuredStacks.length }}" label="Stacks"></justgage>
-          </div>
-         <div class="col-sm-8">
-           <div class="pull-right">
-              <!-- Top-Right Button Bar if we want any -->
-              <button class="btn btn-default btn-sm" ng-click="toggleAutoRefresh()"
-                   ng-class="{ 'btn-info':autoInterval !== null }"
-                   ng-mouseenter="iconSpin = true" ng-mouseleave="iconSpin = false"
-                   uib-tooltip="Automatically refresh the data on this page?" tooltip-placement="left">
-                 <i class="fa fa-refresh fa-fw" ng-class="{ 'fa-spin':iconSpin || autoInterval !== null }"></i>
-              </button>
-            </div>
+                ng-if="configuredStacks.length > 0"max="{{ configuredStacks.length }}"
+                value="{{ configuredStacks | runningStacksCount }}"  label="Stacks"></justgage> -->
           </div>
         </div>
         
@@ -88,9 +90,6 @@
                     <h2>It looks like you haven't configured any stacks.</h2>
                     <h4>Search and add a stack of services to see and manage it here!</h4>
                   </div>
-                  
-                  <pre ng-if="DEBUG">{{ (configuredStacks| orderBy:'name')[0].status | json }}</pre>
-                  <pre ng-if="DEBUG" ng-repeat="service in (configuredStacks| orderBy:'name')[0].services">{{ service.status | json }}</pre>
                   
                   <!-- The Accordion of Configured Stacks -->
                   <uib-accordion ng-if="configuredStacks.length > 0" close-others="true">
@@ -142,13 +141,14 @@
                                 <tr ng-repeat="svc in stack.services track by svc.service">
                                   
                                   <td class="text-center">
-                                    <i class="fa fa-fw" ng-class="{ 'text-success fa-check': svc.status === 'ready',
-                                                                    'text-info    fa-gear': svc.status === 'waiting',
-                                                                    'text-danger  fa-power-off': svc.status === '',
-                                                                    'text-info    fa-gear     animated   faa-spin    faa-slow': svc.status === 'starting',
-                                                                    'text-warning fa-gear     animated   faa-spin    faa-fast': svc.status === 'stopping',
-                                                                    'text-danger  fa-warning  animated   faa-flash   faa-fast': svc.status === 'error'
-                                                                  }"></i>
+                                    <i class="fa fa-fw" ng-class="{ 
+                                      'text-success fa-check': svc.status === 'ready',
+                                      'text-info    fa-gear': svc.status === 'waiting',
+                                      'text-danger  fa-power-off': svc.status === '',
+                                      'text-info    fa-gear     animated   faa-spin    faa-slow': svc.status === 'starting',
+                                      'text-warning fa-gear     animated   faa-spin    faa-fast': svc.status === 'stopping',
+                                      'text-danger  fa-warning  animated   faa-flash   faa-fast': svc.status === 'error'
+                                    }"></i>
                                     {{  (svc.status | capitalize) || 'Stopped' }}
                                   </td>
                                   
@@ -157,28 +157,23 @@
                                   <td class="text-center">
                                     <button class="btn btn-link btn-xs" tooltip-placement="left" 
                                         uib-tooltip='Click here for details regarding "{{ volume.name }}"'                                          
-                                        ng-click="selectVolume(volume);"
+                                        ng-click="selectVolume(volume);" class="cursor-pointer"
                                         ng-repeat="volume in svc.id | stackSvcVolumes track by volume.id"
                                         >
                                       <!-- show volume details if we find a volume -->
-                                      <i class="fa fa-fw fa-database cursor-pointer"></i>
+                                      <i class="fa fa-fw fa-database"></i>
                                     </button>
                                   </td>
                                   
                                   <!-- The Name of the Running Service and link to endpoint, if applicable -->
                                   <td>
-                                    <span ng-if="stack.status !== 'started' || !svc.endpoints || svc.endpoints.length === 0 || svc.endpoints[0] === ''">{{ svc.service | specProperty:'label' }}</span>
+                                    {{ svc.service | specProperty:'label' }}
                                     
-                                    <a ng-repeat="endpt in svc.endpoints track by $index" uib-tooltip="Navigate to {{ svc.service | capitalize }} ({{ endpt }})"
-                                        ng-if="(stack.status === 'started') && svc.status === 'Running' 
+                                    <a ng-repeat="endpt in svc.endpoints track by $index" 
+                                        uib-tooltip="Navigate to {{ svc.service | capitalize }} ({{ endpt }})"
+                                        ng-if="(stack.status === 'started') && svc.status === 'ready' 
                                             && svc.endpoints.length > 0 && svc.endpoints[0] !== ''"  target="_blank"
-                                        href="{{ endpt }}" ng-disabled="stack.status === 'stopping' && svc.status === 'Running'">
-                                      {{ svc.service | specProperty:'label' }}&nbsp;&nbsp;&nbsp;&nbsp;<i class="fa fa-fw fa-external-link faa-tada faa-slow animated"></i>
-                                    </a>
-                                    
-                                    <a type="button" class="btn btn-link btn-xs" ng-if="$index !== 0" ng-repeat="endpt in svc.endpoints track by $index" uib-tooltip="Navigate to {{ svc.service | capitalize }} ({{ endpt }})"
-                                        ng-if="svc.status === 'Running' && svc.endpoints.length > 0 && svc.endpoints[0] !== ''"
-                                        href="{{ endpt }}" target="_blank" ng-disabled="svc.status !== 'Running'">
+                                        href="{{ endpt }}" ng-disabled="stack.status === 'stopping' && svc.status === 'ready'">
                                       <i class="fa fa-fw fa-external-link faa-tada faa-slow animated"></i>
                                     </a>
                                   </td>

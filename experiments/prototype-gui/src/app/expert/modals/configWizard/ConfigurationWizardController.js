@@ -127,7 +127,15 @@ angular
         }
      }, true),
      new WizardPage("volumes", "Configure Volumes", {
-        prev: 'options',
+        prev: function() {
+          if ($scope.newStackOptions.length > 0) {
+            $log.debug('Going to options');
+            return 'options';
+          } else {
+            $log.debug('Going to requirements');
+            return 'require';
+          }
+        },
         canPrev: true,
         canNext: function() {
           var used = $filter('usedStorage')(configuredVolumes);
@@ -160,7 +168,18 @@ angular
         }
      }, true),
      new WizardPage("confirm", "Confirm New Stack", {
-        prev: 'volumes',
+        prev: function() {
+          if ($scope.newStackVolumeRequirements.length > 0) {
+            $log.debug('Going back to volumes');
+            return 'volumes';
+          } else if ($scope.newStackOptions.length > 0) {
+            $log.debug('Going back to options');
+            return 'options';
+          } else {
+            $log.debug('Going back to requirements');
+            return 'require';
+          }
+        },
         canPrev: true,
         canNext: false,
         next: null
