@@ -117,7 +117,7 @@ body {
 }
 
 .fill-width {
-  width:100%;
+  width:100% !important;
 }
 
 .undecorate-link, .undecorate-link.active, .undecorate-link.hover, .undecorate-link.visited {

@@ -52,7 +52,7 @@
                 <div class="form-group" 
                 ng-class="{ 'has-error has-feedback':stackNameForm.stackName.$invalid, 'has-success has-feedback': stackNameForm.stackName.$valid }">
                   <label class="control-label" for="stackNameInput">Choose a unique name for your stack</label>
-                  <input type="text" name="stackName" class="form-control" minlength="1" maxlength="15" required
+                  <input type="text" name="stackName" class="form-control" minlength="1" maxlength="20" required
                       ng-model="newStack.name" placeholder="Name" id="stackNameInput">
                   <span class="form-control-feedback glyphicon" 
                   ng-class="{ 'glyphicon-remove': stackNameForm.stackName.$invalid, 'glyphicon-ok': stackNameForm.stackName.$valid }"></span>
@@ -60,7 +60,7 @@
                   <div ng-messages="stackNameForm.stackName.$error" role="alert" class="text-danger">
                     <div ng-message="required">You must name this stack before continuing.</div>
                     <div ng-message="minlength">You must name this stack before continuing.</div>
-                    <div ng-message="maxlength">Stack name can be at most 15 characters long.</div>
+                    <div ng-message="maxlength">Stack name can be at most 20 characters long.</div>
                   </div>
                 </div>
               </form>
@@ -109,19 +109,19 @@
           <div>
             <div class="row">
               <div class="col-sm-12">
-                <p>Your project is allowed to allocate <strong>{{ project.storageQuota || '50' }} GB</strong> of storage.</p>
+                <p>Your project is allowed to allocate <strong>{{ storageQuota }} GB</strong> of storage.</p>
               </div>
             </div>
             <div class="row">
               <div class="col-sm-5">
                 <!--<div google-chart chart="chartObject" style="margin:0;padding:0;height:300px; width:100%;"></div>-->
                 <justgage width="175" height="175" value="{{ configuredVolumes | usedStorage }}" 
-                title="Current Usage" max="{{ project.storageQuota || 50 }}" label="GB"></justgage>
+                title="Current Usage" max="{{ storageQuota }}" label="GB"></justgage>
               </div>
               <div class="col-sm-7">
                 <justgage width="175" height="175" relativeGuageSize="true" ng-if="availableSpace != 0 && availableSpace > 0"
                 value="{{ _.concat(configuredVolumes, newStackVolumeRequirements) | usedStorage }}" 
-                title="Projected Usage" max="{{ project.storageQuota || 50 }}" label="GB"></justgage>
+                title="Projected Usage" max="{{ storageQuota }}" label="GB"></justgage>
                 
               </div>
             </div>
@@ -135,7 +135,7 @@
           </div>
           
           <!-- Create New Volumes ng-repeat="volume in newStackVolumeRequirements track by volume.service" -->
-          <div class="panel panel-info" ng-if="availableSpace != 0 && availableSpace > 0">
+          <div class="panel panel-info" ng-if="availableSpace > 0">
             <div class="panel-heading">
               <div class="row">
                 <div class="col-sm-4">
@@ -189,12 +189,27 @@
               </div>
 
               <!-- Create a New Volume -->
-              <form class="form-inline" ng-show="volume.id === ''">
+              <form name="volumeNameForm" class="form-inline" ng-show="volume.id === ''">
+                
                 <!-- Volume Name -->
                 <div class="row">
                   <div class="col-sm-8">
-                    <input type="text" class="form-control fill-width" id="inputVolumeName" placeholder="Enter a name for this volume" ng-model="volume.name">
+                    <div class="form-group fill-width"  ng-class="{ 'has-error has-feedback':volumeNameForm.volumeName.$invalid, 'has-success has-feedback': volumeNameForm.volumeName.$valid }">
+                      <input type="text" name="volumeName" class="form-control fill-width" required maxlength="20"
+                          id="volumeName" placeholder="Enter a name for this volume" ng-model="volume.name" />
+                      <span class="form-control-feedback glyphicon" 
+                        ng-class="{ 'glyphicon-remove': volumeNameForm.volumeName.$invalid, 'glyphicon-ok': volumeNameForm.volumeName.$valid }"></span>
+                    
+                          
+                      <div ng-messages="volumeNameForm.volumeName.$error" role="alert" class="text-danger">
+                        <div ng-message="required">You must name this volume before continuing.</div>
+                        <div ng-message="minlength">You must name this volume before continuing.</div>
+                        <div ng-message="maxlength">Volume name can be at most 20 characters long.</div>
+                      </div>
+                    </div>
                   </div>
+                  
+                  
 
                   <!-- Volume Size / Units -->
                   <div class="col-sm-4">
@@ -206,8 +221,8 @@
                       <div class="input-group-btn">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ volume.sizeUnit || 'Choose Units' }} <span class="caret"></span></button>
                         <ul class="dropdown-menu dropdown-menu-right">
-                          <li><a href="#/labs" ng-click="volume.sizeUnit='GB'">GB</a></li>
-                          <li><a href="#/labs" ng-click="volume.sizeUnit='TB'">TB</a></li>
+                          <li><a href="#/home" ng-click="volume.sizeUnit='GB'">GB</a></li>
+                          <li><a href="#/home" ng-click="volume.sizeUnit='TB'">TB</a></li>
                         </ul>
                       </div>
                       <!-- /btn-group -->
@@ -259,14 +274,7 @@
   
   <!-- Progress / Button Bar at the bottom -->
   <div class="modal-footer">
-    <!-- "Cancel" button (close modal with success === false) -->
-  <!--  <button class="btn btn-danger pull-left" ng-click="close()">
-      <i class="fa fa-fw fa-times"></i>
-      Cancel
-      </button> -->
-      
       <div class="row">
-          
         <div class="col-sm-7">
           
           <!-- Wizard progress bar here -->
@@ -279,9 +287,9 @@
         </div>
         
         <div class="col-sm-5">
+          
           <!-- Previous Page -->
           <div class="pull-right">
-      
             <button class="btn btn-default" ng-disabled="!wizard.canPrevPage()"
                 ng-click="wizard.prevPage()">
               <i class="fa fa-fw fa-arrow-circle-left"></i>
