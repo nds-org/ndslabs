@@ -6,7 +6,7 @@ type ServiceSpec struct {
 	Description    string              `json:"description"`
 	Maintainer     string              `json:"maintainer"`
 	RequiresVolume bool                `json:"requiresVolume"`
-	Config         map[string]string   `json:"config"`
+	Config         []Config            `json:"config"`
 	Image          string              `json:"image"`
 	Ports          []Port              `json:"ports"`
 	CreatedTime    int                 `json:"createdTime"`
@@ -20,6 +20,14 @@ type ServiceSpec struct {
 	IsService      bool                `json:"isService"`
 	IsPublic       bool                `json:"isPublic"`
 	IsStandalone   bool                `json:"isStandalone"`
+}
+
+type Config struct {
+	Name        string `json:"name"`
+	Value       string `json:"value"`
+	Label       string `json:"label"`
+	IsPassword  bool   `json:"isPassword"`
+	CanOverride bool   `json:"canOverride"`
 }
 
 type Port struct {
@@ -88,13 +96,14 @@ type Stack struct {
 }
 
 type StackService struct {
-	Id          string   `json:"id"`
-	Stack       string   `json:"stack"`
-	Service     string   `json:"service"`
-	Status      string   `json:"status"`
-	Endpoints   []string `json:"endpoints,omitempty"`
-	CreatedTime int      `json:"createdTime"`
-	UpdatedTime int      `json:"updateTime"`
+	Id          string            `json:"id"`
+	Stack       string            `json:"stack"`
+	Service     string            `json:"service"`
+	Status      string            `json:"status"`
+	Endpoints   []string          `json:"endpoints,omitempty"`
+	CreatedTime int               `json:"createdTime"`
+	UpdatedTime int               `json:"updateTime"`
+	Config      map[string]string `json:"config"`
 }
 
 type Volume struct {

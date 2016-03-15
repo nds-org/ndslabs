@@ -476,8 +476,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 	return &k8svc
 }
 
-func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, spec *ndsapi.ServiceSpec,
-	links *map[string]ServiceAddrPort) *api.ReplicationController {
+func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec, links *map[string]ServiceAddrPort) *api.ReplicationController {
 
 	k8rc := api.ReplicationController{}
 	// Replication controller
@@ -520,7 +519,14 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 			})
 	}
 
-	for name, value := range spec.Config {
+	for _, config := range spec.Config {
+		name := config.Name
+		value := config.Value
+		if config.CanOverride {
+			if val, ok := stackService.Config[name]; ok {
+				value = val
+			}
+		}
 		env = append(env, api.EnvVar{Name: name, Value: value})
 	}
 

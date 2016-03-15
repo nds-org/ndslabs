@@ -73,17 +73,30 @@ var listStacksCmd = &cobra.Command{
 		}
 		w := new(tabwriter.Writer)
 		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
-		fmt.Fprintln(w, "STACK\tSERVICE\tSTATUS\tENDPOINT\tID")
+		fmt.Fprintln(w, "STACK\tSERVICE\tSTATUS\tENDPOINT\tSID\tCONFIG")
 		for _, stack := range *stacks {
+
 			fmt.Fprintf(w, "%s\t\t%s\t\t%s\n", stack.Name, stack.Status, stack.Id)
 			for _, service := range stack.Services {
-				endpoint := ""
+				spec, _ := client.GetService(service.Service)
+				endpoints := ""
 				if len(service.Endpoints) > 0 {
 					for _, ep := range service.Endpoints {
-						endpoint = " " + ep
+						endpoints = " " + ep
 					}
 				}
-				fmt.Fprintf(w, "\t%s\t%s\t%s\t%s\n", service.Service, service.Status, endpoint, service.Id)
+				env := ""
+				for _, config := range spec.Config {
+					name := config.Name
+					value := config.Value
+					if config.CanOverride {
+						if val, ok := service.Config[name]; ok {
+							value = val
+						}
+					}
+					env += fmt.Sprintf("%s=%s ", name, value)
+				}
+				fmt.Fprintf(w, "\t%s\t%s\t%s\t%s\t%s\n", service.Service, service.Status, endpoints, service.Id, env)
 			}
 		}
 		w.Flush()

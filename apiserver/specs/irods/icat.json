@@ -13,10 +13,21 @@
             "protocol": "TCP"
         }
     ],
-    "config":  {
-       "RODS_PASSWORD": "test",
-       "RODS_ZONE": "tempZone"
-    },
+    "config":  [
+        {
+            "name": "RODS_ZONE",
+            "value": "tempZone",
+            "label": "iRODS zone",
+            "canOverride": true
+        },
+        {
+            "name": "RODS_PASSWORD",
+            "value": "",
+            "label": "iRODS rods user password",
+            "canOverride": true,
+            "isPassword": true
+        }
+    ],
 	"volumeMounts":[
 	   { "mountPath": "/var/lib/irods/iRODS/Vault", "name": "icat" }
     ],

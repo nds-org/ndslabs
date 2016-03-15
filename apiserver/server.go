@@ -945,10 +945,10 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-    	for i := range stack.Services {
-       		stackService := &stack.Services[i]
-        	stackService.Id = fmt.Sprintf("%s-%s", sid, stackService.Service)
-    	}
+	for i := range stack.Services {
+		stackService := &stack.Services[i]
+		stackService.Id = fmt.Sprintf("%s-%s", sid, stackService.Service)
+	}
 
 	stack.Status = stackStatus[Stopped]
 	err = s.putStack(pid, sid, &stack)
@@ -1065,14 +1065,14 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 	}
 
 	glog.V(4).Infof("Starting controller for %s\n", serviceKey)
-	service, _ := s.getServiceSpec(serviceKey)
+	spec, _ := s.getServiceSpec(serviceKey)
 
-	name := fmt.Sprintf("%s-%s", stack.Id, service.Key)
-	template := s.kube.CreateControllerTemplate(pid, name, stack.Id, service, addrPortMap)
+	name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
+	template := s.kube.CreateControllerTemplate(pid, name, stack.Id, stackService, spec, addrPortMap)
 
-	if service.RequiresVolume {
+	if spec.RequiresVolume {
 		k8vols := make([]k8api.Volume, 0)
-		for _, mount := range service.VolumeMounts {
+		for _, mount := range spec.VolumeMounts {
 			if mount.Name == "docker" {
 				// Create a docker socket mount
 				k8vol := k8api.Volume{}

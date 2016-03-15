@@ -191,6 +191,35 @@ func (c *Client) AddStack(project string, stack *api.Stack) error {
 	}
 }
 
+func (c *Client) UpdateStack(project string, stack *api.Stack) error {
+
+	url := c.BasePath + "projects/" + project + "/stacks/" + stack.Id
+
+	data, err := json.Marshal(stack)
+	request, err := http.NewRequest("PUT", url, bytes.NewBuffer(data))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			defer resp.Body.Close()
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return err
+			}
+
+			stack := api.Stack{}
+			json.Unmarshal([]byte(body), &stack)
+			return nil
+
+		} else {
+			return errors.New(resp.Status)
+		}
+	}
+}
+
 func (c *Client) ListProjects() (*[]api.Project, error) {
 
 	url := c.BasePath + "projects"

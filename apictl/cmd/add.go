@@ -50,8 +50,9 @@ var addCmd = &cobra.Command{
 }
 
 var addProjectCmd = &cobra.Command{
-	Use:   "project [name] [password]",
-	Short: "Add the specified project (admin users only)",
+	Use:    "project [name] [password]",
+	Short:  "Add the specified project (admin users only)",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		project := api.Project{}
@@ -79,8 +80,9 @@ var addProjectCmd = &cobra.Command{
 }
 
 var addServiceCmd = &cobra.Command{
-	Use:   "service",
-	Short: "Add the specified service (admin users only)",
+	Use:    "service",
+	Short:  "Add the specified service (admin users only)",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		service := api.ServiceSpec{}
@@ -100,8 +102,9 @@ var addServiceCmd = &cobra.Command{
 }
 
 var addStackCmd = &cobra.Command{
-	Use:   "stack [serviceKey] [name]",
-	Short: "Add the specified stack to your project",
+	Use:    "stack [serviceKey] [name]",
+	Short:  "Add the specified stack to your project",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
 			cmd.Usage()
