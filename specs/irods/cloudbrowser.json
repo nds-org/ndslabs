@@ -13,7 +13,12 @@
             "protocol": "TCP"
         }
     ],
-    "config":  {
-       "RODS_ZONE": "tempZone"
-    }
+    "config":  [
+        {
+            "name": "RODS_ZONE",
+            "value": "tempZone",
+            "label": "iRODS Zone",
+            "canOverride": true
+        }
+	]
 }
