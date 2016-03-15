@@ -6,9 +6,6 @@ type ServiceSpec struct {
 	Description    string              `json:"description"`
 	Maintainer     string              `json:"maintainer"`
 	RequiresVolume bool                `json:"requiresVolume"`
-	IsStack        bool                `json:"isStack"`
-	IsService      bool                `json:"isService"`
-	Dependencies   []ServiceDependency `json:"depends"`
 	Config         map[string]string   `json:"config"`
 	Image          string              `json:"image"`
 	Ports          []Port              `json:"ports"`
@@ -18,7 +15,11 @@ type ServiceSpec struct {
 	VolumeMounts   []VolumeMount       `json:"volumeMounts"`
 	Args           []string            `json:"args"`
 	Command        []string            `json:"command"`
+	Dependencies   []ServiceDependency `json:"depends"`
+	IsStack        bool                `json:"isStack"`
+	IsService      bool                `json:"isService"`
 	IsPublic       bool                `json:"isPublic"`
+	IsStandalone   bool                `json:"isStandalone"`
 }
 
 type Port struct {
