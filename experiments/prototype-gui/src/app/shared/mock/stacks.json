@@ -1,0 +1,44 @@
+[
+    {
+      "id": "",
+      "name": "clowder",
+      "key": "clowder",
+      "status": true,
+      "services": [
+        {
+          "id": "",
+          "stack": "clowder",
+          "service": "clowder",
+          "status": true,
+          "replicas": 1,
+          "endpoints": [ 
+            "http://141.142.209.135/clowder"
+          ]
+        },
+        {
+          "id": "",
+          "stack": "clowder",
+          "service": "mongo",
+          "status": true,
+          "replicas": 1,
+          "endpoints": []
+        },
+        {
+          "id": "",
+          "stack": "clowder",
+          "service": "rabbitmq",
+          "status": true,
+          "replicas": 1,
+          "endpoints": []
+        },
+        {
+          "id": "",
+          "stack": "clowder",
+          "service": "image-preview",
+          "status": true,
+          "replicas": 1,
+          "endpoints": []
+        }
+      ]
+    }
+  ]

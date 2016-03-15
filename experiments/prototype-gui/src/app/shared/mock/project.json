@@ -1,0 +1,8 @@
+{
+    "id": "",
+    "namespace": "default",
+    "name": "Test Project",
+    "description": "NDS Labs Test Project",
+    "quota": 3,
+    "quotaUnits": "TB"
+}

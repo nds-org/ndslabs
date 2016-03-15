@@ -1,0 +1,31 @@
+{
+  "name": "angular-ndslabs",
+  "description": "AngularJS Client GUI for the NDS Labs API",
+  "version": "0.0.1",
+  "homepage": "https://github.com/nds-org/nds-labs",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "angular": "~1.5.0",
+    "angular-route": "~1.5.0",
+    "angular-animate": "~1.5.0",
+    "angular-loader": "~1.5.0",
+    "angular-mocks": "~1.5.0",
+    "html5-boilerplate": "~5.2.0",
+    "bootstrap": "^3.3.6",
+    "angular-bootstrap": "^1.2.4",
+    "font-awesome": "^4.5.0",
+    "angular-resource": "~1.5.0",
+    "angular-cookies": "~1.5.0",
+    "angular-wizard": "https://github.com/bodom0015/angular-wizard.git",
+    "angular-grid": "https://github.com/bodom0015/angular-grid.git",
+    "angular-alert": "https://github.com/bodom0015/angular-alert.git",
+    "lodash": "^4.5.1",
+    "font-awesome-animation": "^0.0.8",
+    "angular-gage": "^0.1.0",
+    "angular-messages": "^1.5.0"
+  },
+  "resolutions": {
+    "angular": ">=1.5.0"
+  }
+}

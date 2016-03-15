@@ -1,0 +1,327 @@
+<!-- The Configuration Wizard -->
+<section>
+  <div class="modal-header">
+    <div class="row">
+      <div class="col-sm-10">
+        
+        <h4 class="modal-title" id="wizardModalLabel">{{ newStackLabel }}: {{ wizard.currentPage.displayName }}</h4>
+      </div>
+      
+      <div class="col-sm-2">
+        
+        <button type="button" class="btn btn-danger pull-right btn-xs" data-dismiss="modal" aria-label="Close" ng-click="close()">
+          <i class="fa fa-fw fa-times"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal-body" style="min-height:400px">
+    <div class="row">
+      <!-- Wizard Page selector -->
+      <div class="col-md-12">
+        
+        <!-- Requirements Page -->
+        <div ng-if="wizard.currentPage.key === 'require'">
+          <p>{{ spec.description || 'Insert Description Here' }}</p>
+          <p>Services which are required in order to run {{ spec.label }}:</p>
+              <!-- List Required Services -->
+          <div class="row">
+            <div class="col-sm-12">
+              <ul class="list-group">
+                <li ng-repeat="req in newStackRequirements" class="list-group-item disabled">
+                  <div class="row">
+                    <div class="col-sm-9">
+                      {{ req.service | specProperty:'label' }}
+                    </div>
+                    <div class="col-sm-3 pull-right">
+                      <i class="fa fa-fw fa-database pull-right animated faa-slow faa-flash" tooltip-placement="left"
+                      uib-tooltip="{{ req.service | specProperty:'label' }} requires a volume to house its 
+                      data. You will be guided through setting up a volume as a part of this wizard."
+                      ng-if="(req.service | specProperty:'requiresVolume') === true"></i>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-sm-12">
+              <form name="stackNameForm" novalidate>
+                <div class="form-group" 
+                ng-class="{ 'has-error has-feedback':stackNameForm.stackName.$invalid, 'has-success has-feedback': stackNameForm.stackName.$valid }">
+                  <label class="control-label" for="stackNameInput">Choose a unique name for your stack</label>
+                  <input type="text" name="stackName" class="form-control" minlength="1" maxlength="20" required
+                      ng-model="newStack.name" placeholder="Name" id="stackNameInput">
+                  <span class="form-control-feedback glyphicon" 
+                  ng-class="{ 'glyphicon-remove': stackNameForm.stackName.$invalid, 'glyphicon-ok': stackNameForm.stackName.$valid }"></span>
+                  
+                  <div ng-messages="stackNameForm.stackName.$error" role="alert" class="text-danger">
+                    <div ng-message="required">You must name this stack before continuing.</div>
+                    <div ng-message="minlength">You must name this stack before continuing.</div>
+                    <div ng-message="maxlength">Stack name can be at most 20 characters long.</div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Options Page -->
+        <div ng-if="wizard.currentPage.key === 'options'">
+          <div class="row">
+            <div class="col-sm-12" ng-show="newStackOptions.length > 0">
+              <!-- List Optional Services -->
+              <p>{{ spec.label }} has {{ newStackOptions.length }} optional services associated with it.</p>
+              <p>Select any optional services that you would like to enable:</p>
+              <ul class="list-group">
+                <li ng-class="{ 'list-group-item-success':optionalLinksGrid.selector.selection.indexOf(opt) !== -1 }" 
+                    ng-click="optionalLinksGrid.selector.select.toggle(opt)"
+                    ng-repeat="opt in newStackOptions track by opt.service" class="list-group-item cursor-pointer">
+                  <div class="row">
+                    <div class="col-sm-1 pull-left">
+                      <input class="cursor-pointer" type="checkbox" ng-checked="optionalLinksGrid.selector.selection.indexOf(opt) !== -1"/>
+                    </div>
+                    <div class="col-sm-10">
+                      {{ opt.service | specProperty:'label' }}
+                    </div>
+                    <div class="col-sm-1">
+                      <i class="fa fa-fw fa-warning pull-right" tooltip-placement="left"
+                        ng-if="newStackOptionalDeps[opt.service].length > 0"
+                        uib-tooltip="{{ opt.service | specProperty:'label' }} requires 
+                          {{ newStackOptionalDeps[opt.service] | formatDependencies }}. 
+                          {{ newStackOptionalDeps[opt.service].length > 1 ? 'These' : 'This' }} 
+                          will automatically be added for you by this wizard when you select 
+                          {{ opt.service | specProperty:'label' }}."></i>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Volumes Page -->
+        <div ng-if="wizard.currentPage.key === 'volumes'">
+          
+          <!-- Show a fancy volume quota pie chart -->
+          <div>
+            <div class="row">
+              <div class="col-sm-12">
+                <p>Your project is allowed to allocate <strong>{{ storageQuota }} GB</strong> of storage.</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-5">
+                <!--<div google-chart chart="chartObject" style="margin:0;padding:0;height:300px; width:100%;"></div>-->
+                <justgage width="175" height="175" value="{{ configuredVolumes | usedStorage }}" 
+                title="Current Usage" max="{{ storageQuota }}" label="GB"></justgage>
+              </div>
+              <div class="col-sm-7">
+                <justgage width="175" height="175" relativeGuageSize="true" ng-if="availableSpace != 0 && availableSpace > 0"
+                value="{{ _.concat(configuredVolumes, newStackVolumeRequirements) | usedStorage }}" 
+                title="Projected Usage" max="{{ storageQuota }}" label="GB"></justgage>
+                
+              </div>
+            </div>
+            <div class="row"ng-if="!availableSpace || availableSpace == 0 || availableSpace <= 0">
+              <div class="col-sm-12">
+                  <p class="text-danger">You have used all of your allocated storage.</p>
+                  <a target="_self" ng-href="{{ mailToLink }}">Contact an administrator</a> regarding increasing your storage quota.</p>
+                  <p>Or you can remove other volumes to make room for this one</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Create New Volumes ng-repeat="volume in newStackVolumeRequirements track by volume.service" -->
+          <div class="panel panel-info" ng-if="availableSpace > 0">
+            <div class="panel-heading">
+              <div class="row">
+                <div class="col-sm-4">
+                  <h4 class="panel-title">{{ volume.service | specProperty:'label' }}</h4>
+                </div>
+                <div class="col-offset-sm-6 col-sm-2 pull-right">
+                  <span class="input-group-btn" ng-if="newStackVolumeRequirements.length > 1">  
+                    <!-- Display our current page +/- 2 -->
+                    <button ng-disabled="currentPage === page" 
+                        ng-repeat="page in getPageRange()"
+                        ng-if="page >= 0 && page < newStackVolumeRequirements.length"
+                        class="btn btn-xs" ng-class="{ 'btn-primary':page === currentPage, 'btn-link':!currentPage === page }"
+                        ng-click="setCurrentPage(page)">
+                      {{ page + 1 }}
+                    </button>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel-body">
+              <!-- Prompt for Volume Details, assume sane defaults -->
+              <div class="row">
+                <div class="col-sm-12" ng-if="(newStackOrphanedVolumes | orphansExist:volume.service).length">
+                  <p>Previous volumes found:</p>
+                  <!-- Reuse Orphaned Volumes? -->
+                  <form class="form">
+                    <fieldset>
+                      <div class="form-group">
+                        <!-- TODO: Fix this ugly hack -->
+                        <div class="radio" ng-repeat="orphan in newStackOrphanedVolumes | orphansExist:volume.service track by orphan.id" 
+                            ng-click="volume.id=orphan.id;volume.name=orphan.name">
+                          <label>
+                            <input type="radio" ng-checked="volume.id === orphan.id">
+                            Use existing data from <strong tooltip-placement="right" uib-tooltip="{{ orphan.size }} {{ orphan.sizeUnit }}">{{ orphan.name }}</strong>
+                          </label>
+                        </div>
+                        
+                        <!-- TODO: Fix this ugly hack -->
+                        <div class="radio" ng-click="volume.id='';volume.name=volume.defaultName;">
+                          <label>
+                            <input type="radio" ng-checked="volume.id === ''">
+                            Create a new volume
+                          </label>
+                        </div>
+                      </div>
+                    <!--form-group-->
+                    </fieldset>
+                  </form>
+                </div>
+              </div>
+              
+              <!-- Create a New Volume -->
+              <form name="volumeNameForm" class="form-inline" ng-show="volume.id === ''" novalidate>
+                
+                <!-- Volume Name -->
+                <div class="row">
+                  <div class="col-sm-8">
+                    <div class="form-group fill-width"  ng-class="{ 'has-error has-feedback':volumeNameForm.volumeName.$invalid, 'has-success has-feedback': volumeNameForm.volumeName.$valid }">
+                      <input type="text" name="volumeName" class="form-control fill-width" required maxlength="20"
+                          id="volumeName" placeholder="Enter a name for this volume" ng-model="volume.name" />
+                      <span class="form-control-feedback glyphicon" 
+                        ng-class="{ 'glyphicon-remove': volumeNameForm.volumeName.$invalid, 'glyphicon-ok': volumeNameForm.volumeName.$valid }"></span>
+                    
+                          
+                      <div ng-messages="volumeNameForm.volumeName.$error" role="alert" class="text-danger">
+                        <div ng-message="required">You must name this volume before continuing.</div>
+                        <div ng-message="minlength">You must name this volume before continuing.</div>
+                        <div ng-message="maxlength">Volume name can be at most 20 characters long.</div>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+                  
+                  
+
+                  <!-- Volume Size / Units -->
+                  <div class="col-sm-4">
+                    <div class="input-group pull-right" id="inputVolumeSize">
+                      <form name="volumeSizeForm" novalidate>
+                        <div class="form-group"  ng-class="{ 'has-error':volumeSizeForm.volumeSize.$invalid, 'has-success': volumeSizeForm.volumeSize.$valid }">
+                          <!-- Size -->
+                          <input type="number" name="volumeSize" min="1" class="form-control" ng-model="volume.size" aria-label="Please enter desired Volume Size"
+                              max="{{ storageQuota - (_.concat(configuredVolumes, _.without(newStackVolumeRequirements, volume)) | usedStorage) }}" >
+    
+                          <!-- Units -->
+                          <div class="input-group-btn">
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ volume.sizeUnit || 'Choose Units' }} <span class="caret"></span></button>
+                            <ul class="dropdown-menu dropdown-menu-right">
+                              <li><a href="#/home" ng-click="volume.sizeUnit='GB'">GB</a></li>
+                              <li><a href="#/home" ng-click="volume.sizeUnit='TB'">TB</a></li>
+                            </ul>
+                          </div>
+                          
+                          <div ng-messages="volumeSizeForm.volumeSize.$error">
+                            <div ng-message="max">Not enough space</div>
+                          </div>
+                        </div>
+                        
+                      </form>
+                      <!-- /btn-group -->
+                    </div>
+                    <!-- /input-group -->
+                  </div>
+                  <!-- /form-group -->
+                </div>
+                <!-- /row -->
+                <pre>{{ _.max([storageQuota - (_.concat(configuredVolumes, _.without(newStackVolumeRequirements, volume)) | usedStorage), 0]) }}</pre>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Ask the user for confirmation -->
+        <div ng-if="wizard.currentPage.key === 'confirm'">
+          <div class="row">
+            <div ng-class="{ 'col-sm-6':  newStackVolumeRequirements.length > 0, 
+                             'col-sm-12': newStackVolumeRequirements.length === 0 }">
+              <h4 class="text-center">Services</h4>
+              <ul class="list-group">
+                <li class="list-group-item disabled" ng-repeat="req in newStack.services">{{ req.service | specProperty:'label' }}</li>
+              </ul>
+            </div>
+            <div class="col-sm-6" ng-if="newStackVolumeRequirements.length > 0">
+              <h4 class="text-center">Volumes</h4>
+              <ul class="list-group">
+                <li class="list-group-item disabled" ng-repeat="volume in newStackVolumeRequirements track by volume.name">{{ volume.name }}: {{ volume.size }} {{ volume.sizeUnit }}</li>
+              </ul>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12">
+              <p ng-if="newStackOptions.length > 0">You have chosen to enable {{ optionalLinksGrid.selector.selection.length || "no" }} 
+                  optional service plugins<span ng-show="newService.links.required">, along with the {{ newService.links.required.length }} 
+                  required services</span>.
+              </p>
+                  
+              <p>Please confirm the configuration of your new stack above.</p>
+              
+              <p>Clicking <strong>Confirm</strong> will close the wizard and add this new stack to your namespace.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Progress / Button Bar at the bottom -->
+  <div class="modal-footer">
+      <div class="row">
+        <div class="col-sm-7">
+          
+          <!-- Wizard progress bar here -->
+          <div class="progress">
+            <div class="progress-bar" role="progressbar" aria-valuenow="{{ wizard.percentage }}" 
+            aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{ wizard.percentage }}%;">
+              <!--{{ wizard.percentage | number:0 }}%-->
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-sm-5">
+          
+          <!-- Previous Page -->
+          <div class="pull-right">
+            <button class="btn btn-default" ng-disabled="!wizard.canPrevPage()"
+                ng-click="wizard.prevPage()">
+              <i class="fa fa-fw fa-arrow-circle-left"></i>
+              Back
+            </button>
+            <!-- Next Page -->
+            <button class="btn btn-primary" ng-disabled="!wizard.canNextPage()"
+                ng-click="wizard.nextPage()" ng-if="wizard.currentPage.key !== 'confirm'">
+              Next
+              <i class="fa fa-fw fa-arrow-circle-right"></i>
+            </button>
+        
+            <!-- "Finish" button (close modal with success === true) -->
+            <button class="btn btn-success" ng-disabled="!wizard.canPrevPage()"
+                ng-click="ok()" ng-if="wizard.currentPage.key === 'confirm'">
+              Confirm
+              <i class="fa fa-fw fa-check-circle"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

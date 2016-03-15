@@ -1,0 +1,19 @@
+<!-- The Log Viewer Modal -->
+<section>
+  <div class="modal-header">
+    <button type="button" class="btn btn-danger pull-right btn-xs" data-dismiss="modal" aria-label="Close" ng-click="close()">
+      <i class="fa fa-fw fa-times"></i>
+    </button>
+    <h4 class="modal-title">Logs for {{ service.service | specProperty:'label' }}</h4>
+  </div>
+    
+  <div id="logBody" class="modal-body modal-body-scrollable">
+    <a id="scrollTop"></a>
+    <pre ng-bind="serviceLog"></pre>
+    <a id="scrollBottom"></a>
+  </div>
+  
+  <div class="modal-footer">
+      <button class="btn btn-default pull-right" ng-click="close()">Close</button>
+  </div>
+</section>

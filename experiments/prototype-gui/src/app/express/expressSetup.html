@@ -1,0 +1,52 @@
+<section>
+  <div class="row">
+    <div class="col-md-12" style="margin-left:auto;">
+      <div class="jumbotron text-center" >
+        <h1>Welcome to StackMaster</h1>
+        <h4>Become <strong>one</strong> with the stack</h4>
+      </div>
+      
+      <ul class="nav nav-tabs">
+        <!-- Start by displaying the "help" tab -->
+        <li role="presentation" ng-class="{ 'active': !selectedStack }" ng-click="deselectStack()"><a href="">Stacks</a></li>
+        
+        <!-- A tab for each existing stack -->
+        <li ng-repeat="stack in stacks" role="presentation">
+          <a ng-click="selectStack(stack)" href="" ng-if="stack.name" 
+             ng-class="{ 'active':selectedStack === stack }">{{ stack.name }}</a>
+          <form ng-if="!stack.name" ng-submit="stack.name = newStackName">
+            <input id="newStackInput" class="form-control"ng-blur="stack.name = newStackName" 
+              ng-model="newStackName" required ng-required />
+          </form>
+        </li>
+        
+        <!-- "Add Stack" tab -->
+        <li role="presentation" ng-disabled="stacks | containsUnconfiguredStack" 
+            ng-class="{ 'disabled': (stacks | containsUnconfiguredStack) }">
+          <button class="btn btn-success" ng-click="stacks.push({ services: ['one', 'two', 'three'] });" href="">
+            <i class="fa fa-plus"></i>
+          </button>
+        </li>
+      </ul>
+      
+      <!-- Tab Viewer contents -->
+      <div style="border-style:dashed;">
+        <!-- When "Help" tab is selected (i.e. no stack is selected) -->
+        <div ng-if="selectedStack === null">
+          <h3 class="text-center" style="margin-top:120px;">A stack is a group of related software services that can be deployed to your namespace.</h3>
+          <h3 class="text-center" style="margin-top:40px;">Be sure to name your stacks appropriately so that you can identify them.</h3>
+          <h3 class="text-center" style="margin-top:40px;">You can choose to deploy however many stacks you would like!</h3>
+          <h3 class="text-center" style="margin-top:40px;margin-bottom:120px;">Most importantly: have fun; make science!</h3>
+        </div>
+        
+        <div ng-if="selectedStack !== null">
+          <ul>
+            <li ng-repeat="svc in selectedStack.services">
+              {{ svc }}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
