@@ -93,8 +93,8 @@ var listStacksCmd = &cobra.Command{
 						if val, ok := service.Config[name]; ok {
 							value = val
 						}
+						env += fmt.Sprintf("%s=%s ", name, value)
 					}
-					env += fmt.Sprintf("%s=%s ", name, value)
 				}
 				fmt.Fprintf(w, "\t%s\t%s\t%s\t%s\t%s\n", service.Service, service.Status, endpoints, service.Id, env)
 			}
