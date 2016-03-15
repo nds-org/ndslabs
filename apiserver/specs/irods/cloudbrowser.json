@@ -1,0 +1,24 @@
+{
+    "key": "cloudbrowser",
+    "label": "iRODS Cloudbrowser API",
+    "requiresVolume": false,
+    "image": "ndslabs/cloudbrowser:latest",
+    "isService": true,
+    "isStandalone": false,
+    "isStack": false,
+    "isPublic": false,
+    "ports": [
+        {
+            "port": 8009,
+            "protocol": "TCP"
+        }
+    ],
+    "config":  [
+        {
+            "name": "IRODS_ZONE",
+            "value": "tempZone",
+            "label": "iRODS Zone",
+            "canOverride": true
+        }
+	]
+}

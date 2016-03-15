@@ -1,0 +1,613 @@
+
+swagger: '2.0'
+
+info:
+  title: ndslabs
+  version: "0.1"
+  
+basePath: /v1
+schemes:
+  - https
+produces:
+  - application/json
+consumes:
+  - application/json
+  
+parameters:
+  service-id:
+    name: service-id
+    in: path
+    description: The unique service identifier
+    type: string
+    required: true
+  project-id:
+    name: project-id
+    in: path
+    description: The unique project identifier
+    type: string
+    required: true    
+  stack-id:
+    name: stack-id
+    in: path
+    description: The unique stack identifier
+    type: string
+    required: true    
+  stack-service-id:
+    name: stack-service-id
+    in: path
+    description: The unique stack service identifier
+    type: string
+    required: true   
+  volume-id:
+    name: volume-id
+    in: path
+    description: The unique volume identifier
+    type: string
+    required: true   
+paths:
+
+  # Login/logout assuming JWT paradigm
+  /authenticate:
+    post:
+      description: |
+        Authenticate a user (login)
+      parameters:
+        - name: auth
+          in: body
+          description: Auth definition
+          schema:
+            $ref: '#/definitions/Auth'
+          required: true   
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/Token'
+        401:
+          description: Not logged in
+      
+    delete:
+      description: | 
+        Logout a user
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/Token'
+  
+  /refresh_token:
+    get:
+      description: |
+        Refresh the JWT token
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/Token'
+        401:
+          description: Not logged in
+          
+  /check_token:
+    get:
+      description: |
+        Validate the JWT token
+      responses:
+        200:
+          description: OK
+        401:
+          description: Not logged in   
+          
+  # Services
+  /services:
+    get:
+      description: |
+        Retrieves a site-wide list of available service definitions.
+      parameters:
+        - name: stack
+          in: query
+          description: Filter list for stacks (true or false)
+          required: false
+          type: boolean
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items: 
+                  $ref: '#/definitions/Service'
+    post:
+      description: | 
+        Adds a new service to the service library
+      parameters:
+        - name: service
+          in: body
+          description: Service definition
+          schema:
+            $ref: '#/definitions/Service'
+          required: true
+      responses:
+        201:
+          description: Created
+       
+                  
+  /services/{service-id}:
+    parameters: 
+      - $ref: '#/parameters/service-id'
+    get: 
+      description: |
+          Retrieves the service definition.
+      responses:
+        200:
+          description: The service object
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/Service'
+    put:
+      description: | 
+        Updates a service definition in the service library
+      parameters:
+        - name: service
+          in: body
+          description: Service definition
+          schema:
+            $ref: '#/definitions/Service'
+          required: true
+      responses:
+        201:
+          description: Updated
+    delete:
+      description: | 
+        Delete a service
+      responses:
+        200:
+          description: OK
+                       
+  # Projects              
+  /projects:
+    get:
+       description: | 
+         Retrieves a site-wide list of NDSLabs projects.
+       responses:
+         200:
+           description: OK
+           schema:
+             type: object
+             properties:
+               data:
+                 type: array
+                 items:
+                   $ref: '#/definitions/Project'
+         404:
+           description: Not found
+    post:
+      description: | 
+        Adds a new project
+      parameters:
+        - name: project
+          in: body
+          description: Project definition
+          schema:
+            $ref: '#/definitions/Project'
+          required: true
+      responses:
+        201:
+          description: Created    
+
+  /projects/{project-id}:
+    parameters: 
+      - $ref: '#/parameters/project-id'
+    get: 
+      description: |
+        Retrieves basic information about a project.
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/Project'
+    put:
+      description: | 
+        Updates project information
+      parameters:
+        - name: project
+          in: body
+          description: Project definition
+          schema:
+            $ref: '#/definitions/Project'
+          required: true
+      responses:
+        201:
+          description: Updated                
+
+    delete:
+      description: | 
+        Delete a project
+      responses:
+        200:
+          description: OK      
+          
+  # Stacks
+  /projects/{project-id}/stacks:
+    parameters: 
+      - $ref: '#/parameters/project-id'
+
+    get:
+       description: | 
+         Retrieves a list of stacks for this project.
+       responses:
+         200:
+           description: OK
+           schema:
+             type: object
+             properties:
+               data:
+                 type: array
+                 items:
+                   $ref: '#/definitions/Stack'
+         404:
+           description: Not found
+    post:
+      description: | 
+        Adds a new stack to this project
+      parameters:
+        - name: stack
+          in: body
+          description: Stack definition
+          schema:
+            $ref: '#/definitions/Stack'
+          required: true
+      responses:
+        201:
+          description: Created  
+  
+  /projects/{project-id}/stacks/{stack-id}:
+    parameters: 
+      - $ref: '#/parameters/project-id'
+      - $ref: '#/parameters/stack-id'
+    get: 
+      description: |
+        Retrieves the stack definition.
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/Stack'
+    put:
+      description: | 
+        Updates stack information
+      parameters:
+        - name: stack
+          in: body
+          description: Stack definition
+          schema:
+            $ref: '#/definitions/Stack'
+          required: true
+      responses:
+        201:
+          description: Updated      
+  
+    delete:
+      description: | 
+        Delete a stack
+      responses:
+        200:
+          description: OK  
+          
+  # Volumes
+  /projects/{project-id}/volumes:
+    parameters: 
+      - $ref: '#/parameters/project-id'
+  
+    get:
+       description: | 
+         Retrieves a list of volumes for this project.
+       responses:
+         200:
+           description: OK
+           schema:
+             type: object
+             properties:
+               data:
+                 type: array
+                 items:
+                   $ref: '#/definitions/Volume'
+         404:
+           description: Not found
+    post:
+      description: | 
+        Adds a new volume to this project
+      parameters:
+        - name: volume
+          in: body
+          description: Volume definition
+          schema:
+            $ref: '#/definitions/Volume'
+          required: true
+      responses:
+        201:
+          description: Created  
+  
+  /projects/{project-id}/volumes/{volume-id}:
+    parameters: 
+      - $ref: '#/parameters/project-id'
+      - $ref: '#/parameters/volume-id'
+    get: 
+      description: |
+        Retrieves the volume definition.
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/Volume'
+    put:
+      description: | 
+        Updates volume information
+      parameters:
+        - name: volume
+          in: body
+          description: Volume definition
+          schema:
+            $ref: '#/definitions/Volume'
+          required: true
+      responses:
+        201:
+          description: Updated      
+  
+    delete:
+      description: | 
+        Delete a volume
+      responses:
+        200:
+          description: OK 
+  
+  # Stack service logs
+  /projects/{project-id}/logs/{stack-service-id}:
+    parameters: 
+      - $ref: '#/parameters/project-id'
+      - $ref: '#/parameters/stack-service-id'
+    get: 
+      description: |
+        Retrieves the stack service log.
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/Log'
+
+  /projects/{project-id}/start/{stack-id}:
+    parameters: 
+      - $ref: '#/parameters/project-id'
+      - $ref: '#/parameters/stack-id'  
+    get:
+      description: |
+        Starts the specified stack
+      responses:
+        200:
+          description: OK
+
+  /projects/{project-id}/stop/{stack-id}:
+    parameters: 
+      - $ref: '#/parameters/project-id'
+      - $ref: '#/parameters/stack-id'
+    get:
+      description: |
+        Stops the specified stack
+      responses:
+        200:
+          description: OK
+
+
+definitions:
+  Auth:
+    type: object
+    properties:
+      username:
+        type: string
+      password:
+        type: string
+        
+  Token:
+    type: object
+    properties:
+      token:
+        type: string
+        
+  VolumeMount:
+    type: object
+    properties:
+      mountPath:
+        type: string
+      name:
+        type: string        
+        
+  Service:
+    type: object
+    properties: 
+      id:          # Unique identifier
+        type: string 
+      key:          # Short name (e.g., mongodb)
+        type: string 
+      label:        # Display name (e.g., MongoDB)
+        type: string
+      description:
+        type: string
+      maintainer:
+        type: string
+      requiresVolume:
+        type: boolean
+      isStack:  
+        type: boolean
+      isService:
+        type: boolean
+      isPublic:
+        type: boolean
+      isStandalone:
+        type: boolean
+      readinessProbe:
+        $ref: '#/definitions/ReadyProbe'
+      depends:
+        type: array
+        items:
+          $ref: '#/definitions/ServiceDependency'
+      image: 
+        type: string
+      ports:
+        type: array
+        items:
+          $ref: '#/definitions/Port'
+      volumeMounts:
+        type: array
+        items:
+          $ref: '#/definitions/VolumeMount'
+      args:
+        type: array
+        items:
+          type: string         
+      createdTime:
+        type: integer
+      updatedTime:
+        type: integer
+      
+  ReadyProbe:
+    type: object
+    properties:
+      path:
+        type: string
+      port:
+        type: integer
+      initialDelay:
+        type: integer
+      timeout:
+        type: integer
+        
+  Port:
+    type: object
+    properties:
+      port:
+        type: integer
+      protocol:
+        type: string
+        
+  ServiceDependency:
+    type: object
+    properties: 
+      serviceId:
+        type: string
+      required:
+        type: boolean
+
+  Project:
+    type: object
+    properties:
+      id:
+        type: string
+      name: 
+        type: string
+      description:
+        type: string
+      namespace:
+        type: string
+      quotas:
+        type: object
+        properties:
+           storage:
+             type: string
+               
+  Stack:
+    type: object
+    properties:
+      id:
+        type: string
+      key:
+        type: string
+      name:
+        type: string
+      services:
+        type: array
+        items:
+          $ref: '#/definitions/StackService'
+      status:
+        type: string
+      action:
+        type: string
+      createTime:
+        type: integer
+      updateTime:
+        type: integer
+    
+  StackService:
+    type: object
+    properties:
+      id:
+        type: string
+      stackId:
+        type: string
+      serviceId:
+        type: string
+      status:
+        type: string
+      endpoints:
+        type: array
+        items:
+          type: object
+          properties:
+            url:
+              type: string
+  
+  Volume:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      size:
+        type: integer
+      sizeUnit:
+        type: string
+      format:
+        type: string
+      attached:
+        type: string  # ServiceStack UID
+      service:
+        type: string  # Original service key
+      status:
+        type: string
+      formatted:
+        type: boolean
+      createTime:
+        type: integer
+      updateTime:
+        type: integer
+        
+  Log:
+    type: object
+    properties:
+      text:
+        type: string
+        

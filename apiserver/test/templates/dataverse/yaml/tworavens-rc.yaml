@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: tworavens
+spec:
+  replicas: 1
+  selector:
+    component: tworavens
+  template:
+    metadata:
+      labels:
+        component: tworavens
+    spec:
+      containers:
+      - name: tworavens
+        image: ndslabs/tworavens:latest
+        ports:
+        - containerPort: 80
+          protocol: TCP

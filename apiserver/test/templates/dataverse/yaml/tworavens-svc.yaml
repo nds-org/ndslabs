@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tworavens
+  labels:
+    component: tworavens
+spec:
+  selector:
+    component: tworavens
+  ports:
+    - port: 80
+      protocol: TCP
+      nodePort: 30001
+  type: NodePort

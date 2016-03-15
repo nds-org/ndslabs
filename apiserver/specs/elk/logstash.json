@@ -1,0 +1,19 @@
+{
+    "depends": [
+        {
+            "key": "elasticsearch2",
+            "required": true
+        }
+    ],
+    "key": "logstash",
+    "isStack": false,
+    "isService": true,
+    "isStandalone": false,
+    "label": "Logstash",
+    "image": "logstash",
+    "ports": [
+        { "port": 5000, "protocol": "TCP" }
+    ],
+    "command": [ "logstash", "-e" ],
+    "args" : [ "output { elasticsearch { hosts => \"$(ELASTICSEARCH2_PORT_9200_TCP_ADDR):$(ELASTICSEARCH2_PORT_9200_TCP_PORT)\" } } input { tcp { port => 5000 type => syslog } }" ]
+}

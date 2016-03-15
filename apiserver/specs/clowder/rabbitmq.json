@@ -1,0 +1,14 @@
+{
+    "key": "rabbitmq",
+    "isStack": false,
+    "isService": true,
+    "isStandalone": false,
+    "description": "A highly reliable enterprise messaging system",
+    "label": "RabbitMQ",
+    "image": "rabbitmq:management",
+    "ports": [
+        { "port": 5672, "protocol": "TCP" },
+        { "port": 15672, "protocol": "TCP" }
+    ]
+}
+

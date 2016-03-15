@@ -1,0 +1,23 @@
+{
+    "apiVersion": "v1",
+    "kind": "Service",
+    "metadata": {
+        "labels": {
+            "name": "rserve",
+            "stack": "dataverse"
+        },
+        "name": "rserve"
+    },
+    "spec": {
+        "ports": [
+            {
+                "port": 6311,
+                "protocol": "TCP",
+                "targetPort": 6311
+            }
+        ],
+        "selector": {
+            "name": "rserve"
+        }
+    }
+}

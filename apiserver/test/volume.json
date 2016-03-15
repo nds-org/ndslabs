@@ -1,0 +1,7 @@
+{ 
+    "id": "541e9abb-9f11-4c49-88e3-82772883300a",
+    "size": "1G",
+    "format": "ext4",
+    "status": "in-use",
+    "serviceKey": "mongo"
+}

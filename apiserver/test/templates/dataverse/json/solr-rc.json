@@ -1,0 +1,41 @@
+{
+    "apiVersion": "v1",
+    "kind": "ReplicationController",
+    "metadata": {
+        "name": "solr"
+    },
+    "spec": {
+        "replicas": 1,
+        "selector": {
+            "name": "solr"
+        },
+        "template": {
+            "metadata": {
+                "labels": {
+                    "name": "solr",
+                    "stack": "dataverse"
+                }
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "image": "ndslabs/dataverse-solr:latest",
+                        "name": "solr",
+                        "ports": [
+                            {
+                                "containerPort": 8983,
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "volumeMounts": [
+                            {
+                                "mountPath": "/usr/local/solr-4.6.0/example/solr/collection1/data",
+                                "name": "solr"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

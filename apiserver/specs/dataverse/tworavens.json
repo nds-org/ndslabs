@@ -1,0 +1,13 @@
+{
+    "key": "tworavens",
+    "isStack": false,
+    "isService": true,
+    "isPublic": true,
+    "isStandalone": false,
+    "description": "A collection of statistical tools for data exploration, analysis, and meta-analysis.",
+    "label": "TwoRavens",
+    "image": "ndslabs/tworavens:latest",
+    "ports": [
+        { "port": 80, "protocol": "TCP" }
+    ]
+}

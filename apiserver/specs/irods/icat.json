@@ -1,0 +1,37 @@
+{
+    "key": "icat",
+    "label": "iRODS iCAT",
+    "requiresVolume": true,
+    "image": "ndslabs/irods-icat:4.1.3",
+    "isService": true,
+    "isStandalone": true,
+    "isStack": true,
+    "isPublic": false,
+    "ports": [
+        {
+            "port": 1247,
+            "protocol": "TCP"
+        }
+    ],
+    "config":  [
+        {
+            "name": "RODS_ZONE",
+            "value": "tempZone",
+            "label": "iRODS zone",
+            "canOverride": true
+        },
+        {
+            "name": "RODS_PASSWORD",
+            "value": "",
+            "label": "iRODS rods user password",
+            "canOverride": true,
+            "isPassword": true
+        }
+    ],
+	"volumeMounts":[
+	   { "mountPath": "/var/lib/irods/iRODS/Vault", "name": "icat" }
+    ],
+    "depends": [
+      { "key": "cloudbrowserui", "required": false }
+    ]
+}

@@ -1,0 +1,16 @@
+{
+    "key": "solr",
+    "isStack": false,
+    "isService": true,
+    "description": "Solr 4.6 intended for use with Dataverse",
+    "isStandalone": false,
+    "label": "Solr",
+    "requiresVolume": true,
+    "image": "ndslabs/dataverse-solr:latest",
+    "ports": [
+        { "port": 8983, "protocol": "TCP" }
+    ],
+    "volumeMounts":[
+        { "mountPath": "/usr/local/solr-4.6.0/example/solr/collection1/data", "name": "solr" }
+    ]
+}

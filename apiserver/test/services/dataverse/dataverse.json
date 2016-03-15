@@ -1,0 +1,13 @@
+{
+  "key": "dataverse",
+  "label": "Dataverse",
+  "requiresVolume": true,
+  "isStack": true,
+  "isService": true,
+  "depends": [
+      { "key": "postgres", "required": true },
+      { "key": "solr", "required": true },
+      { "key": "rserve", "required": true},
+      { "key": "tworavens", "required": false }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+    "key": "dataverse",
+    "label": "Dataverse",
+  	"requiresVolume": true,
+    "image": "ndslabs/dataverse:latest",
+    "isService": true,
+    "isStack": true,
+	"isPublic": true,
+	"isStandalone": true,
+	"description": "A web application to share, preserve, cite, explore and analyze research data",
+    "ports": [
+        {
+            "port": 8080,
+            "protocol": "TCP"
+        }
+    ],
+    "depends": [
+      { "key": "postgres", "required": true },
+      { "key": "solr", "required": true },
+      { "key": "rserve", "required": true},
+      { "key": "tworavens", "required": false }
+    ],
+    "config":  [
+        {
+            "name": "HOST_DNS_ADDRESS",
+            "value": "localhost",
+            "canOverride": false
+        },
+        {
+            "name": "GLASSFISH_DIRECTORY",
+            "value": "/usr/local/glassfish4",
+            "canOverride": false
+        },
+        {
+            "name": "MAIL_SERVER",
+            "value": "smtp.ncsa.illinois.edu",
+            "label": "SMTP server",
+            "canOverride": true
+        },
+        {
+            "name": "POSTGRES_DATABASE",
+            "value": "dvndb",
+            "canOverride": false
+        },
+        {
+            "name": "POSTGRES_USERNAME",
+            "value": "dvnapp",
+            "canOverride": false
+        },
+        {
+            "name": "POSTGRES_PASSWORD",
+            "value": "",
+            "label": "Database password",
+            "canOverride": true,
+            "isPassword": true
+        },
+        {
+            "name": "RSERVE_USER",
+            "value": "rserve",
+            "canOverride": false
+        },
+        {
+            "name": "RSERVE_PASSWORD",
+            "value": "",
+            "label": "RServe password",
+            "canOverride": true,
+            "isPassword": true
+        },
+        {
+            "name": "RODS_ZONE",
+            "value": "dvnZone",
+            "label": "iRODS Zone",
+            "canOverride": true,
+            "isPassword": false
+        },
+        {
+            "name": "RODS_PASSWORD",
+            "value": "",
+            "label": "iRODS rods user password",
+            "canOverride": true,
+            "isPassword": true
+        }
+    ],
+	"volumeMounts":[
+	   { "mountPath": "/usr/local/glassfish4/glassfish/domains/domain1/files", "name": "dataverse" }
+    ], 
+	"readinessProbe" : {
+		"path" : "/resources/images/dataverseproject_logo.jpg",
+		"port" : 8080,
+		"initialDelay": 30,
+		"timeout" : 600
+	}
+}
