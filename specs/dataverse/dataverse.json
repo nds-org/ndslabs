@@ -20,16 +20,67 @@
       { "key": "rserve", "required": true},
       { "key": "tworavens", "required": false }
     ],
-    "config":  {
-       "HOST_DNS_ADDRESS": "localhost",
-       "GLASSFISH_DIRECTORY": "/usr/local/glassfish4",
-       "MAIL_SERVER": "smtp.ncsa.illinois.edu",
-       "POSTGRES_DATABASE": "dvndb",
-       "POSTGRES_USER": "dvnapp",
-       "POSTGRES_PASSWORD": "secret",
-       "RSERVE_USER": "rserve",
-       "RSERVE_PASSWORD": "rserve"
-    },
+    "config":  [
+        {
+            "name": "HOST_DNS_ADDRESS",
+            "value": "localhost",
+            "canOverride": false
+        },
+        {
+            "name": "GLASSFISH_DIRECTORY",
+            "value": "/usr/local/glassfish4",
+            "canOverride": false
+        },
+        {
+            "name": "MAIL_SERVER",
+            "value": "smtp.ncsa.illinois.edu",
+            "label": "SMTP server",
+            "canOverride": true
+        },
+        {
+            "name": "POSTGRES_DATABASE",
+            "value": "dvndb",
+            "canOverride": false
+        },
+        {
+            "name": "POSTGRES_USERNAME",
+            "value": "dvnapp",
+            "canOverride": false
+        },
+        {
+            "name": "POSTGRES_PASSWORD",
+            "value": "",
+            "label": "Database password",
+            "canOverride": true,
+            "isPassword": true
+        },
+        {
+            "name": "RSERVE_USER",
+            "value": "rserve",
+            "canOverride": false
+        },
+        {
+            "name": "RSERVE_PASSWORD",
+            "value": "",
+            "label": "RServe password",
+            "canOverride": true,
+            "isPassword": true
+        },
+        {
+            "name": "RODS_ZONE",
+            "value": "dvnZone",
+            "label": "iRODS Zone",
+            "canOverride": true,
+            "isPassword": false
+        },
+        {
+            "name": "RODS_PASSWORD",
+            "value": "",
+            "label": "iRODS rods user password",
+            "canOverride": true,
+            "isPassword": true
+        }
+    ],
 	"volumeMounts":[
 	   { "mountPath": "/usr/local/glassfish4/glassfish/domains/domain1/files", "name": "dataverse" }
     ], 

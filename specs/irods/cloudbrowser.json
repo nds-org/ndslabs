@@ -15,7 +15,7 @@
     ],
     "config":  [
         {
-            "name": "RODS_ZONE",
+            "name": "IRODS_ZONE",
             "value": "tempZone",
             "label": "iRODS Zone",
             "canOverride": true
