@@ -2,6 +2,7 @@
     "key": "imagepreview",
     "isStack": false,
     "isService": false,
+    "isStandalone": true,
     "label": "Image preview extractor",
     "image": "ndslabs/image-preview:0.9.1",
     "depends": [

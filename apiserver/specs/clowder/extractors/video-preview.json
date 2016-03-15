@@ -2,6 +2,7 @@
     "key": "videopreview",
     "isStack": false,
     "isService": false,
+    "isStandalone": true,
     "label": "Video preview extractor",
     "image": "ndslabs/video-preview:0.9.1",
     "depends": [

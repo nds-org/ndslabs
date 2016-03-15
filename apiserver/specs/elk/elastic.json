@@ -2,8 +2,10 @@
     "key": "elasticsearch2",
     "isStack": false,
     "isService": true,
+    "isStandalone": true,
     "requiresVolume": true,
-    "label": "ElasticSearch 2.2",
+    "description": "A distributed search and analytics engine",
+    "label": "ElasticSearch",
     "image": "elasticsearch:2.2",
     "ports": [
         { "port": 9200, "protocol": "TCP" }

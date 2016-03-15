@@ -5,6 +5,8 @@
     "label": "MongoDB",
     "requiresVolume": true,
     "image": "mongo:latest",
+    "isStandalone": true,
+	"description": "A cross-platform document-oriented NoSQL database",
     "ports": [
         { "port": 27017, "protocol": "TCP" },
         { "port": 28017, "protocol": "TCP" }

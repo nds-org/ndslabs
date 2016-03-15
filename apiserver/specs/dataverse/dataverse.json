@@ -1,11 +1,13 @@
 {
     "key": "dataverse",
-    "label": "Dataverse 4",
+    "label": "Dataverse",
   	"requiresVolume": true,
     "image": "ndslabs/dataverse:latest",
     "isService": true,
     "isStack": true,
 	"isPublic": true,
+	"isStandalone": true,
+	"description": "A web application to share, preserve, cite, explore and analyze research data",
     "ports": [
         {
             "port": 8080,
