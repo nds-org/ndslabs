@@ -652,6 +652,9 @@
                 "isPublic": {
                     "type": "boolean"
                 },
+                "isStandalone": {
+                    "type": "boolean"
+                },
                 "readinessProbe": {
                     "$ref": "#/definitions/ReadyProbe"
                 },
