@@ -8,6 +8,7 @@
     "key": "logspout",
     "isStack": false,
     "isService": false,
+    "isStandalone": false,
     "requiresVolume": true,
     "label": "LogSpout",
     "image": "ndslabs/logspout:latest",

@@ -17,6 +17,8 @@
     "isStack": true,
     "isService": true,
     "isPublic": true,
+    "isStandalone": true,
+    "description": "An open source data visualization platform",
     "label": "Kibana",
     "image": "kibana",
     "ports": [

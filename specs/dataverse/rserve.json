@@ -2,6 +2,7 @@
     "key": "rserve",
     "isStack": false,
     "isService": true,
+    "isStandalone": true,
     "label": "Rserve",
     "image": "ndslabs/dataverse-rserve:latest",
     "ports": [

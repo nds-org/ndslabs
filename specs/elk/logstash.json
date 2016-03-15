@@ -8,6 +8,7 @@
     "key": "logstash",
     "isStack": false,
     "isService": true,
+    "isStandalone": false,
     "label": "Logstash",
     "image": "logstash",
     "ports": [

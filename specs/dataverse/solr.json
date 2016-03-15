@@ -2,6 +2,8 @@
     "key": "solr",
     "isStack": false,
     "isService": true,
+    "description": "Solr 4.6 intended for use with Dataverse",
+    "isStandalone": false,
     "label": "Solr",
     "requiresVolume": true,
     "image": "ndslabs/dataverse-solr:latest",

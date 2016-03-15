@@ -26,9 +26,11 @@
     "image": "ndslabs/clowder:terra",
     "isStack": true,
     "isService": true,
+    "isStandalone": true,
     "key": "clowder",
     "label": "Clowder",
 	"isPublic": true,
+	"description": "a scalable data repository where you can share, organize and analyze data.",
     "ports": [
         {
             "port": 9000,

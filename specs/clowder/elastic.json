@@ -2,7 +2,8 @@
     "key": "elasticsearch",
     "isStack": false,
     "isService": true,
-    "label": "ElasticSearch",
+    "isStandalone": false,
+    "label": "ElasticSearch 1.x",
     "image": "elasticsearch:1.3",
     "ports": [
         { "port": 9300, "protocol": "TCP" }
