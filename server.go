@@ -1260,7 +1260,13 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 			containerState := ""
 			//restarts := 0
 			if len(pod.Status.ContainerStatuses) > 0 {
+				fmt.Printf("Status %s, %s, %s\n",
+					pod.Status.ContainerStatuses[0].Name,
+					pod.Status.ContainerStatuses[0].State,
+					pod.Status.ContainerStatuses[0].Ready)
+
 				state := pod.Status.ContainerStatuses[0].LastTerminationState
+				fmt.Println("LastState: %s", state)
 				//restarts = pod.Status.ContainerStatuses[0].RestartCount
 				switch {
 				case state.Running != nil:
@@ -1272,7 +1278,6 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 				}
 			}
 
-			//fmt.Printf("Status: %s %s %s %s\n", label, phase, condition.Status, containerState)
 			status := ""
 			if phase == "Running" {
 				if condition.Type == "Ready" && condition.Status == "True" {
@@ -1281,6 +1286,8 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 					status = "starting"
 				} else if containerState == "terminated" {
 					status = "error"
+				} else if containerState == "" {
+					status = stack.Status
 				}
 			} else if phase == "Pending" {
 				status = "waiting"
@@ -1290,6 +1297,7 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 				status = "failed"
 			}
 
+			fmt.Printf("Pod Status: label=%s phase=%s containerState=%s status=%s\n", label, phase, containerState, status)
 			// Final status
 			podStatus[label] = status
 		}
@@ -1308,9 +1316,11 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 
 	for i := range stack.Services {
 		stackService := &stack.Services[i]
+		stackService.Endpoints = []string{}
 		glog.V(4).Infof("Stack Service %s %s\n", stackService.Service, podStatus[stackService.Service])
 		stackService.Status = podStatus[stackService.Service]
 		if len(endpoints[stackService.Service]) > 0 {
+			glog.V(4).Infof("Endpoint %s", endpoints[stackService.Service])
 			stackService.Endpoints = append(stackService.Endpoints, endpoints[stackService.Service])
 		}
 	}
