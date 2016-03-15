@@ -69,9 +69,11 @@ angular.module('ndslabs')
       count = '0' + count;
     }
     
+    var name = spec.label.slice(0,12) + "-" + count;
+    
     var stack = {
       id: "",
-      name: spec.label + "-" + count,
+      name: name,
       key: spec.key,
       status: "Suspended",
       services: [],
@@ -101,9 +103,11 @@ angular.module('ndslabs')
       count = '0' + count;
     }
     
+    var name = service.key.slice(0,12) + '-' + count;
+    
     var volume = {
       id: '',
-      defaultName: service.label + '-' + count,
+      defaultName: name,
       size: 10,
       sizeUnit: 'GB',
       format: 'Raw',

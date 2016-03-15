@@ -45,11 +45,11 @@
           <table class="table table-condensed" 
               ng-hide="(allServices | filter : svcQuery).length === 0">
             <tbody>
-              <tr ng-repeat="stack in allServices | orderBy:'key' | filter : svcQuery track by stack.key">
+              <tr ng-repeat="stack in allServices | orderBy:'label' | filter : svcQuery track by stack.key">
                 <td width="95%">{{ stack.label }}</td>
                 <td width="5%">
                  <button class="btn btn-xs btn-default" ng-click="openWizard(stack)" 
-                       uib-tooltip="{{ stack.description }}" tooltip-placement="right">
+                       uib-tooltip="{{ stack.description }}" tooltip-placement="top-right">
                     <i class="fa fa-plus"></i>
                   </button>
                 </td>

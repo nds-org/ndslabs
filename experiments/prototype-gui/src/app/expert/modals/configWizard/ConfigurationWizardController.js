@@ -229,25 +229,14 @@ angular
   };
   
   
-  $scope.ok = function () {
-    $log.debug("Closing modal with success!");
-    $uibModalInstance.close({ 'stack': $scope.newStack, 'volumes': $scope.newStackVolumeRequirements });
-  };
-
-  $scope.close = function () {
-    $log.debug("Closing modal with dismissal!");
-    $uibModalInstance.dismiss('cancel');
-  };
-}])
-.controller('VolumeQuotaCtrl', [ '$scope', '$filter', 'Volumes', 'Project', '_', 
-    function($scope, $filter, Volumes, Project, _) {
   $scope.chartObject = {};
   
   $scope.project = Project.project;
   $scope.storageQuota = Project.storageQuota || 50;
-  $scope.configuredVolumes = Volumes.all;
+  $scope.configuredVolumes = configuredVolumes;
   
-  var adminEmail = Project.email || 'lambert8@illinois.edu';
+  // TODO: Where is this email address going to live?
+  var adminEmail = 'site-admin';
   var subject = $filter('urlEncode')('Increasing My Storage Quota');
   var body = $filter('urlEncode')('Hello, Admin! I appear to have reach my storage limit of '
               + $scope.storageQuota + ' GB on ' + Project.namespace 
@@ -271,7 +260,7 @@ angular
   var available = angular.copy($scope.storageQuota);
   
   var volumeSlices = [];
-  if (Volumes.all.length > 0) {
+  if (configuredVolumes.length > 0) {
     var pushVolume = function(volume) {
       var size = volume.sizeUnit === 'GB' ? volume.size : volume.size * 1000
       available -= size
@@ -283,7 +272,7 @@ angular
     };
   
     // Push a slice for each of our existing volumes
-    angular.forEach(Volumes.all, function(volume) {
+    angular.forEach(configuredVolumes, function(volume) {
       pushVolume(volume);
     });
   }
@@ -315,4 +304,15 @@ angular
   
   // Now add the rest of our volumes
   $scope.chartObject.data.rows = _.concat($scope.chartObject.data.rows, volumeSlices);
+  
+  
+  $scope.ok = function () {
+    $log.debug("Closing modal with success!");
+    $uibModalInstance.close({ 'stack': $scope.newStack, 'volumes': $scope.newStackVolumeRequirements });
+  };
+
+  $scope.close = function () {
+    $log.debug("Closing modal with dismissal!");
+    $uibModalInstance.dismiss('cancel');
+  };
 }]);

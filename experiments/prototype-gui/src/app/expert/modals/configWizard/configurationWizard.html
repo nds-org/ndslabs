@@ -64,7 +64,6 @@
                   </div>
                 </div>
               </form>
-              <pre>{{ stackNameForm | json }}</pre>
             </div>
           </div>
         </div>
@@ -107,33 +106,36 @@
         <div ng-if="wizard.currentPage.key === 'volumes'">
           
           <!-- Show a fancy volume quota pie chart -->
-          <div ng-controller="VolumeQuotaCtrl">
+          <div>
             <div class="row">
-              <div class="col-sm-6">
+              <div class="col-sm-12">
+                <p>Your project is allowed to allocate <strong>{{ project.storageQuota || '50' }} GB</strong> of storage.</p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-5">
                 <!--<div google-chart chart="chartObject" style="margin:0;padding:0;height:300px; width:100%;"></div>-->
                 <justgage width="175" height="175" value="{{ configuredVolumes | usedStorage }}" 
                 title="Current Usage" max="{{ project.storageQuota || 50 }}" label="GB"></justgage>
               </div>
-              <div class="col-sm-6"  ng-if="availableSpace != 0 && availableSpace > 0">
-                <justgage width="175" height="175" relativeGuageSize="true"
+              <div class="col-sm-7">
+                <justgage width="175" height="175" relativeGuageSize="true" ng-if="availableSpace != 0 && availableSpace > 0"
                 value="{{ _.concat(configuredVolumes, newStackVolumeRequirements) | usedStorage }}" 
                 title="Projected Usage" max="{{ project.storageQuota || 50 }}" label="GB"></justgage>
+                
               </div>
             </div>
-            <div class="row">
+            <div class="row"ng-if="!availableSpace || availableSpace == 0 || availableSpace <= 0">
               <div class="col-sm-12">
-                <p>Your project is allowed to allocate <strong>{{ project.storageQuota || '50' }} GB</strong> of storage.</p>
-                <div ng-if="!availableSpace || availableSpace == 0 || availableSpace <= 0">
-                  <p>You have used all of your allocated storage.</p>
-                  <p>Remove other stacks to make room for this one, or 
-                  <a target="_self" ng-href="{{ mailToLink }}">Click here to contact an administrator</a> regarding increasing your storage quota.</p>
-                </div>
+                  <p class="text-danger">You have used all of your allocated storage.</p>
+                  <a target="_self" ng-href="{{ mailToLink }}">Contact an administrator</a> regarding increasing your storage quota.</p>
+                  <p>Or you can remove other volumes to make room for this one</p>
               </div>
             </div>
           </div>
           
           <!-- Create New Volumes ng-repeat="volume in newStackVolumeRequirements track by volume.service" -->
-          <div class="panel panel-info" ng-if="availableSpace != 0 || availableSpace > 0">
+          <div class="panel panel-info" ng-if="availableSpace != 0 && availableSpace > 0">
             <div class="panel-heading">
               <div class="row">
                 <div class="col-sm-4">

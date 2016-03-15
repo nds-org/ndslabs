@@ -141,6 +141,18 @@ angular.module('ndslabs')
   };
 }])
 /**
+ * Given a list of volumes, compute the total storage they are using
+ */
+.filter('availableStorage', [ 'Project', function(Project) {
+  return function(volumes) {
+    var available = Project.project.storageQuota || 50;
+    angular.forEach(volumes, function(volume) {
+      available -= volume.sizeUnit === 'TB' ? volume.size * 1000 : volume.size;
+    });
+    return used;
+  };
+}])
+/**
  * Given a list of stacks, count how many are running
  */
 .filter('runningStacksCount', [ function() {
