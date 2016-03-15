@@ -48,7 +48,7 @@
           
           <div class="row">
             <div class="col-sm-12">
-              <form name="stackNameForm" role="form">
+              <form name="stackNameForm" novalidate>
                 <div class="form-group" 
                 ng-class="{ 'has-error has-feedback':stackNameForm.stackName.$invalid, 'has-success has-feedback': stackNameForm.stackName.$valid }">
                   <label class="control-label" for="stackNameInput">Choose a unique name for your stack</label>
@@ -187,9 +187,9 @@
                   </form>
                 </div>
               </div>
-
+              
               <!-- Create a New Volume -->
-              <form name="volumeNameForm" class="form-inline" ng-show="volume.id === ''">
+              <form name="volumeNameForm" class="form-inline" ng-show="volume.id === ''" novalidate>
                 
                 <!-- Volume Name -->
                 <div class="row">
@@ -208,23 +208,34 @@
                       </div>
                     </div>
                   </div>
+                </form>
                   
                   
 
                   <!-- Volume Size / Units -->
                   <div class="col-sm-4">
                     <div class="input-group pull-right" id="inputVolumeSize">
-                      <!-- Size -->
-                      <input type="number" name="volumeSize" min="1" max="999" class="form-control" ng-model="volume.size" aria-label="Please enter desired Volume Size.">
-
-                      <!-- Units -->
-                      <div class="input-group-btn">
-                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ volume.sizeUnit || 'Choose Units' }} <span class="caret"></span></button>
-                        <ul class="dropdown-menu dropdown-menu-right">
-                          <li><a href="#/home" ng-click="volume.sizeUnit='GB'">GB</a></li>
-                          <li><a href="#/home" ng-click="volume.sizeUnit='TB'">TB</a></li>
-                        </ul>
-                      </div>
+                      <form name="volumeSizeForm" novalidate>
+                        <div class="form-group"  ng-class="{ 'has-error':volumeSizeForm.volumeSize.$invalid, 'has-success': volumeSizeForm.volumeSize.$valid }">
+                          <!-- Size -->
+                          <input type="number" name="volumeSize" min="1" class="form-control" ng-model="volume.size" aria-label="Please enter desired Volume Size"
+                              max="{{ storageQuota - (_.concat(configuredVolumes, _.without(newStackVolumeRequirements, volume)) | usedStorage) }}" >
+    
+                          <!-- Units -->
+                          <div class="input-group-btn">
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ volume.sizeUnit || 'Choose Units' }} <span class="caret"></span></button>
+                            <ul class="dropdown-menu dropdown-menu-right">
+                              <li><a href="#/home" ng-click="volume.sizeUnit='GB'">GB</a></li>
+                              <li><a href="#/home" ng-click="volume.sizeUnit='TB'">TB</a></li>
+                            </ul>
+                          </div>
+                          
+                          <div ng-messages="volumeSizeForm.volumeSize.$error">
+                            <div ng-message="max">Not enough space</div>
+                          </div>
+                        </div>
+                        
+                      </form>
                       <!-- /btn-group -->
                     </div>
                     <!-- /input-group -->
@@ -232,8 +243,8 @@
                   <!-- /form-group -->
                 </div>
                 <!-- /row -->
+                <pre>{{ _.max([storageQuota - (_.concat(configuredVolumes, _.without(newStackVolumeRequirements, volume)) | usedStorage), 0]) }}</pre>
 
-              </form>
             </div>
           </div>
         </div>

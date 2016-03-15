@@ -158,6 +158,9 @@ angular
               if (!volume.id && !volume.name) {
                 volumeParamsSet = false;
                 return;
+              } else if (!volume.size || !volume.sizeUnit) {
+                volumeParamsSet = false;
+                return;
               }
           });
           return volumeParamsSet;
