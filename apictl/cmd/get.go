@@ -27,8 +27,9 @@ var getCmd = &cobra.Command{
 }
 
 var getServiceCmd = &cobra.Command{
-	Use:   "service",
-	Short: "Get service details",
+	Use:    "service",
+	Short:  "Get service details",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Usage()
@@ -53,8 +54,9 @@ var getServiceCmd = &cobra.Command{
 }
 
 var getStackCmd = &cobra.Command{
-	Use:   "stack",
-	Short: "Get stack details",
+	Use:    "stack",
+	Short:  "Get stack details",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Usage()
@@ -79,8 +81,9 @@ var getStackCmd = &cobra.Command{
 }
 
 var getProjectCmd = &cobra.Command{
-	Use:   "project",
-	Short: "Get project details",
+	Use:    "project",
+	Short:  "Get project details",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		pid := apiUser.username

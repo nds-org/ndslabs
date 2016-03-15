@@ -22,8 +22,9 @@ import (
 
 // startCmd represents the start command
 var startCmd = &cobra.Command{
-	Use:   "start [stackName]",
-	Short: "Start the specified resource",
+	Use:    "start [stackName]",
+	Short:  "Start the specified resource",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if len(args) == 0 {

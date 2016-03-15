@@ -21,8 +21,9 @@ import (
 )
 
 var detachCmd = &cobra.Command{
-	Use:   "detach [volumeName]",
-	Short: "Detach a volume from a stack service",
+	Use:    "detach [volumeName]",
+	Short:  "Detach a volume from a stack service",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {
 			cmd.Usage()

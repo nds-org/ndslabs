@@ -24,8 +24,9 @@ import (
 
 // logoutCmd represents the logout command
 var logoutCmd = &cobra.Command{
-	Use:   "logout",
-	Short: "Logout the current user",
+	Use:    "logout",
+	Short:  "Logout the current user",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		usr, err := user.Current()
 		if err != nil {

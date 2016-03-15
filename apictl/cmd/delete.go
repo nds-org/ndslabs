@@ -34,8 +34,9 @@ var deleteCmd = &cobra.Command{
 }
 
 var deleteStackCmd = &cobra.Command{
-	Use:   "stack [stackName]",
-	Short: "Remove the specified stack",
+	Use:    "stack [stackName]",
+	Short:  "Remove the specified stack",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Usage()
@@ -47,8 +48,9 @@ var deleteStackCmd = &cobra.Command{
 }
 
 var deleteVolumeCmd = &cobra.Command{
-	Use:   "volume [volumeId]",
-	Short: "Remove the specified volume",
+	Use:    "volume [volumeId]",
+	Short:  "Remove the specified volume",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Usage()
@@ -60,8 +62,9 @@ var deleteVolumeCmd = &cobra.Command{
 }
 
 var deleteProjectCmd = &cobra.Command{
-	Use:   "project [projectId]",
-	Short: "Remove the specified project (admin users only)",
+	Use:    "project [projectId]",
+	Short:  "Remove the specified project (admin users only)",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Usage()
@@ -73,8 +76,9 @@ var deleteProjectCmd = &cobra.Command{
 }
 
 var deleteServiceCmd = &cobra.Command{
-	Use:   "service [serviceId]",
-	Short: "Remove the specified service (admin users only)",
+	Use:    "service [serviceId]",
+	Short:  "Remove the specified service (admin users only)",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			cmd.Usage()

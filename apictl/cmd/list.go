@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
 	"log"
@@ -29,8 +30,9 @@ var listCmd = &cobra.Command{
 }
 
 var listServicesCmd = &cobra.Command{
-	Use:   "services",
-	Short: "List available services",
+	Use:    "services",
+	Short:  "List available services",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		services, err := client.ListServices()
@@ -59,8 +61,9 @@ var listServicesCmd = &cobra.Command{
 }
 
 var listStacksCmd = &cobra.Command{
-	Use:   "stacks",
-	Short: "List existing stacks",
+	Use:    "stacks",
+	Short:  "List existing stacks",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		stacks, err := client.ListStacks(apiUser.username)
@@ -76,19 +79,26 @@ var listStacksCmd = &cobra.Command{
 			for _, service := range stack.Services {
 				endpoint := ""
 				if len(service.Endpoints) > 0 {
-					endpoint = service.Endpoints[0]
+					for _, ep := range service.Endpoints {
+						endpoint = " " + ep
+					}
 				}
 				fmt.Fprintf(w, "\t%s\t%s\t%s\t%s\n", service.Service, service.Status, endpoint, service.Id)
 			}
 		}
 		w.Flush()
+		if Verbose {
+			data, _ := json.MarshalIndent(stacks, "", "   ")
+			fmt.Println(string(data))
+		}
 	},
 	PostRun: RefreshToken,
 }
 
 var listVolumesCmd = &cobra.Command{
-	Use:   "volumes",
-	Short: "List existing volumes",
+	Use:    "volumes",
+	Short:  "List existing volumes",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		volumes, err := client.ListVolumes(apiUser.username)
@@ -109,8 +119,9 @@ var listVolumesCmd = &cobra.Command{
 }
 
 var listProjectsCmd = &cobra.Command{
-	Use:   "projects",
-	Short: "List existing projects (admin users only)",
+	Use:    "projects",
+	Short:  "List existing projects (admin users only)",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		projects, err := client.ListProjects()

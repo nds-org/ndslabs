@@ -22,8 +22,9 @@ import (
 )
 
 var createCmd = &cobra.Command{
-	Use:   "create [name] [size] [serviceId]",
-	Short: "Create a volume",
+	Use:    "create [name] [size] [serviceId]",
+	Short:  "Create a volume",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
 			cmd.Usage()

@@ -28,8 +28,9 @@ import (
 
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
-	Use:   "login",
-	Short: "Login to the server",
+	Use:    "login",
+	Short:  "Login to the server",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		username, password := credentials()
 		usr, err := user.Current()

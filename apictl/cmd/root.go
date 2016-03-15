@@ -28,9 +28,11 @@ import (
 	"github.com/spf13/viper"
 )
 
-var client *apiclient.Client
+var ApiServer string
 
-var apiServer string //= "http://141.142.209.154:8083/"
+var Verbose bool
+
+var client *apiclient.Client
 
 var cfgFile string
 
@@ -47,6 +49,25 @@ var RootCmd = &cobra.Command{
 	Short: "NDS Labs API server CLI",
 }
 
+func Connect(cmd *cobra.Command, args []string) {
+
+	if Verbose {
+		fmt.Printf("Connecting to server %s\n", ApiServer)
+	}
+	if strings.LastIndex(ApiServer, "/") < len(ApiServer)-1 {
+		ApiServer = ApiServer + "/"
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	if ApiServer[0:5] == "https" {
+		client = apiclient.NewClient(ApiServer, &http.Client{Transport: tr}, apiUser.token)
+	} else {
+		client = apiclient.NewClient(ApiServer, &http.Client{}, apiUser.token)
+	}
+}
 func RefreshToken(cmd *cobra.Command, args []string) {
 
 	token, err := client.RefreshToken()
@@ -106,20 +127,11 @@ func writePasswd(token string) {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	readPasswd()
-
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.apictl.yaml)")
-	RootCmd.PersistentFlags().StringVar(&apiServer, "host", "https://localhost:8083/", "API server host address")
+	RootCmd.PersistentFlags().StringVarP(&ApiServer, "server", "s", "http://localhost:8083", "API server host address")
+	RootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "Verbose output")
 
-	if strings.LastIndex(apiServer, "/") < len(apiServer)-1 {
-		apiServer = apiServer + "/"
-	}
-
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-
-	client = apiclient.NewClient(apiServer, &http.Client{Transport: tr}, apiUser.token)
+	readPasswd()
 
 }
 

@@ -21,8 +21,9 @@ import (
 )
 
 var attachCmd = &cobra.Command{
-	Use:   "attach [volumeName] [serviceId]",
-	Short: "Attach a volume to a stack service",
+	Use:    "attach [volumeName] [serviceId]",
+	Short:  "Attach a volume to a stack service",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
 			cmd.Usage()

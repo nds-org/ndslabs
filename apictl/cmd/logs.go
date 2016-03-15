@@ -26,8 +26,9 @@ var (
 
 // logsCmd represents the log command
 var logsCmd = &cobra.Command{
-	Use:   "logs [serviceId]",
-	Short: "Print logs for the stack",
+	Use:    "logs [serviceId]",
+	Short:  "Print logs for the stack",
+	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if len(args) < 1 {
