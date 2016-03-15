@@ -944,6 +944,12 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+    	for i := range stack.Services {
+       		stackService := &stack.Services[i]
+        	stackService.Id = fmt.Sprintf("%s-%s", sid, stackService.Service)
+    	}
+
 	stack.Status = stackStatus[Stopped]
 	err = s.putStack(pid, sid, &stack)
 	if err != nil {
