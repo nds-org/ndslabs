@@ -150,7 +150,7 @@ angular
         canPrev: true,
         canNext: true,
         onNext: function() {
-          // ???
+          // Do something here with the config? add it to the stack?
         },
         next: function() { 
           console.debug($scope.newStackVolumeRequirements);
@@ -236,32 +236,8 @@ angular
      }, true)
   ];
   
-  $scope.extraConfig = [
-    {
-        "name": "SMTP_HOST",
-        "value": "smtp.ncsa.illinois.edu",
-        "canOverride": true
-    },
-    {
-        "name": "ELASTICSEARCH_CLUSTERNAME",
-        "value": "clowder",
-        "canOverride": false
-    },
-    {
-        "name": "RABBITMQ_EXCHANGE",
-        "value": "clowder",
-        "canOverride": false
-    },
-    {
-        "name": "TOOLMGR_URI",
-        "value": "localhost:8082",
-        "label": "ToolServer address",
-        "canOverride": true
-    },
-  ]; 
-  
   // Don't modify this in-place... make a copy
-  //angular.copy(template.config);
+  $scope.extraConfig = angular.copy(template.config);
   
   // Create a new Wizard to display
   $scope.wizard = new Wizard(configPages, initDelay);
