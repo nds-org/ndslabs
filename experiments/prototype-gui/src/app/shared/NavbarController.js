@@ -1,28 +1,11 @@
 angular
-.module('test')
-.factory('appConfig', function() {
-  var appConfig = {
-    title: ''
-  };
-  return appConfig;
-})
+.module('navbar', [])
+/**
+ * A simple filter to select only left-aligned or right-aligned navbar links
+ */
 .filter('navbar', function() {
   return function(input, pull) {
     var filtered = [];
-    
-    var matches;
-    switch (pull) {
-      case 'left':
-        matches = function(nav) { return !nav.right };
-        break;
-      case 'right':
-        matches = function(nav) { return !nav.right };
-        break;
-    }
-
-    if (!matches) {
-      return input;
-    }
     
     angular.forEach(input, function(nav) {
       if (pull === 'right' && nav.right === true) {
@@ -34,16 +17,21 @@ angular
     return filtered;
   };
 })
-.controller('NavbarController', [ '$scope', '$location', 'appConfig', function($scope, $location, appConfig) {
-  $scope.appConfig = appConfig;
-  
-  $scope.$watch('appConfig.title', function(newValue, oldValue) {
-    $scope.title = newValue;
+/**
+ * The Controller for the Navigation Bar
+ * 
+ * @author lambert8
+ * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
+ */
+.controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'ExpressRoute', 'ExpertRoute', 'DEBUG', 
+    function($scope, $location, LoginRoute, ExpressRoute, ExpertRoute, DEBUG) {
+  $scope.$on('$routeChangeSuccess', function(event, current, previous){
+    if (current.$$route) {
+      $scope.path = current.$$route.originalPath;
+    }
   });
-  
-  $scope.$watch('appConfig.path', function(newValue, oldValue) {
-    $scope.path = $scope.home.url + newValue;
- });
+
+  $scope.DEBUG = DEBUG;
 
   // TODO: This is probably horrible, performance-wise
   $scope.isArray = angular.isArray;
@@ -51,14 +39,17 @@ angular
   $scope.home = 
   {
     name:'NDS Labs',
-    url:'http://141.142.209.135/#'
+    url: '#' + LoginRoute
   };
-
+  
   $scope.navs = [
-    {
-      name: $scope.home.name,
-      url: $scope.home.url,
-      right: true
-    }
+    /*{
+      name: 'Express Setup',
+      url: '#' + ExpressRoute
+    },*/
+    /*{
+      name: 'Expert Setup',
+      url: '#' + ExpertRoute
+    },*/
   ];
 }]);

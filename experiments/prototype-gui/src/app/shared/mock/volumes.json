@@ -1,0 +1,13 @@
+[
+  {
+    "id": "",
+    "stack": "clowder",
+    "service": "mongo",
+    "format": "Raw",
+    "size": 10,
+    "sizeUnit": "GB",
+    "name": "mongo",
+    "attachment": "clowder-mongo",
+    "useOrphan": false 
+  }
+]
