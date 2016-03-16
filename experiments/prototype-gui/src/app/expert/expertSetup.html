@@ -74,17 +74,17 @@
         
         <!-- <pre>{{ (configuredStacks | orderBy:'name')[0].status }}</pre> -->
         
-        <div class="row" class="fill-height">
-          <div class="col-sm-12" class="fill-height">
+        <div class="row">
+          <div class="col-sm-12">
             <!-- Tabs for Stacks / Volumes -->
-            <uib-tabset active="selectedTab" type="pills" class="fill-height">
+            <uib-tabset active="selectedTab" type="pills">
               
               <!-- Configured Stacks --> 
               <uib-tab index="0">
                 <uib-tab-heading>
                   <i class="fa fa-fw fa-align-justify"></i> Stacks
                 </uib-tab-heading>
-                <div class="well well-lg fill-height">
+                <div class="well well-lg ">
                   <!-- Helper text to display if the user has no yet configured any stacks -->
                   <div ng-if="configuredStacks.length === 0" class="helper-text">
                     <h2>It looks like you haven't configured any stacks.</h2>
