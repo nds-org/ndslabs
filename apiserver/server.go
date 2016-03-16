@@ -556,12 +556,23 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 	service := api.ServiceSpec{}
 	err := r.DecodeJsonPayload(&service)
 	if err != nil {
+		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	data, _ := json.Marshal(service)
+	data, err := json.Marshal(service)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	resp, err := s.etcd.Set(context.Background(), etcdBasePath+"/services/"+service.Key, string(data), nil)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	w.WriteJson(&resp)
 }
 
