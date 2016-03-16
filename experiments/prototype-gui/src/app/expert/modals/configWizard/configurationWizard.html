@@ -101,36 +101,58 @@
             </div>
           </div>
         </div>
+        
+        <!-- Options Page -->
+        <div ng-if="wizard.currentPage.key === 'config'">
+          <div class="row">
+            <div class="col-sm-12">
+              <p>{{ newStackLabel }} specifies the following configuration options, which may be overriden if you wish.</p>
+              <form ng-repeat="config in extraConfig" name="additionalConfigForm" ng-if="config.canOverride">
+                <div class="form-group">
+                  <label for="additionalConfig{{ config.name }}">{{ config.label || config.name }}</label>
+                  <input id="additionalConfig{{ config.name }}" maxlength="32759" required 
+                    type="text" class="form-control"  placeholder="Value" ng-model="config.value">
+                  
+                  <div ng-messages="additionalConfigForm">
+                    <div ng-message="required">You must specify a value.</div>
+                    <div ng-message="maxlength">Please enter a shorter value.</div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
 
         <!-- Volumes Page -->
         <div ng-if="wizard.currentPage.key === 'volumes'">
           
-          <!-- Show a fancy volume quota pie chart -->
-          <div>
-            <div class="row">
-              <div class="col-sm-12">
-                <p>Your project is allowed to allocate <strong>{{ storageQuota }} GB</strong> of storage.</p>
-              </div>
+          <!-- Project quota notification -->
+          <div class="row">
+            <div class="col-sm-12">
+              <p>Your project is allowed to allocate <strong>{{ storageQuota }} GB</strong> of storage.</p>
             </div>
-            <div class="row">
-              <div class="col-sm-5">
-                <!--<div google-chart chart="chartObject" style="margin:0;padding:0;height:300px; width:100%;"></div>-->
-                <justgage width="175" height="175" value="{{ configuredVolumes | usedStorage }}" 
-                title="Current Usage" max="{{ storageQuota }}" label="GB"></justgage>
-              </div>
-              <div class="col-sm-7">
-                <justgage width="175" height="175" relativeGuageSize="true" ng-if="availableSpace != 0 && availableSpace > 0"
-                value="{{ _.concat(configuredVolumes, newStackVolumeRequirements) | usedStorage }}" 
-                title="Projected Usage" max="{{ storageQuota }}" label="GB"></justgage>
-                
-              </div>
+          </div>
+          
+          <!-- Show some fancy volume quota gauges -->
+          <div class="row">
+            <div class="col-sm-5">
+              <justgage width="175" height="175" value="{{ configuredVolumes | usedStorage }}" 
+              title="Current Usage" max="{{ storageQuota }}" label="GB"></justgage>
             </div>
-            <div class="row"ng-if="!availableSpace || availableSpace == 0 || availableSpace <= 0">
-              <div class="col-sm-12">
-                  <p class="text-danger">You have used all of your allocated storage.</p>
-                  <a target="_self" ng-href="{{ mailToLink }}">Contact an administrator</a> regarding increasing your storage quota.</p>
-                  <p>Or you can remove other volumes to make room for this one</p>
-              </div>
+            <div class="col-sm-7">
+              <justgage width="175" height="175" relativeGuageSize="true" ng-if="availableSpace != 0 && availableSpace > 0"
+              value="{{ _.concat(configuredVolumes, newStackVolumeRequirements) | usedStorage }}" 
+              title="Projected Usage" max="{{ storageQuota }}" label="GB"></justgage>
+              
+            </div>
+          </div>
+          
+          <!-- No More Space :( -->
+          <div class="row"ng-if="!availableSpace || availableSpace == 0 || availableSpace <= 0">
+            <div class="col-sm-12">
+                <p class="text-danger">You have used all of your allocated storage.</p>
+                <a target="_self" ng-href="{{ mailToLink }}">Contact an administrator</a> regarding increasing your storage quota.</p>
+                <p>Or you can remove other volumes to make room for this one</p>
             </div>
           </div>
           
@@ -243,7 +265,6 @@
                   <!-- /form-group -->
                 </div>
                 <!-- /row -->
-                <pre>{{ _.max([storageQuota - (_.concat(configuredVolumes, _.without(newStackVolumeRequirements, volume)) | usedStorage), 0]) }}</pre>
 
             </div>
           </div>
