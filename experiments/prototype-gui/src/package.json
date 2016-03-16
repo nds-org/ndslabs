@@ -6,7 +6,11 @@
   "repository": "https://github.com/nds-org/nds-labs",
   "license": "MIT",
   "devDependencies": {
-    "karma": "~0.13.21"
+    "chai": "^3.5.0",
+    "chai-as-promised": "^5.2.0",
+    "karma": "^0.13.22",
+    "mocha": "^2.4.5",
+    "protractor": "^3.1.1"
   },
   "dependencies": {
     "bower": "~1.7.2",
