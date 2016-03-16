@@ -85,19 +85,31 @@ var addServiceCmd = &cobra.Command{
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		service := api.ServiceSpec{}
 		if len(file) > 0 {
+			if (Verbose) {
+				fmt.Printf("Reading spec from file  %s\n", file)
+			}
+			service := api.ServiceSpec{}
 			data, err := ioutil.ReadFile(file)
 			if err != nil {
 				fmt.Printf("Error reading service file: %s\n", err.Error())
 				os.Exit(-1)
 			}
-			json.Unmarshal(data, &service)
+			err = json.Unmarshal(data, &service)
+			if err != nil {
+				fmt.Printf("Error unmarshalling service file: %s\n", err.Error())
+				os.Exit(-1)
+			}
+			if (Verbose) {
+				fmt.Println(string(data))
+				fmt.Println(service)
+			}
+
+			addService(service)
 		} else {
 			cmd.Usage()
 			os.Exit(-1)
 		}
-		addService(service)
 	},
 }
 
