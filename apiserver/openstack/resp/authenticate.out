@@ -1,0 +1,163 @@
+{
+    "access": {
+        "metadata": {
+            "is_admin": 0,
+            "roles": [
+                "37f12947136243d6a0c40e223386174a"
+            ]
+        },
+        "serviceCatalog": [
+            {
+                "endpoints": [
+                    {
+                        "adminURL": "http://controller:8774/v2/3836c0d58e3349b28fc740e33a58a7e3",
+                        "id": "00d18d42e5be448fb5bc6df66d4b91ea",
+                        "internalURL": "http://controller:8774/v2/3836c0d58e3349b28fc740e33a58a7e3",
+                        "publicURL": "http://nebula.ncsa.illinois.edu:8774/v2/3836c0d58e3349b28fc740e33a58a7e3",
+                        "region": "RegionOne"
+                    }
+                ],
+                "endpoints_links": [],
+                "name": "nova",
+                "type": "compute"
+            },
+            {
+                "endpoints": [
+                    {
+                        "adminURL": "http://controller:9696",
+                        "id": "02b88ed644a04744907c0b94f3646a81",
+                        "internalURL": "http://controller:9696",
+                        "publicURL": "http://nebula.ncsa.illinois.edu:9696",
+                        "region": "RegionOne"
+                    }
+                ],
+                "endpoints_links": [],
+                "name": "neutron",
+                "type": "network"
+            },
+            {
+                "endpoints": [
+                    {
+                        "adminURL": "http://controller:8776/v2/3836c0d58e3349b28fc740e33a58a7e3",
+                        "id": "1a06880316764c419819af6c7dcb3f7c",
+                        "internalURL": "http://controller:8776/v2/3836c0d58e3349b28fc740e33a58a7e3",
+                        "publicURL": "http://nebula.ncsa.illinois.edu:8776/v2/3836c0d58e3349b28fc740e33a58a7e3",
+                        "region": "RegionOne"
+                    }
+                ],
+                "endpoints_links": [],
+                "name": "cinderv2",
+                "type": "volumev2"
+            },
+            {
+                "endpoints": [
+                    {
+                        "adminURL": "http://controller:9292",
+                        "id": "0e8a8f3488864f80a0e3bed14cbe2f32",
+                        "internalURL": "http://controller:9292",
+                        "publicURL": "http://nebula.ncsa.illinois.edu:9292",
+                        "region": "RegionOne"
+                    }
+                ],
+                "endpoints_links": [],
+                "name": "glance",
+                "type": "image"
+            },
+            {
+                "endpoints": [
+                    {
+                        "adminURL": "http://controller:8000/v1",
+                        "id": "3986dbe4c13844be86d81f9478592069",
+                        "internalURL": "http://controller:8000/v1",
+                        "publicURL": "http://nebula.ncsa.illinois.edu:8000/v1",
+                        "region": "RegionOne"
+                    }
+                ],
+                "endpoints_links": [],
+                "name": "heat-cfn",
+                "type": "cloudformation"
+            },
+            {
+                "endpoints": [
+                    {
+                        "adminURL": "http://controller:8776/v2/3836c0d58e3349b28fc740e33a58a7e3",
+                        "id": "0fdc6c1e47a84f29b1f81f2b7bddc847",
+                        "internalURL": "http://controller:8776/v2/3836c0d58e3349b28fc740e33a58a7e3",
+                        "publicURL": "http://nebula.ncsa.illinois.edu:8776/v2/3836c0d58e3349b28fc740e33a58a7e3",
+                        "region": "RegionOne"
+                    }
+                ],
+                "endpoints_links": [],
+                "name": "cinder",
+                "type": "volume"
+            },
+            {
+                "endpoints": [
+                    {
+                        "adminURL": "http://controller:8773/services/Admin",
+                        "id": "405fb4a60d3c46c1ad057c86557d150f",
+                        "internalURL": "http://controller:8773/services/Cloud",
+                        "publicURL": "http://nebula.ncsa.illinois.edu:8773/services/Cloud",
+                        "region": "RegionOne"
+                    }
+                ],
+                "endpoints_links": [],
+                "name": "ec2",
+                "type": "ec2"
+            },
+            {
+                "endpoints": [
+                    {
+                        "adminURL": "http://controller:8004/v1/3836c0d58e3349b28fc740e33a58a7e3",
+                        "id": "20d9ec8a56704324b7db1ece164ebc1c",
+                        "internalURL": "http://controller:8004/v1/3836c0d58e3349b28fc740e33a58a7e3",
+                        "publicURL": "http://nebula.ncsa.illinois.edu:8004/v1/3836c0d58e3349b28fc740e33a58a7e3",
+                        "region": "RegionOne"
+                    }
+                ],
+                "endpoints_links": [],
+                "name": "heat",
+                "type": "orchestration"
+            },
+            {
+                "endpoints": [
+                    {
+                        "adminURL": "http://controller:35357/v2.0",
+                        "id": "01b61bd5c1924556ad8e32772059dc0a",
+                        "internalURL": "http://controller:5000/v2.0",
+                        "publicURL": "http://nebula.ncsa.illinois.edu:5000/v2.0",
+                        "region": "RegionOne"
+                    }
+                ],
+                "endpoints_links": [],
+                "name": "keystone",
+                "type": "identity"
+            }
+        ],
+        "token": {
+            "audit_ids": [
+                "UnALCKtORPyn-cmoQ9zylw"
+            ],
+            "expires": "2016-03-03T15:26:16Z",
+            "id": "d3837aa184e34a0788c040d2a1dfb942",
+            "issued_at": "2016-03-03T11:26:16.700906",
+            "tenant": {
+                "description": "",
+                "enabled": true,
+                "id": "3836c0d58e3349b28fc740e33a58a7e3",
+                "name": "NDSLabsDev"
+            }
+        },
+        "user": {
+            "id": "75ea29a776974474853dae357543bf3b",
+            "name": "willis8",
+            "roles": [
+                {
+                    "name": "user"
+                }
+            ],
+            "roles_links": [],
+            "username": "willis8"
+        }
+    }
+}

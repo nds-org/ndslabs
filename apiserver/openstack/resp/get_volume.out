@@ -1,0 +1,37 @@
+{
+    "volume": {
+        "attachments": [],
+        "availability_zone": "nova",
+        "bootable": "false",
+        "consistencygroup_id": null,
+        "created_at": "2015-10-06T15:26:48.000000",
+        "description": null,
+        "encrypted": false,
+        "id": "7935509a-9393-495e-b10b-35ba363c3809",
+        "links": [
+            {
+                "href": "http://nebula.ncsa.illinois.edu:8776/v2/3836c0d58e3349b28fc740e33a58a7e3/volumes/7935509a-9393-495e-b10b-35ba363c3809",
+                "rel": "self"
+            },
+            {
+                "href": "http://nebula.ncsa.illinois.edu:8776/3836c0d58e3349b28fc740e33a58a7e3/volumes/7935509a-9393-495e-b10b-35ba363c3809",
+                "rel": "bookmark"
+            }
+        ],
+        "metadata": {
+            "readonly": "False"
+        },
+        "multiattach": false,
+        "name": "ISLMigrationVols",
+        "os-vol-tenant-attr:tenant_id": "3836c0d58e3349b28fc740e33a58a7e3",
+        "os-volume-replication:driver_data": null,
+        "os-volume-replication:extended_status": null,
+        "replication_status": "disabled",
+        "size": 1000,
+        "snapshot_id": null,
+        "source_volid": null,
+        "status": "available",
+        "user_id": "5cd1202a89214f1b9f8a1d44ce11c837",
+        "volume_type": null
+    }
+}
