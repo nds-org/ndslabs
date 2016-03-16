@@ -50,11 +50,11 @@
             <div class="col-sm-12">
               <form name="stackNameForm" novalidate>
                 <div class="form-group" 
-                ng-class="{ 'has-error has-feedback':stackNameForm.stackName.$invalid, 'has-success has-feedback': stackNameForm.stackName.$valid }">
+                ng-class="{ 'has-error has-feedback':stackNameForm.stackName.$invalid, 'has-success has-feedback': !stackNameForm.stackName.$pristine && stackNameForm.stackName.$valid }">
                   <label class="control-label" for="stackNameInput">Choose a unique name for your stack</label>
                   <input type="text" name="stackName" class="form-control" minlength="1" maxlength="20" required
                       ng-model="newStack.name" placeholder="Name" id="stackNameInput">
-                  <span class="form-control-feedback glyphicon" 
+                  <span class="form-control-feedback glyphicon" ng-if="!stackNameForm.stackName.$pristine"
                   ng-class="{ 'glyphicon-remove': stackNameForm.stackName.$invalid, 'glyphicon-ok': stackNameForm.stackName.$valid }"></span>
                   
                   <div ng-messages="stackNameForm.stackName.$error" role="alert" class="text-danger">
@@ -105,20 +105,70 @@
         <!-- Options Page -->
         <div ng-if="wizard.currentPage.key === 'config'">
           <div class="row">
-            <div class="col-sm-12">
-              <p>{{ newStackLabel }} specifies the following configuration options, which may be overriden if you wish.</p>
-              <form ng-repeat="config in extraConfig" name="additionalConfigForm" ng-if="config.canOverride">
-                <div class="form-group">
-                  <label for="additionalConfig{{ config.name }}">{{ config.label || config.name }}</label>
-                  <input id="additionalConfig{{ config.name }}" maxlength="32759" required 
-                    type="text" class="form-control"  placeholder="Value" ng-model="config.value">
+            <div class="col-sm-12" ng-repeat="(key, configs) in extraConfig track by key">
+              
+              <!-- Required Configuration -->
+              <p ng-if="!(configs.defaults | mustOverrideAny)">{{ key | specProperty:'label' }} does not require any special configuration.</p>
+              <div class="panel panel-default" ng-if="configs.defaults | mustOverrideAny">
+                <div class="panel-heading">
+                  <h3 class="panel-title">{{ key | specProperty:'label' }}</h3>
+                </div>
+                <div class="panel-body">
+                  <p>{{ key | specProperty:'label' }} requires the following configuration:</p>
                   
-                  <div ng-messages="additionalConfigForm">
-                    <div ng-message="required">You must specify a value.</div>
-                    <div ng-message="maxlength">Please enter a shorter value.</div>
+                  <!-- TODO: Terrible hacks, everywhere! -->
+                  <form name="addlConfigForm" ng-if="config.canOverride && !(config.name | defaultValue:key)" novalidate ng-repeat="config in configs.list | orderBy:'isPassword':true track by config.name">
+                    <div class="form-group"
+                    ng-class="{ 'has-error has-feedback': addlConfigForm.configValue.$invalid, 'has-success has-feedback': !addlConfigForm.configValue.$pristine && addlConfigForm.configValue.$valid }">
+                      <label for="configValue">{{ config.label || config.name }}</label>
+                      <input id="configValue" ng-if="!config.isPassword" name="configValue" class="form-control" type="text" placeholder="Value" ng-model="config.value" required />
+                      <pwgen id="configValue" ng-if="config.isPassword" name="configValue" ng-model="config.value" length="20" placeholder="Choose a Password" maxlength="32759" required></pwgen>
+                      <span class="form-control-feedback glyphicon" ng-if="!addlConfigForm.configValue.$pristine"
+                      ng-class="{ 'glyphicon-remove': addlConfigForm.configValue.$invalid, 'glyphicon-ok': addlConfigForm.configValue.$valid }"></span>
+                      
+                      <div ng-messages="addlConfigForm.configValue.$error" role="alert" class="text-danger">
+                        <div ng-message="required">Please {{ config.isPassword ? 'choose a password' : 'specify a value' }}.</div>
+                        <div ng-message="maxlength">Please enter a shorter value.</div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Advanced Configuration (Optional) -->
+          <div class="row">
+            <div class="col-sm-12">
+              <button type="button" class="btn btn-default btn-block" ng-click="showAdvanced = !showAdvanced">{{ showAdvanced ? 'Basic' : 'Advanced'}} Configuration</button>
+            	<div uib-collapse="!showAdvanced">
+            	  <div class="well-well-sm">
+                  <div class="panel panel-default" ng-if="configs.defaults | canOverrideAny" ng-repeat="(key, configs) in extraConfig track by key">
+                    <div class="panel-heading">
+                      <h3 class="panel-title">{{ key | specProperty:'label' }}</h3>
+                    </div>
+                    <div class="panel-body">
+                      <p>{{ key | specProperty:'label' }} specifies the following default configuration, which may be overridden:</p>
+                      
+                      <!-- TODO: Terrible hacks, everywhere! -->
+                      <form name="addlConfigForm" ng-if="config.canOverride && (config.name | defaultValue:key)" novalidate ng-repeat="config in configs.list track by config.name">
+                        <div class="form-group"
+                        ng-class="{ 'has-error has-feedback': addlConfigForm.configValue.$invalid, 'has-success has-feedback': !addlConfigForm.configValue.$pristine && addlConfigForm.configValue.$valid }">
+                          <label for="configValue">{{ config.label || config.name }}</label>
+                          <input id="configValue" name="configValue" class="form-control" type="text" placeholder="Value" ng-model="config.value" maxlength="32759" required>
+                          <span class="form-control-feedback glyphicon" ng-if="!addlConfigForm.configValue.$pristine"
+                          ng-class="{ 'glyphicon-remove': addlConfigForm.configValue.$invalid, 'glyphicon-ok': addlConfigForm.configValue.$valid }"></span>
+                          
+                          <div ng-messages="addlConfigForm.configValue.$error" role="alert" class="text-danger">
+                            <div ng-message="required">Please specify a value.</div>
+                            <div ng-message="maxlength">Please enter a shorter value.</div>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
                   </div>
                 </div>
-              </form>
+            	</div>
             </div>
           </div>
         </div>
@@ -184,7 +234,7 @@
                 <div class="col-sm-12" ng-if="(newStackOrphanedVolumes | orphansExist:volume.service).length">
                   <p>Previous volumes found:</p>
                   <!-- Reuse Orphaned Volumes? -->
-                  <form class="form">
+                  <form class="form" novalidate>
                     <fieldset>
                       <div class="form-group">
                         <!-- TODO: Fix this ugly hack -->
@@ -210,62 +260,56 @@
                 </div>
               </div>
               
-              <!-- Create a New Volume -->
-              <form name="volumeNameForm" class="form-inline" ng-show="volume.id === ''" novalidate>
                 
-                <!-- Volume Name -->
-                <div class="row">
-                  <div class="col-sm-8">
-                    <div class="form-group fill-width"  ng-class="{ 'has-error has-feedback':volumeNameForm.volumeName.$invalid, 'has-success has-feedback': volumeNameForm.volumeName.$valid }">
-                      <input type="text" name="volumeName" class="form-control fill-width" required maxlength="20"
-                          id="volumeName" placeholder="Enter a name for this volume" ng-model="volume.name" />
-                      <span class="form-control-feedback glyphicon" 
+              <!-- Create a New Volume -->
+              <div class="row">
+                <div class="col-sm-6">
+                  
+                  <!-- Volume Name -->
+                  <form name="volumeNameForm" class="form-horizontal" ng-show="volume.id === ''" novalidate>
+                    <div class="form-group"  ng-class="{ 'has-error has-feedback':volumeNameForm.volumeName.$invalid, 'has-success has-feedback': volumeNameForm.volumeName.$valid }">
+                      <label class="control-label" for="volumeName">Name</label>
+                      <input id="volumeName" type="text" name="volumeName" class="form-control" required maxlength="20"
+                           placeholder="Enter a name for this volume" ng-model="volume.name" />
+                      <span class="form-control-feedback glyphicon"  aria-hidden="true"
                         ng-class="{ 'glyphicon-remove': volumeNameForm.volumeName.$invalid, 'glyphicon-ok': volumeNameForm.volumeName.$valid }"></span>
                     
-                          
                       <div ng-messages="volumeNameForm.volumeName.$error" role="alert" class="text-danger">
                         <div ng-message="required">You must name this volume before continuing.</div>
                         <div ng-message="minlength">You must name this volume before continuing.</div>
                         <div ng-message="maxlength">Volume name can be at most 20 characters long.</div>
                       </div>
                     </div>
-                  </div>
-                </form>
-                  
-                  
-
+                  </form>
+                </div>
+                
+                <div class="col-sm-6">
                   <!-- Volume Size / Units -->
-                  <div class="col-sm-4">
-                    <div class="input-group pull-right" id="inputVolumeSize">
-                      <form name="volumeSizeForm" novalidate>
-                        <div class="form-group"  ng-class="{ 'has-error':volumeSizeForm.volumeSize.$invalid, 'has-success': volumeSizeForm.volumeSize.$valid }">
-                          <!-- Size -->
-                          <input type="number" name="volumeSize" min="1" class="form-control" ng-model="volume.size" aria-label="Please enter desired Volume Size"
-                              max="{{ storageQuota - (_.concat(configuredVolumes, _.without(newStackVolumeRequirements, volume)) | usedStorage) }}" >
-    
-                          <!-- Units -->
-                          <div class="input-group-btn">
-                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ volume.sizeUnit || 'Choose Units' }} <span class="caret"></span></button>
-                            <ul class="dropdown-menu dropdown-menu-right">
-                              <li><a href="#/home" ng-click="volume.sizeUnit='GB'">GB</a></li>
-                              <li><a href="#/home" ng-click="volume.sizeUnit='TB'">TB</a></li>
-                            </ul>
-                          </div>
-                          
-                          <div ng-messages="volumeSizeForm.volumeSize.$error">
-                            <div ng-message="max">Not enough space</div>
-                          </div>
+                  <div class="input-group pull-right" id="inputVolumeSize">
+                    <form name="volumeSizeForm" novalidate>
+                      <div class="form-group"  ng-class="{ 'has-error':volumeSizeForm.volumeSize.$invalid, 'has-success': !volumeSizeForm.volumeSize.$pristine && volumeSizeForm.volumeSize.$valid }">
+                        <label class="control-label" for="volumeSize">Size</label>
+                        <!-- Size -->
+                        <input id="volumeSize" type="number" name="volumeSize" min="1" class="form-control" ng-model="volume.size"
+                            max="{{ storageQuota - (_.concat(configuredVolumes, _.without(newStackVolumeRequirements, volume)) | usedStorage) }}" />
+  
+                        <!-- Units -->
+                        <div class="input-group-btn">
+                          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ volume.sizeUnit || 'Choose Units' }} <span class="caret"></span></button>
+                          <ul class="dropdown-menu dropdown-menu-right">
+                            <li><a href="#/home" ng-click="volume.sizeUnit='GB'">GB</a></li>
+                            <li><a href="#/home" ng-click="volume.sizeUnit='TB'">TB</a></li>
+                          </ul>
                         </div>
                         
-                      </form>
-                      <!-- /btn-group -->
-                    </div>
-                    <!-- /input-group -->
+                        <div ng-messages="volumeSizeForm.volumeSize.$error">
+                          <div ng-message="max">Not enough space</div>
+                        </div>
+                      </div>
+                    </form>
                   </div>
-                  <!-- /form-group -->
                 </div>
-                <!-- /row -->
-
+              </div>
             </div>
           </div>
         </div>

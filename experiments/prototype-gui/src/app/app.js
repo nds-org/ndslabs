@@ -6,7 +6,7 @@
  * use the single-argument notation for angular.module()
  */
 angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-api', 'ngWizard', 'ngGrid', 'ngAlert', 
-    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ngMessages', 'ui.bootstrap', 'frapontillo.gage' ])
+    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ngMessages', 'ui.bootstrap', 'ui.pwgen', 'frapontillo.gage' ])
 
 /**
  * If true, display verbose debug data as JSON
