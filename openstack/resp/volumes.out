@@ -1,0 +1,144 @@
+{
+    "volumes": [
+        {
+            "id": "d8888f48-8520-47ed-a3e8-8b6a3d639dfa",
+            "links": [
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/v2/3836c0d58e3349b28fc740e33a58a7e3/volumes/d8888f48-8520-47ed-a3e8-8b6a3d639dfa",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/3836c0d58e3349b28fc740e33a58a7e3/volumes/d8888f48-8520-47ed-a3e8-8b6a3d639dfa",
+                    "rel": "bookmark"
+                }
+            ],
+            "name": "nds-test-vol"
+        },
+        {
+            "id": "e8bb17e2-7223-4022-869c-de6376afbfdf",
+            "links": [
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/v2/3836c0d58e3349b28fc740e33a58a7e3/volumes/e8bb17e2-7223-4022-869c-de6376afbfdf",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/3836c0d58e3349b28fc740e33a58a7e3/volumes/e8bb17e2-7223-4022-869c-de6376afbfdf",
+                    "rel": "bookmark"
+                }
+            ],
+            "name": "willis8-test-vol"
+        },
+        {
+            "id": "b53d7639-e208-4427-b974-80e12790e1c5",
+            "links": [
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/v2/3836c0d58e3349b28fc740e33a58a7e3/volumes/b53d7639-e208-4427-b974-80e12790e1c5",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/3836c0d58e3349b28fc740e33a58a7e3/volumes/b53d7639-e208-4427-b974-80e12790e1c5",
+                    "rel": "bookmark"
+                }
+            ],
+            "name": "k8-cinder-test"
+        },
+        {
+            "id": "a59d2969-ec7c-4c2d-a563-fe314655c591",
+            "links": [
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/v2/3836c0d58e3349b28fc740e33a58a7e3/volumes/a59d2969-ec7c-4c2d-a563-fe314655c591",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/3836c0d58e3349b28fc740e33a58a7e3/volumes/a59d2969-ec7c-4c2d-a563-fe314655c591",
+                    "rel": "bookmark"
+                }
+            ],
+            "name": "k8-nfs-1"
+        },
+        {
+            "id": "b12f129b-4fbe-43ca-993f-4baab90105e2",
+            "links": [
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/v2/3836c0d58e3349b28fc740e33a58a7e3/volumes/b12f129b-4fbe-43ca-993f-4baab90105e2",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/3836c0d58e3349b28fc740e33a58a7e3/volumes/b12f129b-4fbe-43ca-993f-4baab90105e2",
+                    "rel": "bookmark"
+                }
+            ],
+            "name": null
+        },
+        {
+            "id": "9eb24710-13a3-48b4-b95a-9fc76e177367",
+            "links": [
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/v2/3836c0d58e3349b28fc740e33a58a7e3/volumes/9eb24710-13a3-48b4-b95a-9fc76e177367",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/3836c0d58e3349b28fc740e33a58a7e3/volumes/9eb24710-13a3-48b4-b95a-9fc76e177367",
+                    "rel": "bookmark"
+                }
+            ],
+            "name": null
+        },
+        {
+            "id": "6849a65b-0b13-441c-bcd7-1b858373a5e5",
+            "links": [
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/v2/3836c0d58e3349b28fc740e33a58a7e3/volumes/6849a65b-0b13-441c-bcd7-1b858373a5e5",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/3836c0d58e3349b28fc740e33a58a7e3/volumes/6849a65b-0b13-441c-bcd7-1b858373a5e5",
+                    "rel": "bookmark"
+                }
+            ],
+            "name": null
+        },
+        {
+            "id": "b47ead9b-2049-4576-bf59-58de3f2b38b8",
+            "links": [
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/v2/3836c0d58e3349b28fc740e33a58a7e3/volumes/b47ead9b-2049-4576-bf59-58de3f2b38b8",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/3836c0d58e3349b28fc740e33a58a7e3/volumes/b47ead9b-2049-4576-bf59-58de3f2b38b8",
+                    "rel": "bookmark"
+                }
+            ],
+            "name": null
+        },
+        {
+            "id": "c115f67b-15f3-4fb5-bc98-4fc8db5d1c80",
+            "links": [
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/v2/3836c0d58e3349b28fc740e33a58a7e3/volumes/c115f67b-15f3-4fb5-bc98-4fc8db5d1c80",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/3836c0d58e3349b28fc740e33a58a7e3/volumes/c115f67b-15f3-4fb5-bc98-4fc8db5d1c80",
+                    "rel": "bookmark"
+                }
+            ],
+            "name": "IRODS"
+        },
+        {
+            "id": "7935509a-9393-495e-b10b-35ba363c3809",
+            "links": [
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/v2/3836c0d58e3349b28fc740e33a58a7e3/volumes/7935509a-9393-495e-b10b-35ba363c3809",
+                    "rel": "self"
+                },
+                {
+                    "href": "http://nebula.ncsa.illinois.edu:8776/3836c0d58e3349b28fc740e33a58a7e3/volumes/7935509a-9393-495e-b10b-35ba363c3809",
+                    "rel": "bookmark"
+                }
+            ],
+            "name": "ISLMigrationVols"
+        }
+    ]
+}

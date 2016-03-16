@@ -1,0 +1,10 @@
+{
+    "volumeAttachments": [
+        {
+            "device": "/dev/vdb",
+            "id": "a59d2969-ec7c-4c2d-a563-fe314655c591",
+            "serverId": "e8bbb11f-fb9b-4edb-a718-9baf495af825",
+            "volumeId": "a59d2969-ec7c-4c2d-a563-fe314655c591"
+        }
+    ]
+}
