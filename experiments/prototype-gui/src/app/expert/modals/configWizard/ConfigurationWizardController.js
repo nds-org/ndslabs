@@ -77,7 +77,9 @@ angular
 
   // Define a big pile of logic for our wizard pages
   var configPages = [
-     new WizardPage("require", "Required Services", {
+    
+    // Required Services
+    new WizardPage("require", "Required Services", {
         prev: null,
         canPrev: false,
         canNext: function() {
@@ -89,6 +91,8 @@ angular
         next: function() { 
           if ($scope.newStackOptions.length > 0) {
             return 'options';
+          } else if ($scope.extraConfig.length > 0) {
+            return 'config';
           } else if ($scope.newStackVolumeRequirements.length > 0) {
             return 'volumes';
           } else {
@@ -99,6 +103,8 @@ angular
           $scope.discoverVolumeReqs($scope.newStack); 
         }
      }, true),
+     
+     // Optional Services
      new WizardPage("options", "Select Optional Services", {
         prev: 'require',
         canPrev: true,
@@ -117,18 +123,54 @@ angular
         },
         next: function() { 
           console.debug($scope.newStackVolumeRequirements);
-          if ($scope.newStackVolumeRequirements.length === 0) {
-            $log.debug('Going to confirm');
-            return 'confirm';
-          } else {
+          if ($scope.extraConfig.length > 0) {
+            $log.debug('Going to config');
+            return 'config';
+          } else if ($scope.newStackVolumeRequirements.length > 0) {
             $log.debug('Going to volumes');
             return 'volumes';
+          } else {
+            $log.debug('Going to confirm');
+            return 'confirm';
           }
         }
      }, true),
-     new WizardPage("volumes", "Configure Volumes", {
+     
+     // Additional Service Configuration
+     new WizardPage("config", "Additional Configuration Required", {
         prev: function() {
           if ($scope.newStackOptions.length > 0) {
+            $log.debug('Going to options');
+            return 'options';
+          } else {
+            $log.debug('Going to requirements');
+            return 'require';
+          }
+        },
+        canPrev: true,
+        canNext: true,
+        onNext: function() {
+          // Do something here with the config? add it to the stack?
+        },
+        next: function() { 
+          console.debug($scope.newStackVolumeRequirements);
+          if ($scope.newStackVolumeRequirements.length > 0) {
+            $log.debug('Going to volumes');
+            return 'volumes';
+          } else {
+            $log.debug('Going to confirm');
+            return 'confirm';
+          }
+        }
+     }, true),
+     
+     // Configure Volumes
+     new WizardPage("volumes", "Configure Volumes", {
+        prev: function() {
+          if ($scope.extraConfig.length > 0) {
+            $log.debug('Going to config');
+            return 'config';
+          } else if ($scope.newStackOptions.length > 0) {
             $log.debug('Going to options');
             return 'options';
           } else {
@@ -144,7 +186,7 @@ angular
             return false;
           }
       
-          // Don't count orphaned volumesin our requested total (they are already part of "used")
+          // Don't count orphaned volumes in our requested total (they are already part of "used")
           var diff = _.differenceBy($scope.newStackVolumeRequirements, configuredVolumes, 'id');
           var requested = $filter('usedStorage')(diff);
           var available = $scope.storageQuota - used;
@@ -170,11 +212,16 @@ angular
           $log.debug("Verifying that user has made valid 'Volume' selections...");
         }
      }, true),
+     
+     // Confirm New Stack
      new WizardPage("confirm", "Confirm New Stack", {
         prev: function() {
           if ($scope.newStackVolumeRequirements.length > 0) {
             $log.debug('Going back to volumes');
             return 'volumes';
+          } else if ($scope.extraConfig.length > 0) {
+            $log.debug('Going back to config');
+            return 'config';
           } else if ($scope.newStackOptions.length > 0) {
             $log.debug('Going back to options');
             return 'options';
@@ -188,6 +235,9 @@ angular
         next: null
      }, true)
   ];
+  
+  // Don't modify this in-place... make a copy
+  $scope.extraConfig = angular.copy(template.config);
   
   // Create a new Wizard to display
   $scope.wizard = new Wizard(configPages, initDelay);
