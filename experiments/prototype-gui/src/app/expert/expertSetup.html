@@ -113,10 +113,10 @@
                                   'fa-times-circle-o text-danger': stack.status === 'stopped',
                                   'fa-spinner fa-spin fa-pulse text-primary': stack.status !== 'started' && stack.status !== 'stopped' }"></i>
                           </div>
-                          <div class="col-sm-10">
+                          <div class="col-sm-8">
                             <h4><strong>{{ stack.name | capitalize }}</strong></h4>
                           </div>
-                          <div class="col-sm-1">
+                          <div class="col-sm-3">
                             <i class="pull-right fa fa-2x fa-fw" ng-class="{'fa-caret-down': open, 'fa-caret-right': !open}"></i>
                           </div>
                         </div>
