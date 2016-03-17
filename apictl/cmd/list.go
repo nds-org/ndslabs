@@ -155,10 +155,39 @@ var listProjectsCmd = &cobra.Command{
 	PostRun: RefreshToken,
 }
 
+var listConfigsCmd = &cobra.Command{
+	Use:    "configs [service ids]",
+	Short:  "List service configs",
+	PreRun: Connect,
+	Run: func(cmd *cobra.Command, args []string) {
+
+		if len(args) == 0 {
+			cmd.Usage()
+			os.Exit(-1)
+		}
+		configs, err := client.GetConfigs(args)
+		if err != nil {
+			fmt.Printf("List failed: %s\n", err)
+			os.Exit(-1)
+		}
+
+		if configs != nil {
+			for sid, cfg := range *configs {
+				fmt.Println(sid)
+				data, _ := json.MarshalIndent(cfg, "", "   ")
+				fmt.Println(string(data))
+			}
+		}
+
+	},
+	PostRun: RefreshToken,
+}
+
 func init() {
 	RootCmd.AddCommand(listCmd)
 	listCmd.AddCommand(listServicesCmd)
 	listCmd.AddCommand(listStacksCmd)
 	listCmd.AddCommand(listVolumesCmd)
 	listCmd.AddCommand(listProjectsCmd)
+	listCmd.AddCommand(listConfigsCmd)
 }

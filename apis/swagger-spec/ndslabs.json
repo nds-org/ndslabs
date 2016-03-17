@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "title": "NDS Labs Project API",
+        "title": "ndslabs",
         "version": "0.1"
     },
     "basePath": "/v1",
@@ -589,6 +589,40 @@
                     }
                 }
             }
+        },
+        "/configs": {
+            "get": {
+                "parameters": [
+                    {
+                        "name": "services",
+                        "in": "query",
+                        "description": "services to filter by",
+                        "required": false,
+                        "type": "array",
+                        "collectionFormat": "csv",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "description": "Retrieves a list of service configuration options\n",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Config"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -860,6 +894,26 @@
             "properties": {
                 "text": {
                     "type": "string"
+                }
+            }
+        },
+        "Config": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "canOverride": {
+                    "type": "boolean"
+                },
+                "isPassword": {
+                    "type": "boolean"
                 }
             }
         }

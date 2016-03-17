@@ -420,7 +420,30 @@ paths:
       responses:
         200:
           description: OK
-
+          
+  /configs:
+    get: 
+      parameters:
+        - name: services
+          in: query
+          description: services to filter by
+          required: false
+          type: array
+          collectionFormat: csv
+          items:
+            type: string       
+      description: |
+        Retrieves a list of service configuration options
+      responses:  
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items: 
+                  $ref: '#/definitions/Config'        
 
 definitions:
   Auth:
@@ -610,4 +633,19 @@ definitions:
     properties:
       text:
         type: string
+        
+  Config:
+    type: object
+    properties:
+      name:
+        type: string        
+      value:
+        type: string        
+      label:
+        type: string        
+      canOverride:
+        type: boolean        
+      isPassword:
+        type: boolean        
+        
         

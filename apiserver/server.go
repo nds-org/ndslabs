@@ -265,6 +265,7 @@ func main() {
 		rest.Put("/services/:key", server.PutService),
 		rest.Get("/services/:key", server.GetService),
 		rest.Delete("/services/:key", server.DeleteService),
+		rest.Get("/configs", server.GetConfigs),
 		rest.Get("/projects/:pid/stacks", server.GetAllStacks),
 		rest.Post("/projects/:pid/stacks", server.PostStack),
 		rest.Put("/projects/:pid/stacks/:sid", server.PutStack),
@@ -1781,6 +1782,25 @@ func (s *Server) GetLogs(w rest.ResponseWriter, r *rest.Request) {
 	} else {
 		w.WriteJson(&logs)
 	}
+}
+
+func (s *Server) GetConfigs(w rest.ResponseWriter, r *rest.Request) {
+	services := r.Request.FormValue("services")
+
+	sids := strings.Split(services, ",")
+
+	configs := make(map[string][]api.Config)
+	for _, sid := range sids {
+		spec, err := s.getServiceSpec(sid)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		} else {
+			configs[sid] = spec.Config
+		}
+	}
+	w.WriteJson(&configs)
 }
 
 func (s *Server) getLogs(pid string, sid string, ssid string, tailLines int) (string, error) {
