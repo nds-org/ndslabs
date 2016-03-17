@@ -50,6 +50,66 @@ angular.module('ndslabs')
   };
 }])
 /**
+ * Given a list of configs, return true iff at least one of them can be overridden
+ */
+.filter('mustOverrideAny', ['_', 'Specs', function(_, Specs) {
+  return function(configs) {
+    if (angular.isArray(configs)) {
+      return _.find(configs, { 'canOverride': true, 'value':'' });
+    } else if (angular.isObject(configs)) {
+      var mustOverride = false;
+      if (configs.list && configs.list.length > 0) {
+        configs = configs.list
+      }
+      angular.forEach(configs, function(configList, svc) {
+        if (_.find(configs, { 'canOverride': true, 'value':'' })) {
+          mustOverride = true;
+        }
+      });
+      return mustOverride;
+    } else {
+      return false;
+    }
+  };
+}])
+/**
+ * Given a list of configs, return true iff at least one of them can be overridden
+ */
+.filter('canOverrideAny', ['_', 'Specs', function(_, Specs) {
+  return function(configs) {
+    if (angular.isArray(configs)) {
+      return _.find(configs, [ 'canOverride', true ]);
+    } else if (angular.isObject(configs)) {
+      var canOverride = false;
+      if (configs.list && configs.list.length > 0) {
+        configs = configs.list
+      }
+      angular.forEach(configs, function(configList, svc) {
+        if (_.find(configs, [ 'canOverride', true ])) {
+          canOverride = true;
+        }
+      });
+      return canOverride;
+    } else {
+      return false;
+    }
+  };
+}])
+/**
+ * Given a spec key and a config name, return its default value
+ */
+.filter('defaultValue', ['_', 'Specs', function(_, Specs) {
+  return function(configName, specKey) {
+    var spec = _.find(Specs.all, ['key', specKey ]);
+    
+    if (!spec) {
+      return '';
+    }
+    
+    return _.find(spec.config, ['name', configName ]).value;
+  };
+}])
+/**
  * Given a service spec key, retrieve its label
  */
 .filter('specProperty', ['$log', 'Specs', '_', function($log, Specs, _) {

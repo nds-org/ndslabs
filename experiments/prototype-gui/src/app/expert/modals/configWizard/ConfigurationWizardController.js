@@ -91,7 +91,7 @@ angular
         next: function() { 
           if ($scope.newStackOptions.length > 0) {
             return 'options';
-          } else if ($scope.extraConfig.length > 0) {
+          } else if (!_.isEmpty($scope.extraConfig)) {
             return 'config';
           } else if ($scope.newStackVolumeRequirements.length > 0) {
             return 'volumes';
@@ -119,11 +119,22 @@ angular
           });
 
           $log.debug("Discovering volume requirements...");
-          $scope.discoverVolumeReqs($scope.newStack); 
+          $scope.discoverVolumeReqs($scope.newStack);
+          
+          $scope.extraConfig = {};
+          angular.forEach($scope.newStack.services, function(svc) {
+            var spec = _.find(_.concat(stacks, deps), [ 'key', svc.service ]);
+            
+            // Don't modify specs in-place... make a copy
+            $scope.extraConfig[svc.service] = {
+              list: angular.copy(spec.config),
+              defaults: angular.copy(spec.config)
+            };
+          });
         },
         next: function() { 
           console.debug($scope.newStackVolumeRequirements);
-          if ($scope.extraConfig.length > 0) {
+          if (!_.isEmpty($scope.extraConfig)) {
             $log.debug('Going to config');
             return 'config';
           } else if ($scope.newStackVolumeRequirements.length > 0) {
@@ -148,9 +159,30 @@ angular
           }
         },
         canPrev: true,
-        canNext: true,
+        canNext: function() {
+          var canNext = true;
+          angular.forEach($scope.extraConfig, function(configs, svcKey) {
+            angular.forEach(configs.list, function(cfg) {
+              if (cfg.value === '' && cfg.canOverride === true) {
+                canNext = false;
+              }
+            });
+          });
+          return canNext;
+        },
         onNext: function() {
-          // Do something here with the config? add it to the stack?
+          angular.forEach($scope.extraConfig, function(config, svcKey) {
+            // Locate our target service
+            var svc = _.find($scope.newStack.services, [ 'service', svcKey ]);
+            
+            // Accumulate config name-value pairs
+            svc.config = {};
+            angular.forEach(config.list, function(cfg) {
+              svc.config[cfg.name] = cfg.value;
+            });
+          });
+          
+          debugger;
         },
         next: function() { 
           console.debug($scope.newStackVolumeRequirements);
@@ -167,7 +199,7 @@ angular
      // Configure Volumes
      new WizardPage("volumes", "Configure Volumes", {
         prev: function() {
-          if ($scope.extraConfig.length > 0) {
+          if (!_.isEmpty($scope.extraConfig)) {
             $log.debug('Going to config');
             return 'config';
           } else if ($scope.newStackOptions.length > 0) {
@@ -219,7 +251,7 @@ angular
           if ($scope.newStackVolumeRequirements.length > 0) {
             $log.debug('Going back to volumes');
             return 'volumes';
-          } else if ($scope.extraConfig.length > 0) {
+          } else if (!_.isEmpty($scope.extraConfig)) {
             $log.debug('Going back to config');
             return 'config';
           } else if ($scope.newStackOptions.length > 0) {
@@ -235,9 +267,6 @@ angular
         next: null
      }, true)
   ];
-  
-  // Don't modify this in-place... make a copy
-  $scope.extraConfig = angular.copy(template.config);
   
   // Create a new Wizard to display
   $scope.wizard = new Wizard(configPages, initDelay);
