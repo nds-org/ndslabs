@@ -53,9 +53,11 @@
     <script src="/bower_components/angular-wizard/angular-wizard.js"></script>
     <script src="/bower_components/angular-grid/angular-grid.js"></script>
     <script src="/bower_components/angular-alert/angular-alert.js"></script>
-    <script src="/app/shared/NavbarController.js"></script>
-    <script src="/app/shared/FooterController.js"></script>
-    <script src="/app/shared/NdsLabsRestApi.js"></script>
+    <script src="/app/shared/navbar/NavbarController.js"></script>
+    <script src="/app/shared/footer/FooterController.js"></script>
+    <script src="/app/shared/api.js"></script>
+    <script src="/app/shared/services.js"></script>
+    <script src="/app/shared/filters.js"></script>
 
     <!-- Then load the config for our app -->
     <script src="/app/app.js"></script>
@@ -65,8 +67,6 @@
     <script src="/app/login/LoginController.js"></script>
     
     <!-- Expert Setup Helper Structures / Functions -->
-    <script src="/app/expert/ExpertSetupServices.js"></script>
-    <script src="/app/expert/ExpertSetupFilters.js"></script>
     
     <!-- Expert Setup Main Controller -->
     <script src="/app/expert/ExpertSetupController.js"></script>
@@ -85,7 +85,7 @@
   <body>
     <!-- This syntax can be used to isolate smaller page templates (such as our navbar and footer) -->
     <!-- NOTE: This method does not produce a navigatable route. For another full page/route, we need to add the route to app.js -->
-    <div ng-include src="'/app/shared/navbar.html'" ng-controller="NavbarController" ></div> 
+    <div ng-include src="'/app/shared/navbar/navbar.html'" ng-controller="NavbarController" ></div> 
     
     <!-- ng-view tells angular that we will swap in templates for the route specified by app.js (via ngRoute) -->
     <div class="container-fluid" ng-view></div>

@@ -1,3 +1,5 @@
+/* global angular:false */
+
 angular
 .module('ndslabs')
 /**
@@ -22,7 +24,6 @@ angular
 
   /**
    * Start a local session by asking the server for a token
-   * TODO: How do we end the session on the server?
    */
   $scope.login = function() {
     $log.debug("Logging in!");
@@ -37,10 +38,6 @@ angular
       }
     }).then(function(data, xhr) {
       $scope.errorMessage = '';
-      //$scope.settings.authenticated = true;
-      /*if ($scope.settings.saveCookie === true) {
-        $cookies.putObject('auth', $scope.settings);
-      }*/
       $cookies.put('namespace', $scope.settings.namespace);
       $log.debug("Logged in!");
       $location.path(HomeRoute);
@@ -56,7 +53,7 @@ angular
   /**
    * End our local session by deleting our token. This will bounce the
    * user back out to the login page, forcing them to re-authenticate
-   * TODO: How do we end the session on the server?
+   * TODO: How do we end the session server-side?
    */
   $scope.logout = function() {
     $log.debug("Logging out!");

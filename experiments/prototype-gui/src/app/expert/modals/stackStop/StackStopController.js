@@ -1,5 +1,8 @@
+/* global angular:false */
+
 angular
-.module('ndslabs')/**
+.module('ndslabs')
+/**
  * The Controller for our "Stop Stack" Modal Window
  * 
  * @author lambert8

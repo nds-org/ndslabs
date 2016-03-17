@@ -1,3 +1,5 @@
+/* global angular:false */
+
 angular
 .module('ndslabs')
 .controller('SignUpController', [ '$scope', '$uibModalInstance', '$log', 'NdsLabsApi', function($scope, $uibModalInstance, $log, api) {

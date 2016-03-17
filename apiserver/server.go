@@ -1075,7 +1075,7 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 	name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
 	template := s.kube.CreateControllerTemplate(pid, name, stack.Id, stackService, spec, addrPortMap)
 
-	if spec.RequiresVolume {
+	if len(spec.VolumeMounts) > 0 {
 		k8vols := make([]k8api.Volume, 0)
 		for _, mount := range spec.VolumeMounts {
 			if mount.Name == "docker" {

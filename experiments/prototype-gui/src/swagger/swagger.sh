@@ -1,11 +1,11 @@
 #!/bin/bash
 
-export DOWNLOADURL=https://raw.githubusercontent.com/nds-org/nds-labs/NDS-108/apis/swagger-spec/ndslabs.json
+export DOWNLOADURL=https://raw.githubusercontent.com/nds-org/nds-labs/v2/apis/swagger-spec/ndslabs.json
 export SWAGGERFILE=swagger-spec.json
 export OUTPUTFILE=../app/shared/NdsLabsRestApi.js
 
 # Install swagger-js-codegen
-docker run --rm -it -v `pwd`/data digitallyseamless/nodejs-bower-grunt npm install swagger-js-codegen
+docker run --rm -it -v `pwd`/data bodom0015/nodejs-bower-grunt npm install swagger-js-codegen
 
 # Download newest swagger-spec.json
 if [[ "${@/-u/}" != "$@" ]]; then
@@ -15,6 +15,6 @@ fi
 
 # Finally, generate AngularJS source
 echo "Generating AngularJS source code..."
-docker run --rm -it -v `pwd`:/data digitallyseamless/nodejs-bower-grunt node generate-angular.js > ${OUTPUTFILE}
+docker run --rm -it -v `pwd`:/data bodom0015/nodejs-bower-grunt node generate-angular.js > ${OUTPUTFILE} || cat ${OUTPUTFILE}
 
 echo "Done!"

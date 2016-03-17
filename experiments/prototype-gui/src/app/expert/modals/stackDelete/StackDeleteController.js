@@ -1,3 +1,5 @@
+/* global angular:false */
+
 angular
 .module('ndslabs')
 /**
