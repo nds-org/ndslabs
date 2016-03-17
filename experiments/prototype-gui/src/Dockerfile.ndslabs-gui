@@ -1,3 +1,8 @@
+#
+# Build: docker build -t ndslabs-gui -f Dockerfile.ndslabs-gui .
+#
+# Usage: docker run -it -d -p 80:8080 -e APISRV_URI=http://<ExternalIp>:8083 ndslabs-gui
+#
 # This image will be based on the official nodejs docker image
 FROM node:latest
  
