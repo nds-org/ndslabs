@@ -107,16 +107,16 @@
                         <!--- ng-class="{ 'panel-success': stack.status === 'started', 'panel-danger': stack.status === 'stopped', 'panel-warning':stack.status !== 'started' && stack.status !== 'stopped' }" -->
                         <!-- Stack Status Indicator -->
                         <div class="row">
-                          <div class="col-sm-1 pull-left">
+                          <div class="col-xs-3 col-md-1 pull-left">
                             <i class="fa fa-fw fa-2x" 
                               ng-class="{ 'fa-check-circle-o text-success': stack.status === 'started', 
                                   'fa-times-circle-o text-danger': stack.status === 'stopped',
                                   'fa-spinner fa-spin fa-pulse text-primary': stack.status !== 'started' && stack.status !== 'stopped' }"></i>
                           </div>
-                          <div class="col-sm-8">
+                          <div class="col-xs-6 col-md-10">
                             <h4><strong>{{ stack.name | capitalize }}</strong></h4>
                           </div>
-                          <div class="col-sm-3">
+                          <div class="col-xs-3 col-md-1">
                             <i class="pull-right fa fa-2x fa-fw" ng-class="{'fa-caret-down': open, 'fa-caret-right': !open}"></i>
                           </div>
                         </div>
