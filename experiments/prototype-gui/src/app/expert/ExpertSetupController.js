@@ -1,3 +1,7 @@
+/* global angular:false */
+
+angular
+.module('ndslabs')
 /**
  * The main view of our app, this controller houses the
  * "Deploy" and "Manage" portions of the interface
@@ -5,7 +9,6 @@
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-angular.module('ndslabs')
 .controller('ExpertSetupController', [ '$scope', '$log', '$interval', '$uibModal', '_', 'AuthInfo', 'Project', 'Volumes', 'Stacks', 'Specs', 
     'DEBUG', 'StackService', 'NdsLabsApi', function($scope, $log, $interval, $uibModal, _, AuthInfo, Project, Volumes, Stacks, Specs, DEBUG, 
     StackService, NdsLabsApi) {
@@ -24,7 +27,7 @@ angular.module('ndslabs')
   $scope.showVolumePane = false;
   
   $scope.selectVolume = function(volume) {
-    $scope.selectedVolume=volume.id;
+    $scope.selectedVolume = volume.id;
     $scope.selectedTab = 1;
   };
   

@@ -1,5 +1,8 @@
+/* global angular:false */
+
 angular
-.module('ndslabs')/**
+.module('ndslabs')
+/**
  * The Controller for our "Delete Volume" Modal Window
  * 
  * @author lambert8

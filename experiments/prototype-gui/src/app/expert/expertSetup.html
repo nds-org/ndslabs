@@ -35,6 +35,9 @@
               <span class="input-group-addon" id="searchHeader"><i class="fa fa-search"></i></span>
               <input type="text" class="form-control" placeholder="Find Services..." ng-model="svcQuery" 
                   aria-describedby="searchHeader" />
+                  <span class="input-group-addon">
+                    <input type="checkbox" ng-model="showStandalones" uib-tooltip="Show standalone services" tooltip-placement="top-right">
+                  </span>
             </div>
             
             <p class="text-center text-danger" ng-if="(allServices | filter : svcQuery).length === 0">
@@ -42,10 +45,9 @@
             </p>
           </div>
           
-          <table class="table table-condensed" 
-              ng-hide="(allServices | filter : svcQuery).length === 0">
+          <table class="table table-condensed" ng-hide="(allServices | filter : svcQuery).length === 0">
             <tbody>
-              <tr ng-repeat="stack in allServices | orderBy:'label' | filter : svcQuery track by stack.key">
+              <tr ng-repeat="stack in allServices | isStack:showStandalones | orderBy:'label' | filter : svcQuery track by stack.key">
                 <td width="95%">{{ stack.label }}</td>
                 <td width="5%">
                  <button class="btn btn-xs btn-default" ng-click="openWizard(stack)" 

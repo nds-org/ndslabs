@@ -1,3 +1,5 @@
+/* global angular:false */
+
 angular
 .module('ndslabs')
 /**
@@ -6,9 +8,9 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('ConfigurationWizardCtrl', [ '$scope', '$filter', '$log', '$uibModalInstance', '_', 'Project', 'Stack', 'Volume', 
+.controller('ConfigurationWizardCtrl', [ '$scope', '$filter', '$log', '$uibModalInstance', '_', 'NdsLabsApi', 'Project', 'Stack', 'Volume', 
     'StackService', 'Grid', 'Wizard', 'WizardPage', 'template', 'stacks', 'deps', 'configuredStacks', 'configuredVolumes',
-    function($scope, $filter, $log, $uibModalInstance, _, Project, Stack, Volume, StackService, Grid, Wizard, WizardPage, template, 
+    function($scope, $filter, $log, $uibModalInstance, _, NdsLabsApi, Project, Stack, Volume, StackService, Grid, Wizard, WizardPage, template, 
     stacks, deps, configuredStacks, configuredVolumes) {
   $scope.storageQuota = (Project.project.storageQuote || '50' );
   $scope.newStackVolumeRequirements = [];
@@ -18,7 +20,7 @@ angular
     var requiredVolumes = [];
     angular.forEach(stack.services, function(requestedSvc) {
       var svcSpec = _.find(_.concat(stacks, deps), function(svc) { return svc.key === requestedSvc.service });
-      if (svcSpec.requiresVolume === true) {
+      if (svcSpec.volumeMounts && svcSpec.volumeMounts.length > 0) {
         var orphan = null;
         angular.forEach(configuredVolumes, function(volume) {
           if (!volume.attached && svcSpec.key === volume.service) {
@@ -121,6 +123,14 @@ angular
           $log.debug("Discovering volume requirements...");
           $scope.discoverVolumeReqs($scope.newStack);
           
+          /*var services = _.map($scope.newStack.services, 'service');
+          debugger;
+          NdsLabsApi.getConfigs({ 'services': services}).then(function(data, headers) {
+            $scope.extraConfig = data;
+          }, function() {
+            $log.error('Failed to grab custom config for ' + services);
+          });*/
+          
           $scope.extraConfig = {};
           angular.forEach($scope.newStack.services, function(svc) {
             var spec = _.find(_.concat(stacks, deps), [ 'key', svc.service ]);
@@ -181,8 +191,6 @@ angular
               svc.config[cfg.name] = cfg.value;
             });
           });
-          
-          debugger;
         },
         next: function() { 
           console.debug($scope.newStackVolumeRequirements);

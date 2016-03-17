@@ -20,7 +20,7 @@ body {
 
 #loginPanel {
   margin: 10% auto;
-  width:400px;
+  max-width:400px;
 }
 
 /* Other custom page styling */

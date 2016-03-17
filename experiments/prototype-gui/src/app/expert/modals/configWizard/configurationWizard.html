@@ -38,7 +38,7 @@
                       <i class="fa fa-fw fa-database pull-right animated faa-slow faa-flash" tooltip-placement="left"
                       uib-tooltip="{{ req.service | specProperty:'label' }} requires a volume to house its 
                       data. You will be guided through setting up a volume as a part of this wizard."
-                      ng-if="(req.service | specProperty:'requiresVolume') === true"></i>
+                      ng-repeat="vol in (req.service | specProperty:'volumeMounts')"></i>
                     </div>
                   </div>
                 </li>

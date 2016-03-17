@@ -1,11 +1,11 @@
+/* global angular:false */
 'use strict';
-
 
 /**
  * Define our ndslabs module here. All other files will 
  * use the single-argument notation for angular.module()
  */
-angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-api', 'ngWizard', 'ngGrid', 'ngAlert', 
+angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-filters', 'ndslabs-api', 'ngWizard', 'ngGrid', 'ngAlert', 
     'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ngMessages', 'ui.bootstrap', 'ui.pwgen', 'frapontillo.gage' ])
 
 /**
@@ -183,8 +183,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-api', 'ngWizard', 'ngGr
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$location', '$log', '$cookies', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', 
-    function($rootScope, $location, $log, $cookies, authInfo, LoginRoute, ExpertRoute, NdsLabsApi) {
+.run([ '$rootScope', '$location', '$log', '$interval', '$cookies', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', 
+    function($rootScope, $location, $log, $interval, $cookies, authInfo, LoginRoute, ExpertRoute, NdsLabsApi) {
       
   // Grab saved auth data from cookies and attempt to use the leftover session
   var token = $cookies.get('token');
@@ -203,27 +203,48 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-api', 'ngWizard', 'ngGr
   
   // When user changes routes, check that they are still authed
   $rootScope.$on( "$routeChangeStart", function(event, next, current) {
-    // Define the logic for
+    // Define the logic for ending a user's session in the browser
     var terminateSession = function() {
       // Purge current session data
       authInfo.get().token = null;
       $cookies.remove('token');
       $cookies.remove('namespace');
         
+      $interval.cancel(checkTokenInterval);
+      checkTokenInterval = null;
+            
       // user needs to log in, redirect to /login
       if (next.templateUrl !== "/app/login/login.html") {
         $location.path(LoginRoute);
       }
     };
     
-    // Check if the token is still valid
+    // Each minute, check that our token is still valid
+    var checkTokenInterval = null;
+    var checkToken = function() {
+      NdsLabsApi.getCheck_token().then(function() { $log.debug('Token is still valid.'); }, function() {
+        $log.error('Token expired, redirecting to login.');
+        $interval.cancel(checkTokenInterval);
+        checkTokenInterval = null;
+        terminateSession();
+      });
+    };
+  
+    // Check if the token is still valid on route changes
     var token = $cookies.get('token');
     if (token) {
       authInfo.get().token = token;
       authInfo.get().namespace = $cookies.get('namespace');
       NdsLabsApi.getRefresh_token().then(function() {
         $log.debug('Token refreshed: ' + authInfo.get().token);
-        $location.path(HomeRoute);
+        
+        // Start our token check interval
+        checkTokenInterval = $interval(checkToken, 60000);
+        
+        // Reroute to /home if necessary
+        if (next.templateUrl !== '/app/expert/expertSetup.html') {
+          $location.path(HomeRoute);
+        }
       }, function() {
         $log.debug('Failed to refresh token!');
         
