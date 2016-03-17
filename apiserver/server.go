@@ -265,6 +265,7 @@ func main() {
 		rest.Put("/services/:key", server.PutService),
 		rest.Get("/services/:key", server.GetService),
 		rest.Delete("/services/:key", server.DeleteService),
+		rest.Get("/configs", server.GetConfigs),
 		rest.Get("/projects/:pid/stacks", server.GetAllStacks),
 		rest.Post("/projects/:pid/stacks", server.PostStack),
 		rest.Put("/projects/:pid/stacks/:sid", server.PutStack),
@@ -1081,7 +1082,7 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 	name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
 	template := s.kube.CreateControllerTemplate(pid, name, stack.Id, stackService, spec, addrPortMap)
 
-	if spec.RequiresVolume {
+	if len(spec.VolumeMounts) > 0 {
 		k8vols := make([]k8api.Volume, 0)
 		for _, mount := range spec.VolumeMounts {
 			if mount.Name == "docker" {
@@ -1781,6 +1782,25 @@ func (s *Server) GetLogs(w rest.ResponseWriter, r *rest.Request) {
 	} else {
 		w.WriteJson(&logs)
 	}
+}
+
+func (s *Server) GetConfigs(w rest.ResponseWriter, r *rest.Request) {
+	services := r.Request.FormValue("services")
+
+	sids := strings.Split(services, ",")
+
+	configs := make(map[string][]api.Config)
+	for _, sid := range sids {
+		spec, err := s.getServiceSpec(sid)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		} else {
+			configs[sid] = spec.Config
+		}
+	}
+	w.WriteJson(&configs)
 }
 
 func (s *Server) getLogs(pid string, sid string, ssid string, tailLines int) (string, error) {

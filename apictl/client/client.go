@@ -8,6 +8,7 @@ import (
 	api "github.com/nds-labs/apiserver/types"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 type Client struct {
@@ -678,5 +679,35 @@ func (c *Client) GetProject(pid string) (*api.Project, error) {
 		return &project, nil
 	} else {
 		return nil, errors.New(resp.Status)
+	}
+}
+
+func (c *Client) GetConfigs(sids []string) (*map[string][]api.Config, error) {
+
+	services := strings.Join(sids, ",")
+	url := c.BasePath + "configs?services=" + services
+
+	request, err := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return nil, err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			defer resp.Body.Close()
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return nil, err
+			}
+			configs := make(map[string][]api.Config)
+			err = json.Unmarshal(body, &configs)
+			if err != nil {
+				return nil, err
+			}
+			return &configs, nil
+		} else {
+			return nil, errors.New(resp.Status)
+		}
 	}
 }
