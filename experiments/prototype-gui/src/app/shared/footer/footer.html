@@ -1,0 +1,35 @@
+<footer class="footer" ng-class="{ 'expanded-footer': showVolumes }">
+  <div id="volumeSlideOutFooter" class="container-fluid" ng-click="toggleVolumes()" >
+    <div class="container-fluid" style="cursor:pointer;">
+      <div class="row">
+        <!-- Left Expand Button -->
+        <div class="col-md-1">
+          <button class="btn btn-primary btn-block btn-lg pull-left">
+            <i class="fa fa-fw fa-2x" ng-class="{ 'fa-caret-up': !showVolumes, 'fa-caret-down': showVolumes}"></i>
+          </button>
+        </div>
+        
+        <!-- Panel Title / Label -->
+        <div class="col-md-10 text-center">
+          <h3 class="text-muted">DATA</h3>
+        </div>
+        
+        <!-- Right Expand Button -->
+        <div class="col-md-1">
+          <button class="btn btn-primary btn-block btn-lg pull-right">
+            <i class="fa fa-fw fa-2x" ng-class="{ 'fa-caret-up': !showVolumes, 'fa-caret-down': showVolumes}"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Slide-Out Panel Contents -->
+  <div ng-if="showVolumes" class="container-fluid" style="background-image: url('/asset/png/symphony.png');">
+    <div class="container">
+      <div class="row">
+        <pre ng-if="DEBUG">{{ volumes.all | json }}</pre>
+      </div>
+    </div>
+  </div>
+</footer>

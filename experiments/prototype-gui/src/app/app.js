@@ -41,7 +41,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Hostname / Port for communicating with etcd
  */ 
-.constant('ApiUri', 'http://141.142.209.154:8083')
+.constant('ApiUri', '')
 
 /**
  * Logic for communicating with etcd (powered by swagger-js-codegen)
