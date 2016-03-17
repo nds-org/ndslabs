@@ -94,9 +94,6 @@ type Config struct {
 	}
 }
 
-var Version string
-var BuildDate string
-
 func main() {
 
 	var confPath string
@@ -122,7 +119,7 @@ func main() {
 		cfg.Kubernetes.Address = "localhost:4001"
 	}
 
-	glog.Infof("Starting NDS Labs API server (%s %s)", Version, BuildDate)
+	glog.Infof("Starting NDS Labs API server (%s %s)", VERSION, BUILD_DATE)
 	glog.Infof("etcd %s ", cfg.Etcd.Address)
 	glog.Infof("kube-apiserver %s", cfg.Kubernetes.Address)
 	glog.Infof("volume dir %s", cfg.Server.VolDir)
