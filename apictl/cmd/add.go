@@ -29,6 +29,7 @@ import (
 var (
 	opts string
 	file string
+	dir  string
 )
 
 func init() {
@@ -41,7 +42,9 @@ func init() {
 	addStackCmd.Flags().StringVar(&opts, "opt", "", "Comma-delimited list of optional services")
 
 	addProjectCmd.Flags().StringVar(&file, "file", "", "Path to project definition (json)")
+
 	addServiceCmd.Flags().StringVar(&file, "file", "", "Path to service definition (json)")
+	addServiceCmd.Flags().StringVar(&dir, "dir", "", "Path to service definition (json)")
 }
 
 var addCmd = &cobra.Command{
@@ -86,31 +89,49 @@ var addServiceCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if len(file) > 0 {
-			if (Verbose) {
-				fmt.Printf("Reading spec from file  %s\n", file)
-			}
-			service := api.ServiceSpec{}
-			data, err := ioutil.ReadFile(file)
-			if err != nil {
-				fmt.Printf("Error reading service file: %s\n", err.Error())
-				os.Exit(-1)
-			}
-			err = json.Unmarshal(data, &service)
-			if err != nil {
-				fmt.Printf("Error unmarshalling service file: %s\n", err.Error())
-				os.Exit(-1)
-			}
-			if (Verbose) {
-				fmt.Println(string(data))
-				fmt.Println(service)
-			}
-
-			addService(service)
+			addServiceFile(file)
+		} else if len(dir) > 0 {
+			addServiceDir(dir)
 		} else {
 			cmd.Usage()
 			os.Exit(-1)
 		}
 	},
+}
+
+func addServiceFile(path string) error {
+	if path[len(path)-4:len(path)] != "json" {
+		return nil
+	}
+	service := api.ServiceSpec{}
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	err = json.Unmarshal(data, &service)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	addService(service)
+	return nil
+}
+
+func addServiceDir(path string) error {
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		return err
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			addServiceDir(fmt.Sprintf("%s/%s", path, file.Name()))
+		} else {
+			addServiceFile(fmt.Sprintf("%s/%s", path, file.Name()))
+		}
+	}
+	return nil
 }
 
 var addStackCmd = &cobra.Command{
