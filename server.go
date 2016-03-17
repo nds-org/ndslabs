@@ -15,7 +15,7 @@ import (
 	"golang.org/x/net/context"
 	gcfg "gopkg.in/gcfg.v1"
 	"io"
-	"io/ioutil"
+	//	"io/ioutil"
 	k8api "k8s.io/kubernetes/pkg/api"
 	"net/http"
 	"os"
@@ -73,7 +73,6 @@ type Config struct {
 		Port         string
 		Origin       string
 		VolDir       string
-		JwtKey       string
 		Host         string
 		VolumeSource string
 		SSLKey       string
@@ -95,6 +94,9 @@ type Config struct {
 	}
 }
 
+var Version string
+var BuildDate string
+
 func main() {
 
 	var confPath string
@@ -110,9 +112,6 @@ func main() {
 	if cfg.Server.Port == "" {
 		cfg.Server.Port = "8083"
 	}
-	if cfg.Server.JwtKey == "" {
-		cfg.Server.JwtKey = "jwt.pem"
-	}
 	if cfg.Server.Host == "" {
 		cfg.Server.Host = "localhost"
 	}
@@ -123,11 +122,10 @@ func main() {
 		cfg.Kubernetes.Address = "localhost:4001"
 	}
 
-	glog.Info("Starting NDS Labs API server")
+	glog.Infof("Starting NDS Labs API server (%s %s)", Version, BuildDate)
 	glog.Infof("etcd %s ", cfg.Etcd.Address)
 	glog.Infof("kube-apiserver %s", cfg.Kubernetes.Address)
 	glog.Infof("volume dir %s", cfg.Server.VolDir)
-	glog.Infof("JWT key %s ", cfg.Server.JwtKey)
 	glog.Infof("host %s ", cfg.Server.Host)
 	glog.Infof("port %s", cfg.Server.Port)
 	glog.V(1).Infoln("V1")
@@ -162,12 +160,7 @@ func main() {
 		glog.Infoln("Using local storage")
 	}
 
-	jwtKey, err := ioutil.ReadFile(cfg.Server.JwtKey)
-	if err != nil {
-		glog.Fatal(err)
-	}
-
-	server.jwtKey = jwtKey
+	hostname, _ := os.Hostname()
 	server.host = cfg.Server.Host
 
 	api := rest.NewApi()
@@ -190,7 +183,7 @@ func main() {
 	}
 
 	jwt := &jwt.JWTMiddleware{
-		Key:        jwtKey,
+		Key:        []byte(hostname),
 		Realm:      "ndslabs",
 		Timeout:    time.Minute * 30,
 		MaxRefresh: time.Hour * 24,
