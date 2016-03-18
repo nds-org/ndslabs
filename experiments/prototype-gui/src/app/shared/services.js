@@ -115,7 +115,7 @@ angular.module('ndslabs-services', [])
     var volume = {
       id: '',
       defaultName: name,
-      size: 10,
+      size: 5,
       sizeUnit: 'GB',
       format: 'Raw',
       attached: service.id,

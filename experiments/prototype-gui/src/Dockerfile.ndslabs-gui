@@ -9,15 +9,6 @@ FROM node:latest
 # Set in what directory commands will run
 WORKDIR /home/app
 
-# Put our build info in first
-COPY package.json bower.json Gruntfile.js /home/app/
- 
-# Install dependencies
-RUN \
-    npm install -g http-server bower grunt && \
-    npm install && \
-    bower install --config.interactive=false --allow-root
-
 # Tell Docker we plan to use this port (http-server's default)
 EXPOSE 8080
     
