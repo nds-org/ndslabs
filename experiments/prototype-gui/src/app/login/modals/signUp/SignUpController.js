@@ -23,7 +23,7 @@ angular
   
   $scope.ok = function(project) {
     if ($scope.validate(project)) {
-      api.postProjects({ 'project': project }).then(function(data, xhr) {
+      api.postRegister({ 'project': project }).then(function(data, xhr) {
         $uibModalInstance.close(data);
       }, function(headers) {
         $log.error('Failed to create account: ' + project.namespace);
