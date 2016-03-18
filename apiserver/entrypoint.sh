@@ -9,22 +9,29 @@ if [ "$1" = 'apiserver' ]; then
 	fi
 
 	if [ -z "$KUBERNETES_ADDR" ]; then 
-		KUBERNETES_ADDR="localhost:8080"
+		KUBERNETES_ADDR="https://localhost:6443"
+	fi
+
+	if [ -z "$CORS_ORIGIN_ADDR" ]; then 
+		CORS_ORIGIN_ADDR="http://localhost"
 	fi
 
 cat << EOF > /apiserver.conf
 [Server]
 Port=8083
-Origin=
+Origin=$CORS_ORIGIN_ADDR
 VolDir=/volumes
-Host=localhost
+Host=$HOST_ADDR
 VolumeSource=local
+SpecsDir=/specs
 
 [Etcd]
 Address=$ETCD_ADDR
 
 [Kubernetes]
 Address=$KUBERNETES_ADDR
+Username=admin
+Password=admin
 
 [OpenStack]
 Username=
@@ -38,7 +45,7 @@ EOF
 	/apiserver -conf /apiserver.conf -v 4
 
 elif [ "$1" = 'usage' ]; then
-    echo  'docker run -d -p 8083:8083 -e "KUBERNETES_ADDR=localhost:8080" -e "ETCD_ADDR=localhost:4001" --name=apiserver  ndslabs/apiserver apiserver'
+    echo  'docker run -d -p 8083:8083 -e "KUBERNETES_ADDR=https://localhost:6443" -e "ETCD_ADDR=localhost:4001" --name=apiserver  ndslabs/apiserver apiserver'
 
 else
     exec "$@"

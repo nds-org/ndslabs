@@ -623,6 +623,27 @@
                     }
                 }
             }
+        },
+        "/version": {
+            "get": {
+                "description": "Retrieve the server version\n",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "version": {
+                                    "type": "string"
+                                },
+                                "buildDate": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {

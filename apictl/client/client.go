@@ -711,3 +711,31 @@ func (c *Client) GetConfigs(sids []string) (*map[string][]api.Config, error) {
 		}
 	}
 }
+
+func (c *Client) Version() (string, error) {
+
+	url := c.BasePath + "version"
+
+	request, err := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return "", err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			defer resp.Body.Close()
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return "", err
+			}
+			var version string
+			err = json.Unmarshal(body, &version)
+			if err != nil {
+				return "", err
+			}
+			return version, nil
+		} else {
+			return "", errors.New(resp.Status)
+		}
+	}
+}
