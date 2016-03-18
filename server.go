@@ -15,7 +15,7 @@ import (
 	"golang.org/x/net/context"
 	gcfg "gopkg.in/gcfg.v1"
 	"io"
-	//	"io/ioutil"
+	"io/ioutil"
 	k8api "k8s.io/kubernetes/pkg/api"
 	"net/http"
 	"os"
@@ -73,6 +73,7 @@ type Config struct {
 		Port         string
 		Origin       string
 		VolDir       string
+		SpecsDir     string
 		Host         string
 		VolumeSource string
 		SSLKey       string
@@ -82,7 +83,9 @@ type Config struct {
 		Address string
 	}
 	Kubernetes struct {
-		Address string
+		Address  string
+		Username string
+		Password string
 	}
 	OpenStack struct {
 		IdentityEndpoint string
@@ -116,13 +119,14 @@ func main() {
 		cfg.Etcd.Address = "localhost:4001"
 	}
 	if cfg.Kubernetes.Address == "" {
-		cfg.Kubernetes.Address = "localhost:4001"
+		cfg.Kubernetes.Address = "localhost:6443"
 	}
 
 	glog.Infof("Starting NDS Labs API server (%s %s)", VERSION, BUILD_DATE)
 	glog.Infof("etcd %s ", cfg.Etcd.Address)
 	glog.Infof("kube-apiserver %s", cfg.Kubernetes.Address)
 	glog.Infof("volume dir %s", cfg.Server.VolDir)
+	glog.Infof("specs dir %s", cfg.Server.SpecsDir)
 	glog.Infof("host %s ", cfg.Server.Host)
 	glog.Infof("port %s", cfg.Server.Port)
 	glog.V(1).Infoln("V1")
@@ -138,7 +142,8 @@ func main() {
 	oshelper.Password = cfg.OpenStack.Password
 	oshelper.TenantId = cfg.OpenStack.TenantId
 
-	kube := kube.NewKubeHelper(cfg.Kubernetes.Address)
+	kube := kube.NewKubeHelper(cfg.Kubernetes.Address,
+		cfg.Kubernetes.Username, cfg.Kubernetes.Password)
 
 	server := Server{}
 	etcd, err := GetEtcdClient(cfg.Etcd.Address)
@@ -220,27 +225,14 @@ func main() {
 
 	api.Use(&rest.IfMiddleware{
 		Condition: func(request *rest.Request) bool {
-			return request.URL.Path != "/authenticate"
+			return request.URL.Path != "/authenticate" && request.URL.Path != "/version"
 		},
 		IfTrue: jwt,
 	})
 
-	/*
-		api.Use(&rest.AuthBasicMiddleware{
-			Realm: "ndslabs",
-			Authenticator: func(userId string, password string) bool {
-				if userId == "demo" && password == "12345" {
-					log.Printf("%s = %s", userId, password)
-					server.Namespace = userId
-					return true
-				}
-				return false
-			},
-		})
-	*/
-
 	router, err := rest.MakeRouter(
 		rest.Get("/", GetPaths),
+		rest.Get("/version", Version),
 		rest.Post("/authenticate", jwt.LoginHandler),
 		rest.Delete("/authenticate", server.Logout),
 		rest.Get("/check_token", server.CheckToken),
@@ -276,6 +268,11 @@ func main() {
 	}
 	api.SetApp(router)
 
+	if len(cfg.Server.SpecsDir) > 0 {
+		glog.Infof("Loading service specs from %s\n", cfg.Server.SpecsDir)
+		server.loadSpecs(cfg.Server.SpecsDir)
+	}
+
 	glog.Infof("Listening on %s:%s", cfg.Server.Host, cfg.Server.Port)
 	if len(cfg.Server.SSLCert) > 0 {
 		glog.Fatal(http.ListenAndServeTLS(":"+cfg.Server.Port, cfg.Server.SSLCert, cfg.Server.SSLKey, api.MakeHandler()))
@@ -298,10 +295,16 @@ type Server struct {
 
 func GetPaths(w rest.ResponseWriter, r *rest.Request) {
 	paths := []string{}
+	paths = append(paths, "/version")
 	paths = append(paths, "/authenticate")
 	paths = append(paths, "/projects")
 	paths = append(paths, "/services")
+	paths = append(paths, "/configs")
 	w.WriteJson(&paths)
+}
+
+func Version(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteJson(fmt.Sprintf("%s %s", VERSION, BUILD_DATE))
 }
 
 func (s *Server) CheckToken(w rest.ResponseWriter, r *rest.Request) {
@@ -583,14 +586,28 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	data, _ := json.Marshal(service)
-	resp, err := s.etcd.Set(context.Background(), etcdBasePath+"/services/"+key, string(data), nil)
+	err = s.putService(key, &service)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.WriteJson(&resp)
+
+	w.WriteJson(&service)
+}
+
+func (s *Server) putService(key string, service *api.ServiceSpec) error {
+	data, err := json.Marshal(service)
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+	_, err = s.etcd.Set(context.Background(), etcdBasePath+"/services/"+key, string(data), nil)
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+	return nil
 }
 
 func (s *Server) DeleteService(w rest.ResponseWriter, r *rest.Request) {
@@ -1823,4 +1840,39 @@ func (s *Server) getLogs(pid string, sid string, ssid string, tailLines int) (st
 		}
 	}
 	return "", nil
+}
+
+func (s *Server) addServiceFile(path string) error {
+	if path[len(path)-4:len(path)] != "json" {
+		return nil
+	}
+	service := api.ServiceSpec{}
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	err = json.Unmarshal(data, &service)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	s.putService(service.Key, &service)
+	return nil
+}
+
+func (s *Server) loadSpecs(path string) error {
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		return err
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			s.loadSpecs(fmt.Sprintf("%s/%s", path, file.Name()))
+		} else {
+			s.addServiceFile(fmt.Sprintf("%s/%s", path, file.Name()))
+		}
+	}
+	return nil
 }

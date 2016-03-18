@@ -2,6 +2,8 @@ package kube
 
 import (
 	"bytes"
+	"crypto/tls"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
@@ -26,11 +28,23 @@ type ServiceAddrPort struct {
 }
 
 type KubeHelper struct {
-	kubeBase string
+	kubeBase  string
+	basicAuth string
+	client    *http.Client
 }
 
-func NewKubeHelper(kubeBase string) *KubeHelper {
-	return &KubeHelper{kubeBase: kubeBase}
+func NewKubeHelper(kubeBase string, username string, password string) *KubeHelper {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	auth := fmt.Sprintf("%s:%s", username, password)
+
+	return &KubeHelper{
+		kubeBase:  kubeBase,
+		basicAuth: base64.StdEncoding.EncodeToString([]byte(auth)),
+		client:    &http.Client{Transport: tr},
+	}
 }
 
 func (k *KubeHelper) CreateNamespace(pid string) (*api.Namespace, error) {
@@ -39,7 +53,6 @@ func (k *KubeHelper) CreateNamespace(pid string) (*api.Namespace, error) {
 	ns := api.Namespace{}
 	ns.SetName(pid)
 
-	client := &http.Client{}
 	data, err := json.Marshal(ns)
 	if err != nil {
 		return nil, err
@@ -48,10 +61,9 @@ func (k *KubeHelper) CreateNamespace(pid string) (*api.Namespace, error) {
 	url := k.kubeBase + apiBase + "/namespaces"
 	glog.V(4).Infoln(url)
 	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
-
-	// POST /api/v1/namespaces v1.Namespace
 	request.Header.Set("Content-Type", "application/json")
-	httpresp, httperr := client.Do(request)
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	httpresp, httperr := k.client.Do(request)
 	if httperr != nil {
 		glog.Error(httperr)
 		return nil, httperr
@@ -76,15 +88,12 @@ func (k *KubeHelper) CreateNamespace(pid string) (*api.Namespace, error) {
 
 func (k *KubeHelper) DeleteNamespace(pid string) (*api.Namespace, error) {
 
-	client := &http.Client{}
-
 	url := k.kubeBase + apiBase + "/namespaces/" + pid
 	glog.V(4).Infoln(url)
 	request, _ := http.NewRequest("DELETE", url, nil)
-
-	// POST /api/v1/namespaces v1.Namespace
 	request.Header.Set("Content-Type", "application/json")
-	httpresp, httperr := client.Do(request)
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	httpresp, httperr := k.client.Do(request)
 	if httperr != nil {
 		glog.Error(httperr)
 		return nil, httperr
@@ -118,14 +127,12 @@ func (k *KubeHelper) StartController(pid string, spec *api.ReplicationController
 	}
 
 	fmt.Println(string(data))
-	client := &http.Client{}
 
 	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers"
 	request, _ := http.NewRequest("POST", url, bytes.NewBuffer([]byte(data)))
-	//glog.V(4).Infof("%s\n", string(data))
-
 	request.Header.Set("Content-Type", "application/json")
-	httpresp, httperr := client.Do(request)
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	httpresp, httperr := k.client.Do(request)
 	if httperr != nil {
 		glog.Error(httperr)
 		return true, httperr
@@ -180,8 +187,6 @@ func (k *KubeHelper) StartService(pid string, spec *api.Service) (*api.Service, 
 
 	name := spec.Name
 
-	client := &http.Client{}
-
 	data, err := json.MarshalIndent(spec, "", "    ")
 	if err != nil {
 		return nil, err
@@ -190,9 +195,9 @@ func (k *KubeHelper) StartService(pid string, spec *api.Service) (*api.Service, 
 
 	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services"
 	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
-
 	request.Header.Set("Content-Type", "application/json")
-	httpresp, httperr := client.Do(request)
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	httpresp, httperr := k.client.Do(request)
 	if httperr != nil {
 		glog.Error(httperr)
 		return nil, httperr
@@ -218,12 +223,12 @@ func (k *KubeHelper) StartService(pid string, spec *api.Service) (*api.Service, 
 
 func (k *KubeHelper) GetServices(pid string, stack string) ([]api.Service, error) {
 
-	client := &http.Client{}
-
 	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services?labelSelector=stack%3D" + stack
 	glog.V(4).Infoln(url)
 	request, _ := http.NewRequest("GET", url, nil)
-	resp, err := client.Do(request)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	resp, err := k.client.Do(request)
 	if err != nil {
 		glog.Error(err)
 		return nil, err
@@ -250,11 +255,12 @@ func (k *KubeHelper) GetServices(pid string, stack string) ([]api.Service, error
 }
 
 func (k *KubeHelper) GetPods(pid string, label string, value string) ([]api.Pod, error) {
-	client := &http.Client{}
 
 	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods?labelSelector=" + label + "%3D" + value
 	request, _ := http.NewRequest("GET", url, nil)
-	resp, err := client.Do(request)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	resp, err := k.client.Do(request)
 	if err != nil {
 		glog.Error(err)
 		return nil, err
@@ -281,11 +287,11 @@ func (k *KubeHelper) GetPods(pid string, label string, value string) ([]api.Pod,
 
 func (k *KubeHelper) StopService(pid string, name string) error {
 
-	client := &http.Client{}
-
 	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services/" + name
 	request, _ := http.NewRequest("DELETE", url, nil)
-	httpresp, httperr := client.Do(request)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	httpresp, httperr := k.client.Do(request)
 	if httperr != nil {
 		glog.Error(httperr)
 		return httperr
@@ -303,10 +309,11 @@ func (k *KubeHelper) StopService(pid string, name string) error {
 
 func (k *KubeHelper) StopController(pid string, name string) error {
 
-	client := &http.Client{}
 	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers/" + name
 	request, _ := http.NewRequest("DELETE", url, nil)
-	httpresp, httperr := client.Do(request)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	httpresp, httperr := k.client.Do(request)
 	if httperr != nil {
 		glog.Error(httperr)
 		return httperr
@@ -322,11 +329,11 @@ func (k *KubeHelper) StopController(pid string, name string) error {
 	for _, pod := range pods {
 		glog.V(4).Infof("Stopping pod %s\n", pod.Name)
 
-		client := &http.Client{}
-
 		url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + pod.Name
 		request, _ := http.NewRequest("DELETE", url, nil)
-		httpresp, httperr := client.Do(request)
+		request.Header.Set("Content-Type", "application/json")
+		request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+		httpresp, httperr := k.client.Do(request)
 		if httperr != nil {
 			glog.Error(httperr)
 			return httperr
@@ -372,8 +379,6 @@ func (k *KubeHelper) StopController(pid string, name string) error {
 func (k *KubeHelper) GetLog(pid string, podName string, tailLines int) (string, error) {
 	glog.V(4).Infof("Get log for %s %s\n", pid, podName)
 
-	client := &http.Client{}
-
 	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + podName + "/log"
 
 	if tailLines > 0 {
@@ -382,7 +387,9 @@ func (k *KubeHelper) GetLog(pid string, podName string, tailLines int) (string, 
 
 	glog.V(4).Infoln(url)
 	request, _ := http.NewRequest("GET", url, nil)
-	resp, err := client.Do(request)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	resp, err := k.client.Do(request)
 	if err != nil {
 		glog.Error(err)
 		return "", err
