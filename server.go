@@ -239,7 +239,7 @@ func main() {
 		rest.Get("/refresh_token", jwt.RefreshHandler),
 		rest.Get("/projects", server.GetAllProjects),
 		rest.Post("/projects/", server.PostProject),
-		rest.Post("/register/", server.PostProject),
+		rest.Post("/register", server.PostProject),
 		rest.Put("/projects/:pid", server.PutProject),
 		rest.Get("/projects/:pid", server.GetProject),
 		rest.Delete("/projects/:pid", server.DeleteProject),
@@ -398,12 +398,12 @@ func (s *Server) PostProject(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	if s.projectExists(project.Id) {
+	if s.projectExists(project.Namespace) {
 		w.WriteHeader(http.StatusConflict)
 		return
 	}
 
-	err = s.putProject(project.Id, &project)
+	err = s.putProject(project.Namespace, &project)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -429,7 +429,7 @@ func (s *Server) PutProject(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	if s.projectExists(project.Id) {
+	if s.projectExists(project.Namespace) {
 		w.WriteHeader(http.StatusConflict)
 		return
 	}
@@ -817,7 +817,7 @@ func (s *Server) projectExists(pid string) bool {
 
 	exists := false
 	for _, project := range *projects {
-		if project.Id == pid {
+		if project.Namespace == pid {
 			exists = true
 			break
 		}
