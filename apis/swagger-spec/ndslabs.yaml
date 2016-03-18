@@ -445,6 +445,21 @@ paths:
                 items: 
                   $ref: '#/definitions/Config'        
 
+  /version:
+    get: 
+      description: |
+        Retrieve the server version
+      responses:  
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              version:
+                type: string
+              buildDate:
+                type: string
+
 definitions:
   Auth:
     type: object
