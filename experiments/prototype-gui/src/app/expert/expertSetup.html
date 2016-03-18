@@ -12,19 +12,6 @@
       </div>
     </div>
   </div>
-  
-  <!-- Top-Right Button Bar if we want any other buttons here -->
-  <div class="row flush-border">
-    <div class="col-sm-12 flush-border">
-      <button class="btn btn-default btn-sm pull-right" ng-click="toggleAutoRefresh()"
-           ng-class="{ 'btn-info':autoInterval !== null }"
-           ng-mouseenter="iconSpin = true" ng-mouseleave="iconSpin = false"
-           uib-tooltip="Automatically refresh the data on this page?" tooltip-placement="left">
-         <i class="fa fa-refresh fa-fw" ng-class="{ 'fa-spin':iconSpin || autoInterval !== null }"></i>
-         Auto Refresh
-      </button>
-    </div>
-  </div>
     
     <!-- Left Half (Selector Pane) -->
     <div class="row">
@@ -71,6 +58,13 @@
             <justgage width="175" height="175" title="Stacks Running" relativeGaugeSize="true"
                 ng-if="configuredStacks.length > 0"max="{{ configuredStacks.length }}"
                 value="{{ configuredStacks | runningStacksCount }}"  label="Stacks"></justgage> -->
+            <button class="btn btn-default btn-sm pull-right" ng-click="toggleAutoRefresh()"
+                 ng-class="{ 'btn-info':autoInterval !== null }"
+                 ng-mouseenter="iconSpin = true" ng-mouseleave="iconSpin = false"
+                 uib-tooltip="Automatically refresh the data on this page?" tooltip-placement="left">
+               <i class="fa fa-refresh fa-fw" ng-class="{ 'fa-spin':iconSpin || autoInterval !== null }"></i>
+               Auto Refresh
+            </button>
           </div>
         </div>
         
@@ -140,7 +134,8 @@
                                 </tr>
                               </thead>
                               <tbody>
-                                <tr ng-repeat="svc in stack.services track by svc.service">
+                                <tr ng-repeat="svc in stack.services track by svc.service" 
+                                    ng-class="{ 'danger':svc.status === 'stopping', 'success': svc.status === 'starting', 'warning': svc.status === 'waiting' }">
                                   
                                   <td class="text-center">
                                     <i class="fa fa-fw" ng-class="{ 
@@ -187,7 +182,7 @@
                                     uib-tooltip="View {{ svc.service | specProperty:'label' }} Logs" 
                                     ng-if="stack.status.indexOf('start') !== -1 || intervals.start[stack.id]"
                                     ng-disabled="svc.status === ''" tooltip-placement="left" ng-click="showLogs(svc)">
-                                      <i class="fa fa-fw fa-file-text" ng-class="{ 'animated faa-vertical': stack.status === 'starting' && svc.status === 'Pending' }"></i>
+                                      <i class="fa fa-fw fa-file-text" ng-class="{ 'animated faa-vertical': stack.status === 'starting' && (svc.status === 'Waiting' || svc.status === 'Starting') }"></i>
                                     </button>
                                     
                                     <!-- Remove service from stack button -->
