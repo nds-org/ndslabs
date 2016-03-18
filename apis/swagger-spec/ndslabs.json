@@ -633,14 +633,32 @@
                         "schema": {
                             "type": "object",
                             "properties": {
-                                "version": {
-                                    "type": "string"
-                                },
-                                "buildDate": {
+                                "data": {
                                     "type": "string"
                                 }
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/register": {
+            "post": {
+                "description": "Register\n",
+                "parameters": [
+                    {
+                        "name": "project",
+                        "in": "body",
+                        "description": "Project definition",
+                        "schema": {
+                            "$ref": "#/definitions/Project"
+                        },
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
                     }
                 }
             }
