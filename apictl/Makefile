@@ -8,5 +8,5 @@ gensrc:
 	@echo "  VERSION = \"0.1alpha\"" >> $(VERSIONFILE)
 	@echo "  BUILD_DATE = \"$(BUILD_DATE)\"" >> $(VERSIONFILE)
 	@echo ")" >> $(VERSIONFILE)
-	#mkdir -p build/bin build/pkg
-	#docker run --rm -it -v `pwd`:/go/src/github.com/nds-labs/apictl -v `pwd`/build/bin:/go/bin -v `pwd`/build/pkg:/go/pkg -v `pwd`/build.sh:/build.sh golang  /build.sh
+	mkdir -p build/bin build/pkg
+	docker run --rm -it -v `pwd`/../apiserver:/go/src/github.com/nds-labs/apiserver -v `pwd`:/go/src/github.com/nds-labs/apictl -v `pwd`/build/bin:/go/bin -v `pwd`/build/pkg:/go/pkg -v `pwd`/build.sh:/build.sh golang /build.sh
