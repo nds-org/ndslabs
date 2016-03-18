@@ -42,6 +42,8 @@ VolumesEndpoint=http://nebula.ncsa.illinois.edu:8776/v2/
 ComputeEndpoint=http://nebula.ncsa.illinois.edu:8774/v2/
 EOF
 
+	git clone https://github.com/nds-org/ndslabs-specs /specs
+
 	/apiserver -conf /apiserver.conf -v 4
 
 elif [ "$1" = 'usage' ]; then
