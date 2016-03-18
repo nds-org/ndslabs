@@ -225,7 +225,7 @@ func main() {
 
 	api.Use(&rest.IfMiddleware{
 		Condition: func(request *rest.Request) bool {
-			return request.URL.Path != "/authenticate" && request.URL.Path != "/version"
+			return request.URL.Path != "/authenticate" && request.URL.Path != "/version" && request.URL.Path != "/register"
 		},
 		IfTrue: jwt,
 	})
@@ -239,6 +239,7 @@ func main() {
 		rest.Get("/refresh_token", jwt.RefreshHandler),
 		rest.Get("/projects", server.GetAllProjects),
 		rest.Post("/projects/", server.PostProject),
+		rest.Post("/register/", server.PostProject),
 		rest.Put("/projects/:pid", server.PutProject),
 		rest.Get("/projects/:pid", server.GetProject),
 		rest.Delete("/projects/:pid", server.DeleteProject),
