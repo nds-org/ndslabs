@@ -26,6 +26,9 @@ func (c *Client) Login(username string, password string) (string, error) {
 
 	data := fmt.Sprintf("{\"username\": \"%s\", \"password\": \"%s\"}", username, password)
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(data)))
+	if err != nil {
+		return "", nil
+	}
 	request.Header.Set("Content-Type", "application/json")
 	resp, err := c.HttpClient.Do(request)
 	if err != nil {
@@ -40,7 +43,7 @@ func (c *Client) Login(username string, password string) (string, error) {
 			err = json.Unmarshal(body, &jwt)
 			token := jwt["token"].(string)
 			if err != nil {
-				return "", nil
+				return "", err
 			}
 
 			return token, nil
@@ -255,6 +258,35 @@ func (c *Client) AddProject(project *api.Project) error {
 
 	data, err := json.Marshal(project)
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			defer resp.Body.Close()
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return err
+			}
+
+			project := api.Project{}
+			json.Unmarshal([]byte(body), &project)
+			return nil
+
+		} else {
+			return errors.New(resp.Status)
+		}
+	}
+}
+
+func (c *Client) UpdateProject(project *api.Project) error {
+
+	url := c.BasePath + "projects/" + project.Namespace
+
+	data, err := json.Marshal(project)
+	request, err := http.NewRequest("PUT", url, bytes.NewBuffer(data))
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	resp, err := c.HttpClient.Do(request)

@@ -1,16 +1,4 @@
-// Copyright © 2016 NAME HERE <EMAIL ADDRESS>
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright © 2016 National Data Service
 
 package cmd
 
@@ -30,12 +18,12 @@ func init() {
 
 var deleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "Delete the specified resource",
+	Short: "Delete a resource",
 }
 
 var deleteStackCmd = &cobra.Command{
 	Use:    "stack [stackName]",
-	Short:  "Remove the specified stack",
+	Short:  "Remove a stack",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
@@ -49,7 +37,7 @@ var deleteStackCmd = &cobra.Command{
 
 var deleteVolumeCmd = &cobra.Command{
 	Use:    "volume [volumeId]",
-	Short:  "Remove the specified volume",
+	Short:  "Remove a volume",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
@@ -63,7 +51,7 @@ var deleteVolumeCmd = &cobra.Command{
 
 var deleteProjectCmd = &cobra.Command{
 	Use:    "project [projectId]",
-	Short:  "Remove the specified project (admin users only)",
+	Short:  "Remove a project (admin users only)",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
@@ -77,7 +65,7 @@ var deleteProjectCmd = &cobra.Command{
 
 var deleteServiceCmd = &cobra.Command{
 	Use:    "service [serviceId]",
-	Short:  "Remove the specified service (admin users only)",
+	Short:  "Remove a service (admin users only)",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {

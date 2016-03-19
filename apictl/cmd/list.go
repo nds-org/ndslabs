@@ -1,16 +1,4 @@
-// Copyright © 2016 NAME HERE <EMAIL ADDRESS>
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright © 2016 National Data Service
 
 package cmd
 
@@ -73,30 +61,13 @@ var listStacksCmd = &cobra.Command{
 		}
 		w := new(tabwriter.Writer)
 		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
-		fmt.Fprintln(w, "STACK\tSERVICE\tSTATUS\tENDPOINT\tSID\tCONFIG")
+		fmt.Fprintln(w, "STACK\tSERVICE\tSTATUS\tSID")
 		for _, stack := range *stacks {
 
-			fmt.Fprintf(w, "%s\t\t%s\t\t%s\n", stack.Name, stack.Status, stack.Id)
+			fmt.Fprintf(w, "%s\t\t%s\t%s\n", stack.Name, stack.Status, stack.Id)
 			for _, service := range stack.Services {
-				spec, _ := client.GetService(service.Service)
-				endpoints := ""
-				if len(service.Endpoints) > 0 {
-					for _, ep := range service.Endpoints {
-						endpoints = " " + ep
-					}
-				}
-				env := ""
-				for _, config := range spec.Config {
-					name := config.Name
-					value := config.Value
-					if config.CanOverride {
-						if val, ok := service.Config[name]; ok {
-							value = val
-						}
-						env += fmt.Sprintf("%s=%s ", name, value)
-					}
-				}
-				fmt.Fprintf(w, "\t%s\t%s\t%s\t%s\t%s\n", service.Service, service.Status, endpoints, service.Id, env)
+				//spec, _ := client.GetService(service.Service)
+				fmt.Fprintf(w, "\t%s\t%s\t%s\n", service.Service, service.Status, service.Id)
 			}
 		}
 		w.Flush()

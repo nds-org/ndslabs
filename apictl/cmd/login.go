@@ -1,21 +1,8 @@
-// Copyright © 2016
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright © 2016 National Data Service
 
 package cmd
 
 import (
-	"bufio"
 	"fmt"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh/terminal"
@@ -28,11 +15,18 @@ import (
 
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
-	Use:    "login",
+	Use:    "login [username]",
 	Short:  "Login to the server",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
-		username, password := credentials()
+
+		if len(args) == 0 {
+			cmd.Usage()
+			os.Exit(-1)
+		}
+
+		username := strings.TrimSpace(args[0])
+		password := credentials()
 		usr, err := user.Current()
 		if err != nil {
 			fmt.Printf("Error looking up current OS user %s\n", err)
@@ -42,8 +36,9 @@ var loginCmd = &cobra.Command{
 		token, err := client.Login(username, password)
 		if err != nil {
 			fmt.Printf("Login error: %s\n", err)
+		} else if token == "" {
+			fmt.Printf("Login failed: no response from server\n")
 		} else {
-
 			path := usr.HomeDir + "/.apictl"
 			os.Mkdir(path, 0700)
 			e := ioutil.WriteFile(path+"/.passwd", []byte(username+":"+token), 0644)
@@ -56,18 +51,13 @@ var loginCmd = &cobra.Command{
 	},
 }
 
-func credentials() (string, string) {
-	reader := bufio.NewReader(os.Stdin)
-
-	fmt.Print("Username: ")
-	username, _ := reader.ReadString('\n')
-
+func credentials() string {
 	fmt.Print("Password: ")
 	bytePassword, _ := terminal.ReadPassword(int(syscall.Stdin))
 	password := string(bytePassword)
 	fmt.Print("\n")
 
-	return strings.TrimSpace(username), strings.TrimSpace(password)
+	return strings.TrimSpace(password)
 }
 
 func init() {
