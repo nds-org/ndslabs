@@ -1,10 +1,11 @@
+// Copyright © 2016 National Data Service
 package openstack
 
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/golang/glog"
 	"fmt"
+	"github.com/golang/glog"
 	"io/ioutil"
 	"net/http"
 	"os/exec"
@@ -23,7 +24,7 @@ type Volume struct {
 	Device   string
 	ServerId string
 	Size     int
-	Status     string
+	Status   string
 }
 
 type Attachment struct {
@@ -43,7 +44,6 @@ type OpenStack struct {
 }
 
 // OpenStack client for NDS Labs
-
 
 // Returns the local host instanceId
 func (s *OpenStack) GetInstanceId() (string, error) {

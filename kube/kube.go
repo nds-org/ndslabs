@@ -1,3 +1,4 @@
+// Copyright © 2016 National Data Service
 package kube
 
 import (

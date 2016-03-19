@@ -1,3 +1,4 @@
+// Copyright © 2016 National Data Service
 package types
 
 type ServiceSpec struct {
@@ -100,10 +101,17 @@ type StackService struct {
 	Stack       string            `json:"stack"`
 	Service     string            `json:"service"`
 	Status      string            `json:"status"`
-	Endpoints   []string          `json:"endpoints,omitempty"`
+	Endpoints   []Endpoint        `json:"endpoints,omitempty"`
 	CreatedTime int               `json:"createdTime"`
 	UpdatedTime int               `json:"updateTime"`
 	Config      map[string]string `json:"config"`
+}
+
+type Endpoint struct {
+	InternalIP string `json:"internalIP"`
+	Port       int    `json:"port"`
+	NodePort   int    `json:"nodePort"`
+	Protocol   string `json:"protocol"`
 }
 
 type Volume struct {
