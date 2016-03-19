@@ -8,7 +8,6 @@ import (
 	api "github.com/nds-labs/apiserver/types"
 	"github.com/spf13/cobra"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 	"text/tabwriter"
@@ -29,9 +28,9 @@ func init() {
 	// add stack flags
 	addStackCmd.Flags().StringVar(&opts, "opt", "", "Comma-delimited list of optional services")
 
-	addProjectCmd.Flags().StringVar(&file, "file", "", "Path to project definition (json)")
+	addProjectCmd.Flags().StringVarP(&file, "file", "f", "", "Path to project definition (json)")
 
-	addServiceCmd.Flags().StringVar(&file, "file", "", "Path to service definition (json)")
+	addServiceCmd.Flags().StringVarP(&file, "file", "f", "", "Path to service definition (json)")
 	addServiceCmd.Flags().StringVar(&dir, "dir", "", "Path to service definition (json)")
 }
 
@@ -199,7 +198,8 @@ func addStack(project string, serviceKey string, name string, opt string) {
 
 	err := client.AddStack(project, &stack)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Error adding stack: %s\n", err)
+		return
 	} else {
 		fmt.Println("Added stack " + serviceKey)
 

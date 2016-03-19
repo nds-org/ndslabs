@@ -60,8 +60,7 @@ func RefreshToken(cmd *cobra.Command, args []string) {
 
 	token, err := client.RefreshToken()
 	if err != nil {
-		fmt.Printf("Error refreshing token: %s\n", err)
-		os.Exit(-1)
+		return
 	}
 	writePasswd(token)
 }

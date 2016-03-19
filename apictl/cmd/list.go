@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
-	"log"
 	"os"
 	"text/tabwriter"
 )
@@ -25,7 +24,8 @@ var listServicesCmd = &cobra.Command{
 
 		services, err := client.ListServices()
 		if err != nil {
-			log.Fatal(err)
+			fmt.Printf("Error listing services: %s\n", err)
+			return
 		}
 
 		w := new(tabwriter.Writer)

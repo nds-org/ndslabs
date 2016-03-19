@@ -101,6 +101,7 @@ var getProjectCmd = &cobra.Command{
 			return
 		}
 
+		project.Password = "REDACTED"
 		data, err := json.MarshalIndent(project, "", "   ")
 		if err != nil {
 			fmt.Printf("Error marshalling project %s\n", err.Error)
