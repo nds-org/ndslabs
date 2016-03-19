@@ -100,8 +100,9 @@ type Config struct {
 
 func main() {
 
-	var confPath string
+	var confPath, adminPasswd string
 	flag.StringVar(&confPath, "conf", "apiserver.conf", "Configuration path")
+	flag.StringVar(&adminPasswd, "passwd", "admin", "Admin usder password")
 	flag.Parse()
 	cfg := Config{}
 	err := gcfg.ReadFileInto(&cfg, confPath)
@@ -134,6 +135,7 @@ func main() {
 	glog.V(2).Infoln("V2")
 	glog.V(3).Infoln("V3")
 	glog.V(4).Infoln("V4")
+	os.MkdirAll(cfg.Server.VolDir, 0700)
 
 	oshelper := openstack.OpenStack{}
 	oshelper.IdentityEndpoint = cfg.OpenStack.IdentityEndpoint
@@ -191,7 +193,7 @@ func main() {
 		Timeout:    time.Minute * 30,
 		MaxRefresh: time.Hour * 24,
 		Authenticator: func(userId string, password string) bool {
-			if userId == "admin" && password == "12345" {
+			if userId == "admin" && password == adminPasswd {
 				return true
 			} else {
 				project, err := server.getProject(userId)
@@ -272,7 +274,10 @@ func main() {
 
 	if len(cfg.Server.SpecsDir) > 0 {
 		glog.Infof("Loading service specs from %s\n", cfg.Server.SpecsDir)
-		server.loadSpecs(cfg.Server.SpecsDir)
+		err = server.loadSpecs(cfg.Server.SpecsDir)
+		if err != nil {
+			glog.Warningf("Error loading specs: %s\n", err)
+		}
 	}
 
 	glog.Infof("Listening on %s:%s", cfg.Server.Host, cfg.Server.Port)
@@ -404,14 +409,14 @@ func (s *Server) PostProject(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	err = s.putProject(project.Namespace, &project)
+	_, err = s.kube.CreateNamespace(project.Namespace)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	_, err = s.kube.CreateNamespace(project.Namespace)
+	err = s.putProject(project.Namespace, &project)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -773,6 +778,9 @@ func (s *Server) isStackStopped(pid string, ssid string) bool {
 }
 
 func (s *Server) getStackService(pid string, ssid string) *api.StackService {
+	if strings.Index(ssid, "-") < 0 {
+		return nil
+	}
 	sid := ssid[0:strings.LastIndex(ssid, "-")]
 	stack, _ := s.getStack(pid, sid)
 	if stack == nil {
