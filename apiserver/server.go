@@ -1,3 +1,4 @@
+// Copyright © 2016 National Data Service
 package main
 
 import (
@@ -360,7 +361,7 @@ func (s *Server) GetProject(w rest.ResponseWriter, r *rest.Request) {
 	if err != nil {
 		rest.NotFound(w, r)
 	} else {
-		project.Password = ""
+		//project.Password = ""
 		w.WriteJson(project)
 	}
 }
@@ -410,13 +411,21 @@ func (s *Server) PostProject(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
+	_, err = s.kube.CreateNamespace(project.Namespace)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteJson(&project)
 }
 
 func (s *Server) PutProject(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 
-	if !s.IsAdmin(r) {
+	// Check IsAdmin or pid = current user
+	if !(s.IsAdmin(r) || s.getUser(r) == pid) {
 		rest.Error(w, "", http.StatusUnauthorized)
 		return
 	}
@@ -455,11 +464,6 @@ func (s *Server) putProject(pid string, project *api.Project) error {
 		return err
 	}
 
-	_, err = s.kube.CreateNamespace(pid)
-	if err != nil {
-		glog.Error(err)
-		return err
-	}
 	return nil
 }
 
@@ -726,8 +730,14 @@ func (s *Server) getProjects() (*[]api.Project, error) {
 		for _, node := range nodes {
 
 			resp, err = s.etcd.Get(context.Background(), node.Key+"/project", nil)
+			if err != nil {
+				return nil, err
+			}
 			project := api.Project{}
-			json.Unmarshal([]byte(resp.Node.Value), &project)
+			err := json.Unmarshal([]byte(resp.Node.Value), &project)
+			if err != nil {
+				return nil, err
+			}
 			projects = append(projects, project)
 		}
 	}
@@ -1330,24 +1340,31 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 	}
 
 	k8services, _ := s.kube.GetServices(pid, sid)
-	endpoints := make(map[string]string)
+	endpoints := make(map[string]api.Endpoint)
 	for _, k8service := range k8services {
 		label := k8service.Labels["service"]
 		glog.V(4).Infof("Service : %s %s (%s)\n", k8service.Name, k8service.Spec.Type, label)
+		endpoint := api.Endpoint{}
+		endpoint.InternalIP = k8service.Spec.ClusterIP
+		endpoint.Port = k8service.Spec.Ports[0].Port
+		endpoint.Protocol = strings.ToLower(string(k8service.Spec.Ports[0].Protocol))
+		endpoint.NodePort = k8service.Spec.Ports[0].NodePort
 		if k8service.Spec.Type == "NodePort" {
 			glog.V(4).Infof("NodePort : %s %d\n", s.host, k8service.Spec.Ports[0].NodePort)
-			endpoints[label] = fmt.Sprintf("http://%s:%d", s.host, k8service.Spec.Ports[0].NodePort)
+			//endpoints[label] = fmt.Sprintf("http://%s:%d", s.host, k8service.Spec.Ports[0].NodePort)
+			endpoints[label] = endpoint
 		}
 	}
 
 	for i := range stack.Services {
 		stackService := &stack.Services[i]
-		stackService.Endpoints = []string{}
+		stackService.Endpoints = []api.Endpoint{}
 		glog.V(4).Infof("Stack Service %s %s\n", stackService.Service, podStatus[stackService.Service])
 		stackService.Status = podStatus[stackService.Service]
-		if len(endpoints[stackService.Service]) > 0 {
-			glog.V(4).Infof("Endpoint %s", endpoints[stackService.Service])
-			stackService.Endpoints = append(stackService.Endpoints, endpoints[stackService.Service])
+		endpoint, ok := endpoints[stackService.Service]
+		if ok {
+			glog.V(4).Infof("Endpoint %s", endpoints)
+			stackService.Endpoints = append(stackService.Endpoints, endpoint)
 		}
 	}
 
