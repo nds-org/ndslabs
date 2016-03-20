@@ -39,12 +39,10 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
 }])
 
 /**
- * Return the external IP of the API / GUI server 
- * appended with the port if one is provided.
+ * Trust the given snippet as valid HTML.
  */ 
 .filter('unsafe', [ '$sce', function($sce) {
   return function(input) {
-    // TODO: How do we know if this can be navigated to?
     return $sce.trustAsHtml(input);
   };
 }])
