@@ -8,8 +8,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('LogViewerCtrl', [ '$scope', '$log', '$uibModalInstance', '$interval', '$location', '$anchorScroll', '_', 'NdsLabsApi', 'service',
-    function($scope, $log, $uibModalInstance, $interval, $location, $anchorScroll, _,  NdsLabsApi, service) {
+.controller('LogViewerCtrl', [ '$scope', '$log', '$uibModalInstance', '$interval', '$location', '$anchorScroll', '_', 'NdsLabsApi', 'projectId', 'service',
+    function($scope, $log, $uibModalInstance, $interval, $location, $anchorScroll, _,  NdsLabsApi, projectId, service) {
   $scope.service = service;
   $scope.serviceLog = '';
   

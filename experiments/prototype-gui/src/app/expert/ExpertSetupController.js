@@ -419,7 +419,8 @@ angular
       keyboard: false,      // Force the user to explicitly click "Close"
       backdrop: 'static',   // Force the user to explicitly click "Close"
       resolve: {
-        service: function() { return service; }
+        service: function() { return service; },
+        projectId: function() { return projectId; }
       }
     });
   };
