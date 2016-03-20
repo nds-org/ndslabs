@@ -1,7 +1,7 @@
 #
 # Build: docker build -t ndslabs-gui -f Dockerfile.ndslabs-gui .
 #
-# Usage: docker run -it -d -p 80:8080 -e APISRV_URI=http://<ExternalIp>:8083 ndslabs-gui
+# Usage: docker run -it -d -p 80:8080 -e APISERVER_URI=http://<ExternalIp>:8083 ndslabs-gui
 #
 # This image will be based on the official nodejs docker image
 FROM node:latest
@@ -13,7 +13,8 @@ WORKDIR /home/app
 EXPOSE 8080
     
 # Declare this environment variable (must be overriden by user)
-ENV APISRV_URI=http://127.0.0.1:8083
+ENV APISERVER_HOST="127.0.0.1" \
+    APISERVER_PORT="30001"
  
 # Now copy in the rest of our code
 COPY . /home/app

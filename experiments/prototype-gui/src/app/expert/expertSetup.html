@@ -115,6 +115,8 @@
                           </div>
                         </div>
                       </uib-accordion-heading> 
+                      
+                      <pre>{{ stack.services[0] | json }}</pre>
                         
                       <!-- Stack Services -->
                       <div class="row">
@@ -124,9 +126,10 @@
                             <table class="table table-striped table-hover">
                               <thead>
                                 <tr>
-                                  <td width="10%" class="text-center"><strong>Status</strong></td>
+                                  <td width="15%" class="text-center"><strong>Status</strong></td>
                                   <td width="10%" class="text-center"><strong>Volumes</strong></td>
-                                  <td width="60%"><strong>Name</strong></td>
+                                  <td width="35%"><strong>Name</strong></td>
+                                  <td width="20%" class="text-center"><strong>Config</strong></td>
                                   <td width="20%" class="text-center">
                                     <strong ng-if="stack.status === 'started' || intervals.start[stack.id]">Logs</strong>
                                     <strong ng-if="stack.status === 'stopped' && !intervals.start[stack.id]">Remove</strong>
@@ -166,13 +169,23 @@
                                   <td>
                                     {{ svc.service | specProperty:'label' }}
                                     
-                                    <a ng-repeat="endpt in svc.endpoints track by $index" 
-                                        uib-tooltip="Navigate to {{ svc.service | capitalize }} ({{ endpt }})"
-                                        ng-if="(stack.status === 'started') && svc.status === 'ready' 
-                                            && svc.endpoints.length > 0 && svc.endpoints[0] !== ''"  target="_blank"
-                                        href="{{ endpt }}" ng-disabled="stack.status === 'stopping' && svc.status === 'ready'">
+                                    
+                                    <a ng-repeat="endpt in svc.endpoints track by endpt.internalIp" 
+                                        uib-tooltip="Navigate to {{ svc.service | capitalize }} ({{ endpt | externalHostPort }})"
+                                        ng-if="stack.status === 'started' && svc.status === 'ready' 
+                                            && endpt !== '' && endpt.nodePort"  target="_blank"
+                                        href="{{ endpt | externalHostPort }}"
+                                        ng-disabled="stack.status === 'stopping' && svc.status === 'ready'">
                                       <i class="fa fa-fw fa-external-link faa-tada faa-slow animated"></i>
                                     </a>
+                                  </td>
+                                  
+                                  <td class="text-center">
+                                    <button type="button" class="btn btn-default btn-xs" ng-click="showConfig(svc)"
+                                        ng-if="!_.isEmpty(svc.config) || svc.endpoints.length > 0"
+                                        ng-disabled="_.isEmpty(svc.config) && svc.endpoints.length === 0">
+                                      <i class="fa fa-puzzle-piece"></i>
+                                    </button>
                                   </td>
                                   
                                   <!-- View Logs of Running Service, or Remove Stopped Service -->
