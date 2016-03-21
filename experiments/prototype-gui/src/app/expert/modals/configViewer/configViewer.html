@@ -47,11 +47,7 @@
             <tbody>
               <tr ng-repeat="endpt in service.endpoints">
                 <td>{{ endpt.protocol | uppercase }}</td>
-                <td>
-                  <a href="http://{{ endpt.internalIP }}:{{ endpt.port }}">
-                    {{ endpt.internalIP }}:{{ endpt.port }}
-                  </a>
-                </td>
+                <td>{{ endpt.internalIP }}:{{ endpt.port }}</td>
                 <td>
                   <a href="http://{{ endpt.nodePort ? apiHost + ':' + endpt.nodePort : '' }}">
                     {{ endpt.nodePort ? apiHost + ':' + endpt.nodePort : 'N / A' }}
