@@ -41,12 +41,6 @@ angular
   
   var interval = $interval($scope.refreshLog, 2000);
 
-  $scope.ok = function() {
-    $log.debug("Closing modal with success!");
-    $uibModalInstance.close($scope.serviceLog);
-    $interval.cancel(interval);
-    interval = null;
-  };
   $scope.close = function() {
     $log.debug("Closing modal with dismissal!");
     $uibModalInstance.dismiss('cancel');
