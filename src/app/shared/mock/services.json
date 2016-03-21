@@ -1,0 +1,84 @@
+[
+  {
+    "key": "clowder",
+    "label": "Clowder",
+    "description": "Clowder is for cats.",
+    "stack": true,
+    "maintainer": "",
+    "requiresVolume": false,
+    "tags": [],
+    "dependencies": {
+      "mongo": true,
+      "postgresql": true,
+      "image-preview": false,
+      "video-preview": false,
+      "plantcv": false
+    }
+  },
+  {
+    "key": "mongo",
+    "label": "MongoDB",
+    "description": "NoSQL Database",
+    "stack": false,
+    "maintainer": "",
+    "requiresVolume": true,
+    "tags": [],
+    "dependencies": {}
+  },
+  {
+    "key": "image-preview",
+    "label": "Image Preview",
+    "description": "BrownDog Extractor for creating image preview thumbnails",
+    "stack": false,
+    "maintainer": "",
+    "requiresVolume": false,
+    "tags": [],
+    "dependencies": {
+      "rabbitmq": true
+    }
+  },
+  {
+    "key": "video-preview",
+    "label": "Video Preview",
+    "description": "BrownDog Extractor for creating video preview slideshows",
+    "stack": false,
+    "maintainer": "",
+    "requiresVolume": false,
+    "tags": [],
+    "dependencies": {
+      "rabbitmq": true
+    }
+  },
+  {
+    "key": "plantcv",
+    "label": "PlantCV",
+    "description": "BrownDog Extractor for analyzing images of plants",
+    "stack": false,
+    "maintainer": "",
+    "requiresVolume": false,
+    "tags": [],
+    "dependencies": {
+      "rabbitmq": true
+    }
+  },
+  {
+    "key": "rabbitmq",
+    "label": "RabbitMQ",
+    "description": "Queues for days...",
+    "stack": false,
+    "maintainer": "",
+    "requiresVolume": false,
+    "tags": [],
+    "dependencies": {}
+  },
+  {
+    "key": "postgresql",
+    "label": "PostgreSQL",
+    "description": "SQL Database",
+    "stack": false,
+    "maintainer": "",
+    "requiresVolume": true,
+    "tags": [],
+    "dependencies": {}
+  }
+]
