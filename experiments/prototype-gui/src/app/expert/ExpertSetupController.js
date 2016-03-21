@@ -426,6 +426,25 @@ angular
   };
   
   /**
+   * Display a modal window showing running log data for the given service
+   * @param {} service - the service to show logs for
+   */ 
+  $scope.showConfig = function(service) {
+    // See '/app/expert/modals/logViewer/logViewer.html'
+    $uibModal.open({
+      animation: true,
+      templateUrl: '/app/expert/modals/configViewer/configViewer.html',
+      controller: 'ConfigViewerCtrl',
+      size: 'md',
+      keyboard: false,      // Force the user to explicitly click "Close"
+      backdrop: 'static',   // Force the user to explicitly click "Close"
+      resolve: {
+        service: function() { return service; }
+      }
+    });
+  };
+  
+  /**
    * Deletes a stack from etcd, if successful it is removed from the UI.
    * @param {Object} stack - the stack to delete
    * 

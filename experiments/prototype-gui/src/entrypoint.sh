@@ -1,11 +1,12 @@
 #!/bin/bash
 
-# Substitute the APISRV_URI passed in by "docker run -e"
-/bin/sed -i -e "s#^\.constant('ApiUri', '.*')#.constant('ApiUri', '${APISRV_URI}')#" "app/app.js"
+# Substitute the APISERVER_HOST and PORT passed in by "docker run -e"
+/bin/sed -i -e "s#^\.constant('ApiHost', '.*')#.constant('ApiHost', '${APISERVER_HOST}')#" "app/app.js"
+/bin/sed -i -e "s#^\.constant('ApiPort', '.*')#.constant('ApiPort', '${APISERVER_PORT}')#" "app/app.js"
 
 # Install dependencies
 npm install -g http-server bower grunt && \
-    npm install && \
+    # npm install && \
     bower install --config.interactive=false --allow-root;
 
 # Start our HTTP Server
