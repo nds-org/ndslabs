@@ -23,6 +23,31 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
     return _.capitalize(input);
   };
 }])
+
+/**
+ * Return the external IP of the API / GUI server 
+ * appended with the port if one is provided.
+ */ 
+.filter('externalHostPort', [ 'ApiHost', 'ApiPort', '_', function(ApiHost, ApiPort, _) {
+  return function(endpt) {
+    // TODO: How do we know if this can be navigated to?
+    var protocal = endpt.protocol;
+    
+    // Hard-coding HTTP for now, since specs specify TCP instead of HTTP
+    return 'http://' + ApiHost + (endpt.nodePort ? ':' + endpt.nodePort : '');
+  };
+}])
+
+/**
+ * Trust the given snippet as valid HTML.
+ */ 
+.filter('unsafe', [ '$sce', function($sce) {
+  return function(input) {
+    return $sce.trustAsHtml(input);
+  };
+}])
+
+
 /**
  * Given a string, encode it so that it can be safely put into a URL
  */
