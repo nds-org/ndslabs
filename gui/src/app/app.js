@@ -42,7 +42,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  * The version/revision of this GUI
  */
 .constant('BuildVersion', '0.1alpha')
-.constant('BuildDate', new Date())
+.constant('BuildDate', '')
 
 /**
  * Hostname / Port for communicating with etcd

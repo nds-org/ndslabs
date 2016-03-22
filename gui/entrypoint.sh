@@ -6,7 +6,7 @@
 
 # Install dependencies
 npm install -g http-server bower grunt && \
-    # npm install && \
+    npm install && \
     bower install --config.interactive=false --allow-root;
 
 # Start our HTTP Server
