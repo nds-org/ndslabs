@@ -12,6 +12,7 @@ angular
   };
   
   // Check username availability when user changes input
+  //
   // FIXME: This won't work unless we're logged in, 
   //   but there is no need to sign-up if we're logged in...
   $scope.$watch('newProject.namespace', function(oldValue, newValue) {
