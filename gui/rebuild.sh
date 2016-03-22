@@ -1,22 +1,22 @@
 #!/bin/sh
 
-# Exit on errors
+# Exit on errors?
 # set -e
 
-# Shut down old web server container
-kubectl delete -f ../../../devtools/ndsdev/startup/ndslabs/gui.yaml;
+REPO=ndslabs
+IMAGE=ndslabs-gui
+TAG=latest
 
-# Sleep for 10s
-sleep 10s
 
-# Delete its image
-docker rmi -f ndslabs/ndslabs-gui; 
+# If -c specified, clean old image
+if [[ "${@/-c/}" != "$@" ]]; then 
+	docker rmi -f $REPO/$IMAGE:$TAG
+fi
 
 # Build a new image from source
-docker build -t ndslabs/ndslabs-gui -f Dockerfile.ndslabs-gui .
+docker build -t $REPO/$IMAGE:$TAG -f Dockerfile.$IMAGE .
 
-# Push the new image
-docker push ndslabs/ndslabs-gui
-
-# Restart the web server container
-kubectl create -f ../../../devtools/ndsdev/startup/ndslabs/gui.yaml
+# If -p specified, push to repo
+if [[ "${@/-p/}" != "$@" ]]; then
+	docker push $REPO/$IMAGE:$TAG
+fi
