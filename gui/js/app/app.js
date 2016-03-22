@@ -231,13 +231,14 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       }
     };
     
-    // Each minute, check that our token is still valid
+    // Check our token every 3 minutes
+    var tokenCheckMs = 180000;
+    
+    // Every so often, check that our token is still valid
     var checkTokenInterval = null;
     var checkToken = function() {
       NdsLabsApi.getCheck_token().then(function() { $log.debug('Token is still valid.'); }, function() {
         $log.error('Token expired, redirecting to login.');
-        $interval.cancel(checkTokenInterval);
-        checkTokenInterval = null;
         terminateSession();
       });
     };
@@ -250,8 +251,12 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       NdsLabsApi.getRefresh_token().then(function() {
         $log.debug('Token refreshed: ' + authInfo.get().token);
         
-        // Start our token check interval
-        checkTokenInterval = $interval(checkToken, 60000);
+        // Restart our token check interval
+        if (checkTokenInterval) {
+          $interval.cancel(checkTokenInterval);
+          checkTokenInterval = null;
+        }
+        checkTokenInterval = $interval(checkToken, tokenCheckMs);
         
         // Reroute to /home if necessary
         if (next.templateUrl !== '/app/expert/expertSetup.html') {
