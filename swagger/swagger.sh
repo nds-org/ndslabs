@@ -1,8 +1,10 @@
 #!/bin/bash
 
-export DOWNLOADURL=https://raw.githubusercontent.com/nds-org/nds-labs/v2/apis/swagger-spec/ndslabs.json
-export SWAGGERFILE=swagger-spec.json
-export OUTPUTFILE=../app/shared/NdsLabsRestApi.js
+#export DOWNLOADURL=https://raw.githubusercontent.com/nds-org/nds-labs/v2/apis/swagger-spec/ndslabs.json
+
+DOWNLOADURL=$1
+SWAGGERFILE=ndslabs.json
+OUTPUTFILE=../src/app/shared/api.js
 
 # Install swagger-js-codegen
 docker run --rm -it -v `pwd`/data bodom0015/nodejs-bower-grunt npm install swagger-js-codegen
