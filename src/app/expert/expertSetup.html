@@ -167,7 +167,6 @@
                                   <td>
                                     {{ svc.service | specProperty:'label' }}
                                     
-                                    
                                     <a ng-repeat="endpt in svc.endpoints track by endpt.internalIp" 
                                         uib-tooltip="Navigate to {{ svc.service | capitalize }} ({{ endpt | externalHostPort }})"
                                         ng-if="stack.status === 'started' && svc.status === 'ready' 
@@ -221,6 +220,7 @@
                                   <td>
                                     {{ option.key | specProperty:'label'}}
                                   </td>
+                                  <td></td>
                                   <td></td>
                                 </tr>
                               </tbody>

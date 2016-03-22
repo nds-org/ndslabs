@@ -39,14 +39,20 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 .constant('ExpertRoute', '/home')
 
 /**
+ * The version/revision of this GUI
+ */
+.constant('BuildVersion', '0.1alpha')
+.constant('BuildDate', new Date())
+
+/**
  * Hostname / Port for communicating with etcd
  * 
  * This must be the external IP and nodePort (when running in k8)
  * 
  * TODO: We assume this is running on the same machine as the apiserver.
  */ 
-.constant('ApiHost', '')
-.constant('ApiPort', '')
+.constant('ApiHost', '141.142.208.127')
+.constant('ApiPort', '30001')
 
 /**
  * Logic for communicating with etcd (powered by swagger-js-codegen)
