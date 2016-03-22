@@ -9,7 +9,7 @@ FROM node:latest
 
 # Set build information here before building
 ENV BUILD_VERSION="0.1prealpha" \
-    BUILD_DATE="Tue Mar 22 21:25:44 UTC 2016"
+    BUILD_DATE="Tue Mar 22 21:57:40 UTC 2016"
  
 # Set in what directory commands will run
 WORKDIR /home/app
@@ -22,7 +22,7 @@ ENV APISERVER_HOST="127.0.0.1" \
     APISERVER_PORT="30001"
  
 # Now copy in the rest of our code
-COPY entrypoint.sh Dockerfile.ndslabs-gui js/ /home/app/
+COPY . /home/app/
 
 # Set build numberi/date inside the container, as well as our default API server/port
 RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${BUILD_VERSION}')#" "app/app.js" && \
