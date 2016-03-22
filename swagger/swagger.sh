@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 #export DOWNLOADURL=https://raw.githubusercontent.com/nds-org/nds-labs/v2/apis/swagger-spec/ndslabs.json
 

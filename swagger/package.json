@@ -1,0 +1,21 @@
+{
+  "name": "angular-codegen",
+  "version": "1.0.0",
+  "description": "swagger-js-codegen implementation",
+  "main": "generate-angular.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "swagger",
+    "angular",
+    "js",
+    "node",
+    "codegen"
+  ],
+  "author": "bodom0015 (lambert8@illinois.edu)",
+  "license": "MIT",
+  "dependencies": {
+    "swagger-js-codegen": "^1.3.1"
+  }
+}
