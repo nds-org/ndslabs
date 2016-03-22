@@ -13,6 +13,9 @@ docker run --rm -it -v `pwd`/data bodom0015/nodejs-bower-grunt npm install swagg
 if [[ "${@/-u/}" != "$@" ]]; then
 	echo "Downloading newest Swagger Spec..."
 	sudo curl -L ${DOWNLOADURL} > ${SWAGGERFILE}
+else
+	echo "Rebuilding swagger spec from ../../apis/swagger-spec/ndslabs.json"
+	sudo cp ../../apis/swagger-spec/ndslabs.json ./ndslabs.json
 fi
 
 # Finally, generate AngularJS source
