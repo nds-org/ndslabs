@@ -22,7 +22,7 @@ ENV APISERVER_HOST="127.0.0.1" \
     APISERVER_PORT="30001"
  
 # Now copy in the rest of our code
-COPY entrypoint.sh Dockerfile.ndslabs-gui src/ /home/app/
+COPY entrypoint.sh Dockerfile.ndslabs-gui js/ /home/app/
 
 # Set build numberi/date inside the container, as well as our default API server/port
 RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${BUILD_VERSION}')#" "app/app.js" && \
