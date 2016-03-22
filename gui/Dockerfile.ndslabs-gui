@@ -9,7 +9,7 @@ FROM node:latest
 
 # Set build information here before building
 ENV BUILD_VERSION="0.1prealpha" \
-    BUILD_DATE="Tue Mar 22 19:53:47 UTC 2016"
+    BUILD_DATE="Tue Mar 22 21:25:44 UTC 2016"
  
 # Set in what directory commands will run
 WORKDIR /home/app
