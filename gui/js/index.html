@@ -86,11 +86,14 @@
   <body>
     <!-- This syntax can be used to isolate smaller page templates (such as our navbar and footer) -->
     <!-- NOTE: This method does not produce a navigatable route. For another full page/route, we need to add the route to app.js -->
-    <div ng-include src="'/app/shared/navbar/navbar.html'" ng-controller="NavbarController" ></div> 
+    <div ng-include src="'/app/shared/navbar/navbar.html'" ng-controller="NavbarController"></div> 
     
     <!-- ng-view tells angular that we will swap in templates for the route specified by app.js (via ngRoute) -->
-    <div class="container-fluid" ng-view></div>
-  
-    <!--<div ng-include src="'/app/shared/footer.html'"></div>-->
+    <div class="wrapper">
+      <div class="container-fluid" ng-view></div>
+      <div class="push"></div>
+    </div>
+    
+    <div ng-include src="'/app/shared/footer/footer.html'" ng-controller="FooterController"></div>
   </body>
 </html>

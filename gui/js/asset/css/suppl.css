@@ -1,0 +1,128 @@
+/* Sticky footer styles
+-------------------------------------------------- */
+
+* {
+	margin: 0;
+}
+html, body {
+	height: 95%;
+}
+.wrapper {
+	height: 95%;
+	margin: 0 auto -50px; /* the bottom margin is the negative value of the footer's height */
+}
+
+footer, .push {
+	height: 50px; /* '.push' must be the same height as 'footer' */
+}
+
+/* Site-wide Style Defaults
+-------------------------------------------------- */
+
+/* Angular Bootstrap UI "href fix" */
+.nav, .pagination, .carousel, .panel-title, .dropdown-toggle a { cursor: pointer; }
+
+/* Fix that silly blue border around accordion headers */
+.accordion-toggle:focus{outline: none;}
+
+.active {
+  /* box-shadow: 0px -2px 1px 2px rgba(0,0,0,0.2); */
+}
+
+.btn {
+  border-radius:5px;
+}
+
+
+.jumbotron {
+  margin-left:-15px;
+  margin-right:-15px;
+  padding-top:5px;
+  padding-left:15px;
+  padding-bottom:5px;
+}
+
+.modal-content {
+  margin:auto;
+}
+
+.popover {
+  max-width:200px;
+}
+
+.popover-content {
+  width:200px;
+}
+
+/* Useful helpers
+-------------------------------------------------- */
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.fill-height {
+  height:100%;
+}
+
+.fill-width {
+  width:100% !important;
+}
+
+.flush-border {
+  border-radius:0px;
+  margin:0;
+  padding:0;
+}
+
+.helper-text {
+  border:dashed;
+  text-align:center;
+  padding-top:100px;
+  padding-bottom:100px;
+  vertical-align:middle;
+  height:100%;
+}
+
+.margin-left-right-120 {
+  display: block;
+  margin-left: 120px;
+  margin-right: 120px;
+}
+
+.modal-body-scrollable {
+   max-height:600px;
+   overflow: auto;
+}
+
+.top-margin {
+  margin-top:15px;
+}
+
+.undecorate-link {
+  text-decoration:none !important;
+  color:inherit !important;
+}
+
+/* Specific id styles
+-------------------------------------------------- */
+
+#loginPanel {
+  margin: 10% auto;
+  max-width:400px;
+}
+
+/* Other custom page styling */
+#navbar {
+  margin: 50px;
+}
+
+#navBrandLogo {
+  margin-top:-5px;
+}
+
+#volumeTable {
+  border-radius:25px;
+  border:1px solid lightgray;
+}
+

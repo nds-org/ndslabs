@@ -3,7 +3,7 @@ var fs = require('fs');
 var CodeGen = require('swagger-js-codegen').CodeGen;
  
 // Parse in our swagger spec
-var file = 'swagger/ndslabs.json';
+var file = 'ndslabs.json';
 var swagger = JSON.parse(fs.readFileSync(file, 'UTF-8'));
 
 // Now generate AngularJS source

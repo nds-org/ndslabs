@@ -5,9 +5,9 @@
 /bin/sed -i -e "s#^\.constant('ApiPort', '.*')#.constant('ApiPort', '${APISERVER_PORT}')#" "app/app.js"
 
 # Install dependencies
-npm install -g http-server bower grunt && \
-    # npm install && \
-    bower install --config.interactive=false --allow-root;
+npm install -g http-server bower grunt
+npm install
+bower install --config.interactive=false --allow-root
 
 # Start our HTTP Server
 http-server /home/app

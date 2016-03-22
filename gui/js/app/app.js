@@ -39,14 +39,20 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 .constant('ExpertRoute', '/home')
 
 /**
+ * The version/revision of this GUI
+ */
+.constant('BuildVersion', '0.1devel')
+.constant('BuildDate', '')
+
+/**
  * Hostname / Port for communicating with etcd
  * 
  * This must be the external IP and nodePort (when running in k8)
  * 
  * TODO: We assume this is running on the same machine as the apiserver.
  */ 
-.constant('ApiHost', '')
-.constant('ApiPort', '')
+.constant('ApiHost', '141.142.208.127')
+.constant('ApiPort', '30001')
 
 /**
  * Logic for communicating with etcd (powered by swagger-js-codegen)
@@ -225,13 +231,14 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       }
     };
     
-    // Each minute, check that our token is still valid
+    // Check our token every 3 minutes
+    var tokenCheckMs = 180000;
+    
+    // Every so often, check that our token is still valid
     var checkTokenInterval = null;
     var checkToken = function() {
       NdsLabsApi.getCheck_token().then(function() { $log.debug('Token is still valid.'); }, function() {
         $log.error('Token expired, redirecting to login.');
-        $interval.cancel(checkTokenInterval);
-        checkTokenInterval = null;
         terminateSession();
       });
     };
@@ -244,8 +251,12 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       NdsLabsApi.getRefresh_token().then(function() {
         $log.debug('Token refreshed: ' + authInfo.get().token);
         
-        // Start our token check interval
-        checkTokenInterval = $interval(checkToken, 60000);
+        // Restart our token check interval
+        if (checkTokenInterval) {
+          $interval.cancel(checkTokenInterval);
+          checkTokenInterval = null;
+        }
+        checkTokenInterval = $interval(checkToken, tokenCheckMs);
         
         // Reroute to /home if necessary
         if (next.templateUrl !== '/app/expert/expertSetup.html') {

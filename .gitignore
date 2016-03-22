@@ -1,2 +1,5 @@
 **/nds-build
 **/*.swp
+**/.c9/
+**/node_modules/
+**/bower_components/
