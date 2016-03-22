@@ -5,35 +5,92 @@
     <h4 class="modal-title"><i class="fa fa-fw fa-user-plus"></i> New Account</h4>
   </div>
   
+  <!-- Registration Form -->
   <div class="modal-body">
-    <form>
-      <div class="form-group">
+    <form name="registerForm">
+      
+      <!-- Enter Project Name -->
+      <div class="form-group" ng-class="{ 
+          'has-error has-feedback': !registerForm.projectName.$pristine && registerForm.projectName.$invalid, 
+          'has-success has-feedback': !registerForm.projectName.$pristine && registerForm.projectName.$valid }">
         <label for="projectName">Project Name</label>
-        <input type="text" class="form-control" id="projectName" ng-model="newProject.name" placeholder="Project Name">
+        <input type="text" class="form-control" name="projectName" id="projectName" 
+            ng-model="newProject.name" placeholder="Project Name" required>
+        <span class="form-control-feedback glyphicon" ng-if="!registerForm.projectName.$pristine"
+            ng-class="{ 'glyphicon-remove': registerForm.projectName.$invalid, 'glyphicon-ok': registerForm.projectName.$valid }"></span>
+            
+        <div class="alert-danger" ng-if="!registerForm.projectName.$pristine" ng-messages="registerForm.projectName.$error">
+          <div ng-message="required">Please choose a name for this project.</div>
+        </div>
       </div>
+      
+      <!-- Enter Project Description -->
       <div class="form-group">
         <label for="description">Project Description</label>
-        <textarea class="form-control" rows="5" id="description" ng-model="newProject.description" placeholder="Enter a project description here"></textarea>
+        <textarea class="form-control" rows="5" name="description" id="description"
+            ng-model="newProject.description" placeholder="Enter a project description"></textarea>
       </div>
-      <div class="form-group">
+      
+      <!-- Choose a username (namespace) -->
+      <div class="form-group" ng-class="{ 
+          'has-error has-feedback': !registerForm.namespace.$pristine && registerForm.namespace.$invalid, 
+          'has-success has-feedback': !registerForm.namespace.$pristine && registerForm.namespace.$valid }">
         <label for="namespace">Username</label>
-        <input required type="text" class="form-control" id="namespace" ng-model="newProject.namespace" placeholder="Username">
+        <input type="text" class="form-control" name="namespace" id="namespace" ng-model-options="{ debounce: { 'default':300, 'blur':0 } }"
+            ng-model="newProject.namespace" placeholder="Username" required minlength="3" maxlength="20">
+        <span class="form-control-feedback glyphicon" ng-if="!registerForm.namespace.$pristine"
+            ng-class="{ 'glyphicon-remove': registerForm.namespace.$invalid, 'glyphicon-ok': registerForm.namespace.$valid }"></span>
+            
+        
+        <div class="alert-danger" ng-if="!registerForm.namespace.$pristine" ng-messages="registerForm.namespace.$error">
+          <div ng-message="required">Please enter a username.</div>
+          <div ng-message="minlength,maxlength">Username must be between 3 and 20 characters.</div>
+          
+          <!-- FIXME: Check username availability?
+          <div class="alert-danger" ng-if="namespaceExists">Username already in use.</div>
+          <div class="alert-info" ng-if="namespaceExists === null">Checking availability...</div>
+          <div class="alert-success" ng-if="!namespaceExists">Username is available.</div>
+          -->
+        </div>
       </div>
-      <div class="form-group">
+      
+      <!-- Choose a password -->
+      <div class="form-group" ng-class="{ 
+          'has-error has-feedback': !registerForm.password.$pristine && registerForm.password.$invalid, 
+          'has-success has-feedback': !registerForm.password.$pristine && registerForm.password.$valid }">
         <label for="password">Password</label>
-        <input required type="password" class="form-control" id="password" ng-model="newProject.password" placeholder="Password">
+        <input type="password" class="form-control" name="password" id="password"
+            ng-model="newProject.password" placeholder="Password" required minlength="6">
+        <span class="form-control-feedback glyphicon" ng-if="!registerForm.password.$pristine"
+            ng-class="{ 'glyphicon-remove': registerForm.password.$invalid, 'glyphicon-ok': registerForm.password.$valid }"></span>
+                
+        <div class="alert-danger" ng-if="!registerForm.password.$pristine" ng-messages="registerForm.password.$error">
+          <div ng-message="required">Please enter a password.</div>
+          <div ng-message="minlength,maxlength">Password must be at least 6 characters.</div>
+        </div>
       </div>
-      <div class="form-group">
+      
+      <!-- Confirm password -->
+      <div class="form-group" ng-class="{ 
+          'has-error has-feedback': !registerForm.passwordConf.$pristine && registerForm.passwordConf.$invalid, 
+          'has-success has-feedback': !registerForm.passwordConf.$pristine && registerForm.passwordConf.$valid }">
         <label for="passwordConf">Confirm Password</label>
-        <input required type="password" class="form-control" id="passwordConf" ng-model="newProject.passwordConfirmation" placeholder="Confirm Password">
+        <input type="password" class="form-control" name="passwordConf" id="passwordConf"
+            ng-model="newProject.passwordConfirmation" placeholder="Confirm Password" required minlength="6" pattern="{{ newProject.password }}">
+        <span class="form-control-feedback glyphicon" ng-if="!registerForm.passwordConf.$pristine"
+            ng-class="{ 'glyphicon-remove': registerForm.passwordConf.$invalid, 'glyphicon-ok': registerForm.passwordConf.$valid }"></span>
+            
+        <div class="alert-danger" ng-if="!registerForm.passwordConf.$pristine" ng-messages="registerForm.passwordConf.$error">
+          <div ng-message="required">Please enter a password.</div>
+          <div ng-message="minlength,maxlength">Password must be at least 6 characters.</div>
+          <div ng-message="pattern">Passwords do not match.</div>
+        </div>
       </div>
     </form>
-    
-    <pre>{{ newProject | json }}</pre>
   </div>
   
   <div class="modal-footer">
     <button class="btn btn-default pull-left" data-dismiss="modal" ng-click="close()">Cancel</button>
-    <button class="btn btn-success pull-right" data-dismiss="modal" ng-click="ok(newProject)">Create Account</button>
+    <button class="btn btn-success pull-right" data-dismiss="modal" ng-disabled="namespaceExists || !registerForm.$valid" ng-click="ok(newProject)">Create Account</button>
   </div>
 </section>

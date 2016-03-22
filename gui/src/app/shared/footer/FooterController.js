@@ -3,16 +3,20 @@
 angular
 .module('footer', [])
 /**
- * The Controller for the Footer (currently unused/ hidden)
+ * The Controller for the Footer
  * 
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('FooterController', [ '$scope', 'DEBUG', 'Volumes', function($scope, DEBUG, Volumes) {
+.controller('FooterController', [ '$scope', '$log', 'DEBUG', 'NdsLabsApi', 'BuildDate', 'BuildVersion', 
+    function($scope, $log, DEBUG, NdsLabsApi, BuildDate, BuildVersion) {
   $scope.DEBUG = DEBUG;
-  $scope.showVolumes = false;
+  $scope.guiVersion = BuildVersion;
+  $scope.guiBuildDate = BuildDate;
   
-  $scope.volumes = Volumes;
-  
-  $scope.toggleVolumes = function() { $scope.showVolumes = !$scope.showVolumes; };
+  NdsLabsApi.getVersion().then(function(data, xhr) {
+    $scope.apiVersion = data;
+  }, function(headers) {
+    $log.error('Failed to grab API Version. Is the server running?');
+  });
 }]);
