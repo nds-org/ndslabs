@@ -51,8 +51,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  * 
  * TODO: We assume this is running on the same machine as the apiserver.
  */ 
-.constant('ApiHost', '141.142.208.127')
-.constant('ApiPort', '30001')
+.constant('ApiHost', '')
+.constant('ApiPort', '')
 
 /**
  * Logic for communicating with etcd (powered by swagger-js-codegen)
