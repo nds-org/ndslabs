@@ -10,10 +10,10 @@ docker pull ndslabs/ndslabs-gui:latest
 
 ## Modifying the GUI
 Several helper scripts are included to help you modify this code:
-* build.sh: Builds the ndslabs/ndslabs-gui docker image
-* develop.sh: Create a container from the ndslabs/ndslabs-gui image, map this directory into it, and run a cloud9 IDE with the same mapping 
-* run.sh: Create a container from the ndslabs/ndslabs-gui image
-* swagger.sh: Regenerate the REST API spec from Swagger
+* build.sh:     Builds the ndslabs/ndslabs-gui docker image.
+* start.sh:     Create a container from the ndslabs/ndslabs-gui image.
+* stop.sh:      Remove the running cloud9 / ndslabs-gui container(s).
+* swagger.sh:   Regenerate the REST API spec from Swagger.
 
 ### build.sh
 Builds the ndslabs/ndslabs-gui docker image.
@@ -27,28 +27,28 @@ Args:
 * -c: Clean (remove) the existing image before building the new one.
 * -p: Push the new image after building it.
 
-### develop.sh
-Create a container from the ndslabs/ndslabs-gui image, map this directory into it, and run a cloud9 IDE with the same mapping.
+### start.sh
+Create a container from the ndslabs/ndslabs-gui image and, optionally, open an IDE allowing dynamic changes.
+This will remove the containers first, if they already exist.
 
 Usage:
 ```bash
-./develop.sh
+./start.sh [-c] [-d|--dev]
 ```
 
 Args:
-None
+* -c:          (debug mode)       Run bash to open a console, instead of starting the http-server.
+* -d or --dev: (developer mode)   Start the container in developer mode instead.
 
-### run.sh
-Create a container from the ndslabs/ndslabs-gui image
+NOTE: -d will start an instance of the Cloud9 IDE, allowing you to modify the GUI on-the-fly.
+
+### stop.sh
+Remove the running cloud9 / ndslabs-gui container(s).
 
 Usage:
 ```bash
-./run.sh [-c] [-d|--dev]
+./stop.sh
 ```
-
-Args:
-* -c: Run bash to open a console, instead of starting the server.
-* -d or --dev: Start the container in developer mode instead.
 
 ### swagger.sh
 Regenerate the REST API spec from Swagger
