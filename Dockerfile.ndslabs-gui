@@ -8,8 +8,8 @@
 FROM node:latest
 
 # Set build information here before building
-ENV BUILD_VERSION="0.1prealpha" \
-    BUILD_DATE="Wed Mar 23 05:18:35 UTC 2016"
+ENV BUILD_VERSION="0.1alpha" \
+    BUILD_DATE="Wed Mar 23 19:49:59 UTC 2016"
  
 # Set in what directory commands will run
 WORKDIR /home/app
@@ -18,17 +18,17 @@ WORKDIR /home/app
 EXPOSE 8080
     
 # Declare environment variables (must be overriden by user)
-ENV APISERVER_HOST="127.0.0.1" \
+ENV APISERVER_HOST="192.168.99.100" \
     APISERVER_PORT="30001"
  
 # Now copy in the rest of our code
 COPY . /home/app/
 
 # Set build numberi/date inside the container, as well as our default API server/port
-RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${BUILD_VERSION}')#" "app/app.js" && \
-    /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('${BUILD_DATE}'))#" "app/app.js" && \
-    /bin/sed -i -e "s#^\.constant('ApiHost', '.*')#.constant('ApiHost', '${APISERVER_HOST}')#" "app/app.js" && \
-    /bin/sed -i -e "s#^\.constant('ApiPort', '.*')#.constant('ApiPort', '${APISERVER_PORT}')#" "app/app.js"
+RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${BUILD_VERSION}')#" "js/app/app.js" && \
+    /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('${BUILD_DATE}'))#" "js/app/app.js" && \
+    /bin/sed -i -e "s#^\.constant('ApiHost', '.*')#.constant('ApiHost', '${APISERVER_HOST}')#" "js/app/app.js" && \
+    /bin/sed -i -e "s#^\.constant('ApiPort', '.*')#.constant('ApiPort', '${APISERVER_PORT}')#" "js/app/app.js"
 
 # The command to run our app when the container is run
 CMD [ "./entrypoint.sh" ]
