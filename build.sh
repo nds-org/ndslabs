@@ -11,7 +11,9 @@ TAG=latest
 
 
 # If -c specified, clean old image
-if [[ "${@/-c/}" != "$@" ]]; then 
+if [ "${@/-c/}" == "$@" ]; then 
+	echo "Skipping clean..."
+else
 	docker rmi -f $REPO/$IMAGE:$TAG
 fi
 
@@ -21,6 +23,8 @@ fi
 docker build -t $REPO/$IMAGE:$TAG -f ${JSSRCDIR}/Dockerfile.$IMAGE ${JSSRCDIR}
 
 # If -p specified, push to repo
-if [[ "${@/-p/}" != "$@" ]]; then
+if [ "${@/-p/}" == "$@" ]; then
+	echo "Skipping push..."
+else
 	docker push $REPO/$IMAGE:$TAG
 fi
