@@ -25,14 +25,11 @@ angular
   });
   
   $scope.ok = function(project) {
-    if ($scope.validate(project)) {
-      NdsLabsApi.postRegister({ 'project': project }).then(function(data, xhr) {
-        $uibModalInstance.close(data);
-      }, function(headers) {
-        $log.error('Failed to create account: ' + project.namespace);
-      });
-      
-    }
+    NdsLabsApi.postRegister({ 'project': project }).then(function(data, xhr) {
+      $uibModalInstance.close(data);
+    }, function(headers) {
+      $log.error('Failed to create account: ' + project.namespace);
+    });
   };
   
   $scope.close = function() {
