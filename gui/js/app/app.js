@@ -29,11 +29,6 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 .constant('LoginRoute', '/login')
 
 /**
- * The route to our Express Setup View
- */ 
-.constant('ExpressRoute', '/express')
-
-/**
  * The route to our Expert Setup View
  */ 
 .constant('ExpertRoute', '/home')
@@ -51,7 +46,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  * 
  * TODO: We assume this is running on the same machine as the apiserver.
  */ 
-.constant('ApiHost', '141.142.208.127')
+.constant('ApiHost', '192.168.99.100')
 .constant('ApiPort', '30001')
 
 /**
@@ -90,8 +85,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$routeProvider', '$httpProvider', 'AuthInfoProvider', 'LoginRoute', 'ExpressRoute', 'ExpertRoute',
-    function($routeProvider, $httpProvider, authInfo, LoginRoute, ExpressRoute, ExpertRoute) {
+.config([ '$routeProvider', '$httpProvider', 'AuthInfoProvider', 'LoginRoute', 'ExpertRoute',
+    function($routeProvider, $httpProvider, authInfo, LoginRoute, ExpertRoute) {
   // Setup default behaviors for encountering errors
   $httpProvider.interceptors.push(['$rootScope', '$cookies', '$q', '$location', '$log', '_', 'DEBUG', 'ApiHost', 'ApiPort', 'AuthInfo',
       function (scope, $cookies, $q, $location, $log, _, DEBUG, ApiHost, ApiPort, AuthInfo) {
@@ -183,12 +178,6 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     controller: 'LoginController',
     templateUrl: '/app/login/login.html'
   })
-  /*
-  .when(ExpressRoute, {
-    controller: 'ExpressSetupController',
-    templateUrl: '/app/express/expressSetup.html'
-  })
-  */
   .otherwise({ redirectTo: LoginRoute });
 }])
 

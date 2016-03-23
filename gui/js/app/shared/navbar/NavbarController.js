@@ -25,8 +25,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'ExpressRoute', 'ExpertRoute', 'DEBUG', 
-    function($scope, $location, LoginRoute, ExpressRoute, ExpertRoute, DEBUG) {
+.controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'ExpertRoute', 'DEBUG', 
+    function($scope, $location, LoginRoute, ExpertRoute, DEBUG) {
   $scope.$on('$routeChangeSuccess', function(event, current, previous){
     if (current.$$route) {
       $scope.path = current.$$route.originalPath;
@@ -40,17 +40,13 @@ angular
   
   $scope.home = 
   {
-    name:'NDS Labs',
+    name:'NDSLabs',
     url: '#' + LoginRoute
   };
   
   $scope.navs = [
     /*{
-      name: 'Express Setup',
-      url: '#' + ExpressRoute
-    },*/
-    /*{
-      name: 'Expert Setup',
+      name: 'NDSLabs',
       url: '#' + ExpertRoute
     },*/
   ];
