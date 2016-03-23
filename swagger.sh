@@ -4,10 +4,10 @@
 
 DOWNLOADURL=$1
 SWAGGERFILE=ndslabs.json
-OUTPUTFILE=src/app/shared/api.js
+OUTPUTFILE=js/app/shared/api.js
 
 # Install swagger-js-codegen
-docker run --rm -it -v `pwd`/data bodom0015/nodejs-bower-grunt npm install swagger-js-codegen
+docker run --rm -it -v `pwd`/api:/data bodom0015/nodejs-bower-grunt npm install swagger-js-codegen
 
 # Download newest swagger-spec.json
 if [[ "${@/-u/}" != "$@" ]]; then
