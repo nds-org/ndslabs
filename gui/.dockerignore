@@ -1,0 +1,10 @@
+*/node_modules/
+*/bower_components/
+*/.c9/
+.c9/
+api/
+README.md
+build.sh
+swagger.sh
+start.sh
+stop.sh

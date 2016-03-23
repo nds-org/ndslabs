@@ -46,7 +46,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  * 
  * TODO: We assume this is running on the same machine as the apiserver.
  */ 
-.constant('ApiHost', '192.168.99.100')
+.constant('ApiHost', '141.142.208.127')
 .constant('ApiPort', '30001')
 
 /**
