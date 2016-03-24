@@ -11,7 +11,7 @@ import (
 	"os/user"
 	"strings"
 
-	apiclient "github.com/nds-labs/apictl/client"
+	apiclient "github.com/ndslabs/apictl/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	api "github.com/nds-labs/apiserver/types"
+	api "github.com/ndslabs/apiserver/types"
 	"io/ioutil"
 	"net/http"
 	"strings"

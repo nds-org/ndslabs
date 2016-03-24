@@ -1,10 +1,10 @@
 package main
 
 import (
-	openstack "github.com/nds-labs/apiserver/openstack"
-	"github.com/golang/glog"
 	"flag"
 	"fmt"
+	"github.com/golang/glog"
+	openstack "github.com/ndslabs/apiserver/openstack"
 	sys "os"
 )
 
@@ -30,53 +30,52 @@ func main() {
 	instanceId, _ := os.GetInstanceId()
 	glog.Infof("Host instanceId: %s\n", instanceId)
 
-	if (command ==  "list") {
+	if command == "list" {
 		vols, _ := os.ListVolumes(tenantId, token.Id)
 		for _, vol := range vols {
 			fmt.Printf("%s %s\n", vol.Id, vol.Name)
 		}
 	}
 
-	if (command == "create") {
+	if command == "create" {
 		vid, _ := os.CreateVolume(token.Id, tenantId, "nds-test-vol-2", 10)
-		fmt.Printf("volumeId = %s\n", vid)	
+		fmt.Printf("volumeId = %s\n", vid)
 	}
 
-	if (command == "attachments") {
+	if command == "attachments" {
 		attachments, _ := os.GetVolumeAttachments(token.Id, tenantId, instanceId)
 		for _, attachment := range attachments {
 			fmt.Printf("%s %s\n", attachment.Id, attachment.Device)
 		}
-	}	
+	}
 
-	if (volumeId != "") {
+	if volumeId != "" {
 		vol, err := os.GetVolume(token.Id, tenantId, volumeId)
-		if (err != nil) {
+		if err != nil {
 			glog.Error(err)
 			sys.Exit(-1)
 		}
-	
-		if (command == "volume") {
+
+		if command == "volume" {
 			fmt.Printf("%s %s %s %s %d", vol.Id, vol.Name, vol.ServerId, vol.Device, vol.Size)
 		}
-	
+
 		// /etc/machine-id
-		if (command == "attach") {
+		if command == "attach" {
 			os.AttachVolume(token.Id, tenantId, instanceId, volumeId)
 		}
 
-		if (command == "mkfs") { 
+		if command == "mkfs" {
 			os.Mkfs(vol.Device, "xfs")
 		}
 
-		if (command == "detach") {
+		if command == "detach" {
 			os.DetachVolume(token.Id, tenantId, instanceId, volumeId)
 		}
 
-		if (command == "delete") {
+		if command == "delete" {
 			os.DeleteVolume(token.Id, tenantId, volumeId)
 		}
-	}	
+	}
 
 }
-

@@ -3,7 +3,7 @@
 package main
 
 import (
-	"github.com/nds-labs/apictl/cmd"
+	"github.com/ndslabs/apictl/cmd"
 	"log"
 )
 

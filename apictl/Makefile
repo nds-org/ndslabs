@@ -16,4 +16,4 @@ gensrc:
 	mkdir -p build/bin/amd64 build/bin/darwin build/pkg
 	GOOS=linux GOARCH=amd64 go build -o build/bin/amd64/apictl
 	GOOS=darwin GOARCH=amd64 go build -o build/bin/darwin/apictl
-	docker run --rm -it -v `pwd`/../apiserver:/go/src/github.com/nds-labs/apiserver -v `pwd`:/go/src/github.com/nds-labs/apictl -v `pwd`/build/bin:/go/bin -v `pwd`/build/pkg:/go/pkg -v `pwd`/build.sh:/build.sh golang /build.sh
+	docker run --rm -it -v `pwd`/../apiserver:/go/src/github.com/ndslabs/apiserver -v `pwd`:/go/src/github.com/ndslabs/apictl -v `pwd`/build/bin:/go/bin -v `pwd`/build/pkg:/go/pkg -v `pwd`/build.sh:/build.sh golang /build.sh

@@ -1,7 +1,7 @@
 package cmd
 const (
   VERSION = "0.1alpha"
-  BUILD_DATE = "2016-03-19 13:16"
-  GIT_COMMIT = "47feef28879aa181c89a277d7211f66981dcc209"
-  GIT_TAG = "v1.0-382-g47feef28879aa1"
+  BUILD_DATE = "2016-03-24 14:01"
+  GIT_COMMIT = "153a3f51bc442c6099f88ddc7d84c2bed68f787c"
+  GIT_TAG = ""
 )

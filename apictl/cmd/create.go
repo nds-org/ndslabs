@@ -4,7 +4,7 @@ package cmd
 
 import (
 	"fmt"
-	api "github.com/nds-labs/apiserver/types"
+	api "github.com/ndslabs/apiserver/types"
 	"github.com/spf13/cobra"
 	"os"
 	"strconv"
