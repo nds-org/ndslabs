@@ -10,9 +10,9 @@ To build the apiserver binary:
 To build the apiserver binary, this assumes you have standard go workspace with the following structure:
 
 ```
-cd nds-labs
-docker run --rm -it -v `pwd`:/go/src/github.com/nds-labs golang bash
-# cd src/github.com/nds-labs/apiserver/
+cd ndslabs
+docker run --rm -it -v `pwd`:/go/src/github.com/ndslabs golang bash
+# cd src/github.com/ndslabs/apiserver/
 # go get
 # go build
 ```

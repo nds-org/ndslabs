@@ -10,6 +10,6 @@ gensrc:
 	@echo ")" >> $(VERSIONFILE)
 	rm -f build/bin/amd64/apictl build/bin/darwin/apictl
 	mkdir -p build/bin/amd64 build/bin/darwin build/pkg
-	docker run --rm -it -v `pwd`:/go/src/github.com/nds-labs/apiserver -v `pwd`/build/bin:/go/bin -v `pwd`/build/pkg:/go/pkg -v `pwd`/build.sh:/build.sh golang  /build.sh
+	docker run --rm -it -v `pwd`:/go/src/github.com/ndslabs/apiserver -v `pwd`/build/bin:/go/bin -v `pwd`/build/pkg:/go/pkg -v `pwd`/build.sh:/build.sh golang  /build.sh
 	docker build -t ndslabs/apiserver:latest .
 	docker push ndslabs/apiserver:latest

@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
-	ndsapi "github.com/nds-labs/apiserver/types"
+	ndsapi "github.com/ndslabs/apiserver/types"
 	"io/ioutil"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
