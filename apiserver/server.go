@@ -1872,6 +1872,7 @@ func (s *Server) addServiceFile(path string) error {
 	if path[len(path)-4:len(path)] != "json" {
 		return nil
 	}
+	glog.V(4).Infof("Adding %s", path)
 	service := api.ServiceSpec{}
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
