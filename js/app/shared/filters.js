@@ -31,10 +31,10 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
 .filter('externalHostPort', [ 'ApiHost', 'ApiPort', '_', function(ApiHost, ApiPort, _) {
   return function(endpt) {
     // TODO: How do we know if this can be navigated to?
-    var protocal = endpt.protocol;
+    var protocol = endpt.protocol;
     
     // Hard-coding HTTP for now, since specs specify TCP instead of HTTP
-    return 'http://' + ApiHost + (endpt.nodePort ? ':' + endpt.nodePort : '');
+    return protocol + '://' + ApiHost + (endpt.nodePort ? ':' + endpt.nodePort : '');
   };
 }])
 
