@@ -2,7 +2,7 @@ BUILD_DATE := `date +%Y-%m-%d\ %H:%M`
 GIT_COMMIT := `git rev-parse \"HEAD^{commit}\"`
 GIT_TAG := `git describe --tags --abbrev=14`
 VERSIONFILE := cmd/clientVersion.go
-APP := ndslasctl
+APP := ndslabsctl
 
 gensrc:
 	rm -f $(VERSIONFILE)
