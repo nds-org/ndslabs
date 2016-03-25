@@ -474,9 +474,8 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 				Name: fmt.Sprintf("%d", port.Port),
 				Port: port.Port,
 			}
-			if port.Protocol == "TCP" {
-				k8port.Protocol = api.ProtocolTCP
-			}
+			// For now, assume all ports are TCP
+			k8port.Protocol = api.ProtocolTCP
 			k8svc.Spec.Ports = append(k8svc.Spec.Ports, k8port)
 		}
 	}
@@ -484,7 +483,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 	return &k8svc
 }
 
-func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec, links *map[string]ServiceAddrPort) *api.ReplicationController {
+func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec, links *map[string]ServiceAddrPort, sharedEnv *map[string]string) *api.ReplicationController {
 
 	k8rc := api.ReplicationController{}
 	// Replication controller
@@ -498,6 +497,7 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	}
 
 	env := []api.EnvVar{}
+	env = append(env, api.EnvVar{Name: "NAMESPACE", Value: ns})
 
 	for name, addrPort := range *links {
 
@@ -513,7 +513,6 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 			continue
 		}
 
-		env = append(env, api.EnvVar{Name: "NAMESPACE", Value: ns})
 		env = append(env,
 			api.EnvVar{
 				Name:  fmt.Sprintf("%s_PORT_%d_TCP_ADDR", strings.ToUpper(name), addrPort.Port),
@@ -535,6 +534,10 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 				value = val
 			}
 		}
+		env = append(env, api.EnvVar{Name: name, Value: value})
+	}
+
+	for name, value := range *sharedEnv {
 		env = append(env, api.EnvVar{Name: name, Value: value})
 	}
 

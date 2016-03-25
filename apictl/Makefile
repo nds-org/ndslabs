@@ -2,13 +2,13 @@ BUILD_DATE := `date +%Y-%m-%d\ %H:%M`
 GIT_COMMIT := `git rev-parse \"HEAD^{commit}\"`
 GIT_TAG := `git describe --tags --abbrev=14`
 VERSIONFILE := cmd/clientVersion.go
-APP := ndslasctl
+APP := ndslabsctl
 
 gensrc:
 	rm -f $(VERSIONFILE)
 	@echo "package cmd" > $(VERSIONFILE)
 	@echo "const (" >> $(VERSIONFILE)
-	@echo "  VERSION = \"0.1alpha\"" >> $(VERSIONFILE)
+	@echo "  VERSION = \"0.1-alpha\"" >> $(VERSIONFILE)
 	@echo "  BUILD_DATE = \"$(BUILD_DATE)\"" >> $(VERSIONFILE)
 	@echo "  GIT_COMMIT = \"$(GIT_COMMIT)\"" >> $(VERSIONFILE)
 	@echo "  GIT_TAG = \"$(GIT_TAG)\"" >> $(VERSIONFILE)

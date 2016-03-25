@@ -898,7 +898,7 @@ func (s *Server) GetStack(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	sid := r.PathParam("sid")
 
-	stack, err := s.getStack(pid, sid)
+	stack, err := s.getStackWithStatus(pid, sid)
 	if stack == nil {
 		rest.NotFound(w, r)
 		return
@@ -1105,8 +1105,26 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 	glog.V(4).Infof("Starting controller for %s\n", serviceKey)
 	spec, _ := s.getServiceSpec(serviceKey)
 
+	sharedEnv := make(map[string]string)
+	// Hack to allow for sharing configuration information between dependent services
+	for _, depends := range spec.Dependencies {
+		if depends.ShareConfig {
+			// Get the stack service for the dependency, if present
+			for i := range stack.Services {
+				ss := &stack.Services[i]
+				if ss.Service == depends.DependencyKey {
+					// Found it. Now get it's config
+					for key, value := range ss.Config {
+						sharedEnv[key] = value
+						glog.V(4).Infof("Adding env from %s  %s=%s\n", ss.Service, key, value)
+					}
+				}
+			}
+		}
+	}
+
 	name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
-	template := s.kube.CreateControllerTemplate(pid, name, stack.Id, stackService, spec, addrPortMap)
+	template := s.kube.CreateControllerTemplate(pid, name, stack.Id, stackService, spec, addrPortMap, &sharedEnv)
 
 	if len(spec.VolumeMounts) > 0 {
 		k8vols := make([]k8api.Volume, 0)
@@ -1367,11 +1385,26 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 	for i := range stack.Services {
 		stackService := &stack.Services[i]
 		stackService.Endpoints = []api.Endpoint{}
+
 		glog.V(4).Infof("Stack Service %s %s\n", stackService.Service, podStatus[stackService.Service])
+
 		stackService.Status = podStatus[stackService.Service]
 		endpoint, ok := endpoints[stackService.Service]
 		if ok {
 			glog.V(4).Infof("Endpoint %s", endpoints)
+
+			// Get the port protocol for the service endpoint
+			svc, err := s.getServiceSpec(stackService.Service)
+			if err != nil {
+				glog.Error(err)
+			}
+			for _, port := range svc.Ports {
+				glog.V(4).Infof(">>PORT %d %s %d", port.Port, port.Protocol, endpoint.Port)
+				if port.Port == endpoint.Port {
+					endpoint.Protocol = port.Protocol
+				}
+			}
+
 			stackService.Endpoints = append(stackService.Endpoints, endpoint)
 		}
 	}
