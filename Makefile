@@ -6,7 +6,7 @@ gensrc:
 	rm -f $(VERSIONFILE)
 	@echo "package main" > $(VERSIONFILE)
 	@echo "const (" >> $(VERSIONFILE)
-	@echo "  VERSION = \"0.1alpha\"" >> $(VERSIONFILE)
+	@echo "  VERSION = \"0.1-alpha\"" >> $(VERSIONFILE)
 	@echo "  BUILD_DATE = \"$(BUILD_DATE)\"" >> $(VERSIONFILE)
 	@echo ")" >> $(VERSIONFILE)
 	rm -f build/bin/$(APP)-linux-amd64 build/$(APP)-darwin-amd64
