@@ -91,7 +91,8 @@ footer, .push {
 }
 
 .modal-body-scrollable {
-   max-height:600px;
+   min-height:350px;
+   max-height:500px;
    overflow: auto;
 }
 
@@ -106,6 +107,11 @@ footer, .push {
 
 /* Specific id styles
 -------------------------------------------------- */
+
+#configWizard {
+  min-height:400px;
+  max-height:600px;
+}
 
 #loginPanel {
   margin: 10% auto;

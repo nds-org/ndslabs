@@ -43,7 +43,7 @@ angular
       $location.path(HomeRoute);
     }, function(response) {
       var body = response.body || { 'Error': 'Something went wrong. Is the server running?' };
-      $scope.errorMessage = response.status === 401 ? 'Invalid namespace or password' : body.Error;
+      $scope.errorMessage = response.status === 401 ? 'Invalid username or password' : body.Error;
       $log.error("Error logging in!");
     }).finally(function() {
       $scope.progressMessage = '';
