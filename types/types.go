@@ -84,6 +84,7 @@ type Service struct {
 type ServiceDependency struct {
 	DependencyKey string `json:"key"`
 	Required      bool   `json:"required"`
+	ShareConfig   bool   `json:"shareConfig"`
 }
 
 type Stack struct {

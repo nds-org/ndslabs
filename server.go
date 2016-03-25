@@ -1105,8 +1105,26 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 	glog.V(4).Infof("Starting controller for %s\n", serviceKey)
 	spec, _ := s.getServiceSpec(serviceKey)
 
+	sharedEnv := make(map[string]string)
+	// Hack to allow for sharing configuration information between dependent services
+	for _, depends := range spec.Dependencies {
+		if depends.ShareConfig {
+			// Get the stack service for the dependency, if present
+			for i := range stack.Services {
+				ss := &stack.Services[i]
+				if ss.Service == depends.DependencyKey {
+					// Found it. Now get it's config
+					for key, value := range ss.Config {
+						sharedEnv[key] = value
+						glog.V(4).Infof("Adding env from %s  %s=%s\n", ss.Service, key, value)
+					}
+				}
+			}
+		}
+	}
+
 	name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
-	template := s.kube.CreateControllerTemplate(pid, name, stack.Id, stackService, spec, addrPortMap)
+	template := s.kube.CreateControllerTemplate(pid, name, stack.Id, stackService, spec, addrPortMap, &sharedEnv)
 
 	if len(spec.VolumeMounts) > 0 {
 		k8vols := make([]k8api.Volume, 0)
