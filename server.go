@@ -898,7 +898,7 @@ func (s *Server) GetStack(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 	sid := r.PathParam("sid")
 
-	stack, err := s.getStack(pid, sid)
+	stack, err := s.getStackWithStatus(pid, sid)
 	if stack == nil {
 		rest.NotFound(w, r)
 		return
@@ -1367,11 +1367,26 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 	for i := range stack.Services {
 		stackService := &stack.Services[i]
 		stackService.Endpoints = []api.Endpoint{}
+
 		glog.V(4).Infof("Stack Service %s %s\n", stackService.Service, podStatus[stackService.Service])
+
 		stackService.Status = podStatus[stackService.Service]
 		endpoint, ok := endpoints[stackService.Service]
 		if ok {
 			glog.V(4).Infof("Endpoint %s", endpoints)
+
+			// Get the port protocol for the service endpoint
+			svc, err := s.getServiceSpec(stackService.Service)
+			if err != nil {
+				glog.Error(err)
+			}
+			for _, port := range svc.Ports {
+				glog.V(4).Infof(">>PORT %d %s %d", port.Port, port.Protocol, endpoint.Port)
+				if port.Port == endpoint.Port {
+					endpoint.Protocol = port.Protocol
+				}
+			}
+
 			stackService.Endpoints = append(stackService.Endpoints, endpoint)
 		}
 	}

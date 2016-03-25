@@ -474,9 +474,8 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 				Name: fmt.Sprintf("%d", port.Port),
 				Port: port.Port,
 			}
-			if port.Protocol == "TCP" {
-				k8port.Protocol = api.ProtocolTCP
-			}
+			// For now, assume all ports are TCP
+			k8port.Protocol = api.ProtocolTCP
 			k8svc.Spec.Ports = append(k8svc.Spec.Ports, k8port)
 		}
 	}
