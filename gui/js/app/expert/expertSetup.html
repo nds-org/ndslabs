@@ -6,7 +6,6 @@
           <div class="col-sm-12">
             <h3><small class="text-muted">PROJECT</small>
             &nbsp;&nbsp;&nbsp;{{ project.namespace | capitalize }}</h3>
-            <!-- <h4>{{ app.tagline }}</h4> -->
           </div>
         </div>
       </div>
@@ -32,7 +31,7 @@
           </p>
         </div>
         
-        <table class="table table-condensed" ng-hide="(allServices | filter : svcQuery).length === 0">
+        <table class="table table-condensed table-hover table-striped" ng-hide="(allServices | filter : svcQuery).length === 0">
           <tbody>
             <tr ng-repeat="stack in allServices | isStack:showStandalones | orderBy:'label' | filter : svcQuery track by stack.key">
               <td width="95%">{{ stack.label }}</td>
@@ -52,12 +51,6 @@
     <div class="col-sm-9 fill-height">
       <div class="row">
         <div class="col-sm-12">
-          <!-- TODO: Refreshing data through nested AJAX does not seem to work well here... -->
-          <!-- <justgage width="175" height="175" title="Used Storage" relativeGaugeSize="true" 
-          value="{{ configuredVolumes | usedStorage }}" max="{{ project.storageQuota || 50 }}" label="GB"></justgage>
-          <justgage width="175" height="175" title="Stacks Running" relativeGaugeSize="true"
-              ng-if="configuredStacks.length > 0"max="{{ configuredStacks.length }}"
-              value="{{ configuredStacks | runningStacksCount }}"  label="Stacks"></justgage> -->
           <button class="btn btn-default btn-sm pull-right" ng-click="toggleAutoRefresh()"
                ng-class="{ 'btn-info':autoInterval !== null }"
                ng-mouseenter="iconSpin = true" ng-mouseleave="iconSpin = false"
@@ -65,6 +58,18 @@
              <i class="fa fa-refresh fa-fw" ng-class="{ 'fa-spin':iconSpin || autoInterval !== null }"></i>
              Auto Refresh
           </button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-3">
+          <!-- TODO: Refreshing data through nested AJAX does not seem to work well here... -->
+          <!--<justgage width="150" height="150" title="Used Storage" min="0" donut="true"
+          value="{{ configuredVolumes | usedStorage }}" max="{{ project.storageQuota || 50 }}" label="GB"></justgage>-->
+        </div>
+        <div class="col-sm-9">
+          <!--<justgage width="150" height="150" title="Stacks Running" donut="true"
+              ng-if="configuredStacks.length > 0" max="{{ configuredStacks.length }}" min="0"
+              value="{{ configuredStacks | runningStacksCount }}"  label="Stacks"></justgage>-->
         </div>
       </div>
       
@@ -80,7 +85,7 @@
               <uib-tab-heading>
                 <i class="fa fa-fw fa-align-justify"></i> Stacks
               </uib-tab-heading>
-              <div class="well well-lg ">
+              <div class="well well-lg fill-height">
                 <!-- Helper text to display if the user has no yet configured any stacks -->
                 <div ng-if="configuredStacks.length === 0" class="helper-text">
                   <h2>It looks like you haven't configured any stacks.</h2>
@@ -129,8 +134,8 @@
                                 <td width="35%"><strong>Name</strong></td>
                                 <td width="20%" class="text-center"><strong>Config</strong></td>
                                 <td width="20%" class="text-center">
-                                  <strong ng-if="stack.status === 'started' || intervals.start[stack.id]">Logs</strong>
-                                  <strong ng-if="stack.status === 'stopped' && !intervals.start[stack.id]">Remove</strong>
+                                  <strong ng-if="stack.status !== 'stopped'">Logs</strong>
+                                  <strong ng-if="stack.status === 'stopped'">Remove</strong>
                                 </td>
                               </tr>
                             </thead>
@@ -190,14 +195,14 @@
                                   <!-- View logs button -->
                                   <button type="button" class="btn btn-xs btn-default" 
                                   uib-tooltip="View {{ svc.service | specProperty:'label' }} Logs" 
-                                  ng-if="stack.status.indexOf('start') !== -1 || intervals.start[stack.id]"
+                                  ng-if="stack.status !== 'stopped'"
                                   ng-disabled="svc.status === ''" tooltip-placement="left" ng-click="showLogs(svc)">
-                                    <i class="fa fa-fw fa-file-text" ng-class="{ 'animated faa-vertical': stack.status === 'starting' && (svc.status === 'Waiting' || svc.status === 'Starting') }"></i>
+                                    <i class="fa fa-fw fa-file-text" ng-class="{ 'animated faa-vertical': stack.status === 'starting' && (svc.status === 'waiting' || svc.status === 'starting') }"></i>
                                   </button>
                                   
                                   <!-- Remove service from stack button -->
                                   <button type="button" ng-disabled="stack.services | isRecursivelyRequired:svc" 
-                                      ng-if="(stack.status === 'stopped' && !intervals.start[stack.id]) && svc.service !== stack.key && !_.find((stack.key | requirements), [ 'key', svc.service ])" 
+                                      ng-if="stack.status === 'stopped' && svc.service !== stack.key && !_.find((stack.key | requirements), [ 'key', svc.service ])" 
                                       class="btn btn-xs btn-default" ng-click="removeStackSvc(stack, svc)" 
                                       uib-tooltip="Remove {{ option.key | specProperty:'label' }} from this stack" tooltip-placement="left">
                                     <i class="fa fa-fw fa-times"></i>
@@ -233,7 +238,7 @@
                     <div class="pull-right" role="group" aria-label="...">
                   
                       <!-- Delete Stack Button -->
-                      <button class="btn btn-sm btn-default" ng-disabled="intervals.stop[stack.id] || intervals.start[stack.id]" ng-if="stack.status.indexOf('start') === -1"
+                      <button class="btn btn-sm btn-default" ng-disabled="stack.status !== 'stopped' || starting[stack.id]" ng-if="stack.status.indexOf('start') === -1"
                           ng-click="deleteStack(stack)" uib-tooltip="Delete this Stack"
                           tooltip-placement="left">
                         <i class="fa fa-times"></i>
@@ -241,7 +246,7 @@
                       </button>
                       
                       <!-- Launch Stack Button -->
-                      <button class="btn btn-sm btn-success" ng-disabled="intervals.stop[stack.id] || intervals.start[stack.id]" 
+                      <button class="btn btn-sm btn-success" ng-disabled="stack.status !== 'stopped' || starting[stack.id]" 
                            ng-click="startStack(stack)" ng-if="stack.status.indexOf('start') === -1" uib-tooltip="Start all services in this stack"
                           tooltip-placement="top">
                         <i class="fa fa-fw fa-play"></i>
@@ -249,7 +254,7 @@
                       </button>
                   
                       <!-- Stop Stack Button -->
-                      <button class="btn btn-sm btn-danger" ng-disabled="intervals.stop[stack.id] || intervals.start[stack.id]" 
+                      <button class="btn btn-sm btn-danger" ng-disabled="stack.status !== 'started' || stopping[stack.id]" 
                            ng-click="stopStack(stack)" ng-if="stack.status.indexOf('stop') === -1" uib-tooltip="Stop all services in this stack"
                           tooltip-placement="left">
                         <i class="fa fa-fw fa-stop"></i>
@@ -267,7 +272,7 @@
                 <i class="fa fa-fw fa-database"></i> Volumes
               </uib-tab-heading>
               
-              <div class="well well-lgfill-height">
+              <div class="well well-lg fill-height">
                 <!-- Helper text to display if the user has no yet configured any volumes -->
                 <div ng-if="configuredVolumes.length === 0" class="helper-text">
                   <h2>It looks like you haven't configured any volumes.</h3>
