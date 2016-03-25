@@ -31,19 +31,6 @@ angular
     $scope.selectedTab = 1;
   };
   
-  /**
-   * The name / tagline of our app
-   * TODO: This will need to be moved to a constant when we add more pages
-   */ 
-  $scope.app = _.sample([ 
-    { name: 'StackMagic',      tagline: 'Add and manage software stacks' }, 
-    /*{ name: 'StackBlaster',     tagline: 'Stack the odds in your favor' },
-    { name: 'MasterBlaster',    tagline: 'Find your inner stack' },
-    { name: 'NOOBernetes',      tagline: 'For teh noobs!' },
-    { name: "DrStack",          tagline: 'One stack, two stack, red stack, blue stack?' },
-    { name: "Stackstr",        tagline: 'It\'s where the stacks go' }*/
-  ]);
-  
   // Wire in DEBUG mode
   $scope.DEBUG = DEBUG;
 
@@ -65,14 +52,19 @@ angular
   // Logic for the "Auto Refresh" toggle button
   $scope.autoInterval = null;
   $scope.startInterval = function (){
-    $scope.autoInterval = $interval($scope.softRefresh, 2000);
+    if ($scope.autoInterval === null) {
+      $scope.autoInterval = $interval($scope.softRefresh, 2000);
+    }
   };
   
   $scope.stopInterval = function() {
-    $interval.cancel($scope.autoInterval);
-    $scope.autoInterval = null;
+    if ($scope.autoInterval !== null) {
+      $interval.cancel($scope.autoInterval);
+      $scope.autoInterval = null;
+    }
   };
   
+  $scope.autoRefresh = false;
   $scope.toggleAutoRefresh = function() {
     if ($scope.autoInterval === null) {
       $scope.startInterval();
@@ -80,6 +72,19 @@ angular
       $scope.stopInterval();
     }
   };
+  
+  // Watch for transitioning stacks (their status will end with "ing")
+  $scope.$watch('configuredStacks', function(oldValue, newValue) {
+    var transient = _.find(Stacks.all, function(stk) {
+      return _.includes(stk.status, 'ing');
+    });
+    
+    if (transient) {
+      $scope.startInterval();
+    } else if (!transient) {
+      $scope.stopInterval();
+    }
+  });
   
   /**
    * Perform a "soft-refresh". That is, refresh the data without fully re-rendering the page
@@ -156,21 +161,17 @@ angular
     })
   })();
   
-  /**
-   * A map-like structure to store our intervals, keyed by stack UUID
-   */
-  $scope.intervals = {
-    'start': {},
-    'stop': {}
-  };
+  $scope.starting = {};
+  $scope.stopping = {};
   
   /**
    * Starts the given stack's services one-by-one and does a "soft-refresh" when complete
    * @param {Object} stack - the stack to launch
    */ 
   $scope.startStack = function(stack) {
-      // Signal to the UI that we are starting this stack
-    $scope.intervals.start[stack.id] = $interval($scope.softRefresh, 2000);
+    $scope.startInterval();
+    
+    $scope.starting[stack.id] = true;
     
       // Then send the "start" command to the API server
     NdsLabsApi.getProjectsByProjectIdStartByStackId({
@@ -181,9 +182,7 @@ angular
     }, function(headers) {
       $log.error('failed to start ' + stack.name);
     }).finally(function() {
-      $scope.softRefresh();
-      $interval.cancel($scope.intervals.start[stack.id]);
-      $scope.intervals.start[stack.id]  = null;
+      $scope.starting[stack.id] = false;
     });
   };
   
@@ -207,9 +206,10 @@ angular
 
     // Define what we should do when the modal is closed
     modalInstance.result.then(function(stack) {
-      // Signal to the UI that we are stopping this stack
-      $scope.intervals.stop[stack.id] = $interval($scope.softRefresh, 2000);
+      $scope.startInterval();
       
+      $scope.stopping[stack.id] = true;
+    
       // Then send the "stop" command to the API server
       NdsLabsApi.getProjectsByProjectIdStopByStackId({
         'projectId': projectId,
@@ -218,10 +218,9 @@ angular
         $log.debug('successfully stopped ' + stack.name);
       }, function(headers) {
         $log.error('failed to stop ' + stack.name);
-      }).finally(function() {
-        $scope.softRefresh();
-        $interval.cancel($scope.intervals.stop[stack.id]);
-        $scope.intervals.stop[stack.id] = null;
+      })
+      .finally(function() {
+        $scope.stopping[stack.id] = false;
       });
     });
   };
@@ -343,29 +342,25 @@ angular
         $log.debug("successfully posted to /projects/" + projectId + "/stacks!");
         
         // Add the new stack to the UI
-        Stacks.all.push(newEntities.stack = stack);
-      }, function(headers) {
-        $log.error("error posting to /projects/" + projectId + "/stacks!");
-      }).finally(function() {
-        var stack = newEntities.stack;
+        Stacks.all.push(stack);
         
           // Then attach our necessary volumes
         if (stack.id) {
           angular.forEach(newEntities.volumes, function(volume) {
             var service = _.find(stack.services, ['service', volume.service]);
             
-            if (service) {
-                // Orphaned volumes are already in the list
-                var orphanVolume = _.find($scope.configuredVolumes, function(vol) { return vol.id === volume.id; });
-                
-              if (!orphanVolume) {
-                $scope.createVolume(volume, service);
-              } else {
-                $scope.attachVolume(orphanVolume, service);
-              }
+            if (!volume.id) {
+              $scope.createVolume(volume, service);
+            } else {
+              var orphanVolume = _.find(Volumes.all, function(vol) { return vol.id === volume.id; });
+              
+              // Attach existing volume to new service
+              $scope.attachVolume(orphanVolume, service);
             }
           });
         }
+      }, function(headers) {
+        $log.error("error posting to /projects/" + projectId + "/stacks!");
       });
     });
   };
@@ -385,7 +380,6 @@ angular
       volume = data;
     }, function(headers) {
       $log.error("error updating /projects/" + projectId + "/volumes/" + volume.name + "!");
-      $scope.softRefresh();
     });
   };
   
@@ -397,10 +391,11 @@ angular
       'projectId': projectId
     }).then(function(data, xhr) {
       $log.debug("successfully posted to /projects/" + projectId + "/volumes!");
-      $scope.configuredVolumes.push(data);
+      Volumes.all.push(data);
     }, function(headers) {
       $log.error("error posting to /projects/" + projectId + "/volumes!");
-      $scope.softRefresh();
+    }).finally(function() {
+      //$scope.softRefresh();
     });
   };
   
