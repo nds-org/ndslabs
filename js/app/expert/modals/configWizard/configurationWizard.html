@@ -16,7 +16,7 @@
     </div>
   </div>
   
-  <div class="modal-body" style="min-height:400px">
+  <div id="configWizard" class="modal-body modal-body-scrollable">
     <div class="row">
       <!-- Wizard Page selector -->
       <div class="col-md-12">
@@ -37,7 +37,7 @@
                     <div class="col-sm-3 pull-right">
                       <i class="fa fa-fw fa-database pull-right animated faa-slow faa-flash" tooltip-placement="left"
                       uib-tooltip="{{ req.service | specProperty:'label' }} requires a volume to house its 
-                      data. You will be guided through setting up a volume as a part of this wizard."
+                      data. You will be guided through setting up a volume as a part of this wizard." ng-if="vol.name !== 'docker'"
                       ng-repeat="vol in (req.service | specProperty:'volumeMounts')"></i>
                     </div>
                   </div>
@@ -201,8 +201,11 @@
           <div class="row"ng-if="!availableSpace || availableSpace == 0 || availableSpace <= 0">
             <div class="col-sm-12">
                 <p class="text-danger">You have used all of your allocated storage.</p>
-                <a target="_self" ng-href="{{ mailToLink }}">Contact an administrator</a> regarding increasing your storage quota.</p>
-                <p>Or you can remove other volumes to make room for this one</p>
+                <p>
+                  <a target="_self" ng-href="{{ mailToLink }}">Contact an administrator</a> 
+                  regarding increasing your storage quota.
+                </p>
+                <p>Or you can remove other volumes to make room for a new one.</p>
             </div>
           </div>
           
@@ -260,59 +263,73 @@
                 </div>
               </div>
               
-                
               <!-- Create a New Volume -->
               <div class="row">
-                <div class="col-sm-6">
-                  
-                  <!-- Volume Name -->
-                  <form name="volumeNameForm" class="form-horizontal" ng-show="volume.id === ''" novalidate>
-                    <div class="form-group"  ng-class="{ 'has-error has-feedback':volumeNameForm.volumeName.$invalid, 'has-success has-feedback': volumeNameForm.volumeName.$valid }">
-                      <label class="control-label" for="volumeName">Name</label>
-                      <input id="volumeName" type="text" name="volumeName" class="form-control" required maxlength="20"
-                           placeholder="Enter a name for this volume" ng-model="volume.name" />
-                      <span class="form-control-feedback glyphicon"  aria-hidden="true"
-                        ng-class="{ 'glyphicon-remove': volumeNameForm.volumeName.$invalid, 'glyphicon-ok': volumeNameForm.volumeName.$valid }"></span>
-                    
-                      <div ng-messages="volumeNameForm.volumeName.$error" role="alert" class="text-danger">
-                        <div ng-message="required">You must name this volume before continuing.</div>
-                        <div ng-message="minlength">You must name this volume before continuing.</div>
-                        <div ng-message="maxlength">Volume name can be at most 20 characters long.</div>
-                      </div>
-                    </div>
-                  </form>
-                </div>
-                
-                <div class="col-sm-6">
-                  <!-- Volume Size / Units -->
-                  <div class="input-group pull-right" id="inputVolumeSize">
-                    <form name="volumeSizeForm" novalidate>
-                      <div class="form-group"  ng-class="{ 'has-error':volumeSizeForm.volumeSize.$invalid, 'has-success': !volumeSizeForm.volumeSize.$pristine && volumeSizeForm.volumeSize.$valid }">
+                <div class="col-sm-12">
+                  <form name="volumeCreateForm" class="form-horizontal" ng-show="volume.id === ''" novalidate>
+                    <!-- Volume Name -->
+                    <div class="col-sm-8">
+                      <div class="form-group"  ng-class="{ 'has-error has-feedback': !volumeCreateForm.volumeName.$pristine && volumeCreateForm.volumeName.$invalid, 'has-success has-feedback':  !volumeCreateForm.volumeName.$pristine && volumeCreateForm.volumeName.$valid }">
+                        <label class="control-label" for="volumeName">Name</label>
+                        <input id="volumeName" type="text" name="volumeName" class="form-control" required maxlength="20"
+                             placeholder="Enter a name for this volume" ng-model="volume.name" />
+                        <span class="form-control-feedback glyphicon"  aria-hidden="true" ng-if="!volumeCreateForm.volumeName.$pristine"
+                          ng-class="{ 'glyphicon-remove': volumeCreateForm.volumeName.$invalid, 'glyphicon-ok': volumeCreateForm.volumeName.$valid }"></span>
+                          
+                        <div ng-messages="volumeCreateForm.volumeName.$error" role="alert" class="alert-danger">
+                          <div ng-message="required">You must name this volume before continuing.</div>
+                          <div ng-message="minlength">You must name this volume before continuing.</div>
+                          <div ng-message="maxlength">Volume name can be at most 20 characters long.</div>
+                        </div>
+                      </div><!-- /form-group -->
+                    </div><!-- /col-sm-8 -->
+                    <div class="col-sm-4">
+                      <div class="form-group" ng-class="{ 'has-error': !volumeCreateForm.volumeSize.$pristine && volumeCreateForm.volumeSize.$invalid, 'has-success': !volumeCreateForm.volumeSize.$pristine && volumeCreateForm.volumeSize.$valid }">
                         <label class="control-label" for="volumeSize">Size</label>
-                        <!-- Size -->
-                        <input id="volumeSize" type="number" name="volumeSize" min="1" class="form-control" ng-model="volume.size"
-                            max="{{ storageQuota - (_.concat(configuredVolumes, _.without(newStackVolumeRequirements, volume)) | usedStorage) }}" />
+                        <div class="input-group">
+                          <input id="volumeSize" type="number" name="volumeSize" min="1" class="form-control" ng-model="volume.size" required
+                              max="{{ storageQuota - (_.concat(configuredVolumes, _.without(newStackVolumeRequirements, volume)) | usedStorage) }}" />
+                          <div class="input-group-btn">
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                              {{ volume.sizeUnit || 'Choose Units' }} <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-right">
+                              <li><a href="#/home" ng-click="volume.sizeUnit='GB'">GB</a></li>
+                              <li><a href="#/home" ng-click="volume.sizeUnit='TB'">TB</a></li>
+                            </ul>
+                          </div><!-- /btn-group -->
+                        </div><!-- /input-group -->
+                        <div ng-messages="volumeCreateForm.volumeSize.$error" class="alert-danger">
+                          <div ng-message="required">Enter a size.</div>
+                          <div ng-message="max">Not enough space.</div>
+                        </div>
+                      </div><!-- /form-group -->
+                    </div><!-- /col-sm-4 -->
+                  </form>
+                </div><!-- /col-sm-12 -->
+              </div><!-- /row -->
+            </div><!-- /panel-body -->
+          </div><!-- /panel-->
+        </div>
+        
+        <!--
+          <div class="col-sm-4">
+            <div class="form-group">
+              <input id="volumeSize" type="number" name="volumeSize" min="1" class="form-control" ng-model="volume.size"
+                  max="{{ storageQuota - (_.concat(configuredVolumes, _.without(newStackVolumeRequirements, volume)) | usedStorage) }}" />
   
-                        <!-- Units -->
-                        <div class="input-group-btn">
-                          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ volume.sizeUnit || 'Choose Units' }} <span class="caret"></span></button>
-                          <ul class="dropdown-menu dropdown-menu-right">
-                            <li><a href="#/home" ng-click="volume.sizeUnit='GB'">GB</a></li>
-                            <li><a href="#/home" ng-click="volume.sizeUnit='TB'">TB</a></li>
-                          </ul>
-                        </div>
-                        
-                        <div ng-messages="volumeSizeForm.volumeSize.$error">
-                          <div ng-message="max">Not enough space</div>
-                        </div>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              </div>
+              <span class="input-group-btn">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  {{ volume.sizeUnit || 'Choose Units' }} <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right">
+                  <li><a href="#/home" ng-click="volume.sizeUnit='GB'">GB</a></li>
+                  <li><a href="#/home" ng-click="volume.sizeUnit='TB'">TB</a></li>
+                </ul>
+              </span>
             </div>
           </div>
-        </div>
+        -->
 
         <!-- Ask the user for confirmation -->
         <div ng-if="wizard.currentPage.key === 'confirm'">

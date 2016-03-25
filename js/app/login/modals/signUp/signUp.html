@@ -36,14 +36,15 @@
           'has-error has-feedback': !registerForm.namespace.$pristine && registerForm.namespace.$invalid, 
           'has-success has-feedback': !registerForm.namespace.$pristine && registerForm.namespace.$valid }">
         <label for="namespace">Username</label>
-        <input type="text" class="form-control" name="namespace" id="namespace" ng-model-options="{ debounce: { 'default':300, 'blur':0 } }"
-            ng-model="newProject.namespace" placeholder="Username" required minlength="3" maxlength="20">
+        <input type="text" class="form-control" name="namespace" id="namespace"
+            ng-model="newProject.namespace" placeholder="Username" required minlength="3" maxlength="20" pattern="[a-zA-Z0-9]+">
         <span class="form-control-feedback glyphicon" ng-if="!registerForm.namespace.$pristine"
             ng-class="{ 'glyphicon-remove': registerForm.namespace.$invalid, 'glyphicon-ok': registerForm.namespace.$valid }"></span>
             
         
         <div class="alert-danger" ng-if="!registerForm.namespace.$pristine" ng-messages="registerForm.namespace.$error">
           <div ng-message="required">Please enter a username.</div>
+          <div ng-message="pattern">Username may only contain alpha-numeric characters.</div>
           <div ng-message="minlength,maxlength">Username must be between 3 and 20 characters.</div>
           
           <!-- FIXME: Check username availability?
@@ -66,6 +67,7 @@
                 
         <div class="alert-danger" ng-if="!registerForm.password.$pristine" ng-messages="registerForm.password.$error">
           <div ng-message="required">Please enter a password.</div>
+          <div ng-message="pattern">Password may not contain spaces.</div>
           <div ng-message="minlength,maxlength">Password must be at least 6 characters.</div>
         </div>
       </div>
@@ -82,8 +84,8 @@
             
         <div class="alert-danger" ng-if="!registerForm.passwordConf.$pristine" ng-messages="registerForm.passwordConf.$error">
           <div ng-message="required">Please enter a password.</div>
-          <div ng-message="minlength,maxlength">Password must be at least 6 characters.</div>
           <div ng-message="pattern">Passwords do not match.</div>
+          <div ng-message="minlength,maxlength">Password must be at least 6 characters.</div>
         </div>
       </div>
     </form>

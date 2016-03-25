@@ -88,7 +88,7 @@
                 </div>
                 
                 <!-- The Accordion of Configured Stacks -->
-                <uib-accordion ng-if="configuredStacks.length > 0" close-others="true">
+                <uib-accordion ng-if="configuredStacks.length > 0" close-others="false">
                   
                   <!-- TODO: This is a silly hack, since we can't bind to the accordion's panel-class attribute, \
                   and we apparently cannot use ng-class to do the same thing, due to an implementation detail. -->
