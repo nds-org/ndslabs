@@ -5,7 +5,7 @@
 
 REPO=ndslabs
 IMAGE=ndslabs-gui
-TAG=latest
+TAG=develop
 
 
 # If -c specified, clean old image
