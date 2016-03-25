@@ -6,7 +6,7 @@ sh ./stop.sh
 
 REPO=ndslabs
 IMAGE=ndslabs-gui
-TAG=latest
+TAG=develop
 
 CLOUD9_PORT=1234
 CLOUD9_USER=cloud9
