@@ -8,7 +8,7 @@ gensrc:
 	rm -f $(VERSIONFILE)
 	@echo "package cmd" > $(VERSIONFILE)
 	@echo "const (" >> $(VERSIONFILE)
-	@echo "  VERSION = \"0.1alpha\"" >> $(VERSIONFILE)
+	@echo "  VERSION = \"0.1-alpha\"" >> $(VERSIONFILE)
 	@echo "  BUILD_DATE = \"$(BUILD_DATE)\"" >> $(VERSIONFILE)
 	@echo "  GIT_COMMIT = \"$(GIT_COMMIT)\"" >> $(VERSIONFILE)
 	@echo "  GIT_TAG = \"$(GIT_TAG)\"" >> $(VERSIONFILE)
