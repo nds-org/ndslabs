@@ -31,7 +31,7 @@
     <script type="text/javascript" src="/bower_components/lodash/dist/lodash.min.js"></script>
 
     <!-- AngularJS -->
-    <script src="/bower_components/angular/angular.js"></script>
+    <script src="/bower_components/angular/angular.min.js"></script>
     <script src="/bower_components/angular-route/angular-route.min.js"></script>
     <script src="/bower_components/angular-resource/angular-resource.min.js"></script>
     <script src="/bower_components/angular-animate/angular-animate.min.js"></script>
@@ -44,7 +44,7 @@
     <!-- Load third-party angular modules / CSS-->
     <script src="/bower_components/justgage-bower/raphael-2.1.4.min.js"></script>
     <script src="/bower_components/justgage-bower/justgage.js"></script>
-    <script src="/bower_components/angular-gage/dist/angular-gage.js"></script>
+    <script src="/bower_components/angular-gage/dist/angular-gage.min.js"></script>
     
     <link rel="stylesheet" type="text/css" href="/bower_components/angular-bootstrap-pwgen/angular-bootstrap-pwgen.css" />
     <script src="/bower_components/angular-bootstrap-pwgen/angular-bootstrap-pwgen.js"></script>
@@ -66,8 +66,6 @@
     <script src="/app/login/modals/signUp/SignUpController.js"></script>
     <script src="/app/login/LoginController.js"></script>
     
-    <!-- Expert Setup Helper Structures / Functions -->
-    
     <!-- Expert Setup Main Controller -->
     <script src="/app/expert/ExpertSetupController.js"></script>
     
@@ -78,8 +76,6 @@
     <script src="/app/expert/modals/stackStop/StackStopController.js"></script>
     <script src="/app/expert/modals/stackDelete/StackDeleteController.js"></script>
     <script src="/app/expert/modals/volumeDelete/VolumeDeleteController.js"></script>
-    
-    <!-- <script src="/app/express/ExpressSetupController.js"></script> -->
   </head>
 
   <!-- Display the actual contents of the app down here -->
@@ -89,10 +85,7 @@
     <div ng-include src="'/app/shared/navbar/navbar.html'" ng-controller="NavbarController"></div> 
     
     <!-- ng-view tells angular that we will swap in templates for the route specified by app.js (via ngRoute) -->
-    <div class="wrapper">
-      <div class="container-fluid" ng-view></div>
-      <div class="push"></div>
-    </div>
+    <div class="container-fluid" ng-view></div>
     
     <div ng-include src="'/app/shared/footer/footer.html'" ng-controller="FooterController"></div>
   </body>

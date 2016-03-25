@@ -20,7 +20,11 @@ angular
     var requiredVolumes = [];
     angular.forEach(stack.services, function(requestedSvc) {
       var svcSpec = _.find(_.concat(stacks, deps), function(svc) { return svc.key === requestedSvc.service });
-      if (svcSpec.volumeMounts && svcSpec.volumeMounts.length > 0) {
+      
+      // TODO: Gross hack.. fix this
+      if (svcSpec.volumeMounts && _.filter(svcSpec.volumeMounts, function(mnt) {
+        return mnt.name !== 'docker';
+      }).length > 0) {
         var orphan = null;
         angular.forEach(configuredVolumes, function(volume) {
           if (!volume.attached && svcSpec.key === volume.service) {

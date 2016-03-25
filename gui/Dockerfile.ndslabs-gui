@@ -8,11 +8,19 @@
 FROM node:latest
 
 # Set build information here before building
-ENV BUILD_VERSION="0.1alpha" \
-    BUILD_DATE="Wed Mar 23 19:49:59 UTC 2016"
+ENV BUILD_VERSION="0.1-alpha" \
+    BUILD_DATE="Fri Mar 25 22:34:53 UTC 2016"
  
 # Set in what directory commands will run
-WORKDIR /home/app
+WORKDIR /home/app/js
+
+# Now copy in the rest of our code
+COPY js/package.json js/bower.json js/Gruntfile.js /home/app/js/
+
+# Install dependencies
+RUN npm install -g http-server bower grunt && \
+    npm install && \
+    bower install --config.interactive=false --allow-root
 
 # Tell Docker we plan to use this port (http-server's default)
 EXPOSE 8080
@@ -21,6 +29,9 @@ EXPOSE 8080
 ENV APISERVER_HOST="192.168.99.100" \
     APISERVER_PORT="30001"
  
+# Set in what directory commands will run
+WORKDIR /home/app
+
 # Now copy in the rest of our code
 COPY . /home/app/
 

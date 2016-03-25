@@ -11,18 +11,18 @@ angular
     passwordConfirmation: '',
   };
   
-  // Check username availability when user changes input
+  // Check username availability when user changes input?
   //
   // FIXME: This won't work unless we're logged in, 
   //   but there is no need to sign-up if we're logged in...
-  $scope.$watch('newProject.namespace', function(oldValue, newValue) {
+  /*$scope.$watch('newProject.namespace', function(oldValue, newValue) {
     $scope.namespaceExists = null;
     NdsLabsApi.getProjectsByProjectId({ 'projectId': newValue }).then(function() {
       $scope.namespaceExists = true;
     }, function() {
       $scope.namespaceExists = false;
     });
-  });
+  });*/
   
   $scope.ok = function(project) {
     NdsLabsApi.postRegister({ 'project': project }).then(function(data, xhr) {
