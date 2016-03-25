@@ -312,25 +312,6 @@
           </div><!-- /panel-->
         </div>
         
-        <!--
-          <div class="col-sm-4">
-            <div class="form-group">
-              <input id="volumeSize" type="number" name="volumeSize" min="1" class="form-control" ng-model="volume.size"
-                  max="{{ storageQuota - (_.concat(configuredVolumes, _.without(newStackVolumeRequirements, volume)) | usedStorage) }}" />
-  
-              <span class="input-group-btn">
-                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  {{ volume.sizeUnit || 'Choose Units' }} <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-right">
-                  <li><a href="#/home" ng-click="volume.sizeUnit='GB'">GB</a></li>
-                  <li><a href="#/home" ng-click="volume.sizeUnit='TB'">TB</a></li>
-                </ul>
-              </span>
-            </div>
-          </div>
-        -->
-
         <!-- Ask the user for confirmation -->
         <div ng-if="wizard.currentPage.key === 'confirm'">
           <div class="row">
