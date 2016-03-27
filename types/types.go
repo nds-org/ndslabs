@@ -41,6 +41,7 @@ type VolumeMount struct {
 	Name      string `json:"name"`
 }
 type ReadyProbe struct {
+	Type         string `json:"type"`
 	Path         string `json:"path"`
 	Port         int    `json:"port"`
 	InitialDelay int    `json:"initialDelay"`
