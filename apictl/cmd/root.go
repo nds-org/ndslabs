@@ -39,21 +39,23 @@ var RootCmd = &cobra.Command{
 
 func Connect(cmd *cobra.Command, args []string) {
 
+	server := viper.GetString("server")
 	if Verbose {
-		fmt.Printf("Connecting to server %s\n", ApiServer)
+		fmt.Printf("Connecting to server %s\n", server)
+		//fmt.Printf("Connecting to server %s\n", ApiServer)
 	}
-	if strings.LastIndex(ApiServer, "/") < len(ApiServer)-1 {
-		ApiServer = ApiServer + "/"
+	if strings.LastIndex(server, "/") < len(server)-1 {
+		server = server + "/"
 	}
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
-	if ApiServer[0:5] == "https" {
-		client = apiclient.NewClient(ApiServer, &http.Client{Transport: tr}, apiUser.token)
+	if server[0:5] == "https" {
+		client = apiclient.NewClient(server, &http.Client{Transport: tr}, apiUser.token)
 	} else {
-		client = apiclient.NewClient(ApiServer, &http.Client{}, apiUser.token)
+		client = apiclient.NewClient(server, &http.Client{}, apiUser.token)
 	}
 }
 func RefreshToken(cmd *cobra.Command, args []string) {
@@ -114,12 +116,15 @@ func writePasswd(token string) {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.apictl.yaml)")
+	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.ndslabsctl.yaml)")
 	RootCmd.PersistentFlags().StringVarP(&ApiServer, "server", "s", "http://localhost:8083", "API server host address")
 	RootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "Verbose output")
+	viper.BindPFlag("server", RootCmd.PersistentFlags().Lookup("server"))
 
+	if RootCmd.PersistentFlags().Lookup("server").Changed {
+		viper.Set("server", ApiServer)
+	}
 	readPasswd()
-
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -128,9 +133,9 @@ func initConfig() {
 		viper.SetConfigFile(cfgFile)
 	}
 
-	viper.SetConfigName(".apictl") // name of config file (without extension)
-	viper.AddConfigPath("$HOME")   // adding home directory as first search path
-	viper.AutomaticEnv()           // read in environment variables that match
+	viper.SetConfigName(".ndslabsctl") // name of config file (without extension)
+	viper.AddConfigPath("$HOME")       // adding home directory as first search path
+	viper.AutomaticEnv()               // read in environment variables that match
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
