@@ -582,18 +582,31 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	}
 
 	if spec.ReadyProbe.Path != "" {
-		k8probe := &api.Probe{
-			Handler: api.Handler{
-				HTTPGet: &api.HTTPGetAction{
-					Path:   spec.ReadyProbe.Path,
-					Port:   intstr.FromInt(spec.ReadyProbe.Port),
-					Scheme: api.URISchemeHTTP,
+		if spec.ReadyProbe.Type == "http" {
+			k8probe := &api.Probe{
+				Handler: api.Handler{
+					HTTPGet: &api.HTTPGetAction{
+						Path:   spec.ReadyProbe.Path,
+						Port:   intstr.FromInt(spec.ReadyProbe.Port),
+						Scheme: api.URISchemeHTTP,
+					},
 				},
-			},
-			InitialDelaySeconds: spec.ReadyProbe.InitialDelay,
-			TimeoutSeconds:      spec.ReadyProbe.Timeout,
+				InitialDelaySeconds: spec.ReadyProbe.InitialDelay,
+				TimeoutSeconds:      spec.ReadyProbe.Timeout,
+			}
+			k8template.Spec.Containers[0].ReadinessProbe = k8probe
+		} else if spec.ReadyProbe.Type == "tcp" {
+			k8probe := &api.Probe{
+				Handler: api.Handler{
+					TCPSocket: &api.TCPSocketAction{
+						Port: intstr.FromInt(spec.ReadyProbe.Port),
+					},
+				},
+				InitialDelaySeconds: spec.ReadyProbe.InitialDelay,
+				TimeoutSeconds:      spec.ReadyProbe.Timeout,
+			}
+			k8template.Spec.Containers[0].ReadinessProbe = k8probe
 		}
-		k8template.Spec.Containers[0].ReadinessProbe = k8probe
 	}
 
 	k8rcs := api.ReplicationControllerSpec{
