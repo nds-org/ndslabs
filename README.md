@@ -1,62 +1,33 @@
-NDS Labs v2
-Updated 15-12-23 - raila
-========
+# NDS Labs
 
-Work in progress.   Many of the services and components are undergoing
-simultaneous non-incremental development - hence the v2 label.
+This is the main repository for the [National Data Service](http://www.nationaldataservice.org/) [NDS Labs](http://labsportal.nationaldataservice.org/) initiative.  
 
-High level summary of changes:
+NDS Labs is designed to be an experimental space for developing and exploring interoperability between services. This is achieved through the use of services containerized with [Docker](https://www.docker.com/what-docker), [Kubernetes](http://kubernetes.io/docs/whatisk8s/) for container orchestration, deployed on an [OpenStack](https://www.openstack.org/) cluster.
 
-    Codebase reorganzied from flat-structure into functional hierarchy.
+For more information, see the [architecture documentation](https://github.com/nds-org/ndslabs/tree/master/docs/architecture).
 
-    Container images to be tagged v2
+On top of this foundation, NDS Labs provides a user interface, command line interface, and an API server used to manage the configuration and deployment of containerized services. This repository includes the following:
 
-    Common image build system via make for consistency
+* apiserver: NDS Labs REST API server, a thin management layer using etcd, Kubernetes, and OpenStack APIs.
+* gui: Project management UI implemented in angular.
+* apictl: Command line utiliy.
 
-    Common etcd key schema
+# Requirements
 
-    Multiple options for cluster deployment for production and dev environments 
-        - heat, kubernetes, vagrant, compose
+* For developers, NDS Labs servics can run on any system with Docker 1.9+.
+* For production deployment, NDS Labs assumes an OpenStack cluster
 
 
-===============================================================================================
-NDS Labs
-========
+# See also
 
-What's In The Box?
-------------------
+* (ndslabs-specs)[https://github.com/nds-org/ndslabs-specs]: Catalog of service specifications
+* (ndslabs-clowder)[https://github.com/nds-org/ndslabs-clowder]: Docker image files for the Clowder example
+* (ndslabs-irods)[https://github.com/nds-org/ndslabs-irods]: Docker image files for the iRODS example
+* (ndslabs-dataverse)[https://github.com/nds-org/ndslabs-dataverse]: Docker image files for the Dataverse example
+* (ndslabs-system-shell)[https://github.com/nds-org/ndslabs-system-shell]: Docker image with NDS Labs system tools
+* (ndslabs-developer-shell)[https://github.com/nds-org/ndslabs-developer-shell]: Docker image for NDS Labs developers
+* (ndslabs-deploy-tools)[https://github.com/nds-org/ndslabs-deploy-tools]: Cluster deployment tools.
 
-This is the main repository for the NDS Labs initiative, which is a part of the
-broader National Data Service (nationaldataservice.org) effort.
-
-NDSLabs is designed to be an experimental space for developing services and
-exploring interoperability between services.  Currently, it *only* works on
-Openstack clusters.
-
-Inside this repo you will find:
-
- * Dockerfiles for building docker images that can serve as the building blocks
-   for data services
- * Servicefiles that manage the lifecycle of services running on a cluster
- * Methods for launching an "NDSLabs" cluster based on CoreOS and Fleet
-
-The individual dockerfiles have been constructed to be as generic as possible,
-with information provided to them via environment variables specified at
-launch.  (And sane defaults in advance of that.)  In some cases this increases
-their startup time, but allows them to be flexible in deployment and
-utilization.
-
-Requirements
-------------
-
-Starting your own NDSLabs cluster requires that you have access to:
-
- * An Openstack cluster and its API endpoint
- * An installation of fleet ( https://github.com/coreos/fleet )
- * This repository
-
-Getting Started
----------------
 
 The rough outline for getting started with a pre-built cluster of NDS Labs
 containers is as follows:
