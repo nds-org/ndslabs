@@ -7,7 +7,7 @@ build:
 	rm -f $(VERSIONFILE)
 	@echo "package main" > $(VERSIONFILE)
 	@echo "const (" >> $(VERSIONFILE)
-	@echo "  VERSION = \"0.1-alpha\"" >> $(VERSIONFILE)
+	@echo "  VERSION = \"1.0-alpha\"" >> $(VERSIONFILE)
 	@echo "  BUILD_DATE = \"$(BUILD_DATE)\"" >> $(VERSIONFILE)
 	@echo ")" >> $(VERSIONFILE)
 	rm -f build/bin/$(APP)-linux-amd64 build/$(APP)-darwin-amd64
@@ -18,6 +18,11 @@ build:
 #release:
 #	docker build -t ndslabs/apiserver:latest .
 #	docker push ndslabs/apiserver:latest
+test:
+	@echo Building test image
+	docker build -t ndslabs/apiserver:test .
+	@echo Pushing test image
+	docker push ndslabs/apiserver:test
 
 dev:
 	@echo Building dev image
