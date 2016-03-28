@@ -17,33 +17,21 @@ On top of this foundation, NDS Labs provides a user interface, command line inte
 * For developers, NDS Labs servics can run on any system with Docker 1.9+.
 * For production deployment, NDS Labs assumes an OpenStack cluster
 
+# Service catalog
 
-# See also
+NDS Labs includes a catalog of service specifications managed via
+the [ndslabs-specs](https://github.com/nds-org/ndslabs-specs) repository.
+For more information, see the [service catalog](https://opensource.ncsa.illinois.edu/confluence/display/NDS/NDS+Labs+Service+Specification) documentation.
 
-* (ndslabs-specs)[https://github.com/nds-org/ndslabs-specs]: Catalog of service specifications
-* (ndslabs-clowder)[https://github.com/nds-org/ndslabs-clowder]: Docker image files for the Clowder example
-* (ndslabs-irods)[https://github.com/nds-org/ndslabs-irods]: Docker image files for the iRODS example
-* (ndslabs-dataverse)[https://github.com/nds-org/ndslabs-dataverse]: Docker image files for the Dataverse example
-* (ndslabs-system-shell)[https://github.com/nds-org/ndslabs-system-shell]: Docker image with NDS Labs system tools
-* (ndslabs-developer-shell)[https://github.com/nds-org/ndslabs-developer-shell]: Docker image for NDS Labs developers
-* (ndslabs-deploy-tools)[https://github.com/nds-org/ndslabs-deploy-tools]: Cluster deployment tools.
+Currently supported services include:
+* Clowder (Clowder, MongoDB, ElasticSearch, RabbitMQ, extractors)
+* Dataverse (Dataverse, Rserve, Solr, Postgres, TwoRavens, iRods)
+* iRods (iCAT, Cloudbrowser)
+* ELK (ElasticSearch, Logstash and Kibana)
 
+# Getting started
 
-The rough outline for getting started with a pre-built cluster of NDS Labs
-containers is as follows:
-
- 1. Import the CoreOS images into Glance as per instructions at coreos.com
- 2. Read over the output of:
-    $ python2.7 startup_ndslabs.py --help
- 3. Run the startup script with the appropriate options.
- 4. Spawn the appropriate servicefiles using fleetctl
-
-Each of the options to startup_ndslabs.py is documented.  A typical invocation
-will specify Openstack volumes to mount, the SSH key to use, a name, and a
-public IP address.
-
-Where to Get Help
------------------
+# Where to get help
 
 There are a few ways to get help for getting up and running.  The first is
 through the NDS discussion mailing list, discuss@nationaldataservice.org.  Only
@@ -54,89 +42,11 @@ The second way is through IRC.  On chat.freenode.net in the channel
 \#nds-epiphyte , folks are often idling and able to respond to questions with
 some delay.
 
+# See also
 
-What's Next?
-------------
-
-Once you have started up the cluster, you are now able to create new docker
-files that interoperate with existing services.  (See the list of services
-below for more information.)  These can be spawned using servicefiles.
-
-All services, docker images and service files are designed to be nearly
-completely configurable at time of first instantiation by environment
-variables.  If they are backed by a persistent container (or linked to a
-persistent database container) they should restart cleanly with existing
-configuration.
-
-List of Services
-----------------
-
-Below are the services currently included.  To inspect which environment
-variables they take, examine the dockerfile for ENV lines.
-
- * busybox
- * docker-registry-frontend
- * docker-registry
- * hipache
- * irods-icat
- * irods-idrop2
- * irods-rest
- * kallithea
- * moinmoin
- * owncloud
- * postgres-icat
- * postgres-owncloud
- * proxy
- * rabbitmq
- * webserve
- * ytwebapp
- * scidrive (planned, not yet implemented)
-
-Special Services
-----------------
-
-Some services are templated to allow for special use cases.  The most prominent
-of these is the webserve service, which is designed to spin up any
-appropriately named docker image.  This is to make it extremely easy to serve
-static content.  For an example of how to do this, see the nds-explorer
-Dockerfile (which builds a dist.tar.gz and inserts it into the dockerfile);
-this service can be spawned by executing
-
- $ fleetctl start webserve@nds-explorer.service
-
-This will feed the portion of the name between the @ symbol and the . into the
-servicefile as %i.  It then downloads the image nds-labs/%i , executes it, and
-sets up an http proxy from the public IP address to the appropriate internal IP
-address.  At the public IP, under the suburl nds-explorer, it will now serve
-the content of that container.
-
-Configuration Variables
------------------------
-
-Below is a selection of environment variables that relate to configuration
-settings for the services.  Not all will need to be changed; in fact, at a bare
-minimum, none of them need to be changed.
-
-To change an environment variable, modify the contents of
-docker-launcher/production.env .
-
- * IRODS_DATADIR defaults to /tempZone/home/rods/data .  What is the location,
-   in iRODS-space, of the data to be made available?
- * irodspassword defaults to testpassword and is the password for the irods
-   postgres database.
- * irodsresc defaults to defaultResc and is the resource on which files will be
-   created, by default.
- * irodszone defaults to tempZone and is the iRODS Zone to be used.
- * kemail defaults to nn@your.kallithea.server and is the email address
-   Kallithea will use for logging and reporting.
- * keyforagent defaults to temp_32_byte_key_for_agent__conn and is the key used
-   in the iRODS setup.
- * kpass defaults to simple_password and is the administrative password for
-   Kallithea.
- * localzonesid defaults to TEMP_LOCAL_ZONE_SID and is the zone SID for iRODS
-   setup.
- * owncloudpassword defaults to testpassword and is the password for admin on
-   ownCloud.
- * ytfidopassword defaults to 3nthr0py and is the password for the ytfido user
-   account on iRODS.
-
+* [ndslabs-clowder](https://github.com/nds-org/ndslabs-clowder): Docker image files for the Clowder example
+* [ndslabs-irods](https://github.com/nds-org/ndslabs-irods): Docker image files for the iRODS example
+* [ndslabs-dataverse](https://github.com/nds-org/ndslabs-dataverse): Docker image files for the Dataverse example
+* [ndslabs-system-shell](https://github.com/nds-org/ndslabs-system-shell): Docker image with NDS Labs system tools
+* [ndslabs-developer-shell](https://github.com/nds-org/ndslabs-developer-shell): Docker image for NDS Labs developers
+* [ndslabs-deploy-tools](https://github.com/nds-org/ndslabs-deploy-tools): Cluster deployment tools.
