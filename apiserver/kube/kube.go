@@ -254,6 +254,36 @@ func (k *KubeHelper) GetServices(pid string, stack string) ([]api.Service, error
 	}
 	return nil, nil
 }
+func (k *KubeHelper) GetReplicationControllers(pid string, label string, value string) ([]api.ReplicationController, error) {
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers?labelSelector=" + label + "%3D" + value
+	request, _ := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	resp, err := k.client.Do(request)
+	if err != nil {
+		glog.Error(err)
+		return nil, err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			rcList := api.ReplicationControllerList{}
+			rcs := make([]api.ReplicationController, len(rcList.Items))
+			json.Unmarshal(data, &rcList)
+			for _, rc := range rcList.Items {
+				rcs = append(rcs, rc)
+			}
+			return rcs, nil
+		} else {
+			glog.Warningf("Get rcs failed: %s %d", resp.Status, resp.StatusCode)
+		}
+	}
+	return nil, nil
+}
 
 func (k *KubeHelper) GetPods(pid string, label string, value string) ([]api.Pod, error) {
 
@@ -325,29 +355,22 @@ func (k *KubeHelper) StopController(pid string, name string) error {
 			glog.V(4).Infof("Error stopping controller (%d)\n", httpresp.StatusCode)
 		}
 	}
+	rcs, _ := k.GetReplicationControllers(pid, "name", name)
+	glog.V(4).Infof("Waiting for rc to terminate %s %d\n", name, len(rcs))
+	for len(rcs) > 0 {
+		rcs, _ = k.GetReplicationControllers(pid, "name", name)
+		time.Sleep(time.Second * 1)
+	}
 
 	pods, _ := k.GetPods(pid, "name", name)
 	for _, pod := range pods {
-		glog.V(4).Infof("Stopping pod %s\n", pod.Name)
-
-		url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + pod.Name
-		request, _ := http.NewRequest("DELETE", url, nil)
-		request.Header.Set("Content-Type", "application/json")
-		request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
-		httpresp, httperr := k.client.Do(request)
-		if httperr != nil {
-			glog.Error(httperr)
-			return httperr
-		} else {
-			if httpresp.StatusCode == http.StatusOK {
-				glog.V(4).Infof("Deleted pod " + pod.Name)
-			} else {
-				glog.V(4).Infof("Error stopping pod (%d)\n", httpresp.StatusCode)
-			}
+		err := k.stopPod(pid, pod.Name)
+		if err != nil {
+			glog.Error(err)
+			return err
 		}
 	}
 
-	//TODO: Wait for pods
 	pods, _ = k.GetPods(pid, "name", name)
 	glog.V(4).Infof("Waiting for pods to terminate %s %d\n", name, len(pods))
 	for len(pods) > 0 {
@@ -373,6 +396,28 @@ func (k *KubeHelper) StopController(pid string, name string) error {
 		}
 		pods, _ = k.GetPods(pid, "name", name)
 		time.Sleep(time.Second * 5)
+	}
+	return nil
+}
+
+func (k *KubeHelper) stopPod(pid string, podName string) error {
+	glog.V(4).Infof("Stopping pod %s\n", podName)
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + podName
+	request, _ := http.NewRequest("DELETE", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return httperr
+	} else {
+		if httpresp.StatusCode == http.StatusOK {
+			glog.V(4).Infof("Deleted pod " + podName)
+		} else {
+			glog.V(4).Infof("Error stopping pod (%d)\n", httpresp.StatusCode)
+			return fmt.Errorf("Error stopping pod (%d)\n", httpresp.StatusCode)
+		}
 	}
 	return nil
 }
