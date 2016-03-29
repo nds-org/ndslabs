@@ -3,6 +3,7 @@
 api/
 README.md
 build.sh
+release.sh
 swagger.sh
 start.sh
 stop.sh
