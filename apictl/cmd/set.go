@@ -23,6 +23,11 @@ var setCmd = &cobra.Command{
 		varName := args[1]
 		varValue := args[2]
 
+		if strings.Index(ssid, "-") <= 0 {
+			fmt.Printf("Invalid stack service id (looks like a stack Id?): %s\n", ssid)
+			return
+		}
+
 		sid := ssid[0:strings.Index(ssid, "-")]
 		stack, err := client.GetStack(apiUser.username, sid)
 		if err != nil {

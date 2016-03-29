@@ -137,7 +137,7 @@ var addStackCmd = &cobra.Command{
 }
 
 var addVolumeCmd = &cobra.Command{
-	Use:    "volume [name] [size] [serviceId]",
+	Use:    "volume [name] [size] [stack service Id]",
 	Short:  "Create a volume",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -153,12 +153,18 @@ var addVolumeCmd = &cobra.Command{
 			return
 		}
 
+		ssid := args[2]
+		if strings.Index(ssid, "-") <= 0 {
+			fmt.Printf("Invalid stack service id (looks like a stack Id?): %s\n", ssid)
+			return
+		}
+
 		volume := api.Volume{}
 		volume.Name = name
 		volume.Size = size
 		volume.SizeUnit = "GB"
 		if len(args) == 3 {
-			volume.Attached = args[2]
+			volume.Attached = ssid
 		}
 
 		vol, err := client.AddVolume(apiUser.username, &volume)
