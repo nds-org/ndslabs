@@ -443,11 +443,6 @@ func (s *Server) PutProject(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	if s.projectExists(project.Namespace) {
-		w.WriteHeader(http.StatusConflict)
-		return
-	}
-
 	err = s.putProject(pid, &project)
 	if err != nil {
 		glog.Error(err)
