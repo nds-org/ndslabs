@@ -340,37 +340,9 @@ angular
                       + '?subject=' + subject
                       + '&body=' + body;
     
-  $scope.chartObject.type = "PieChart";
-  
-  // Create an empty "table" for our chart object
-  $scope.chartObject.data = {"cols": [
-      {id: "t", label: "Volume", type: "string"},
-      {id: "s", label: "Size (GB)", type: "number"}
-  ], "rows": [  ]};
-  
   // TODO: Add this field to the backend
   // Assumption: quota is in GB
   // Assumption: GB is lowest denomination
-  var available = angular.copy($scope.storageQuota);
-  
-  var volumeSlices = [];
-  if (configuredVolumes.length > 0) {
-    var pushVolume = function(volume) {
-      var size = volume.sizeUnit === 'GB' ? volume.size : volume.size * 1000
-      available -= size
-      volumeSlices.push({ 
-        'c': [ 
-          {'v': volume.name }, 
-          {'v': size }
-        ]});
-    };
-  
-    // Push a slice for each of our existing volumes
-    angular.forEach(configuredVolumes, function(volume) {
-      pushVolume(volume);
-    });
-  }
-  
   $scope.availableSpace = available;
   $scope.usedSpace = $scope.storageQuota - available;
   
