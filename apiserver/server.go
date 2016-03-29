@@ -475,14 +475,18 @@ func (s *Server) putProject(pid string, project *api.Project) error {
 func (s *Server) DeleteProject(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.PathParam("pid")
 
+	glog.V(4).Infof("DeleteProject %s", pid)
+
 	if !s.IsAdmin(r) {
 		rest.Error(w, "", http.StatusUnauthorized)
 		return
 	}
 
-	glog.V(4).Infof("DeleteProject %s", pid)
+	if !s.projectExists(pid) {
+		rest.NotFound(w, r)
+		return
+	}
 
-	// TODO: Delete the Namespace
 	_, err := s.kube.DeleteNamespace(pid)
 	if err != nil {
 		glog.Error(err)
