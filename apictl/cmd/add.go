@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 )
@@ -24,6 +25,7 @@ func init() {
 	addCmd.AddCommand(addStackCmd)
 	addCmd.AddCommand(addProjectCmd)
 	addCmd.AddCommand(addServiceCmd)
+	addCmd.AddCommand(addVolumeCmd)
 
 	// add stack flags
 	addStackCmd.Flags().StringVar(&opts, "opt", "", "Comma-delimited list of optional services")
@@ -131,6 +133,41 @@ var addStackCmd = &cobra.Command{
 			os.Exit(-1)
 		}
 		addStack(apiUser.username, args[0], args[1], opts)
+	},
+}
+
+var addVolumeCmd = &cobra.Command{
+	Use:    "volume [name] [size] [serviceId]",
+	Short:  "Create a volume",
+	PreRun: Connect,
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) < 2 {
+			cmd.Usage()
+			os.Exit(-1)
+		}
+
+		name := args[0]
+		size, err := strconv.Atoi(args[1])
+		if err != nil {
+			fmt.Printf("Error creating volume: %s\n", err.Error())
+			return
+		}
+
+		volume := api.Volume{}
+		volume.Name = name
+		volume.Size = size
+		volume.SizeUnit = "GB"
+		if len(args) == 3 {
+			volume.Attached = args[2]
+		}
+
+		vol, err := client.AddVolume(apiUser.username, &volume)
+		if err != nil {
+			fmt.Printf("Error creating volume: %s\n", err.Error())
+			return
+		} else {
+			fmt.Printf("Created volume %s\n", vol.Name)
+		}
 	},
 }
 
