@@ -78,7 +78,14 @@ var deleteServiceCmd = &cobra.Command{
 }
 
 func deleteService(service string) {
-	err := client.DeleteService(service)
+	password := credentials("Admin password: ")
+	token, err := client.Login("admin", password)
+	if err != nil {
+		fmt.Printf("Unable to delete service %s: %s \n", service, err)
+		return
+	}
+
+	err = client.DeleteService(service, token)
 	if err != nil {
 		fmt.Printf("Unable to delete service %s: %s \n", service, err)
 	} else {
@@ -87,7 +94,15 @@ func deleteService(service string) {
 }
 
 func deleteProject(project string) {
-	err := client.DeleteProject(project)
+
+	password := credentials("Admin password: ")
+	token, err := client.Login("admin", password)
+	if err != nil {
+		fmt.Printf("Unable to delete project %s: %s \n", project, err)
+		return
+	}
+
+	err = client.DeleteProject(project, token)
 	if err != nil {
 		fmt.Printf("Unable to delete project %s: %s \n", project, err)
 	} else {

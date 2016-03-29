@@ -108,7 +108,14 @@ var listProjectsCmd = &cobra.Command{
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		projects, err := client.ListProjects()
+		password := credentials("Admin password: ")
+		token, err := client.Login("admin", password)
+		if err != nil {
+			fmt.Printf("Unable to list projects: %s \n", err)
+			return
+		}
+
+		projects, err := client.ListProjects(token)
 		if err != nil {
 			fmt.Printf("List failed: %s\n", err)
 			os.Exit(-1)

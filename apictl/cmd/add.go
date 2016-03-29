@@ -215,7 +215,14 @@ func addStack(project string, serviceKey string, name string, opt string) {
 
 func addProject(project api.Project) {
 
-	err := client.AddProject(&project)
+	password := credentials("Admin password: ")
+	token, err := client.Login("admin", password)
+	if err != nil {
+		fmt.Printf("Unable to add project %s: %s \n", project.Id, err)
+		return
+	}
+
+	err = client.AddProject(&project, token)
 	if err != nil {
 		fmt.Printf("Unable to add project %s: %s \n", project.Id, err)
 	} else {
@@ -225,7 +232,14 @@ func addProject(project api.Project) {
 
 func addService(service api.ServiceSpec) {
 
-	_, err := client.AddService(&service)
+	password := credentials("Admin password: ")
+	token, err := client.Login("admin", password)
+	if err != nil {
+		fmt.Printf("Unable to add service %s: %s \n", service.Label, err)
+		return
+	}
+
+	_, err = client.AddService(&service, token)
 	if err != nil {
 		fmt.Printf("Unable to add service %s: %s \n", service.Label, err)
 	} else {
