@@ -123,9 +123,9 @@ var listProjectsCmd = &cobra.Command{
 
 		w := new(tabwriter.Writer)
 		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
-		fmt.Fprintln(w, "ID\tNAMESPACE")
+		fmt.Fprintln(w, "NAMESPACE\tQUOTA\tDESCRIPTION")
 		for _, project := range *projects {
-			fmt.Fprintf(w, "%s\t%s\n", project.Id, project.Namespace)
+			fmt.Fprintf(w, "%s\t%d\t%s\n", project.Namespace, project.StorageQuota, project.Description)
 		}
 		w.Flush()
 
