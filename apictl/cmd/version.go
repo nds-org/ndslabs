@@ -20,7 +20,7 @@ var versionCmd = &cobra.Command{
 			fmt.Printf("Error getting server: %s\n", err)
 			return
 		}
-		fmt.Printf("Client version %s %s (%s)\n", VERSION, BUILD_DATE, GIT_COMMIT)
+		fmt.Printf("Client version %s %s\n", VERSION, BUILD_DATE)
 		fmt.Printf("Server version %s\n", serverVersion)
 	},
 }
