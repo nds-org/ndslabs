@@ -32,7 +32,7 @@ var listServicesCmd = &cobra.Command{
 		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
 		fmt.Fprintln(w, "SERVICE\tDEPENDENCY\tREQUIRED")
 		for _, service := range *services {
-			if service.IsStandalone {
+			if service.Display != "" {
 				fmt.Fprintf(w, "%s\n", service.Key)
 				for _, dependency := range service.Dependencies {
 					if dependency.Required {

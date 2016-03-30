@@ -117,7 +117,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.ndslabsctl.yaml)")
-	RootCmd.PersistentFlags().StringVarP(&ApiServer, "server", "s", "http://localhost:8083", "API server host address")
+	RootCmd.PersistentFlags().StringVarP(&ApiServer, "server", "s", "http://localhost:30001", "API server host address")
 	RootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "Verbose output")
 	viper.BindPFlag("server", RootCmd.PersistentFlags().Lookup("server"))
 
