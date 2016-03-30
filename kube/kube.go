@@ -145,13 +145,13 @@ func (k *KubeHelper) StartController(pid string, spec *api.ReplicationController
 		}
 	}
 
-	// Give KubeHelperrnetes time to create the pods for the RC
+	// Give Kubernetes time to create the pods for the RC
 	time.Sleep(time.Second * 5)
 
 	// Wait for pods in ready state
 	ready := 0
 	pods, _ := k.GetPods(pid, "rc", name)
-	glog.V(4).Infof("Waiting for pod to be ready %s %d\n", name, len(pods))
+	glog.V(4).Infof("Waiting for %d pod to be ready %s\n", len(pods), name)
 	for ready < len(pods) {
 		for _, pod := range pods {
 			if len(pod.Status.Conditions) > 0 {
@@ -170,7 +170,7 @@ func (k *KubeHelper) StartController(pid string, spec *api.ReplicationController
 					}
 				}
 
-				glog.V(4).Infof("Waiting for %s (%s=%s) [%s, %#v]\n", pod.Name, condition.Type, condition.Status, phase, containerState)
+				glog.V(4).Infof("Waiting for pod %s (%s=%s) [%s, %#v]\n", pod.Name, condition.Type, condition.Status, phase, containerState)
 
 				if condition.Type == "Ready" && condition.Status == "True" {
 					ready++
@@ -216,7 +216,7 @@ func (k *KubeHelper) StartService(pid string, spec *api.Service) (*api.Service, 
 
 			return &service, nil
 		} else {
-			glog.Warningf("Error starting KubeHelperrnetes service (%d): %s\n", httpresp.StatusCode, httpresp.Status)
+			glog.Warningf("Error starting Kubernetes service (%d): %s\n", httpresp.StatusCode, httpresp.Status)
 		}
 	}
 	return nil, nil
@@ -225,7 +225,6 @@ func (k *KubeHelper) StartService(pid string, spec *api.Service) (*api.Service, 
 func (k *KubeHelper) GetServices(pid string, stack string) ([]api.Service, error) {
 
 	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services?labelSelector=stack%3D" + stack
-	glog.V(4).Infoln(url)
 	request, _ := http.NewRequest("GET", url, nil)
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
@@ -244,12 +243,11 @@ func (k *KubeHelper) GetServices(pid string, stack string) ([]api.Service, error
 			services := make([]api.Service, len(serviceList.Items))
 			json.Unmarshal(data, &serviceList)
 			for _, service := range serviceList.Items {
-				glog.V(4).Infof("Service %s\n", service.Name)
 				services = append(services, service)
 			}
 			return services, nil
 		} else {
-			glog.Warningf("Failed to get KubeHelperrnetes services: %s %d", resp.Status, resp.StatusCode)
+			glog.Warningf("Failed to get Kubernetes services: %s %d", resp.Status, resp.StatusCode)
 		}
 	}
 	return nil, nil
@@ -447,7 +445,7 @@ func (k *KubeHelper) GetLog(pid string, podName string, tailLines int) (string, 
 			}
 			return string(data), nil
 		} else {
-			glog.Warningf("Failed to get KubeHelperrnetes services: %s %d", resp.Status, resp.StatusCode)
+			glog.Warningf("Failed to get Kubernetes services: %s %d", resp.Status, resp.StatusCode)
 		}
 	}
 	return "", err
@@ -509,7 +507,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 		},
 	}
 
-	if spec.IsPublic {
+	if spec.Access == "external" {
 		k8svc.Spec.Type = api.ServiceTypeNodePort
 	}
 
