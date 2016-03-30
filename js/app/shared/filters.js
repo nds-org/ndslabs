@@ -76,10 +76,13 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
 .filter('isStack', [ '_', function(_) {
   return function(input, showStandalones) {
     if (!showStandalones) {
-      return _.filter(input, ['isStack', true]);
+      return _.filter(input, ['display', 'stack']);
     }
-    
-    return _.filter(input, { 'isStandalone': true });
+
+    // Return stacks and standalones
+    return _.filter(input, function(o) {
+      return o.display;
+    }); 
   }
 }])
 /**
