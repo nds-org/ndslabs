@@ -153,17 +153,16 @@ var addVolumeCmd = &cobra.Command{
 			return
 		}
 
-		ssid := args[2]
-		if strings.Index(ssid, "-") <= 0 {
-			fmt.Printf("Invalid stack service id (looks like a stack Id?): %s\n", ssid)
-			return
-		}
-
 		volume := api.Volume{}
 		volume.Name = name
 		volume.Size = size
 		volume.SizeUnit = "GB"
 		if len(args) == 3 {
+			ssid := args[2]
+			if strings.Index(ssid, "-") <= 0 {
+				fmt.Printf("Invalid stack service id (looks like a stack Id?): %s\n", ssid)
+				return
+			}
 			volume.Attached = ssid
 		}
 

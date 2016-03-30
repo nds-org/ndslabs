@@ -9,7 +9,7 @@ import (
 )
 
 var detachCmd = &cobra.Command{
-	Use:    "detach [volumeName]",
+	Use:    "detach [volume Id]",
 	Short:  "Detach a volume from a stack service",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -32,7 +32,7 @@ var detachCmd = &cobra.Command{
 		if err != nil {
 			fmt.Printf("Detach failed: %s\n", err.Error())
 		} else {
-			fmt.Printf("Detached volume %s\n", vol.Name)
+			fmt.Printf("Detached volume %s\n", vol.Id)
 		}
 	},
 	PostRun: RefreshToken,

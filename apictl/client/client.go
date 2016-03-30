@@ -372,7 +372,7 @@ func (c *Client) ListVolumes(pid string) (*[]api.Volume, error) {
 
 func (c *Client) UpdateVolume(pid string, volume *api.Volume) (*api.Volume, error) {
 
-	url := c.BasePath + "projects/" + pid + "/volumes/" + volume.Name
+	url := c.BasePath + "projects/" + pid + "/volumes/" + volume.Id
 
 	data, err := json.Marshal(volume)
 	if err != nil {
@@ -402,9 +402,9 @@ func (c *Client) UpdateVolume(pid string, volume *api.Volume) (*api.Volume, erro
 	}
 }
 
-func (c *Client) GetVolume(pid string, name string) (*api.Volume, error) {
+func (c *Client) GetVolume(pid string, id string) (*api.Volume, error) {
 
-	url := c.BasePath + "projects/" + pid + "/volumes/" + name
+	url := c.BasePath + "projects/" + pid + "/volumes/" + id
 
 	request, err := http.NewRequest("GET", url, nil)
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))

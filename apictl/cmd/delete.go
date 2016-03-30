@@ -110,12 +110,12 @@ func deleteProject(project string) {
 	}
 }
 
-func deleteVolume(project string, volume string) {
-	err := client.DeleteVolume(project, volume)
+func deleteVolume(project string, id string) {
+	err := client.DeleteVolume(project, id)
 	if err != nil {
-		fmt.Printf("Unable to delete volume %s: %s \n", volume, err)
+		fmt.Printf("Unable to delete volume %s: %s \n", id, err)
 	} else {
-		fmt.Printf("Volume %s deleted\n", volume)
+		fmt.Printf("Volume %s deleted\n", id)
 	}
 }
 
