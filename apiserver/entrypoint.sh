@@ -18,7 +18,7 @@ if [ "$1" = 'apiserver' ]; then
 
 cat << EOF > /apiserver.conf
 [Server]
-Port=8083
+Port=30001
 Origin=$CORS_ORIGIN_ADDR
 VolDir=/volumes
 Host=$HOST_ADDR
@@ -56,7 +56,7 @@ EOF
 
 
 elif [ "$1" = 'usage' ]; then
-    echo  'docker run -d -p 8083:8083 -e "KUBERNETES_ADDR=https://localhost:6443" -e "ETCD_ADDR=localhost:4001" --name=apiserver  ndslabs/apiserver apiserver'
+    echo  'docker run -d -p 30001:30001 -e "KUBERNETES_ADDR=https://localhost:6443" -e "ETCD_ADDR=localhost:4001" --name=apiserver  ndslabs/apiserver apiserver'
 
 else
     exec "$@"
