@@ -114,7 +114,7 @@ func main() {
 	}
 
 	if cfg.Server.Port == "" {
-		cfg.Server.Port = "8083"
+		cfg.Server.Port = "30001"
 	}
 	if cfg.Server.Host == "" {
 		cfg.Server.Host = "localhost"
