@@ -6,23 +6,25 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/StephanDollberg/go-json-rest-middleware-jwt"
-	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/coreos/etcd/client"
-	"github.com/golang/glog"
-	kube "github.com/ndslabs/apiserver/kube"
-	openstack "github.com/ndslabs/apiserver/openstack"
-	api "github.com/ndslabs/apiserver/types"
 	"golang.org/x/net/context"
-	gcfg "gopkg.in/gcfg.v1"
 	"io"
 	"io/ioutil"
-	k8api "k8s.io/kubernetes/pkg/api"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	kube "github.com/ndslabs/apiserver/kube"
+	openstack "github.com/ndslabs/apiserver/openstack"
+	api "github.com/ndslabs/apiserver/types"
+	gcfg "gopkg.in/gcfg.v1"
+	k8api "k8s.io/kubernetes/pkg/api"
+
+	"github.com/StephanDollberg/go-json-rest-middleware-jwt"
+	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/coreos/etcd/client"
+	"github.com/golang/glog"
 )
 
 var etcdBasePath = "/ndslabs/"
@@ -1031,7 +1033,7 @@ func (s *Server) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 				glog.V(4).Infof("Detaching volume %s\n", volume.Id)
 				volume.Attached = ""
 				volume.Status = "available"
-				s.putVolume(pid, volume.Name, volume)
+				s.putVolume(pid, volume.Id, volume)
 				// detach the volume
 			}
 		}
@@ -1681,17 +1683,17 @@ func (s *Server) PostVolume(w rest.ResponseWriter, r *rest.Request) {
 	opts := client.SetOptions{Dir: true}
 	s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid, "/volumes", &opts)
 	data, _ := json.Marshal(vol)
-	path := etcdBasePath + "/projects/" + pid + "/volumes/" + vol.Name
+	path := etcdBasePath + "/projects/" + pid + "/volumes/" + vol.Id
 	_, err = s.etcd.Set(context.Background(), path, string(data), nil)
 	w.WriteJson(&vol)
 }
 
-func (s *Server) putVolume(pid string, name string, volume api.Volume) error {
+func (s *Server) putVolume(pid string, vid string, volume api.Volume) error {
 	opts := client.SetOptions{Dir: true}
 	s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid, "/volumes", &opts)
 
 	data, _ := json.Marshal(volume)
-	path := etcdBasePath + "/projects/" + pid + "/volumes/" + name
+	path := etcdBasePath + "/projects/" + pid + "/volumes/" + vid
 	_, err := s.etcd.Set(context.Background(), path, string(data), nil)
 	if err != nil {
 		return err
