@@ -33,7 +33,7 @@ var apiUser User
 
 // This represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
-	Use:   "apictl",
+	Use:   "ndslabsctl",
 	Short: "NDS Labs API server CLI",
 }
 
@@ -87,7 +87,7 @@ func getCurrentUser() *user.User {
 
 func readPasswd() {
 	usr := getCurrentUser()
-	path := usr.HomeDir + "/.apictl/.passwd"
+	path := usr.HomeDir + "/.ndslabsctl/.passwd"
 	dat, err := ioutil.ReadFile(path)
 
 	if err != nil {
@@ -104,7 +104,7 @@ func readPasswd() {
 
 func writePasswd(token string) {
 	usr := getCurrentUser()
-	path := usr.HomeDir + "/.apictl"
+	path := usr.HomeDir + "/.ndslabsctl"
 	os.Mkdir(path, 0700)
 	err := ioutil.WriteFile(path+"/.passwd", []byte(apiUser.username+":"+token), 0644)
 	if err != nil {

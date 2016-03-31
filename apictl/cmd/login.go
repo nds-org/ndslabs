@@ -43,7 +43,7 @@ var loginCmd = &cobra.Command{
 		} else if token == "" {
 			fmt.Printf("Login failed: no response from server\n")
 		} else {
-			path := usr.HomeDir + "/.apictl"
+			path := usr.HomeDir + "/.ndslabsctl"
 			os.Mkdir(path, 0700)
 			e := ioutil.WriteFile(path+"/.passwd", []byte(username+":"+token), 0644)
 			if e != nil {

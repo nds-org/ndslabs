@@ -684,11 +684,19 @@ func (c *Client) StopStack(pid string, stack string) (*api.Stack, error) {
 }
 
 func (c *Client) GetProject(pid string) (*api.Project, error) {
+	return c.getProject(pid, c.Token)
+}
+
+func (c *Client) GetProjectAdmin(pid string, token string) (*api.Project, error) {
+	return c.getProject(pid, token)
+}
+
+func (c *Client) getProject(pid string, token string) (*api.Project, error) {
 	url := fmt.Sprintf("%sprojects/%s", c.BasePath, pid)
 
 	request, err := http.NewRequest("GET", url, nil)
 
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	resp, err := c.HttpClient.Do(request)
 	if err != nil {
 		return nil, err

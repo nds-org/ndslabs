@@ -35,12 +35,14 @@ var setCmd = &cobra.Command{
 			return
 		}
 
+		ssidFound := false
 		for i, stackService := range stack.Services {
 			if stackService.Id == ssid {
 				spec, err := client.GetService(stackService.Service)
 				if err != nil {
 					fmt.Printf("Error getting service spec %s\n", err.Error)
 				}
+				found := false
 				for _, config := range spec.Config {
 					if config.Name == varName {
 						if stackService.Config == nil {
@@ -50,13 +52,21 @@ var setCmd = &cobra.Command{
 							fmt.Printf("%s %s %t\n", varName, varValue, config.CanOverride)
 							stackService.Config[varName] = varValue
 							stack.Services[i] = stackService
+							found = true
 						} else {
 							fmt.Printf("Cannot override variable %s\n", varName)
 							return
 						}
 					}
 				}
+				if !found {
+					fmt.Printf("No such variable %s\n", varName)
+				}
+				ssidFound = true
 			}
+		}
+		if !ssidFound {
+			fmt.Printf("No such stack service id %s\n", ssid)
 		}
 		err = client.UpdateStack(apiUser.username, stack)
 		if err != nil {

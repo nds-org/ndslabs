@@ -100,23 +100,45 @@ var getProjectCmd = &cobra.Command{
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		pid := apiUser.username
-		if len(args) == 1 {
-			pid = args[0]
-		}
-		project, err := client.GetProject(pid)
-		if err != nil {
-			fmt.Printf("Get project failed: %s\n", err)
-			return
+		if len(args) == 1 && args[0] != apiUser.username {
+			// Trying to get another project, needs to be admin
+			password := credentials("Admin password: ")
+			token, err := client.Login("admin", password)
+			if err != nil {
+				fmt.Printf("Unable to get project: %s \n", err)
+				return
+			}
+
+			project, err := client.GetProjectAdmin(args[0], token)
+			if err != nil {
+				fmt.Printf("Unable to get project: %s\n", err)
+				os.Exit(-1)
+			}
+
+			project.Password = "REDACTED"
+			data, err := json.MarshalIndent(project, "", "   ")
+			if err != nil {
+				fmt.Printf("Error marshalling project %s\n", err.Error)
+				return
+			}
+			fmt.Println(string(data))
+		} else {
+			pid := apiUser.username
+
+			project, err := client.GetProject(pid)
+			if err != nil {
+				fmt.Printf("Get project failed: %s\n", err)
+				return
+			}
+			project.Password = "REDACTED"
+			data, err := json.MarshalIndent(project, "", "   ")
+			if err != nil {
+				fmt.Printf("Error marshalling project %s\n", err.Error)
+				return
+			}
+			fmt.Println(string(data))
 		}
 
-		project.Password = "REDACTED"
-		data, err := json.MarshalIndent(project, "", "   ")
-		if err != nil {
-			fmt.Printf("Error marshalling project %s\n", err.Error)
-			return
-		}
-		fmt.Println(string(data))
 	},
 	PostRun: RefreshToken,
 }

@@ -134,7 +134,7 @@ var listProjectsCmd = &cobra.Command{
 }
 
 var listConfigsCmd = &cobra.Command{
-	Use:    "configs [service ids]",
+	Use:    "configs [service keys]",
 	Short:  "List service configs",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
