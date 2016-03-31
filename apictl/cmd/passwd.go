@@ -22,7 +22,7 @@ var passwdCmd = &cobra.Command{
 
 		project, err := client.GetProject(apiUser.username)
 		if err != nil {
-			fmt.Println("Error changing password: %s\n", err)
+			fmt.Printf("Error changing password: %s\n", err)
 			return
 		}
 
@@ -54,7 +54,7 @@ var passwdCmd = &cobra.Command{
 			project.Password = newPassword
 			err := client.UpdateProject(project)
 			if err != nil {
-				fmt.Println("Error changing password: %s\n", err)
+				fmt.Printf("Error changing password: %s\n", err)
 				return
 			} else {
 				fmt.Println("Password changed")

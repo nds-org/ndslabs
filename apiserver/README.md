@@ -24,7 +24,7 @@ The apiserver.conf is the primary configuration file
 
 ```
 [Server]
-Port=8083
+Port=30001
 Origin=http://<CORS origin host>
 VolDir=/home/core/apiserver/volumes
 JwtKey=/home/core/apiserver/jwt.key

@@ -17,10 +17,8 @@ type ServiceSpec struct {
 	Args           []string            `json:"args"`
 	Command        []string            `json:"command"`
 	Dependencies   []ServiceDependency `json:"depends"`
-	IsStack        bool                `json:"isStack"`
-	IsService      bool                `json:"isService"`
-	IsPublic       bool                `json:"isPublic"`
-	IsStandalone   bool                `json:"isStandalone"`
+	Access         string              `json:"access"`
+	Display        string              `json:"display"`
 }
 
 type Config struct {
@@ -41,6 +39,7 @@ type VolumeMount struct {
 	Name      string `json:"name"`
 }
 type ReadyProbe struct {
+	Type         string `json:"type"`
 	Path         string `json:"path"`
 	Port         int    `json:"port"`
 	InitialDelay int    `json:"initialDelay"`

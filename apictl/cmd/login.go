@@ -26,7 +26,11 @@ var loginCmd = &cobra.Command{
 		}
 
 		username := strings.TrimSpace(args[0])
-		password := credentials()
+		if username == "admin" {
+			fmt.Println("Admin login not allowed")
+			os.Exit(-1)
+		}
+		password := credentials("")
 		usr, err := user.Current()
 		if err != nil {
 			fmt.Printf("Error looking up current OS user %s\n", err)
@@ -39,7 +43,7 @@ var loginCmd = &cobra.Command{
 		} else if token == "" {
 			fmt.Printf("Login failed: no response from server\n")
 		} else {
-			path := usr.HomeDir + "/.apictl"
+			path := usr.HomeDir + "/.ndslabsctl"
 			os.Mkdir(path, 0700)
 			e := ioutil.WriteFile(path+"/.passwd", []byte(username+":"+token), 0644)
 			if e != nil {
@@ -51,8 +55,12 @@ var loginCmd = &cobra.Command{
 	},
 }
 
-func credentials() string {
-	fmt.Print("Password: ")
+func credentials(prompt string) string {
+	if prompt == "" {
+		fmt.Print("Password: ")
+	} else {
+		fmt.Print(prompt)
+	}
 	bytePassword, _ := terminal.ReadPassword(int(syscall.Stdin))
 	password := string(bytePassword)
 	fmt.Print("\n")

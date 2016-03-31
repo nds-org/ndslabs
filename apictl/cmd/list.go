@@ -32,7 +32,7 @@ var listServicesCmd = &cobra.Command{
 		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
 		fmt.Fprintln(w, "SERVICE\tDEPENDENCY\tREQUIRED")
 		for _, service := range *services {
-			if service.IsStack {
+			if service.Display != "" {
 				fmt.Fprintf(w, "%s\n", service.Key)
 				for _, dependency := range service.Dependencies {
 					if dependency.Required {
@@ -93,9 +93,9 @@ var listVolumesCmd = &cobra.Command{
 
 		w := new(tabwriter.Writer)
 		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
-		fmt.Fprintln(w, "NAME\tATTACHED TO\tSIZE\tSTATUS")
+		fmt.Fprintln(w, "ID\tNAME\tATTACHED TO\tSIZE\tSTATUS")
 		for _, volume := range *volumes {
-			fmt.Fprintf(w, "%s\t%s\t%d\t%s\n", volume.Name, volume.Attached, volume.Size, volume.Status)
+			fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\n", volume.Id, volume.Name, volume.Attached, volume.Size, volume.Status)
 		}
 		w.Flush()
 	},
@@ -108,7 +108,14 @@ var listProjectsCmd = &cobra.Command{
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		projects, err := client.ListProjects()
+		password := credentials("Admin password: ")
+		token, err := client.Login("admin", password)
+		if err != nil {
+			fmt.Printf("Unable to list projects: %s \n", err)
+			return
+		}
+
+		projects, err := client.ListProjects(token)
 		if err != nil {
 			fmt.Printf("List failed: %s\n", err)
 			os.Exit(-1)
@@ -116,9 +123,9 @@ var listProjectsCmd = &cobra.Command{
 
 		w := new(tabwriter.Writer)
 		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
-		fmt.Fprintln(w, "ID\tNAMESPACE")
+		fmt.Fprintln(w, "NAMESPACE\tQUOTA\tDESCRIPTION")
 		for _, project := range *projects {
-			fmt.Fprintf(w, "%s\t%s\n", project.Id, project.Namespace)
+			fmt.Fprintf(w, "%s\t%d\t%s\n", project.Namespace, project.StorageQuota, project.Description)
 		}
 		w.Flush()
 
@@ -127,7 +134,7 @@ var listProjectsCmd = &cobra.Command{
 }
 
 var listConfigsCmd = &cobra.Command{
-	Use:    "configs [service ids]",
+	Use:    "configs [service keys]",
 	Short:  "List service configs",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {

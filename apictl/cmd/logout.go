@@ -21,11 +21,13 @@ var logoutCmd = &cobra.Command{
 			fmt.Printf("Error looking up current OS user %s\n", err)
 			os.Exit(-1)
 		}
-		path := usr.HomeDir + "/.apictl"
-		err = os.Remove(path + "/.passwd")
-		if err != nil {
-			fmt.Printf("Error removing passwd data: %s\n", err)
-			os.Exit(-1)
+		path := usr.HomeDir + "/.ndslabsctl"
+		if _, err := os.Stat(path + "/.passwd"); err == nil {
+			err = os.Remove(path + "/.passwd")
+			if err != nil {
+				fmt.Printf("Error removing passwd data: %s\n", err)
+				os.Exit(-1)
+			}
 		}
 	},
 }

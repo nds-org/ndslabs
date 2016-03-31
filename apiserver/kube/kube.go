@@ -145,13 +145,13 @@ func (k *KubeHelper) StartController(pid string, spec *api.ReplicationController
 		}
 	}
 
-	// Give KubeHelperrnetes time to create the pods for the RC
+	// Give Kubernetes time to create the pods for the RC
 	time.Sleep(time.Second * 5)
 
 	// Wait for pods in ready state
 	ready := 0
 	pods, _ := k.GetPods(pid, "rc", name)
-	glog.V(4).Infof("Waiting for pod to be ready %s %d\n", name, len(pods))
+	glog.V(4).Infof("Waiting for %d pod to be ready %s\n", len(pods), name)
 	for ready < len(pods) {
 		for _, pod := range pods {
 			if len(pod.Status.Conditions) > 0 {
@@ -170,7 +170,7 @@ func (k *KubeHelper) StartController(pid string, spec *api.ReplicationController
 					}
 				}
 
-				glog.V(4).Infof("Waiting for %s (%s=%s) [%s, %#v]\n", pod.Name, condition.Type, condition.Status, phase, containerState)
+				glog.V(4).Infof("Waiting for pod %s (%s=%s) [%s, %#v]\n", pod.Name, condition.Type, condition.Status, phase, containerState)
 
 				if condition.Type == "Ready" && condition.Status == "True" {
 					ready++
@@ -216,7 +216,7 @@ func (k *KubeHelper) StartService(pid string, spec *api.Service) (*api.Service, 
 
 			return &service, nil
 		} else {
-			glog.Warningf("Error starting KubeHelperrnetes service (%d): %s\n", httpresp.StatusCode, httpresp.Status)
+			glog.Warningf("Error starting Kubernetes service (%d): %s\n", httpresp.StatusCode, httpresp.Status)
 		}
 	}
 	return nil, nil
@@ -225,7 +225,6 @@ func (k *KubeHelper) StartService(pid string, spec *api.Service) (*api.Service, 
 func (k *KubeHelper) GetServices(pid string, stack string) ([]api.Service, error) {
 
 	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services?labelSelector=stack%3D" + stack
-	glog.V(4).Infoln(url)
 	request, _ := http.NewRequest("GET", url, nil)
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
@@ -244,12 +243,41 @@ func (k *KubeHelper) GetServices(pid string, stack string) ([]api.Service, error
 			services := make([]api.Service, len(serviceList.Items))
 			json.Unmarshal(data, &serviceList)
 			for _, service := range serviceList.Items {
-				glog.V(4).Infof("Service %s\n", service.Name)
 				services = append(services, service)
 			}
 			return services, nil
 		} else {
-			glog.Warningf("Failed to get KubeHelperrnetes services: %s %d", resp.Status, resp.StatusCode)
+			glog.Warningf("Failed to get Kubernetes services: %s %d", resp.Status, resp.StatusCode)
+		}
+	}
+	return nil, nil
+}
+func (k *KubeHelper) GetReplicationControllers(pid string, label string, value string) ([]api.ReplicationController, error) {
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers?labelSelector=" + label + "%3D" + value
+	request, _ := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	resp, err := k.client.Do(request)
+	if err != nil {
+		glog.Error(err)
+		return nil, err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			rcList := api.ReplicationControllerList{}
+			rcs := make([]api.ReplicationController, len(rcList.Items))
+			json.Unmarshal(data, &rcList)
+			for _, rc := range rcList.Items {
+				rcs = append(rcs, rc)
+			}
+			return rcs, nil
+		} else {
+			glog.Warningf("Get rcs failed: %s %d", resp.Status, resp.StatusCode)
 		}
 	}
 	return nil, nil
@@ -325,29 +353,22 @@ func (k *KubeHelper) StopController(pid string, name string) error {
 			glog.V(4).Infof("Error stopping controller (%d)\n", httpresp.StatusCode)
 		}
 	}
+	rcs, _ := k.GetReplicationControllers(pid, "name", name)
+	glog.V(4).Infof("Waiting for rc to terminate %s %d\n", name, len(rcs))
+	for len(rcs) > 0 {
+		rcs, _ = k.GetReplicationControllers(pid, "name", name)
+		time.Sleep(time.Second * 1)
+	}
 
 	pods, _ := k.GetPods(pid, "name", name)
 	for _, pod := range pods {
-		glog.V(4).Infof("Stopping pod %s\n", pod.Name)
-
-		url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + pod.Name
-		request, _ := http.NewRequest("DELETE", url, nil)
-		request.Header.Set("Content-Type", "application/json")
-		request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
-		httpresp, httperr := k.client.Do(request)
-		if httperr != nil {
-			glog.Error(httperr)
-			return httperr
-		} else {
-			if httpresp.StatusCode == http.StatusOK {
-				glog.V(4).Infof("Deleted pod " + pod.Name)
-			} else {
-				glog.V(4).Infof("Error stopping pod (%d)\n", httpresp.StatusCode)
-			}
+		err := k.stopPod(pid, pod.Name)
+		if err != nil {
+			glog.Error(err)
+			return err
 		}
 	}
 
-	//TODO: Wait for pods
 	pods, _ = k.GetPods(pid, "name", name)
 	glog.V(4).Infof("Waiting for pods to terminate %s %d\n", name, len(pods))
 	for len(pods) > 0 {
@@ -377,6 +398,28 @@ func (k *KubeHelper) StopController(pid string, name string) error {
 	return nil
 }
 
+func (k *KubeHelper) stopPod(pid string, podName string) error {
+	glog.V(4).Infof("Stopping pod %s\n", podName)
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + podName
+	request, _ := http.NewRequest("DELETE", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return httperr
+	} else {
+		if httpresp.StatusCode == http.StatusOK {
+			glog.V(4).Infof("Deleted pod " + podName)
+		} else {
+			glog.V(4).Infof("Error stopping pod (%d)\n", httpresp.StatusCode)
+			return fmt.Errorf("Error stopping pod (%d)\n", httpresp.StatusCode)
+		}
+	}
+	return nil
+}
+
 func (k *KubeHelper) GetLog(pid string, podName string, tailLines int) (string, error) {
 	glog.V(4).Infof("Get log for %s %s\n", pid, podName)
 
@@ -402,7 +445,7 @@ func (k *KubeHelper) GetLog(pid string, podName string, tailLines int) (string, 
 			}
 			return string(data), nil
 		} else {
-			glog.Warningf("Failed to get KubeHelperrnetes services: %s %d", resp.Status, resp.StatusCode)
+			glog.Warningf("Failed to get Kubernetes services: %s %d", resp.Status, resp.StatusCode)
 		}
 	}
 	return "", err
@@ -464,7 +507,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 		},
 	}
 
-	if spec.IsPublic {
+	if spec.Access == "external" {
 		k8svc.Spec.Type = api.ServiceTypeNodePort
 	}
 
@@ -582,18 +625,31 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	}
 
 	if spec.ReadyProbe.Path != "" {
-		k8probe := &api.Probe{
-			Handler: api.Handler{
-				HTTPGet: &api.HTTPGetAction{
-					Path:   spec.ReadyProbe.Path,
-					Port:   intstr.FromInt(spec.ReadyProbe.Port),
-					Scheme: api.URISchemeHTTP,
+		if spec.ReadyProbe.Type == "http" {
+			k8probe := &api.Probe{
+				Handler: api.Handler{
+					HTTPGet: &api.HTTPGetAction{
+						Path:   spec.ReadyProbe.Path,
+						Port:   intstr.FromInt(spec.ReadyProbe.Port),
+						Scheme: api.URISchemeHTTP,
+					},
 				},
-			},
-			InitialDelaySeconds: spec.ReadyProbe.InitialDelay,
-			TimeoutSeconds:      spec.ReadyProbe.Timeout,
+				InitialDelaySeconds: spec.ReadyProbe.InitialDelay,
+				TimeoutSeconds:      spec.ReadyProbe.Timeout,
+			}
+			k8template.Spec.Containers[0].ReadinessProbe = k8probe
+		} else if spec.ReadyProbe.Type == "tcp" {
+			k8probe := &api.Probe{
+				Handler: api.Handler{
+					TCPSocket: &api.TCPSocketAction{
+						Port: intstr.FromInt(spec.ReadyProbe.Port),
+					},
+				},
+				InitialDelaySeconds: spec.ReadyProbe.InitialDelay,
+				TimeoutSeconds:      spec.ReadyProbe.Timeout,
+			}
+			k8template.Spec.Containers[0].ReadinessProbe = k8probe
 		}
-		k8template.Spec.Containers[0].ReadinessProbe = k8probe
 	}
 
 	k8rcs := api.ReplicationControllerSpec{

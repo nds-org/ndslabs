@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
+	"strings"
 )
 
 var getCmd = &cobra.Command{
@@ -42,7 +43,7 @@ var getServiceCmd = &cobra.Command{
 }
 
 var getStackCmd = &cobra.Command{
-	Use:    "stack",
+	Use:    "stack [stack Id]",
 	Short:  "Get stack details",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -51,6 +52,11 @@ var getStackCmd = &cobra.Command{
 			os.Exit(-1)
 		}
 		sid := args[0]
+
+		if strings.Index(sid, "-") > 0 {
+			fmt.Printf("Invalid stack id (looks like a stack service Id?): %s\n", sid)
+			return
+		}
 
 		stack, err := client.GetStack(apiUser.username, sid)
 		if err != nil {
@@ -68,16 +74,19 @@ var getStackCmd = &cobra.Command{
 		fmt.Println("\nSID\tCONFIG")
 
 		for _, service := range stack.Services {
-			fmt.Printf("%s\n", service.Id)
+
 			spec, _ := client.GetService(service.Service)
-			for _, config := range spec.Config {
-				name := config.Name
-				value := config.Value
-				if config.CanOverride {
-					if val, ok := service.Config[name]; ok {
-						value = val
+			if len(spec.Config) > 0 {
+
+				for _, config := range spec.Config {
+					name := config.Name
+					value := config.Value
+					if config.CanOverride {
+						if val, ok := service.Config[name]; ok {
+							value = val
+						}
+						fmt.Printf("%s\t%s=%s\n", service.Id, name, value)
 					}
-					fmt.Printf("\t%s=%s\n", name, value)
 				}
 			}
 		}
@@ -91,23 +100,45 @@ var getProjectCmd = &cobra.Command{
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		pid := apiUser.username
-		if len(args) == 1 {
-			pid = args[0]
-		}
-		project, err := client.GetProject(pid)
-		if err != nil {
-			fmt.Printf("Get project failed: %s\n", err)
-			return
+		if len(args) == 1 && args[0] != apiUser.username {
+			// Trying to get another project, needs to be admin
+			password := credentials("Admin password: ")
+			token, err := client.Login("admin", password)
+			if err != nil {
+				fmt.Printf("Unable to get project: %s \n", err)
+				return
+			}
+
+			project, err := client.GetProjectAdmin(args[0], token)
+			if err != nil {
+				fmt.Printf("Unable to get project: %s\n", err)
+				os.Exit(-1)
+			}
+
+			project.Password = "REDACTED"
+			data, err := json.MarshalIndent(project, "", "   ")
+			if err != nil {
+				fmt.Printf("Error marshalling project %s\n", err.Error)
+				return
+			}
+			fmt.Println(string(data))
+		} else {
+			pid := apiUser.username
+
+			project, err := client.GetProject(pid)
+			if err != nil {
+				fmt.Printf("Get project failed: %s\n", err)
+				return
+			}
+			project.Password = "REDACTED"
+			data, err := json.MarshalIndent(project, "", "   ")
+			if err != nil {
+				fmt.Printf("Error marshalling project %s\n", err.Error)
+				return
+			}
+			fmt.Println(string(data))
 		}
 
-		project.Password = "REDACTED"
-		data, err := json.MarshalIndent(project, "", "   ")
-		if err != nil {
-			fmt.Printf("Error marshalling project %s\n", err.Error)
-			return
-		}
-		fmt.Println(string(data))
 	},
 	PostRun: RefreshToken,
 }

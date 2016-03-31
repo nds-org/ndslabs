@@ -9,7 +9,7 @@ import (
 )
 
 var attachCmd = &cobra.Command{
-	Use:    "attach [volumeName] [serviceId]",
+	Use:    "attach [volumeId] [serviceId]",
 	Short:  "Attach a volume to a stack service",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -33,7 +33,7 @@ var attachCmd = &cobra.Command{
 		if err != nil {
 			fmt.Printf("Attach failed: %s\n", err.Error())
 		} else {
-			fmt.Printf("Attached volume %s\n", vol.Name)
+			fmt.Printf("Attached volume %s\n", vol.Id)
 		}
 	},
 	PostRun: RefreshToken,

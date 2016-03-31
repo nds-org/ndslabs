@@ -78,7 +78,14 @@ var deleteServiceCmd = &cobra.Command{
 }
 
 func deleteService(service string) {
-	err := client.DeleteService(service)
+	password := credentials("Admin password: ")
+	token, err := client.Login("admin", password)
+	if err != nil {
+		fmt.Printf("Unable to delete service %s: %s \n", service, err)
+		return
+	}
+
+	err = client.DeleteService(service, token)
 	if err != nil {
 		fmt.Printf("Unable to delete service %s: %s \n", service, err)
 	} else {
@@ -87,7 +94,15 @@ func deleteService(service string) {
 }
 
 func deleteProject(project string) {
-	err := client.DeleteProject(project)
+
+	password := credentials("Admin password: ")
+	token, err := client.Login("admin", password)
+	if err != nil {
+		fmt.Printf("Unable to delete project %s: %s \n", project, err)
+		return
+	}
+
+	err = client.DeleteProject(project, token)
 	if err != nil {
 		fmt.Printf("Unable to delete project %s: %s \n", project, err)
 	} else {
@@ -95,12 +110,12 @@ func deleteProject(project string) {
 	}
 }
 
-func deleteVolume(project string, volume string) {
-	err := client.DeleteVolume(project, volume)
+func deleteVolume(project string, id string) {
+	err := client.DeleteVolume(project, id)
 	if err != nil {
-		fmt.Printf("Unable to delete volume %s: %s \n", volume, err)
+		fmt.Printf("Unable to delete volume %s: %s \n", id, err)
 	} else {
-		fmt.Printf("Volume %s deleted\n", volume)
+		fmt.Printf("Volume %s deleted\n", id)
 	}
 }
 

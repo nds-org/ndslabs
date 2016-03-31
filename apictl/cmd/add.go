@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 )
@@ -24,6 +25,7 @@ func init() {
 	addCmd.AddCommand(addStackCmd)
 	addCmd.AddCommand(addProjectCmd)
 	addCmd.AddCommand(addServiceCmd)
+	addCmd.AddCommand(addVolumeCmd)
 
 	// add stack flags
 	addStackCmd.Flags().StringVar(&opts, "opt", "", "Comma-delimited list of optional services")
@@ -87,14 +89,16 @@ var addServiceCmd = &cobra.Command{
 }
 
 func addServiceFile(path string) error {
-	if path[len(path)-4:len(path)] != "json" {
-		return nil
-	}
 	service := api.ServiceSpec{}
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		fmt.Println(err)
 		return err
+	}
+
+	if len(path) > 4 && path[len(path)-4:len(path)] != "json" {
+		fmt.Println("Expecting extension .json")
+		return nil
 	}
 	err = json.Unmarshal(data, &service)
 	if err != nil {
@@ -131,6 +135,46 @@ var addStackCmd = &cobra.Command{
 			os.Exit(-1)
 		}
 		addStack(apiUser.username, args[0], args[1], opts)
+	},
+}
+
+var addVolumeCmd = &cobra.Command{
+	Use:    "volume [name] [size] [stack service Id]",
+	Short:  "Create a volume",
+	PreRun: Connect,
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) < 2 {
+			cmd.Usage()
+			os.Exit(-1)
+		}
+
+		name := args[0]
+		size, err := strconv.Atoi(args[1])
+		if err != nil {
+			fmt.Printf("Error creating volume: %s\n", err.Error())
+			return
+		}
+
+		volume := api.Volume{}
+		volume.Name = name
+		volume.Size = size
+		volume.SizeUnit = "GB"
+		if len(args) == 3 {
+			ssid := args[2]
+			if strings.Index(ssid, "-") <= 0 {
+				fmt.Printf("Invalid stack service id (looks like a stack Id?): %s\n", ssid)
+				return
+			}
+			volume.Attached = ssid
+		}
+
+		vol, err := client.AddVolume(apiUser.username, &volume)
+		if err != nil {
+			fmt.Printf("Error creating volume: %s\n", err.Error())
+			return
+		} else {
+			fmt.Printf("Created volume %s\n", vol.Name)
+		}
 	},
 }
 
@@ -215,7 +259,14 @@ func addStack(project string, serviceKey string, name string, opt string) {
 
 func addProject(project api.Project) {
 
-	err := client.AddProject(&project)
+	password := credentials("Admin password: ")
+	token, err := client.Login("admin", password)
+	if err != nil {
+		fmt.Printf("Unable to add project %s: %s \n", project.Id, err)
+		return
+	}
+
+	err = client.AddProject(&project, token)
 	if err != nil {
 		fmt.Printf("Unable to add project %s: %s \n", project.Id, err)
 	} else {
@@ -225,7 +276,14 @@ func addProject(project api.Project) {
 
 func addService(service api.ServiceSpec) {
 
-	_, err := client.AddService(&service)
+	password := credentials("Admin password: ")
+	token, err := client.Login("admin", password)
+	if err != nil {
+		fmt.Printf("Unable to add service %s: %s \n", service.Label, err)
+		return
+	}
+
+	_, err = client.AddService(&service, token)
 	if err != nil {
 		fmt.Printf("Unable to add service %s: %s \n", service.Label, err)
 	} else {

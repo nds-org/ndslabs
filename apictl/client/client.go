@@ -224,12 +224,12 @@ func (c *Client) UpdateStack(project string, stack *api.Stack) error {
 	}
 }
 
-func (c *Client) ListProjects() (*[]api.Project, error) {
+func (c *Client) ListProjects(token string) (*[]api.Project, error) {
 
 	url := c.BasePath + "projects"
 
 	request, err := http.NewRequest("GET", url, nil)
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	resp, err := c.HttpClient.Do(request)
 	if err != nil {
 		return nil, err
@@ -252,14 +252,14 @@ func (c *Client) ListProjects() (*[]api.Project, error) {
 	}
 }
 
-func (c *Client) AddProject(project *api.Project) error {
+func (c *Client) AddProject(project *api.Project, token string) error {
 
 	url := c.BasePath + "projects/"
 
 	data, err := json.Marshal(project)
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	resp, err := c.HttpClient.Do(request)
 	if err != nil {
 		return err
@@ -310,7 +310,7 @@ func (c *Client) UpdateProject(project *api.Project) error {
 	}
 }
 
-func (c *Client) AddService(service *api.ServiceSpec) (*api.ServiceSpec, error) {
+func (c *Client) AddService(service *api.ServiceSpec, token string) (*api.ServiceSpec, error) {
 
 	url := c.BasePath + "services"
 
@@ -321,7 +321,7 @@ func (c *Client) AddService(service *api.ServiceSpec) (*api.ServiceSpec, error) 
 
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	resp, err := c.HttpClient.Do(request)
 	if err != nil {
 		return nil, err
@@ -372,7 +372,7 @@ func (c *Client) ListVolumes(pid string) (*[]api.Volume, error) {
 
 func (c *Client) UpdateVolume(pid string, volume *api.Volume) (*api.Volume, error) {
 
-	url := c.BasePath + "projects/" + pid + "/volumes/" + volume.Name
+	url := c.BasePath + "projects/" + pid + "/volumes/" + volume.Id
 
 	data, err := json.Marshal(volume)
 	if err != nil {
@@ -402,9 +402,9 @@ func (c *Client) UpdateVolume(pid string, volume *api.Volume) (*api.Volume, erro
 	}
 }
 
-func (c *Client) GetVolume(pid string, name string) (*api.Volume, error) {
+func (c *Client) GetVolume(pid string, id string) (*api.Volume, error) {
 
-	url := c.BasePath + "projects/" + pid + "/volumes/" + name
+	url := c.BasePath + "projects/" + pid + "/volumes/" + id
 
 	request, err := http.NewRequest("GET", url, nil)
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
@@ -462,13 +462,13 @@ func (c *Client) AddVolume(pid string, volume *api.Volume) (*api.Volume, error) 
 	}
 }
 
-func (c *Client) DeleteService(service string) error {
+func (c *Client) DeleteService(service string, token string) error {
 
 	url := c.BasePath + "services/" + service
 
 	request, err := http.NewRequest("DELETE", url, nil)
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	resp, err := c.HttpClient.Do(request)
 	if err != nil {
 		return err
@@ -487,13 +487,13 @@ func (c *Client) DeleteService(service string) error {
 	return nil
 }
 
-func (c *Client) DeleteProject(project string) error {
+func (c *Client) DeleteProject(project string, token string) error {
 
 	url := c.BasePath + "projects/" + project
 
 	request, err := http.NewRequest("DELETE", url, nil)
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	resp, err := c.HttpClient.Do(request)
 	if err != nil {
 		return err
@@ -684,11 +684,19 @@ func (c *Client) StopStack(pid string, stack string) (*api.Stack, error) {
 }
 
 func (c *Client) GetProject(pid string) (*api.Project, error) {
+	return c.getProject(pid, c.Token)
+}
+
+func (c *Client) GetProjectAdmin(pid string, token string) (*api.Project, error) {
+	return c.getProject(pid, token)
+}
+
+func (c *Client) getProject(pid string, token string) (*api.Project, error) {
 	url := fmt.Sprintf("%sprojects/%s", c.BasePath, pid)
 
 	request, err := http.NewRequest("GET", url, nil)
 
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	resp, err := c.HttpClient.Do(request)
 	if err != nil {
 		return nil, err
