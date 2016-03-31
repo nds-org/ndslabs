@@ -49,8 +49,9 @@
                 <td>{{ endpt.protocol | uppercase }}</td>
                 <td>{{ endpt.internalIP }}:{{ endpt.port }}</td>
                 <td>
-                  <a href="http://{{ endpt.nodePort ? apiHost + ':' + endpt.nodePort : '' }}">
-                    {{ endpt.nodePort ? apiHost + ':' + endpt.nodePort : 'N / A' }}
+		  <span ng-if="!endpt.nodePort">N / A</span>
+                  <a ng-if="endpt.nodePort" href="{{ 'http://' + apiHost + ':' + endpt.nodePort }}">
+                    {{ apiHost + ':' + endpt.nodePort }}
                   </a>
                 </td>
               </tr>
