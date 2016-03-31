@@ -771,7 +771,7 @@ func (s *Server) isStackStopped(pid string, ssid string) bool {
 	sid := ssid[0:strings.LastIndex(ssid, "-")]
 	stack, _ := s.getStack(pid, sid)
 
-	if stack.Status == stackStatus[Stopped] {
+	if stack != nil && stack.Status == stackStatus[Stopped] {
 		return true
 	} else {
 		return false
@@ -1310,6 +1310,10 @@ func (s *Server) StartStack(w rest.ResponseWriter, r *rest.Request) {
 func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) {
 
 	stack, _ := s.getStack(pid, sid)
+	if stack == nil {
+		return nil, nil
+	}
+
 	// Get the pods for this stack
 	podStatus := make(map[string]string)
 
@@ -1369,11 +1373,7 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 		endpoint.Port = k8service.Spec.Ports[0].Port
 		endpoint.Protocol = strings.ToLower(string(k8service.Spec.Ports[0].Protocol))
 		endpoint.NodePort = k8service.Spec.Ports[0].NodePort
-		if k8service.Spec.Type == "NodePort" {
-			glog.V(4).Infof("NodePort : %s %d\n", s.host, k8service.Spec.Ports[0].NodePort)
-			//endpoints[label] = fmt.Sprintf("http://%s:%d", s.host, k8service.Spec.Ports[0].NodePort)
-			endpoints[label] = endpoint
-		}
+		endpoints[label] = endpoint
 	}
 
 	for i := range stack.Services {
@@ -1704,8 +1704,8 @@ func (s *Server) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	// Don't allow attaching to a service with an existing volume
 	if vol.Attached != "" {
+		// Don't allow attaching to a service with an existing volume
 		if s.getStackService(pid, vol.Attached) == nil {
 			rest.NotFound(w, r)
 			return
@@ -1720,7 +1720,20 @@ func (s *Server) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 			vol.Status = "attached"
 		}
 	} else {
-		vol.Status = "available"
+		existingVol, err := s.getVolume(pid, vid)
+		if err != nil {
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if existingVol != nil {
+			if !s.isStackStopped(pid, existingVol.Attached) {
+				glog.V(4).Infof("Can't detach from a running stack\n")
+				w.WriteHeader(http.StatusConflict)
+				return
+			} else {
+				vol.Status = "available"
+			}
+		}
 	}
 
 	err = s.putVolume(pid, vid, vol)
