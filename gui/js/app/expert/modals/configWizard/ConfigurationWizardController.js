@@ -322,9 +322,6 @@ angular
     $scope.volume = $scope.newStackVolumeRequirements[newPage];
   };
   
-  
-  $scope.chartObject = {};
-  
   $scope.project = Project.project;
   $scope.storageQuota = Project.storageQuota || 50;
   $scope.configuredVolumes = configuredVolumes;
@@ -340,65 +337,14 @@ angular
                       + '?subject=' + subject
                       + '&body=' + body;
     
-  $scope.chartObject.type = "PieChart";
-  
-  // Create an empty "table" for our chart object
-  $scope.chartObject.data = {"cols": [
-      {id: "t", label: "Volume", type: "string"},
-      {id: "s", label: "Size (GB)", type: "number"}
-  ], "rows": [  ]};
-  
   // TODO: Add this field to the backend
   // Assumption: quota is in GB
   // Assumption: GB is lowest denomination
+
   var available = angular.copy($scope.storageQuota);
-  
-  var volumeSlices = [];
-  if (configuredVolumes.length > 0) {
-    var pushVolume = function(volume) {
-      var size = volume.sizeUnit === 'GB' ? volume.size : volume.size * 1000
-      available -= size
-      volumeSlices.push({ 
-        'c': [ 
-          {'v': volume.name }, 
-          {'v': size }
-        ]});
-    };
-  
-    // Push a slice for each of our existing volumes
-    angular.forEach(configuredVolumes, function(volume) {
-      pushVolume(volume);
-    });
-  }
-  
+
   $scope.availableSpace = available;
   $scope.usedSpace = $scope.storageQuota - available;
-  
-  $scope.chartObject.options  = {
-        'title': 'Storage Volumes',
-        'is3D': true,
-        'perSliceText': 'value'
-  };
-  
-  
-  // TODO: Enable this by adding field to backend project
-  if (available > 0) {
-    // Now push a slice representing our available space
-    $scope.chartObject.data.rows.push({ 
-      'c': [ 
-        {'v': 'Available Space' }, 
-        {'v': available }
-      ]});
-  
-  
-    $scope.chartObject.options.slices = {
-      0: {offset: 0.4},
-    };
-  }
-  
-  // Now add the rest of our volumes
-  $scope.chartObject.data.rows = _.concat($scope.chartObject.data.rows, volumeSlices);
-  
   
   $scope.ok = function () {
     $log.debug("Closing modal with success!");

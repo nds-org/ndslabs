@@ -372,14 +372,14 @@ angular
     // Attach existing volume to new service
     return NdsLabsApi.putProjectsByProjectIdVolumesByVolumeId({ 
       'volume': volume,
-      'volumeId': volume.name,
+      'volumeId': volume.id,
       'projectId': projectId
     }).then(function(data, xhr) {
-      $log.debug("successfully updated /projects/" + projectId + "/volumes/" + volume.name + "!");
+      $log.debug("successfully updated /projects/" + projectId + "/volumes/" + volume.id + "!");
       //_.merge(exists, data);
       volume = data;
     }, function(headers) {
-      $log.error("error updating /projects/" + projectId + "/volumes/" + volume.name + "!");
+      $log.error("error updating /projects/" + projectId + "/volumes/" + volume.id + "!");
     });
   };
   
@@ -501,12 +501,12 @@ angular
     var performDelete = function() {
       NdsLabsApi.deleteProjectsByProjectIdVolumesByVolumeId({
           'projectId': projectId,
-          'volumeId': volume.name
+          'volumeId': volume.id
         }).then(function(data, xhr) {
           $log.debug('successfully deleted volume: ' + volume.name);
           $scope.configuredVolumes.splice($scope.configuredVolumes.indexOf(volume), 1);
         }, function(headers) {
-          $log.error('failed to delete volume: ' + volume.name);
+          $log.error('failed to delete volume: ' + volume.id);
         });
     };
     
@@ -528,7 +528,7 @@ angular
       
       // Define what we should do when the modal is closed
       modalInstance.result.then(function(volume) {
-        $log.debug('User has chosen to delete volume: ' + volume.name);
+        $log.debug('User has chosen to delete volume: ' + volume.id);
         
         performDelete();
       });
