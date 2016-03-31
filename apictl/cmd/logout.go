@@ -22,7 +22,7 @@ var logoutCmd = &cobra.Command{
 			os.Exit(-1)
 		}
 		path := usr.HomeDir + "/.ndslabsctl"
-		if _, err := os.Stat(path); err == nil {
+		if _, err := os.Stat(path + "/.passwd"); err == nil {
 			err = os.Remove(path + "/.passwd")
 			if err != nil {
 				fmt.Printf("Error removing passwd data: %s\n", err)
