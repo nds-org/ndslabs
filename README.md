@@ -37,7 +37,7 @@ Usage:
 ```
 
 Args:
-* tagName: The name of the new tag to push (i.e. "1.0-alpha")
+* tagName: The name of the new tag to push in addition to "latest" (i.e. "1.0-alpha")
 * -t:      Specify this as a "test" release and skip pushing to "latest"
 
 ### start.sh
