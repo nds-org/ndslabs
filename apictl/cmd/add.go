@@ -89,14 +89,16 @@ var addServiceCmd = &cobra.Command{
 }
 
 func addServiceFile(path string) error {
-	if path[len(path)-4:len(path)] != "json" {
-		return nil
-	}
 	service := api.ServiceSpec{}
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		fmt.Println(err)
 		return err
+	}
+
+	if len(path) > 4 && path[len(path)-4:len(path)] != "json" {
+		fmt.Println("Expecting extension .json")
+		return nil
 	}
 	err = json.Unmarshal(data, &service)
 	if err != nil {
