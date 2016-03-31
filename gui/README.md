@@ -11,6 +11,7 @@ docker pull ndslabs/ndslabs-gui:latest
 ## Modifying the GUI
 Several helper scripts are included to help you modify this code:
 * build.sh:     Builds the ndslabs/ndslabs-gui docker image.
+* release.sh:   Pushes a new release of the given tag and/or "latest".
 * start.sh:     Create a container from the ndslabs/ndslabs-gui image.
 * stop.sh:      Remove the running cloud9 / ndslabs-gui container(s).
 * swagger.sh:   Regenerate the REST API spec from Swagger.
@@ -26,6 +27,18 @@ Usage:
 Args:
 * -c: Clean (remove) the existing image before building the new one.
 * -p: Push the new image after building it.
+* 
+### release.sh
+Pushes a new release of the given tag and/or "latest".
+
+Usage:
+```bash
+./release.sh [tagName] [-t]
+```
+
+Args:
+* tagName: The name of the new tag to push in addition to "latest" (i.e. "1.0-alpha")
+* -t:      Specify this as a "test" release and skip pushing to "latest"
 
 ### start.sh
 Create a container from the ndslabs/ndslabs-gui image and, optionally, open an IDE allowing dynamic changes.
