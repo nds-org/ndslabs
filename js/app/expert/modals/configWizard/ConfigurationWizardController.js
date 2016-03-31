@@ -140,10 +140,12 @@ angular
             var spec = _.find(_.concat(stacks, deps), [ 'key', svc.service ]);
             
             // Don't modify specs in-place... make a copy
-            $scope.extraConfig[svc.service] = {
-              list: angular.copy(spec.config),
-              defaults: angular.copy(spec.config)
-            };
+            if (spec.config) {
+              $scope.extraConfig[svc.service] = {
+                list: angular.copy(spec.config),
+                defaults: angular.copy(spec.config)
+              };
+            }
           });
         },
         next: function() { 
