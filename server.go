@@ -844,6 +844,22 @@ func (s *Server) projectExists(pid string) bool {
 	return exists
 }
 
+func (s *Server) stackServiceExists(pid string, id string) bool {
+	stacks, _ := s.getStacks(pid)
+	if stacks == nil {
+		return false
+	}
+
+	exists := false
+	for _, stack := range *stacks {
+		if stack.Id == id {
+			exists = true
+			break
+		}
+	}
+	return exists
+}
+
 func (s *Server) stackExists(pid string, name string) bool {
 	stacks, _ := s.getStacks(pid)
 	if stacks == nil {
@@ -859,6 +875,7 @@ func (s *Server) stackExists(pid string, name string) bool {
 	}
 	return exists
 }
+
 func (s *Server) serviceIsDependency(sid string) int {
 	services, _ := s.getServices()
 	dependencies := 0
@@ -1725,7 +1742,7 @@ func (s *Server) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		if existingVol != nil {
+		if existingVol != nil && existingVol.Attached != "" {
 			if !s.isStackStopped(pid, existingVol.Attached) {
 				glog.V(4).Infof("Can't detach from a running stack\n")
 				w.WriteHeader(http.StatusConflict)
@@ -1733,6 +1750,9 @@ func (s *Server) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 			} else {
 				vol.Status = "available"
 			}
+		} else {
+			glog.V(4).Infof("Volume already detached\n")
+			w.WriteHeader(http.StatusConflict)
 		}
 	}
 
@@ -1843,6 +1863,11 @@ func (s *Server) GetLogs(w rest.ResponseWriter, r *rest.Request) {
 	ssid := r.PathParam("ssid")
 	lines := r.Request.FormValue("lines")
 
+	if !s.stackServiceExists(pid, ssid) {
+		rest.Error(w, "No such service", http.StatusNotFound)
+		return
+	}
+
 	tailLines, err := strconv.Atoi(lines)
 
 	sid := ssid[0:strings.LastIndex(ssid, "-")]
@@ -1862,6 +1887,10 @@ func (s *Server) GetConfigs(w rest.ResponseWriter, r *rest.Request) {
 
 	configs := make(map[string][]api.Config)
 	for _, sid := range sids {
+		if !s.serviceExists(sid) {
+			rest.Error(w, "No such service", http.StatusNotFound)
+			return
+		}
 		spec, err := s.getServiceSpec(sid)
 		if err != nil {
 			glog.Error(err)
