@@ -1,35 +1,65 @@
-##
 
-This is very very drafty.
+# NDS Labs API Server
 
-## Building
-
-To build the apiserver binary:
-
-
-To build the apiserver binary, this assumes you have standard go workspace with the following structure:
+## Latest release
+The latest release has been pushed to Dockerhub ndslabs/apiserver:latest. You can run the server via Docker:
 
 ```
-cd ndslabs
-docker run --rm -it -v `pwd`:/go/src/github.com/ndslabs golang bash
-# cd src/github.com/ndslabs/apiserver/
-# go get
-# go build
+docker pull ndslabs/apiserver:latest
 ```
 
-This will produce the apiserver binary.
+## Running
+
+Prerequisites:
+* Etcd
+* Kubernetes
+
+```
+docker run -e ETCD_ADDR=localhost:4001 -e KUBERNETES_ADDR=http://localhost:8080 -e CORS_ORIGIN_ADDR="http://localhost" -e HOST_ADDR=PUBLIC_IP_ADDR -e SPEC_GIT_REPO=https://github.com/nds-org/ndslabs-specs -e SPEC_GIT_BRANC=master
+```
+
+Configuration options:
+* ETCD_ADDR: address of Etcd (defaults to localhost:4001)
+* KUBERNETES_ADDR: URL for Kubernetes API (Defaults to http://localhost:8080)
+* CORS_ORIGIN_ADDR: URL of GUI (defaults to http://localhost)
+* HOST_ADDR: Public IP address of host
+* SPEC_GIT_REPO: URL to spec repo (defaults to https://github.com/nds-org/ndslabs-specs)
+* SPEC_GIT_BRANCH: Git repository branch (defaults to master)
+* 
+
+## Building 
+
+Prerequisites:
+* For now, running on OS X with Docker Toolbox
+* Go 1.5
+
+To simply compile the go code:
+```
+go build
+```
+
+To build the apiserver binary for multiple architectures (output in build/bin/)
+```
+./build.sh
+```
+
+To tag and push images to dockerhub:
+```
+./build.sh <dev, test, release>
+```
 
 ### Configuration
-The apiserver.conf is the primary configuration file
+
+The apiserver.conf is the primary configuration file. If running the apiserver outside of Docker, you will need to manually configure the following settings:
 
 ```
 [Server]
 Port=30001
 Origin=http://<CORS origin host>
 VolDir=/home/core/apiserver/volumes
-JwtKey=/home/core/apiserver/jwt.key
 Host=<your host ip>
 VolumeSource=local
+SpecsDir=<optional path to local specs directory>
 
 [Etcd]
 Address=localhost:4001
@@ -46,7 +76,7 @@ VolumesEndpoint=http://nebula.ncsa.illinois.edu:8776/v2/
 ComputeEndpoint=http://nebula.ncsa.illinois.edu:8774/v2/
 ```
 
-If VolumeSource is "local", the OpenStack section isn't used.
+If VolumeSource is "local", a local directory is used for hostPath volumes in Kubernetes. If "openstack", volumes are created via the OpenStack API.
 
 
 ### Running the server
@@ -55,25 +85,5 @@ The server requires etcd and Kubernetes. You can either run a separate etcd or u
 
 To run
 ```
-./apiserver -v <log verbosity 1-4>
-```
-
-To install a systemd service
-```
-cp apiserver.service /etc/systemd/system/apiserver.service
-systemdctl start apiserver
-```
-
-### Test data
-
-Loading a project:
-```
-cd test
-./load-projects.sh
-```
-
-Loading service specs:
-```
-cd specs/clowder
-./load-specs.sh
+./apiserver -v <log verbosity 1-4> --conf <path to apiserver.conf> --passwd <admin password>
 ```
