@@ -33,10 +33,10 @@ elif [ "$1" = "test" ]; then
 elif [ "$1" = "release" ]; then
 	echo Building release image
 	docker build -t ndslabs/apiserver:latest .
-	docker build -t ndslabs/apiserver:$(VERSION) .
+	docker build -t ndslabs/apiserver:$VERSION .
 	echo Pushing release image
 	docker push ndslabs/apiserver:latest
-	docker push ndslabs/apiserver:$(VERSION)
+	docker push ndslabs/apiserver:$VERSION
 elif [ "$1" = "clean" ]; then
 	echo Cleaning
 	rm -rf build
