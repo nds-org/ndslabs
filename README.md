@@ -33,18 +33,16 @@ Currently supported services include:
 
 # Getting started
 
+See the [setup documentation](https://github.com/nds-org/ndslabs/blob/master/docs/setup.md) for instructions on starting NDS Labs services.
+
 See the [developer tutorial](https://github.com/nds-org/developer-tutorial) for instructions on running and developing services for NDS Labs.
 
 # Where to get help
 
-There are a few ways to get help for getting up and running.  The first is
-through the NDS discussion mailing list, discuss@nationaldataservice.org.  Only
-subscribers can post; to subscribe, email majordomo@nationaldataservice.org
-with the contents "subscribe discuss".
-
-The second way is through IRC.  On chat.freenode.net in the channel
-\#nds-epiphyte , folks are often idling and able to respond to questions with
-some delay.
+* [NDS Labs Google Group](https://groups.google.com/forum/#!forum/ndslabs/)
+* [File an issue](https://github.com/nds-org/ndslabs/issues)
+* [Find us on Gitter](https://gitter.im/nds-org/ndslabs)
+* [NDS Wiki](https://opensource.ncsa.illinois.edu/confluence/display/NDS/NDS+Labs)
 
 
 # Contributing
