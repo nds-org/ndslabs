@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+FROM ubuntu:wily
 MAINTAINER willis8@illinois.edu
 
 RUN apt-get update -y && apt-get install -y curl git
