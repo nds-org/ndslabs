@@ -25,7 +25,6 @@ Configuration options:
 * HOST_ADDR: Public IP address of host
 * SPEC_GIT_REPO: URL to spec repo (defaults to https://github.com/nds-org/ndslabs-specs)
 * SPEC_GIT_BRANCH: Git repository branch (defaults to master)
-* 
 
 ## Building 
 
