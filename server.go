@@ -852,9 +852,11 @@ func (s *Server) stackServiceExists(pid string, id string) bool {
 
 	exists := false
 	for _, stack := range *stacks {
-		if stack.Id == id {
-			exists = true
-			break
+		for _, stackService := range stack.Services {
+			if stackService.Id == id {
+				exists = true
+				break
+			}
 		}
 	}
 	return exists
