@@ -44,6 +44,14 @@ The second way is through IRC.  On chat.freenode.net in the channel
 \#nds-epiphyte , folks are often idling and able to respond to questions with
 some delay.
 
+
+# Contributing
+
+For more information on our Developer Workflows, see [Developer Workflows](https://opensource.ncsa.illinois.edu/confluence/display/NDS/Developer+Workflows).
+
+In short, fork this repository and make a pull request. We will review and give feedback.
+
+
 # See also
 
 * [ndslabs-clowder](https://github.com/nds-org/ndslabs-clowder): Docker image files for the Clowder example
