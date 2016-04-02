@@ -27,7 +27,7 @@ Usage:
 Args:
 * -c: Clean (remove) the existing image before building the new one.
 * -p: Push the new image after building it.
-* 
+
 ### release.sh
 Pushes a new release of the given tag and/or "latest".
 
