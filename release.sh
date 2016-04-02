@@ -7,7 +7,7 @@ if [[ "${@/-t/}" == "$@" ]]; then
 fi
 
 # If given, tag with the given version number too
-if [[ "$1" != "" ]]; then
+if [[ "$1" != "" && "$1" != "-t" ]]; then
 	docker tag ndslabs/ndslabs-gui:develop ndslabs/ndslabs-gui:$1 && \
 	docker push ndslabs/ndslabs-gui:$1
 fi
