@@ -15,7 +15,7 @@ Prerequisites:
 * Kubernetes
 
 ```
-docker run -e ETCD_ADDR=localhost:4001 -e KUBERNETES_ADDR=http://localhost:8080 -e CORS_ORIGIN_ADDR="http://localhost" -e HOST_ADDR=PUBLIC_IP_ADDR -e SPEC_GIT_REPO=https://github.com/nds-org/ndslabs-specs -e SPEC_GIT_BRANC=master
+docker run -e ETCD_ADDR=localhost:4001 -e KUBERNETES_ADDR=http://localhost:8080 -e CORS_ORIGIN_ADDR="http://localhost" -e HOST_ADDR=PUBLIC_IP_ADDR -e SPEC_GIT_REPO=https://github.com/nds-org/ndslabs-specs -e SPEC_GIT_BRANCH=master
 ```
 
 Configuration options:
