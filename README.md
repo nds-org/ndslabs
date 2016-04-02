@@ -11,12 +11,12 @@ For more information, see the [architecture documentation](https://github.com/nd
 On top of this foundation, NDS Labs provides a user interface, command line interface, and an API server used to manage the configuration and deployment of containerized services. This repository includes the following:
 
 * apiserver: NDS Labs REST API server, a thin management layer using etcd, Kubernetes, and optional OpenStack APIs.
-* gui: Project management UI implemented in angular
+* gui: Project management UI implemented in AngularJS
 * apictl: Command line utility (ndslabsctl)
 
 # System requirements
 
-* For developers, NDS Labs servics can run on any system with Docker 1.9+.
+* For developers, NDS Labs services can run on any system with Docker 1.9+.
 * For production deployment, NDS Labs assumes an OpenStack cluster
 
 # Service catalog
