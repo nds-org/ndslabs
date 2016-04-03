@@ -18,16 +18,16 @@ The NDS Labs [service catalog](https://github.com/nds-org/ndslabs-specs/) reposi
 
 ## Walkthrough
 
-![Login](docs/images/quickstart/1login.png)
-![Service list](docs/images/quickstart/2canvas.png)
-![Add Kibana](docs/images/quickstart/3add.png)
-![Required services](docs/images/quickstart/4add.png)
-![Configure volumes](docs/images/quickstart/5volumes.png)
-![Confirm](docs/images/quickstart/6confirm.png)
-![Stopped stack](docs/images/quickstart/7stopped.png)
-![Starting stack](docs/images/quickstart/8starting.png)
-![Started stack](docs/images/quickstart/9started.png)
-![View config](docs/images/quickstart/10config.png)
-![Endpoint](docs/images/quickstart/11kibana.png)
-![View volumes](docs/images/quickstart/12volume.png)
+![Login](images/quickstart/1login.png)
+![Service list](images/quickstart/2canvas.png)
+![Add Kibana](images/quickstart/3add.png)
+![Required services](images/quickstart/4add.png)
+![Configure volumes](images/quickstart/5volumes.png)
+![Confirm](images/quickstart/6confirm.png)
+![Stopped stack](images/quickstart/7stopped.png)
+![Starting stack](images/quickstart/8starting.png)
+![Started stack](images/quickstart/9started.png)
+![View config](images/quickstart/10config.png)
+![Endpoint](images/quickstart/11kibana.png)
+![View volumes](images/quickstart/12volume.png)
 
