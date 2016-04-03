@@ -1,6 +1,6 @@
 # NDS Labs
 
-<img src="https://github.com/craig-willis/ndslabs/blob/master/docs/images/logos/NDS-badge.png" width="50" alt="NDS">
+<img src="https://github.com/craig-willis/ndslabs/blob/master/docs/images/logos/NDS-badge.png" width="100" alt="NDS">
 
 [![Join the chat at https://gitter.im/nds-org/ndslabs](https://badges.gitter.im/nds-org/ndslabs.svg)](https://gitter.im/nds-org/ndslabs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
