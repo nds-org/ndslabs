@@ -15,3 +15,7 @@ The NDS Labs [service catalog](https://github.com/nds-org/ndslabs-specs/) reposi
 * [NDS Labs Google Group](https://groups.google.com/forum/#!forum/ndslabs/)
 * [File an issue](https://github.com/nds-org/ndslabs/issues)
 * [Find us on Gitter](https://gitter.im/nds-org/ndslabs)
+
+## Walkthrough
+
+![Login](docs/images/quickstart/1login.png)
