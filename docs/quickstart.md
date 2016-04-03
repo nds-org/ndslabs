@@ -10,7 +10,7 @@ Once you have a running NDS Labs system, review the [tutorial](https://github.co
 
 The NDS Labs [service catalog](https://github.com/nds-org/ndslabs-specs/) repository contains example specifications and links to additional information about existing services.
 
-# Where to get help
+## Where to get help
 
 * [NDS Labs Google Group](https://groups.google.com/forum/#!forum/ndslabs/)
 * [File an issue](https://github.com/nds-org/ndslabs/issues)
