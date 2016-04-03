@@ -18,4 +18,5 @@ The NDS Labs [service catalog](https://github.com/nds-org/ndslabs-specs/) reposi
 
 ## Walkthrough
 
-![Login](docs/images/quickstart/1login.png)
+![Login](images/quickstart/1login.png)
+
