@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"golang.org/x/net/context"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -23,14 +22,8 @@ import (
 
 	"github.com/StephanDollberg/go-json-rest-middleware-jwt"
 	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/coreos/etcd/client"
 	"github.com/golang/glog"
 )
-
-type StackStatus struct {
-	Code    int
-	Message string
-}
 
 var stackStatus = map[int]string{
 	Started:  "started",
@@ -39,34 +32,22 @@ var stackStatus = map[int]string{
 	Stopping: "stopping",
 }
 
-type Error struct {
-	ErrorCode int    `json:"errorCode"`
-	Message   string `json:"message"`
-}
-
-var errors = map[int]string{
-	NotFound: "Not found",
-	Exists:   "Exists",
-}
-
 const (
-	NotFound = 100
-	Exists   = 101
 	Started  = 1
 	Starting = 2
 	Stopped  = 3
 	Stopping = 4
 )
 
-func NewError(errorCode int) *Error {
-	return &Error{
-		ErrorCode: errorCode,
-		Message:   errors[errorCode],
-	}
-}
-
-func (e Error) Error() string {
-	return e.Message
+type Server struct {
+	etcd      *etcd.EtcdHelper
+	kube      *kube.KubeHelper
+	Namespace string
+	local     bool
+	volDir    string
+	host      string
+	jwtKey    []byte
+	jwt       *jwt.JWTMiddleware
 }
 
 type Config struct {
@@ -255,21 +236,11 @@ func main() {
 
 	glog.Infof("Listening on %s:%s", cfg.Server.Host, cfg.Server.Port)
 	if len(cfg.Server.SSLCert) > 0 {
-		glog.Fatal(http.ListenAndServeTLS(":"+cfg.Server.Port, cfg.Server.SSLCert, cfg.Server.SSLKey, api.MakeHandler()))
+		glog.Fatal(http.ListenAndServeTLS(":"+cfg.Server.Port,
+			cfg.Server.SSLCert, cfg.Server.SSLKey, api.MakeHandler()))
 	} else {
 		glog.Fatal(http.ListenAndServe(":"+cfg.Server.Port, api.MakeHandler()))
 	}
-}
-
-type Server struct {
-	etcd      *etcd.EtcdHelper
-	kube      *kube.KubeHelper
-	Namespace string
-	local     bool
-	volDir    string
-	host      string
-	jwtKey    []byte
-	jwt       *jwt.JWTMiddleware
 }
 
 func GetPaths(w rest.ResponseWriter, r *rest.Request) {
@@ -571,32 +542,6 @@ func (s *Server) serviceInUse(sid string) int {
 		}
 	}
 	return inUse
-}
-
-func GetEtcdClient(etcdAddress string) (client.KeysAPI, error) {
-	glog.V(3).Infof("GetEtcdClient %s\n", etcdAddress)
-
-	cfg := client.Config{
-		Endpoints:               []string{"http://" + etcdAddress},
-		Transport:               client.DefaultTransport,
-		HeaderTimeoutPerRequest: time.Second,
-	}
-
-	c, err := client.New(cfg)
-	if err != nil {
-		glog.Error(err)
-		return nil, err
-	}
-	kapi := client.NewKeysAPI(c)
-
-	resp, err := kapi.Get(context.Background(), "/", nil)
-	_ = resp
-	if err != nil {
-		glog.Error(err)
-		return nil, err
-	}
-
-	return kapi, nil
 }
 
 func (s *Server) GetAllStacks(w rest.ResponseWriter, r *rest.Request) {
@@ -1111,12 +1056,50 @@ func (s *Server) StartStack(w rest.ResponseWriter, r *rest.Request) {
 		}
 	}
 
-	// Start required depedencies
-	s.startStackService(stack.Key, pid, stack, &addrPortMap)
+	// For each stack service, if no dependencies or dependency == started,
+	// start service. Otherwise wait
+	started := map[string]int{}
+	for len(started) < len(stackServices) {
+		stack, _ = s.getStackWithStatus(pid, sid)
+		for _, stackService := range stack.Services {
+			if started[stackService.Service] == 1 {
+				continue
+			}
+			svc, _ := s.etcd.GetServiceSpec(stackService.Service)
 
-	// Start optional dependencies
-	for _, stackService := range stack.Services {
-		s.startController(pid, stackService.Service, stack, &addrPortMap)
+			numDeps := 0
+			startedDeps := 0
+			for _, dep := range svc.Dependencies {
+				for _, ss := range stack.Services {
+					if dep.DependencyKey == ss.Service {
+						numDeps++
+						if ss.Status == "ready" {
+							startedDeps++
+						}
+					}
+				}
+			}
+			if numDeps == 0 || startedDeps == numDeps {
+				go s.startController(pid, stackService.Service, stack, &addrPortMap)
+				started[stackService.Service] = 1
+			}
+		}
+		time.Sleep(time.Second * 3)
+	}
+
+	ready := map[string]int{}
+	errors := map[string]int{}
+	for len(ready) < len(started) && len(errors) == 0 {
+		stack, _ = s.getStackWithStatus(pid, sid)
+		for _, stackService := range stack.Services {
+			if stackService.Status == "ready" {
+				ready[stackService.Service] = 1
+			}
+			if stackService.Status == "error" {
+				errors[stackService.Service] = 1
+			}
+		}
+		time.Sleep(time.Second * 3)
 	}
 
 	stack, _ = s.getStackWithStatus(pid, sid)
@@ -1272,60 +1255,56 @@ func (s *Server) stopStack(pid string, sid string) (*api.Stack, error) {
 	stack.Status = stackStatus[Stopping]
 	s.etcd.PutStack(pid, sid, stack)
 
-	stackServices := stack.Services
+	// For each stack service, stop dependent services first.
+	stopped := map[string]int{}
 
-	for _, stackService := range stackServices {
-
-		name := fmt.Sprintf("%s-%s", stack.Id, stackService.Service)
-		glog.V(4).Infof("Stopping service %s\n", name)
-
-		spec, _ := s.etcd.GetServiceSpec(stackService.Service)
-		if len(spec.Ports) > 0 {
-			err := s.kube.StopService(pid, name)
-			// Log and continue
-			if err != nil {
-				glog.Error(err)
+	for len(stopped) < len(stack.Services) {
+		stack, _ = s.getStackWithStatus(pid, sid)
+		for _, stackService := range stack.Services {
+			if stopped[stackService.Service] == 1 {
+				continue
 			}
-		}
 
-		glog.V(4).Infof("Stopping controller %s\n", name)
-		err := s.kube.StopController(pid, name)
-		if err != nil {
-			glog.Error(err)
-		}
-	}
+			glog.V(4).Infof("Stopping stack service %s\n", stackService.Service)
+			numDeps := 0
+			stoppedDeps := 0
+			for _, ss := range stack.Services {
+				svc, _ := s.etcd.GetServiceSpec(ss.Service)
+				for _, dep := range svc.Dependencies {
+					if dep.DependencyKey == stackService.Service {
+						numDeps++
+						if ss.Status == "stopped" || ss.Status == "" {
+							stoppedDeps++
+						}
+					}
+				}
+			}
+			if numDeps == 0 || stoppedDeps == numDeps {
+				stopped[stackService.Service] = 1
+				name := fmt.Sprintf("%s-%s", stack.Id, stackService.Service)
+				glog.V(4).Infof("Stopping service %s\n", name)
 
-	time.Sleep(time.Second * 10)
-
-	pods, _ := s.kube.GetPods(pid, "name", stack.Id)
-	glog.V(4).Infof("Waiting for %d pod to stop %s\n", len(pods), stack.Id)
-	for len(pods) > 0 {
-		for _, pod := range pods {
-			if len(pod.Status.Conditions) > 0 {
-				condition := pod.Status.Conditions[0]
-				phase := pod.Status.Phase
-				containerState := ""
-				if len(pod.Status.ContainerStatuses) > 0 {
-					state := pod.Status.ContainerStatuses[0].LastTerminationState
-					switch {
-					case state.Running != nil:
-						containerState = "running"
-					case state.Waiting != nil:
-						containerState = "waiting"
-					case state.Terminated != nil:
-						containerState = "terminated"
+				spec, _ := s.etcd.GetServiceSpec(stackService.Service)
+				if len(spec.Ports) > 0 {
+					err := s.kube.StopService(pid, name)
+					// Log and continue
+					if err != nil {
+						glog.Error(err)
 					}
 				}
 
-				glog.V(4).Infof("Waiting for pod %s (%s=%s) [%s, %s]\n", pod.Name, condition.Type, condition.Status, phase, containerState)
+				glog.V(4).Infof("Stopping controller %s\n", name)
+				err := s.kube.StopController(pid, name)
+				if err != nil {
+					glog.Error(err)
+				}
 			}
 		}
-		pods, _ = s.kube.GetPods(pid, "name", stack.Id)
 		time.Sleep(time.Second * 3)
 	}
 
 	podStatus := make(map[string]string)
-	pods, _ = s.kube.GetPods(pid, "stack", stack.Id)
+	pods, _ := s.kube.GetPods(pid, "stack", stack.Id)
 	for _, pod := range pods {
 		label := pod.Labels["service"]
 		glog.V(4).Infof("Pod %s %d\n", label, len(pod.Status.Conditions))
