@@ -127,6 +127,7 @@ angular
           $log.debug("Discovering volume requirements...");
           $scope.discoverVolumeReqs($scope.newStack);
           
+          // TODO: Asynchronicity here is not handled by the wizard.
           /*var services = _.map($scope.newStack.services, 'service');
           debugger;
           NdsLabsApi.getConfigs({ 'services': services}).then(function(data, headers) {
