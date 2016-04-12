@@ -12,7 +12,7 @@ angular
     'StackService', 'Grid', 'Wizard', 'WizardPage', 'template', 'stacks', 'deps', 'configuredStacks', 'configuredVolumes',
     function($scope, $filter, $log, $uibModalInstance, _, NdsLabsApi, Project, Stack, Volume, StackService, Grid, Wizard, WizardPage, template, 
     stacks, deps, configuredStacks, configuredVolumes) {
-  $scope.storageQuota = (Project.project.storageQuote || '50' );
+  $scope.storageQuota = Project.project.storageQuota;
   $scope.newStackVolumeRequirements = [];
   
   $scope.discoverVolumeReqs = function(stack) {
@@ -227,32 +227,17 @@ angular
         },
         canPrev: true,
         canNext: function() {
-          var used = $filter('usedStorage')(configuredVolumes);
-          if (used == $scope.storageQuota) {
+          var used = $filter('usedStorage')(_.concat(configuredVolumes, $scope.newStackVolumeRequirements));
+          if (used > $scope.storageQuota) {
             // No room for any new volumes
             return false;
           }
-      
-          // Don't count orphaned volumes in our requested total (they are already part of "used")
-          var diff = _.differenceBy($scope.newStackVolumeRequirements, configuredVolumes, 'id');
-          var requested = $filter('usedStorage')(diff);
-          var available = $scope.storageQuota - used;
-          if (requested > available) {
-            return false;
-          }
           
-          var volumeParamsSet = true;
-          angular.forEach($scope.newStackVolumeRequirements, function(volume) {
-            // Check that all of our required parameters have been set
-              if (!volume.id && !volume.name) {
-                volumeParamsSet = false;
-                return;
-              } else if (!volume.size || !volume.sizeUnit) {
-                volumeParamsSet = false;
-                return;
-              }
+          // Ensure all volumes have either an id or a name, and have a size/unit set
+          return _.every($scope.newStackVolumeRequirements, function(vol) {
+            debugger;
+            return vol.id || (vol.name && vol.size && vol.sizeUnit);
           });
-          return volumeParamsSet;
         },
         next: 'confirm',
         onNext: function() {
@@ -326,7 +311,7 @@ angular
   };
   
   $scope.project = Project.project;
-  $scope.storageQuota = Project.storageQuota || 50;
+  //$scope.storageQuota = Project.project.storageQuota || 50;
   $scope.configuredVolumes = configuredVolumes;
   
   // TODO: Where is this email address going to live?

@@ -198,7 +198,7 @@
           </div>
           
           <!-- No More Space :( -->
-          <div class="row"ng-if="!availableSpace || availableSpace == 0 || availableSpace <= 0">
+          <div class="row" ng-if="!availableSpace || availableSpace == 0 || availableSpace <= 0">
             <div class="col-sm-12">
                 <p class="text-danger">You have used all of your allocated storage.</p>
                 <p>
@@ -250,11 +250,13 @@
                         </div>
                         
                         <!-- TODO: Fix this ugly hack -->
-                        <div class="radio" ng-click="volume.id='';volume.name=volume.defaultName;">
-                          <label>
-                            <input type="radio" ng-checked="volume.id === ''">
-                            Create a new volume
-                          </label>
+                        <div class="radio">
+                          <fieldset ng-click="volume.id='';volume.name=volume.defaultName;" ng-disabled="(configuredVolumes | usedStorage) >= storageQuota">
+                            <label ng-style="{ 'cursor': (configuredVolumes | usedStorage) >= storageQuota ? 'not-allowed' : 'pointer' }">
+                              <input type="radio" ng-checked="volume.id === ''">
+                              Create a new volume <small class="text-danger" ng-if="(configuredVolumes | usedStorage) >= storageQuota">(No space remaining)</small>
+                            </label>
+                          </fieldset>
                         </div>
                       </div>
                     <!--form-group-->
