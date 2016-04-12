@@ -17,7 +17,6 @@ import (
 
 	etcd "github.com/ndslabs/apiserver/etcd"
 	kube "github.com/ndslabs/apiserver/kube"
-	openstack "github.com/ndslabs/apiserver/openstack"
 	api "github.com/ndslabs/apiserver/types"
 	gcfg "gopkg.in/gcfg.v1"
 	k8api "k8s.io/kubernetes/pkg/api"
@@ -89,14 +88,6 @@ type Config struct {
 		Username string
 		Password string
 	}
-	OpenStack struct {
-		IdentityEndpoint string
-		ComputeEndpoint  string
-		VolumesEndpoint  string
-		TenantId         string
-		Username         string
-		Password         string
-	}
 }
 
 func main() {
@@ -134,14 +125,6 @@ func main() {
 	glog.Infof("port %s", cfg.Server.Port)
 	os.MkdirAll(cfg.Server.VolDir, 0700)
 
-	oshelper := openstack.OpenStack{}
-	oshelper.IdentityEndpoint = cfg.OpenStack.IdentityEndpoint
-	oshelper.VolumesEndpoint = cfg.OpenStack.VolumesEndpoint
-	oshelper.ComputeEndpoint = cfg.OpenStack.ComputeEndpoint
-	oshelper.Username = cfg.OpenStack.Username
-	oshelper.Password = cfg.OpenStack.Password
-	oshelper.TenantId = cfg.OpenStack.TenantId
-
 	kube := kube.NewKubeHelper(cfg.Kubernetes.Address,
 		cfg.Kubernetes.Username, cfg.Kubernetes.Password)
 
@@ -152,15 +135,8 @@ func main() {
 	}
 	server.etcd = etcd
 	server.kube = kube
-	if cfg.Server.VolumeSource == "openstack" {
-		server.local = false
-		server.os = oshelper
-		glog.Infoln("Using OpenStack storage")
-	} else {
-		server.local = true
-		server.volDir = cfg.Server.VolDir
-		glog.Infoln("Using local storage")
-	}
+	server.volDir = cfg.Server.VolDir
+	glog.Infoln("Using local storage")
 
 	hostname, _ := os.Hostname()
 	server.host = cfg.Server.Host
@@ -289,7 +265,6 @@ type Server struct {
 	etcd      *etcd.EtcdHelper
 	kube      *kube.KubeHelper
 	Namespace string
-	os        openstack.OpenStack
 	local     bool
 	volDir    string
 	host      string
@@ -1412,98 +1387,22 @@ func (s *Server) PostVolume(w rest.ResponseWriter, r *rest.Request) {
 		vol.Status = "available"
 	}
 
-	if s.local {
-		glog.V(4).Infoln("Creating local volume")
-		uid, err := newUUID()
-		if err != nil {
-			glog.Error(err)
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		vol.Id = uid
-
-		err = os.Mkdir(s.volDir+"/"+uid, 0755)
-		if err != nil {
-			glog.Error(err)
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		vol.Format = "hostPath"
-
-	} else {
-		// Create volume via OpenStack API
-		glog.V(4).Infoln("Creating OpenStack volume")
-
-		token, err := s.os.Authenticate(s.os.Username, s.os.Password,
-			s.os.TenantId)
-		if err != nil {
-			glog.Error(err)
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		instanceId, err := s.os.GetInstanceId()
-		if err != nil {
-			glog.Error(err)
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		osName := fmt.Sprintf("ndslabs-%s-%s\n", pid, vol.Name)
-		volumeId, err := s.os.CreateVolume(token.Id, s.os.TenantId, osName, vol.Size)
-		if err != nil {
-			glog.Error(err)
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		vol.Id = volumeId
-		vol.Format = "cinder"
-
-		var osVolume *openstack.Volume
-		for true {
-			osVolume, err = s.os.GetVolume(token.Id, s.os.TenantId, volumeId)
-			if err != nil {
-				glog.Error(err)
-				rest.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			if osVolume.Status == "available" {
-				break
-			}
-		}
-
-		err = s.os.AttachVolume(token.Id, s.os.TenantId, instanceId, volumeId)
-		if err != nil {
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		for true {
-			osVolume, err = s.os.GetVolume(token.Id, s.os.TenantId, volumeId)
-			if err != nil {
-				rest.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			if osVolume.Status == "in-use" {
-				break
-			}
-		}
-		//time.Sleep(time.Second*2)
-
-		err = s.os.Mkfs(osVolume.Device, "xfs")
-		if err != nil {
-			glog.Error(err)
-			return
-		}
-
-		err = s.os.DetachVolume(token.Id, s.os.TenantId, instanceId, volumeId)
-		if err != nil {
-			glog.Error(err)
-			return
-		}
-
-		vol.Format = "cinder"
+	glog.V(4).Infoln("Creating local volume")
+	uid, err := newUUID()
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+	vol.Id = uid
+
+	err = os.Mkdir(s.volDir+"/"+uid, 0755)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	vol.Format = "hostPath"
 
 	err = s.etcd.PutVolume(pid, vol.Id, vol)
 	if err != nil {
@@ -1606,18 +1505,6 @@ func (s *Server) DeleteVolume(w rest.ResponseWriter, r *rest.Request) {
 	glog.V(4).Infof("Format %s\n", volume.Format)
 	if volume.Format == "hostPath" {
 		err = os.RemoveAll(s.volDir + "/" + volume.Id)
-		if err != nil {
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	} else if volume.Format == "cinder" {
-		token, err := s.os.Authenticate(s.os.Username, s.os.Password,
-			s.os.TenantId)
-		if err != nil {
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		err = s.os.DeleteVolume(token.Id, s.os.TenantId, volume.Id)
 		if err != nil {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
