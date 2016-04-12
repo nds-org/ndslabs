@@ -239,25 +239,17 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
 /**
  * Given a list of volumes, compute the total storage they are using
  */
-.filter('usedStorage', [ function() {
+.filter('usedStorage', [ '_', function(_) {
   return function(volumes) {
     var used = 0;
-    angular.forEach(volumes, function(volume) {
+    var allocated = _.uniqBy(volumes, 'id');
+    var created = _.filter(volumes, [ 'id', null ]);
+    
+    angular.forEach(_.concat(allocated, created), function(volume) {
       used += volume.sizeUnit === 'TB' ? volume.size * 1000 : volume.size;
     });
+    
     return used;
-  };
-}])
-/**
- * Given a list of volumes, compute the total storage they are using
- */
-.filter('availableStorage', [ 'Project', function(Project) {
-  return function(volumes) {
-    var available = Project.project.storageQuota || 50;
-    angular.forEach(volumes, function(volume) {
-      available -= volume.sizeUnit === 'TB' ? volume.size * 1000 : volume.size;
-    });
-    return available;
   };
 }])
 /**
@@ -279,7 +271,7 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  * services to see if our target service is a required dependency
  * of any of the others
  */ 
-.filter('isRecursivelyRequired', [ 'Specs', function(Specs) {
+.filter('isRecursivelyRequired', [ 'Specs', '_', function(Specs, _) {
   return function(services, service) {
     var result = false;
     angular.forEach(services, function(svc) {
@@ -297,7 +289,7 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
 /**
  * Returns true iff the given stack has missing options that the user can enable
  */ 
-.filter('missingDeps', [ '$log', 'Specs', function($log, Specs) {
+.filter('missingDeps', [ '$log', 'Specs', '_', function($log, Specs, _) {
   // Returns any options missing from a stack
   return function(stack) {
     if (!Specs.all || !Specs.all.length) {
@@ -323,7 +315,7 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
 /**
  * Given a service spec key, list all optional dependencies for the spec
  */ 
-.filter('options', [ '$log', 'Specs', function($log, Specs) {
+.filter('options', [ '$log', 'Specs', '_', function($log, Specs, _) {
   // Returns a list of options for a spec
   return function(key) {
     if (!Specs.all || !Specs.all.length) {
