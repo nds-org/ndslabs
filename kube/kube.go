@@ -360,19 +360,20 @@ func (k *KubeHelper) StopController(pid string, name string) error {
 		time.Sleep(time.Second * 1)
 	}
 
+	stopped := map[string]int{}
 	pods, _ := k.GetPods(pid, "name", name)
-	for _, pod := range pods {
-		err := k.stopPod(pid, pod.Name)
-		if err != nil {
-			glog.Error(err)
-			return err
-		}
-	}
-
-	pods, _ = k.GetPods(pid, "name", name)
 	glog.V(4).Infof("Waiting for pods to terminate %s %d\n", name, len(pods))
 	for len(pods) > 0 {
 		for _, pod := range pods {
+			if stopped[pod.Name] != 1 {
+				err := k.stopPod(pid, pod.Name)
+				if err != nil {
+					glog.Error(err)
+					return err
+				}
+				stopped[pod.Name] = 1
+			}
+
 			if len(pod.Status.Conditions) > 0 {
 				condition := pod.Status.Conditions[0]
 				phase := pod.Status.Phase
@@ -393,7 +394,7 @@ func (k *KubeHelper) StopController(pid string, name string) error {
 			}
 		}
 		pods, _ = k.GetPods(pid, "name", name)
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * 3)
 	}
 	return nil
 }
