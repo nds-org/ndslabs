@@ -10,10 +10,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/kr/pty"
 	etcd "github.com/ndslabs/apiserver/etcd"
 	kube "github.com/ndslabs/apiserver/kube"
 	api "github.com/ndslabs/apiserver/types"
@@ -23,6 +25,7 @@ import (
 	"github.com/StephanDollberg/go-json-rest-middleware-jwt"
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/golang/glog"
+	"golang.org/x/net/websocket"
 )
 
 type Server struct {
@@ -175,6 +178,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 	api.Use(&rest.IfMiddleware{
 		Condition: func(request *rest.Request) bool {
 			return request.URL.Path != "/authenticate" && request.URL.Path != "/version" && request.URL.Path != "/register"
+			//&& request.URL.Path != "/exec"
 		},
 		IfTrue: jwt,
 	})
@@ -211,6 +215,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Get("/projects/:pid/start/:sid", s.StartStack),
 		rest.Get("/projects/:pid/stop/:sid", s.StopStack),
 		rest.Get("/projects/:pid/logs/:ssid", s.GetLogs),
+	//	rest.Get("/exec", s.GetExec),
 	)
 
 	if err != nil {
@@ -235,6 +240,60 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 	} else {
 		glog.Fatal(http.ListenAndServe(":"+cfg.Server.Port, api.MakeHandler()))
 	}
+}
+
+func (s *Server) NewExecHandler() *websocket.Handler {
+	wsHandler := websocket.Handler(func(ws *websocket.Conn) {
+		pid := ws.Request().FormValue("namespace")
+		ssid := ws.Request().FormValue("ssid")
+		pods, _ := s.kube.GetPods(pid, "name", ssid)
+		pod := pods[0].Name
+		fmt.Printf("exec called for %s %s %s\n", pid, ssid, pod)
+		cmd, err := pty.Start(exec.Command("kubectl", "exec", "--namespace", pid,
+			"-it", pod, "bash"))
+		if err != nil {
+			glog.Fatal(err)
+		}
+
+		defer ws.Close()
+		defer cmd.Close()
+		go func() {
+			for {
+				in := make([]byte, 1024)
+				_, err := ws.Read(in)
+				if err != nil {
+					glog.Error(err)
+					return
+				}
+				inLen, err := cmd.Write(in)
+				if err != nil {
+					glog.Error(err)
+					return
+				}
+				if inLen < len(in) {
+					panic("pty write overflow")
+				}
+			}
+		}()
+		out := make([]byte, 1024)
+		for {
+			outLen, err := cmd.Read(out)
+			if err != nil {
+				glog.Error(err)
+				return
+			}
+			_, err = ws.Write(out[:outLen])
+			if err != nil {
+				glog.Error(err)
+				return
+			}
+		}
+	})
+	return &wsHandler
+}
+
+func (s *Server) GetExec(w rest.ResponseWriter, r *rest.Request) {
+	s.NewExecHandler().ServeHTTP(w.(http.ResponseWriter), r.Request)
 }
 
 func (s *Server) initExistingProjects() {
