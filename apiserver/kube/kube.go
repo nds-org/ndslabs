@@ -34,18 +34,35 @@ type KubeHelper struct {
 	client    *http.Client
 }
 
-func NewKubeHelper(kubeBase string, username string, password string) *KubeHelper {
+func NewKubeHelper(kubeBase string, username string, password string) (*KubeHelper, error) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
 	auth := fmt.Sprintf("%s:%s", username, password)
 
-	return &KubeHelper{
+	kubeHelper := KubeHelper{
 		kubeBase:  kubeBase,
 		basicAuth: base64.StdEncoding.EncodeToString([]byte(auth)),
 		client:    &http.Client{Transport: tr},
 	}
+
+	err := kubeHelper.isRunning()
+
+	return &kubeHelper, err
+}
+
+func (k *KubeHelper) isRunning() error {
+
+	url := k.kubeBase + apiBase + "/"
+	request, _ := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	_, httperr := k.client.Do(request)
+	if httperr != nil {
+		return httperr
+	}
+	return nil
 }
 
 func (k *KubeHelper) CreateNamespace(pid string) (*api.Namespace, error) {
@@ -216,7 +233,50 @@ func (k *KubeHelper) StartService(pid string, spec *api.Service) (*api.Service, 
 
 			return &service, nil
 		} else {
-			glog.Warningf("Error starting Kubernetes service (%d): %s\n", httpresp.StatusCode, httpresp.Status)
+			if httpresp.StatusCode == 409 {
+				service, err := k.GetService(pid, name)
+				if err != nil {
+					return nil, err
+				}
+				return service, nil
+			} else {
+				glog.Warningf("Error starting Kubernetes service (%d): %s\n", httpresp.StatusCode, httpresp.Status)
+			}
+		}
+	}
+	return nil, nil
+}
+
+func (k *KubeHelper) ServiceExists(pid string, name string) bool {
+	service, _ := k.GetService(pid, name)
+	if service != nil {
+		return true
+	} else {
+		return false
+	}
+}
+func (k *KubeHelper) GetService(pid string, name string) (*api.Service, error) {
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services/" + name
+	request, _ := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	resp, err := k.client.Do(request)
+	if err != nil {
+		glog.Error(err)
+		return nil, err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			service := api.Service{}
+			json.Unmarshal(data, &service)
+			return &service, nil
+		} else {
+			glog.Warningf("Failed to get Kubernetes service: %s %d", resp.Status, resp.StatusCode)
 		}
 	}
 	return nil, nil

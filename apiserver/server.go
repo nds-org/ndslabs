@@ -10,10 +10,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/kr/pty"
 	etcd "github.com/ndslabs/apiserver/etcd"
 	kube "github.com/ndslabs/apiserver/kube"
 	api "github.com/ndslabs/apiserver/types"
@@ -23,20 +25,7 @@ import (
 	"github.com/StephanDollberg/go-json-rest-middleware-jwt"
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/golang/glog"
-)
-
-var stackStatus = map[int]string{
-	Started:  "started",
-	Starting: "starting",
-	Stopped:  "stopped",
-	Stopping: "stopping",
-}
-
-const (
-	Started  = 1
-	Starting = 2
-	Stopped  = 3
-	Stopping = 4
+	"golang.org/x/net/websocket"
 )
 
 type Server struct {
@@ -45,8 +34,7 @@ type Server struct {
 	Namespace string
 	local     bool
 	volDir    string
-	host      string
-	jwtKey    []byte
+	hostname  string
 	jwt       *jwt.JWTMiddleware
 }
 
@@ -56,7 +44,6 @@ type Config struct {
 		Origin       string
 		VolDir       string
 		SpecsDir     string
-		Host         string
 		VolumeSource string
 		SSLKey       string
 		SSLCert      string
@@ -87,9 +74,6 @@ func main() {
 	if cfg.Server.Port == "" {
 		cfg.Server.Port = "30001"
 	}
-	if cfg.Server.Host == "" {
-		cfg.Server.Host = "localhost"
-	}
 	if cfg.Etcd.Address == "" {
 		cfg.Etcd.Address = "localhost:4001"
 	}
@@ -97,30 +81,41 @@ func main() {
 		cfg.Kubernetes.Address = "localhost:6443"
 	}
 
+	hostname, err := os.Hostname()
+	if err != nil {
+		glog.Fatal(err)
+	}
+
+	etcd, err := etcd.NewEtcdHelper(cfg.Etcd.Address)
+	if err != nil {
+		glog.Errorf("Etcd not available: %s\n", err)
+		glog.Fatal(err)
+	}
+
+	kube, err := kube.NewKubeHelper(cfg.Kubernetes.Address,
+		cfg.Kubernetes.Username, cfg.Kubernetes.Password)
+	if err != nil {
+		glog.Errorf("Kubernetes API server not available\n")
+		glog.Fatal(err)
+	}
+
+	server := Server{}
+	server.hostname = hostname
+	server.etcd = etcd
+	server.kube = kube
+	server.volDir = cfg.Server.VolDir
+	server.start(cfg, adminPasswd)
+}
+
+func (s *Server) start(cfg Config, adminPasswd string) {
+
 	glog.Infof("Starting NDS Labs API server (%s %s)", VERSION, BUILD_DATE)
 	glog.Infof("etcd %s ", cfg.Etcd.Address)
 	glog.Infof("kube-apiserver %s", cfg.Kubernetes.Address)
 	glog.Infof("volume dir %s", cfg.Server.VolDir)
 	glog.Infof("specs dir %s", cfg.Server.SpecsDir)
-	glog.Infof("host %s ", cfg.Server.Host)
 	glog.Infof("port %s", cfg.Server.Port)
 	os.MkdirAll(cfg.Server.VolDir, 0700)
-
-	kube := kube.NewKubeHelper(cfg.Kubernetes.Address,
-		cfg.Kubernetes.Username, cfg.Kubernetes.Password)
-
-	server := Server{}
-	etcd, err := etcd.NewEtcdHelper(cfg.Etcd.Address)
-	if err != nil {
-		glog.Fatal(err)
-	}
-	server.etcd = etcd
-	server.kube = kube
-	server.volDir = cfg.Server.VolDir
-	glog.Infoln("Using local storage")
-
-	hostname, _ := os.Hostname()
-	server.host = cfg.Server.Host
 
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
@@ -142,7 +137,7 @@ func main() {
 	}
 
 	jwt := &jwt.JWTMiddleware{
-		Key:        []byte(hostname),
+		Key:        []byte(s.hostname),
 		Realm:      "ndslabs",
 		Timeout:    time.Minute * 30,
 		MaxRefresh: time.Hour * 24,
@@ -150,7 +145,7 @@ func main() {
 			if userId == "admin" && password == adminPasswd {
 				return true
 			} else {
-				project, err := server.etcd.GetProject(userId)
+				project, err := s.etcd.GetProject(userId)
 				if err != nil {
 					glog.Error(err)
 					return false
@@ -162,7 +157,7 @@ func main() {
 		Authorizator: func(userId string, request *rest.Request) bool {
 			payload := request.Env["JWT_PAYLOAD"].(map[string]interface{})
 
-			if payload["server"] == cfg.Server.Host {
+			if payload["server"] == s.hostname {
 				return true
 			} else {
 				return false
@@ -173,16 +168,17 @@ func main() {
 			if userId == "admin" {
 				payload["admin"] = true
 			}
-			payload["server"] = cfg.Server.Host
+			payload["server"] = s.hostname
 			payload["user"] = userId
 			return payload
 		},
 	}
-	server.jwt = jwt
+	s.jwt = jwt
 
 	api.Use(&rest.IfMiddleware{
 		Condition: func(request *rest.Request) bool {
 			return request.URL.Path != "/authenticate" && request.URL.Path != "/version" && request.URL.Path != "/register"
+			//&& request.URL.Path != "/exec"
 		},
 		IfTrue: jwt,
 	})
@@ -191,34 +187,35 @@ func main() {
 		rest.Get("/", GetPaths),
 		rest.Get("/version", Version),
 		rest.Post("/authenticate", jwt.LoginHandler),
-		rest.Delete("/authenticate", server.Logout),
-		rest.Get("/check_token", server.CheckToken),
+		rest.Delete("/authenticate", s.Logout),
+		rest.Get("/check_token", s.CheckToken),
 		rest.Get("/refresh_token", jwt.RefreshHandler),
-		rest.Get("/projects", server.GetAllProjects),
-		rest.Post("/projects/", server.PostProject),
-		rest.Post("/register", server.PostProject),
-		rest.Put("/projects/:pid", server.PutProject),
-		rest.Get("/projects/:pid", server.GetProject),
-		rest.Delete("/projects/:pid", server.DeleteProject),
-		rest.Get("/services", server.GetAllServices),
-		rest.Post("/services", server.PostService),
-		rest.Put("/services/:key", server.PutService),
-		rest.Get("/services/:key", server.GetService),
-		rest.Delete("/services/:key", server.DeleteService),
-		rest.Get("/configs", server.GetConfigs),
-		rest.Get("/projects/:pid/stacks", server.GetAllStacks),
-		rest.Post("/projects/:pid/stacks", server.PostStack),
-		rest.Put("/projects/:pid/stacks/:sid", server.PutStack),
-		rest.Get("/projects/:pid/stacks/:sid", server.GetStack),
-		rest.Delete("/projects/:pid/stacks/:sid", server.DeleteStack),
-		rest.Get("/projects/:pid/volumes", server.GetAllVolumes),
-		rest.Post("/projects/:pid/volumes", server.PostVolume),
-		rest.Put("/projects/:pid/volumes/:vid", server.PutVolume),
-		rest.Get("/projects/:pid/volumes/:vid", server.GetVolume),
-		rest.Delete("/projects/:pid/volumes/:vid", server.DeleteVolume),
-		rest.Get("/projects/:pid/start/:sid", server.StartStack),
-		rest.Get("/projects/:pid/stop/:sid", server.StopStack),
-		rest.Get("/projects/:pid/logs/:ssid", server.GetLogs),
+		rest.Get("/projects", s.GetAllProjects),
+		rest.Post("/projects/", s.PostProject),
+		rest.Post("/register", s.PostProject),
+		rest.Put("/projects/:pid", s.PutProject),
+		rest.Get("/projects/:pid", s.GetProject),
+		rest.Delete("/projects/:pid", s.DeleteProject),
+		rest.Get("/services", s.GetAllServices),
+		rest.Post("/services", s.PostService),
+		rest.Put("/services/:key", s.PutService),
+		rest.Get("/services/:key", s.GetService),
+		rest.Delete("/services/:key", s.DeleteService),
+		rest.Get("/configs", s.GetConfigs),
+		rest.Get("/projects/:pid/stacks", s.GetAllStacks),
+		rest.Post("/projects/:pid/stacks", s.PostStack),
+		rest.Put("/projects/:pid/stacks/:sid", s.PutStack),
+		rest.Get("/projects/:pid/stacks/:sid", s.GetStack),
+		rest.Delete("/projects/:pid/stacks/:sid", s.DeleteStack),
+		rest.Get("/projects/:pid/volumes", s.GetAllVolumes),
+		rest.Post("/projects/:pid/volumes", s.PostVolume),
+		rest.Put("/projects/:pid/volumes/:vid", s.PutVolume),
+		rest.Get("/projects/:pid/volumes/:vid", s.GetVolume),
+		rest.Delete("/projects/:pid/volumes/:vid", s.DeleteVolume),
+		rest.Get("/projects/:pid/start/:sid", s.StartStack),
+		rest.Get("/projects/:pid/stop/:sid", s.StopStack),
+		rest.Get("/projects/:pid/logs/:ssid", s.GetLogs),
+	//	rest.Get("/exec", s.GetExec),
 	)
 
 	if err != nil {
@@ -228,18 +225,105 @@ func main() {
 
 	if len(cfg.Server.SpecsDir) > 0 {
 		glog.Infof("Loading service specs from %s\n", cfg.Server.SpecsDir)
-		err = server.loadSpecs(cfg.Server.SpecsDir)
+		err = s.loadSpecs(cfg.Server.SpecsDir)
 		if err != nil {
 			glog.Warningf("Error loading specs: %s\n", err)
 		}
 	}
 
-	glog.Infof("Listening on %s:%s", cfg.Server.Host, cfg.Server.Port)
+	go s.initExistingProjects()
+
+	glog.Infof("Listening on %s", cfg.Server.Port)
 	if len(cfg.Server.SSLCert) > 0 {
 		glog.Fatal(http.ListenAndServeTLS(":"+cfg.Server.Port,
 			cfg.Server.SSLCert, cfg.Server.SSLKey, api.MakeHandler()))
 	} else {
 		glog.Fatal(http.ListenAndServe(":"+cfg.Server.Port, api.MakeHandler()))
+	}
+}
+
+func (s *Server) NewExecHandler() *websocket.Handler {
+	wsHandler := websocket.Handler(func(ws *websocket.Conn) {
+		pid := ws.Request().FormValue("namespace")
+		ssid := ws.Request().FormValue("ssid")
+		pods, _ := s.kube.GetPods(pid, "name", ssid)
+		pod := pods[0].Name
+		fmt.Printf("exec called for %s %s %s\n", pid, ssid, pod)
+		cmd, err := pty.Start(exec.Command("kubectl", "exec", "--namespace", pid,
+			"-it", pod, "bash"))
+		if err != nil {
+			glog.Fatal(err)
+		}
+
+		defer ws.Close()
+		defer cmd.Close()
+		go func() {
+			for {
+				in := make([]byte, 1024)
+				_, err := ws.Read(in)
+				if err != nil {
+					glog.Error(err)
+					return
+				}
+				inLen, err := cmd.Write(in)
+				if err != nil {
+					glog.Error(err)
+					return
+				}
+				if inLen < len(in) {
+					panic("pty write overflow")
+				}
+			}
+		}()
+		out := make([]byte, 1024)
+		for {
+			outLen, err := cmd.Read(out)
+			if err != nil {
+				glog.Error(err)
+				return
+			}
+			_, err = ws.Write(out[:outLen])
+			if err != nil {
+				glog.Error(err)
+				return
+			}
+		}
+	})
+	return &wsHandler
+}
+
+func (s *Server) GetExec(w rest.ResponseWriter, r *rest.Request) {
+	s.NewExecHandler().ServeHTTP(w.(http.ResponseWriter), r.Request)
+}
+
+func (s *Server) initExistingProjects() {
+	projects, err := s.etcd.GetProjects()
+	if err != nil {
+		glog.Error(err)
+		return
+	}
+
+	for _, project := range *projects {
+		stacks, err := s.etcd.GetStacks(project.Namespace)
+		if err != nil {
+			glog.Error(err)
+		}
+		for _, stack := range *stacks {
+
+			if stack.Status == "starting" || stack.Status == "started" {
+				_, err = s.startStack(project.Namespace, &stack)
+				if err != nil {
+					glog.Errorf("Error starting stack %s %s\n", project.Namespace, stack.Id)
+					glog.Error(err)
+				}
+			} else if stack.Status == "stopping" {
+				_, err = s.stopStack(project.Namespace, stack.Id)
+				if err != nil {
+					glog.Errorf("Error stopping stack %s %s\n", project.Namespace, stack.Id)
+					glog.Error(err)
+				}
+			}
+		}
 	}
 }
 
@@ -1024,6 +1108,17 @@ func (s *Server) StartStack(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
+	stack, err := s.startStack(pid, stack)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteJson(&stack)
+}
+
+func (s *Server) startStack(pid string, stack *api.Stack) (*api.Stack, error) {
+
+	sid := stack.Id
 	stack.Status = stackStatus[Starting]
 	s.etcd.PutStack(pid, sid, stack)
 
@@ -1038,21 +1133,23 @@ func (s *Server) StartStack(w rest.ResponseWriter, r *rest.Request) {
 			name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
 			template := s.kube.CreateServiceTemplate(name, stack.Id, spec)
 
-			glog.V(4).Infof("Starting Kubernetes service %s\n", name)
-			svc, err := s.kube.StartService(pid, template)
-
-			if err != nil {
-				fmt.Println("Error starting service")
-			} else {
-				fmt.Printf("Started service %s\n", name)
-				addrPort := kube.ServiceAddrPort{
-					Name:     stackService.Service,
-					Host:     svc.Spec.ClusterIP,
-					Port:     svc.Spec.Ports[0].Port,
-					NodePort: svc.Spec.Ports[0].NodePort,
+			svc, err := s.kube.GetService(pid, name)
+			if svc == nil {
+				glog.V(4).Infof("Starting Kubernetes service %s\n", name)
+				svc, err = s.kube.StartService(pid, template)
+				if err != nil {
+					glog.Errorf("Error starting service %s\n", name)
+					return nil, err
 				}
-				addrPortMap[stackService.Service] = addrPort
 			}
+			glog.V(4).Infof("Started service %s\n", name)
+			addrPort := kube.ServiceAddrPort{
+				Name:     stackService.Service,
+				Host:     svc.Spec.ClusterIP,
+				Port:     svc.Spec.Ports[0].Port,
+				NodePort: svc.Spec.Ports[0].NodePort,
+			}
+			addrPortMap[stackService.Service] = addrPort
 		}
 	}
 
@@ -1113,7 +1210,7 @@ func (s *Server) StartStack(w rest.ResponseWriter, r *rest.Request) {
 	s.etcd.PutStack(pid, sid, stack)
 	glog.V(4).Infof("Stack %s started\n", sid)
 
-	w.WriteJson(&stack)
+	return stack, nil
 }
 
 func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) {

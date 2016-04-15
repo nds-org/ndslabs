@@ -21,7 +21,6 @@ cat << EOF > /apiserver.conf
 Port=30001
 Origin=$CORS_ORIGIN_ADDR
 VolDir=/volumes
-Host=$HOST_ADDR
 VolumeSource=local
 SpecsDir=/specs
 
