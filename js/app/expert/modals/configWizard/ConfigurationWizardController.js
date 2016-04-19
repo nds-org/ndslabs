@@ -15,6 +15,14 @@ angular
   $scope.storageQuota = (Project.project.storageQuote || '50' );
   $scope.newStackVolumeRequirements = [];
   
+  ($scope.onPageChange = function() {
+    NdsLabsApi.getRefresh_token().then(function() {
+      $log.debug("Refreshed token!");
+    }, function() {
+      $log.error("Failed to refresh token!");
+    });
+  })();
+  
   $scope.discoverVolumeReqs = function(stack) {
     var reusableVolumes = [];
     var requiredVolumes = [];
@@ -78,14 +86,6 @@ angular
     });
   };
   
-  ($scope.onPageChange = function() {
-    NdsLabsApi.getRefresh_token().then(function() {
-      $log.debug("Refreshed token!");
-    }, function() {
-      $log.error("Failed to refresh token!");
-    });
-  })();
-  
   // The delay (in seconds) before allowing the user to click "Next"
   var initDelay = 0;
 
@@ -114,7 +114,6 @@ angular
           }
         },
         onNext: function() {
-          $scope.onPageChange();
           $scope.discoverVolumeReqs($scope.newStack);
         }
      }, true),
@@ -125,7 +124,6 @@ angular
         canPrev: true,
         canNext: true,
         onNext: function() {
-          $scope.onPageChange();
           $log.debug("Adding optional selections to stack...");
           $scope.newStack.services = angular.copy($scope.newStackRequirements);
           angular.forEach($scope.optionalLinksGrid.selector.selection, function(option) {
@@ -197,7 +195,6 @@ angular
           return canNext;
         },
         onNext: function() {
-          $scope.onPageChange();
           angular.forEach($scope.extraConfig, function(config, svcKey) {
             // Locate our target service
             var svc = _.find($scope.newStack.services, [ 'service', svcKey ]);
@@ -266,7 +263,6 @@ angular
         },
         next: 'confirm',
         onNext: function() {
-          $scope.onPageChange();
           $log.debug("Verifying that user has made valid 'Volume' selections...");
         }
      }, true),
