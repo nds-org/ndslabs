@@ -104,6 +104,43 @@ func (k *KubeHelper) CreateNamespace(pid string) (*api.Namespace, error) {
 	return nil, nil
 }
 
+func (k *KubeHelper) GetNamespace(pid string) (*api.Namespace, error) {
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid
+	glog.V(4).Infoln(url)
+	request, _ := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusOK {
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			ns := api.Namespace{}
+			json.Unmarshal(data, &ns)
+			return &ns, nil
+		} else {
+			return nil, fmt.Errorf("Error getting namespace for project %s: %s\n", pid, httpresp.Status)
+		}
+	}
+	return nil, nil
+}
+
+func (k *KubeHelper) NamespaceExists(pid string) bool {
+	ns, _ := k.GetNamespace(pid)
+	if ns != nil {
+		return true
+	} else {
+		return false
+	}
+}
+
 func (k *KubeHelper) DeleteNamespace(pid string) (*api.Namespace, error) {
 
 	url := k.kubeBase + apiBase + "/namespaces/" + pid
