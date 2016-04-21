@@ -8,8 +8,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('LoginController', [ '$scope', '$cookies', '$location', '$log', '$uibModal', 'AuthInfo', 'NdsLabsApi', 'LoginRoute', 'ExpertRoute',
-    function($scope, $cookies, $location, $log, $uibModal, authInfo, NdsLabsApi, LoginRoute, ExpertRoute) {
+.controller('LoginController', [ '$scope', '$cookies', '$location', '$log', '$uibModal', 'AuthInfo', 'NdsLabsApi', 'LoginRoute', 'ExpertRoute', '$uibModalStack',
+    function($scope, $cookies, $location, $log, $uibModal, authInfo, NdsLabsApi, LoginRoute, ExpertRoute, $uibModalStack) {
   // Grab our injected AuthInfo from the provider
   $scope.settings = authInfo.get();
   
@@ -64,6 +64,7 @@ angular
       $scope.settings.token = null;
       $cookies.remove('token');
       $cookies.remove('namespace');
+      $uibModalStack.dismissAll();
       $log.debug("Logged out!");
       $location.path(LoginRoute);
     /*}, function(response) {
