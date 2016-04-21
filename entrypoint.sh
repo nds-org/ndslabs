@@ -16,6 +16,10 @@ if [ "$1" = 'apiserver' ]; then
 		CORS_ORIGIN_ADDR="http://localhost"
 	fi
 
+	if [ -z "$TIMEOUT" ]; then 
+		TIMEOUT="30"
+	fi
+
 cat << EOF > /apiserver.conf
 [Server]
 Port=30001
@@ -23,6 +27,7 @@ Origin=$CORS_ORIGIN_ADDR
 VolDir=/volumes
 VolumeSource=local
 SpecsDir=/specs
+Timeout=$TIMEOUT
 
 [Etcd]
 Address=$ETCD_ADDR
