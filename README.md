@@ -66,16 +66,9 @@ Address=localhost:4001
 [Kubernetes]
 Address=localhost:8080
 
-[OpenStack]
-Username=
-Password=
-TenantId=
-IdentityEndpoint=http://nebula.ncsa.illinois.edu:5000/v2.0/
-VolumesEndpoint=http://nebula.ncsa.illinois.edu:8776/v2/
-ComputeEndpoint=http://nebula.ncsa.illinois.edu:8774/v2/
 ```
 
-If VolumeSource is "local", a local directory is used for hostPath volumes in Kubernetes. If "openstack", volumes are created via the OpenStack API.
+If VolumeSource is "local", a local directory is used for hostPath volumes in Kubernetes. 
 
 
 ### Running the server
