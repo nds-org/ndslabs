@@ -37,7 +37,7 @@ var execCmd = &cobra.Command{
 
 		ws, err := websocket.DialConfig(&config)
 		if err != nil {
-			fmt.Printf("%s\n", err)
+			fmt.Printf("Exec failed: %s\n", err)
 			return
 		}
 
