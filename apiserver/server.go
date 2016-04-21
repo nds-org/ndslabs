@@ -44,6 +44,7 @@ type Config struct {
 		VolumeSource string
 		SSLKey       string
 		SSLCert      string
+		Timeout      int
 	}
 	Etcd struct {
 		Address string
@@ -133,10 +134,16 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		})
 	}
 
+	timeout := time.Minute * 30
+	if cfg.Server.Timeout > 0 {
+		timeout = time.Minute * time.Duration(cfg.Server.Timeout)
+	}
+	glog.Infof("session timeout %s", timeout)
+
 	jwt := &jwt.JWTMiddleware{
 		Key:        []byte(s.hostname),
 		Realm:      "ndslabs",
-		Timeout:    time.Minute * 30,
+		Timeout:    timeout,
 		MaxRefresh: time.Hour * 24,
 		Authenticator: func(userId string, password string) bool {
 			if userId == "admin" && password == adminPasswd {
@@ -245,6 +252,9 @@ func (s *Server) initExistingProjects() {
 	}
 
 	for _, project := range *projects {
+		if !s.kube.NamespaceExists(project.Namespace) {
+			s.kube.CreateNamespace(project.Namespace)
+		}
 		stacks, err := s.etcd.GetStacks(project.Namespace)
 		if err != nil {
 			glog.Error(err)
@@ -1082,6 +1092,10 @@ func (s *Server) startStack(pid string, stack *api.Stack) (*api.Stack, error) {
 					glog.Errorf("Error starting service %s\n", name)
 					return nil, err
 				}
+			}
+			if svc == nil {
+				glog.V(4).Infof("Failed to start service service %s\n", name)
+				continue
 			}
 			glog.V(4).Infof("Started service %s\n", name)
 			addrPort := kube.ServiceAddrPort{
