@@ -85,9 +85,12 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$routeProvider', '$httpProvider', 'AuthInfoProvider', 'LoginRoute', 'ExpertRoute',
-    function($routeProvider, $httpProvider, authInfo, LoginRoute, ExpertRoute) {
-  // Setup default behaviors for encountering errors
+.config([ '$routeProvider', '$httpProvider', '$logProvider', 'AuthInfoProvider', 'LoginRoute', 'ExpertRoute',
+    function($routeProvider, $httpProvider, $logProvider, authInfo, LoginRoute, ExpertRoute) {
+  // Squelch debug-level log messages
+  $logProvider.debugEnabled(false);
+      
+  // Setup default behaviors for encountering HTTP errors
   $httpProvider.interceptors.push(['$rootScope', '$cookies', '$q', '$location', '$log', '_', 'DEBUG', 'ApiHost', 'ApiPort', 'AuthInfo',
       function (scope, $cookies, $q, $location, $log, _, DEBUG, ApiHost, ApiPort, AuthInfo) {
     return {
