@@ -16,14 +16,18 @@ if [ "$1" = 'apiserver' ]; then
 		CORS_ORIGIN_ADDR="http://localhost"
 	fi
 
+	if [ -z "$TIMEOUT" ]; then 
+		TIMEOUT="30"
+	fi
+
 cat << EOF > /apiserver.conf
 [Server]
 Port=30001
 Origin=$CORS_ORIGIN_ADDR
 VolDir=/volumes
-Host=$HOST_ADDR
 VolumeSource=local
 SpecsDir=/specs
+Timeout=$TIMEOUT
 
 [Etcd]
 Address=$ETCD_ADDR
@@ -32,14 +36,6 @@ Address=$ETCD_ADDR
 Address=$KUBERNETES_ADDR
 Username=admin
 Password=admin
-
-[OpenStack]
-Username=
-Password=
-TenantId=
-IdentityEndpoint=http://nebula.ncsa.illinois.edu:5000/v2.0/
-VolumesEndpoint=http://nebula.ncsa.illinois.edu:8776/v2/
-ComputeEndpoint=http://nebula.ncsa.illinois.edu:8774/v2/
 EOF
 
 	if [ -z "$SPEC_GIT_REPO" ]; then 

@@ -34,18 +34,35 @@ type KubeHelper struct {
 	client    *http.Client
 }
 
-func NewKubeHelper(kubeBase string, username string, password string) *KubeHelper {
+func NewKubeHelper(kubeBase string, username string, password string) (*KubeHelper, error) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
 	auth := fmt.Sprintf("%s:%s", username, password)
 
-	return &KubeHelper{
+	kubeHelper := KubeHelper{
 		kubeBase:  kubeBase,
 		basicAuth: base64.StdEncoding.EncodeToString([]byte(auth)),
 		client:    &http.Client{Transport: tr},
 	}
+
+	err := kubeHelper.isRunning()
+
+	return &kubeHelper, err
+}
+
+func (k *KubeHelper) isRunning() error {
+
+	url := k.kubeBase + apiBase + "/"
+	request, _ := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	_, httperr := k.client.Do(request)
+	if httperr != nil {
+		return httperr
+	}
+	return nil
 }
 
 func (k *KubeHelper) CreateNamespace(pid string) (*api.Namespace, error) {
@@ -85,6 +102,43 @@ func (k *KubeHelper) CreateNamespace(pid string) (*api.Namespace, error) {
 		}
 	}
 	return nil, nil
+}
+
+func (k *KubeHelper) GetNamespace(pid string) (*api.Namespace, error) {
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid
+	glog.V(4).Infoln(url)
+	request, _ := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusOK {
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			ns := api.Namespace{}
+			json.Unmarshal(data, &ns)
+			return &ns, nil
+		} else {
+			return nil, fmt.Errorf("Error getting namespace for project %s: %s\n", pid, httpresp.Status)
+		}
+	}
+	return nil, nil
+}
+
+func (k *KubeHelper) NamespaceExists(pid string) bool {
+	ns, _ := k.GetNamespace(pid)
+	if ns != nil {
+		return true
+	} else {
+		return false
+	}
 }
 
 func (k *KubeHelper) DeleteNamespace(pid string) (*api.Namespace, error) {
@@ -216,7 +270,50 @@ func (k *KubeHelper) StartService(pid string, spec *api.Service) (*api.Service, 
 
 			return &service, nil
 		} else {
-			glog.Warningf("Error starting Kubernetes service (%d): %s\n", httpresp.StatusCode, httpresp.Status)
+			if httpresp.StatusCode == 409 {
+				service, err := k.GetService(pid, name)
+				if err != nil {
+					return nil, err
+				}
+				return service, nil
+			} else {
+				glog.Warningf("Error starting Kubernetes service (%d): %s\n", httpresp.StatusCode, httpresp.Status)
+			}
+		}
+	}
+	return nil, nil
+}
+
+func (k *KubeHelper) ServiceExists(pid string, name string) bool {
+	service, _ := k.GetService(pid, name)
+	if service != nil {
+		return true
+	} else {
+		return false
+	}
+}
+func (k *KubeHelper) GetService(pid string, name string) (*api.Service, error) {
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services/" + name
+	request, _ := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	resp, err := k.client.Do(request)
+	if err != nil {
+		glog.Error(err)
+		return nil, err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			service := api.Service{}
+			json.Unmarshal(data, &service)
+			return &service, nil
+		} else {
+			glog.Warningf("Failed to get Kubernetes service: %s %d", resp.Status, resp.StatusCode)
 		}
 	}
 	return nil, nil
@@ -360,19 +457,20 @@ func (k *KubeHelper) StopController(pid string, name string) error {
 		time.Sleep(time.Second * 1)
 	}
 
+	stopped := map[string]int{}
 	pods, _ := k.GetPods(pid, "name", name)
-	for _, pod := range pods {
-		err := k.stopPod(pid, pod.Name)
-		if err != nil {
-			glog.Error(err)
-			return err
-		}
-	}
-
-	pods, _ = k.GetPods(pid, "name", name)
 	glog.V(4).Infof("Waiting for pods to terminate %s %d\n", name, len(pods))
 	for len(pods) > 0 {
 		for _, pod := range pods {
+			if stopped[pod.Name] != 1 {
+				err := k.stopPod(pid, pod.Name)
+				if err != nil {
+					glog.Error(err)
+					return err
+				}
+				stopped[pod.Name] = 1
+			}
+
 			if len(pod.Status.Conditions) > 0 {
 				condition := pod.Status.Conditions[0]
 				phase := pod.Status.Phase
@@ -393,7 +491,7 @@ func (k *KubeHelper) StopController(pid string, name string) error {
 			}
 		}
 		pods, _ = k.GetPods(pid, "name", name)
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * 3)
 	}
 	return nil
 }
