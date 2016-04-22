@@ -47,7 +47,7 @@ func (s *EtcdHelper) PutProject(pid string, project *api.Project) error {
 
 	data, _ := json.Marshal(project)
 	opts := client.SetOptions{Dir: true}
-	s.etcd.Set(context.Background(), etcdBasePath+"/projects/", pid, &opts)
+	s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid, "", &opts)
 	_, err := s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid+"/project", string(data), nil)
 	if err != nil {
 		glog.Error(err)
@@ -187,9 +187,21 @@ func (s *EtcdHelper) GetVolumes(pid string) (*[]api.Volume, error) {
 
 	volumes := make([]api.Volume, 0)
 
-	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/projects/"+pid+"/volumes", nil)
+	volumePath := etcdBasePath + "/projects/" + pid + "/volumes"
+	resp, err := s.etcd.Get(context.Background(), volumePath, nil)
 	if err != nil {
-		return &volumes, err
+		if client.IsKeyNotFound(err) {
+			glog.V(4).Infof("Creating volumes key for %s\n", pid)
+			opts := client.SetOptions{Dir: true}
+			_, err = s.etcd.Set(context.Background(), volumePath, "", &opts)
+			if err != nil {
+				glog.V(4).Infof("Error creating volumes key for %s: %s\n", pid, err)
+			}
+			return &volumes, nil
+		} else {
+			glog.V(4).Infof("Error creating volumes key for %s\n", pid)
+			return &volumes, err
+		}
 	} else {
 		nodes := resp.Node.Nodes
 		for _, node := range nodes {
