@@ -50,7 +50,6 @@ func NewKubeHelper(kubeBase string, username string, password string, tokenPath 
 		if err != nil {
 			glog.Error("Unable to read token: %s\n", err)
 		}
-		glog.V(4).Infof("Token %s\n", token)
 		kubeHelper.auth = fmt.Sprintf("Bearer %s", string(token))
 	} else {
 		glog.V(4).Infof("Using basic auth\n")
