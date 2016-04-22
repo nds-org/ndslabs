@@ -35,7 +35,7 @@ type KubeHelper struct {
 	client   *http.Client
 }
 
-func NewKubeHelper(kubeBase string, username string, password string) (*KubeHelper, error) {
+func NewKubeHelper(kubeBase string, username string, password string, tokenPath string) (*KubeHelper, error) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -44,7 +44,6 @@ func NewKubeHelper(kubeBase string, username string, password string) (*KubeHelp
 	kubeHelper.kubeBase = kubeBase
 	kubeHelper.client = &http.Client{Transport: tr}
 
-	tokenPath := "/run/secrets/kubernetes.io/serviceaccount/token"
 	if _, err := os.Stat(tokenPath); err == nil {
 		glog.V(4).Infof("Reading token from %s\n", tokenPath)
 		token, err := ioutil.ReadFile(tokenPath)
