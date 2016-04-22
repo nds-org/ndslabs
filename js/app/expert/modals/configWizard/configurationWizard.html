@@ -367,13 +367,13 @@
           <!-- Previous Page -->
           <div class="pull-right">
             <button class="btn btn-default" ng-disabled="!wizard.canPrevPage()"
-                ng-click="wizard.prevPage()">
+                ng-click="onPageChange();wizard.prevPage()">
               <i class="fa fa-fw fa-arrow-circle-left"></i>
               Back
             </button>
             <!-- Next Page -->
             <button class="btn btn-primary" ng-disabled="!wizard.canNextPage()"
-                ng-click="wizard.nextPage()" ng-if="wizard.currentPage.key !== 'confirm'">
+                ng-click="onPageChange();wizard.nextPage()" ng-if="wizard.currentPage.key !== 'confirm'">
               Next
               <i class="fa fa-fw fa-arrow-circle-right"></i>
             </button>

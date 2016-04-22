@@ -15,6 +15,14 @@ angular
   $scope.storageQuota = Project.project.storageQuota;
   $scope.newStackVolumeRequirements = [];
   
+  ($scope.onPageChange = function() {
+    NdsLabsApi.getRefresh_token().then(function() {
+      $log.debug("Refreshed token!");
+    }, function() {
+      $log.error("Failed to refresh token!");
+    });
+  })();
+  
   $scope.discoverVolumeReqs = function(stack) {
     var reusableVolumes = [];
     var requiredVolumes = [];
@@ -105,8 +113,8 @@ angular
             return 'confirm';
           }
         },
-        onNext: function() { 
-          $scope.discoverVolumeReqs($scope.newStack); 
+        onNext: function() {
+          $scope.discoverVolumeReqs($scope.newStack);
         }
      }, true),
      

@@ -18,13 +18,13 @@ APISERVER_PORT=30001
 
 # If -d or --dev specified, mount directory for dynamically testing changes
 OPTS=
-if [[ "${@/-d/}" != "$@" || "${@/--dev/}" != "$@" ]]; then
+if [[ "${@/-d/ }" != "$@" || "${@/--dev/ }" != "$@" ]]; then
 	OPTS="-v `pwd`:/home/app"
 fi
 
 # If -c specified, just open a console
 DOCKERCOMMAND=
-if [[ "${@/-c/}" != "$@" ]]; then
+if [[ "${@/-c/ }" != "$@" ]]; then
 	DOCKERCOMMAND="bash"
 	echo "Running: $DOCKERCOMMAND inside of container"
 fi
@@ -33,6 +33,6 @@ docker run --name ndslabs-gui -it -d -p ${WEBSERVER_PORT}:8080 -e APISERVER_HOST
 
 # If -d or --dev specified, run a Cloud 9 Docker container
 if [[ "$OPTS" != "" ]]; then
-	docker run --name cloud9 -it -d -p ${CLOUD9_PORT}:80 -v `pwd`:/workspace bodom0015/cloud9 && \
+	docker run --name cloud9 -it -d -p ${CLOUD9_PORT}:80 -v `pwd`:/workspace ndslabs/cloud9 && \
 	echo "You should now be able to access Cloud 9 by navigating to http://{YOUR_FLOATING_IP}:${CLOUD9_PORT}."
 fi

@@ -187,8 +187,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$location', '$log', '$interval', '$cookies', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', 
-    function($rootScope, $location, $log, $interval, $cookies, authInfo, LoginRoute, ExpertRoute, NdsLabsApi) {
+.run([ '$rootScope', '$location', '$log', '$interval', '$cookies', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', '$uibModalStack',
+    function($rootScope, $location, $log, $interval, $cookies, authInfo, LoginRoute, ExpertRoute, NdsLabsApi, $uibModalStack) {
       
   // Grab saved auth data from cookies and attempt to use the leftover session
   var token = $cookies.get('token');
@@ -213,7 +213,11 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       authInfo.get().token = null;
       $cookies.remove('token');
       $cookies.remove('namespace');
-        
+      
+      // Close any open modals
+      $uibModalStack.dismissAll();
+      
+      // Cancel the auth check interval
       $interval.cancel(checkTokenInterval);
       checkTokenInterval = null;
             
