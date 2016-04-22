@@ -9,69 +9,36 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('ExpertSetupController', [ '$scope', '$log', '$interval', '$uibModal', '_', 'AuthInfo', 'Project', 'Volumes', 'Stacks', 'Specs', 
-    'DEBUG', 'StackService', 'NdsLabsApi', function($scope, $log, $interval, $uibModal, _, AuthInfo, Project, Volumes, Stacks, Specs, DEBUG, 
+.controller('ExpertSetupController', [ '$scope', '$log', '$interval', '$uibModal', '_', 'AuthInfo', 'Project', 'Volumes', 'Stacks', 'Specs', 'AutoRefresh', 'SoftRefresh',
+    'StackService', 'NdsLabsApi', function($scope, $log, $interval, $uibModal, _, AuthInfo, Project, Volumes, Stacks, Specs, AutoRefresh, SoftRefresh, 
     StackService, NdsLabsApi) {
-      
-  /**
-   * Allow the user to dismiss the "welcome banner"
-   */ 
-  $scope.showWelcomeMessage = true;
-  $scope.hideWelcomeMessage = function() {
-    $scope.showWelcomeMessage = false;
-  };
+  
+  // Grab our projectId from the login page
+  var projectId = AuthInfo.get().namespace;
   
   /**
-   * Allow the user to show / hide the volumes slide-out panel
-   */ 
-  $scope.showVolumePane = false;
+   * Populate all shared data from the server into our scope
+   */
+  Specs.populate().then(function() { 
+    $scope.allServices = Specs.all;
+    
+    // After specs load, grab the other data
+    Project.populate(projectId).then(function() { $scope.project = Project.project; });
+    Stacks.populate(projectId).then(function() { $scope.configuredStacks = Stacks.all; });
+    Volumes.populate(projectId).then(function() { $scope.configuredVolumes = Volumes.all; });
+  });
   
+  /**
+   * Selects the given volume (highlight it in the 'Volumes' grid)
+   */
   $scope.selectVolume = function(volume) {
     $scope.selectedVolume = volume.id;
     $scope.selectedTab = 1;
   };
-  
-  // Wire in DEBUG mode
-  $scope.DEBUG = DEBUG;
 
   // Accounting stuff
-  $scope.counts = {};
   $scope.svcQuery = '';
-  $scope.nextId = 1;
-  
-  // Storage structures
-  $scope.currentProject = {};
-  $scope.configuredStacks = Stacks.all;
-  $scope.configuredVolumes = Volumes.all;
-  
-  // Helpful stuff
-  var projectId = AuthInfo.get().namespace;
-  var query = {};
-  
-  
-  // Logic for the "Auto Refresh" toggle button
-  $scope.autoInterval = null;
-  $scope.startInterval = function (){
-    if ($scope.autoInterval === null) {
-      $scope.autoInterval = $interval($scope.softRefresh, 2000);
-    }
-  };
-  
-  $scope.stopInterval = function() {
-    if ($scope.autoInterval !== null) {
-      $interval.cancel($scope.autoInterval);
-      $scope.autoInterval = null;
-    }
-  };
-  
-  $scope.autoRefresh = false;
-  $scope.toggleAutoRefresh = function() {
-    if ($scope.autoInterval === null) {
-      $scope.startInterval();
-    } else {
-      $scope.stopInterval();
-    }
-  };
+  $scope.autoRefresh = AutoRefresh;
   
   // Watch for transitioning stacks (their status will end with "ing")
   $scope.$watch('configuredStacks', function(oldValue, newValue) {
@@ -79,87 +46,12 @@ angular
       return _.includes(stk.status, 'ing');
     });
     
-    if (transient) {
-      $scope.startInterval();
-    } else if (!transient) {
-      $scope.stopInterval();
+    if (!transient) {
+      AutoRefresh.stop();
+    } else {
+      AutoRefresh.start();
     }
   });
-  
-  /**
-   * Perform a "soft-refresh". That is, refresh the data without fully re-rendering the page
-   */ 
-  $scope.softRefresh = function() {
-    /**
-     * Grabs metadata about the current project's stacks
-     */ 
-    (query.stacks = function() {
-      // Grab the list of configured stacks in our namespace
-      return NdsLabsApi.getProjectsByProjectIdStacks({ 
-        "projectId": projectId 
-      }).then(function(stacks, xhr) {
-        $log.debug("successfully grabbed from /projects/" + projectId + "/stacks!");
-        //Stacks.all = stacks || [];
-        
-        if ($scope.configuredStacks === [] && stacks !== []) {
-          // Catch edge case here?
-        }
-        
-        $scope.configuredStacks = Stacks.all = stacks || [];
-      }, function(headers) {
-        $log.error("error grabbing from /projects/" + projectId + "/stacks!");
-      });
-    })();
-    
-    /**
-     * Grabs metadata about the current project's volumes
-     */ 
-    (query.volumes = function() {
-      // Grab the list of configured volumes in our namespace
-      return NdsLabsApi.getProjectsByProjectIdVolumes({ 
-        "projectId": projectId
-      }).then(function(volumes, xhr) {
-        $log.debug("successfully grabbed from /projects/" + projectId + "/volumes!");
-        //Volumes.all = volumes || [];
-        Volumes.all = $scope.configuredVolumes = volumes || [];
-      }, function(headers) {
-        $log.error("error grabbing from /projects/" + projectId + "/volumes!");
-      });
-    })();
-  };
-  
-  /**
-   * Grabs metadata about the current site's available services
-   */ 
-  (query.services = function() {
-    // Grab the list of available services at our site
-    return NdsLabsApi.getServices().then(function(specs, xhr) {
-      $log.debug("successfully grabbed from /services!");
-      Specs.all = $scope.allServices = specs;
-      Specs.deps = $scope.deps = angular.copy(specs);
-      Specs.stacks = $scope.stacks = _.remove($scope.deps, function(svc) { return svc.stack === true; });
-    }, function (headers) {
-      $log.error("error grabbing from /services!");
-    }).finally(function() {
-      $scope.softRefresh();
-    });
-  })();
-  
-  /**
-   * Grabs metadata about the current project
-   */ 
-  (query.project = function() {
-    // Grab the metadata associated with our current namespace
-    return NdsLabsApi.getProjectsByProjectId({ 
-      "projectId": projectId 
-    }).then(function(project, xhr) {
-      $log.debug("successfully grabbed from /projects/" + projectId + "!");
-      $scope.project = AuthInfo.project = Project.project = project;
-    }, function(headers) {
-      $log.debug("error!");
-      console.debug(headers);
-    })
-  })();
   
   $scope.starting = {};
   $scope.stopping = {};
@@ -169,7 +61,7 @@ angular
    * @param {Object} stack - the stack to launch
    */ 
   $scope.startStack = function(stack) {
-    $scope.startInterval();
+    AutoRefresh.start();
     
     $scope.starting[stack.id] = true;
     
@@ -206,7 +98,7 @@ angular
 
     // Define what we should do when the modal is closed
     modalInstance.result.then(function(stack) {
-      $scope.startInterval();
+      AutoRefresh.stop();
       
       $scope.stopping[stack.id] = true;
     
@@ -223,21 +115,6 @@ angular
         $scope.stopping[stack.id] = false;
       });
     });
-  };
-  
-  /** 
-   * Checks if a volume exists for the given stack and service and return it if it exists
-   * @param {Object} svc - the service to check against the list of volumes
-   */
-  $scope.showVolume = function(svc) {
-    var volume = null;
-    angular.forEach($scope.configuredVolumes, function(vol) {
-      if (svc.id === vol.attached) {
-        volume = vol;
-      }
-    });
-
-    return volume;
   };
   
   /** 
@@ -282,7 +159,7 @@ angular
       $log.error('failed to add service ' + svc.key + ' to stack ' + stack.name);
       
       // Restore our state from etcd
-      query.stacks();
+      Stacks.populate();
     });
   };
   
@@ -307,7 +184,7 @@ angular
       $log.error('failed to remove service ' + svc.key + ' from stack ' + stack.name);
       
       // Restore our state from etcd
-      query.stacks();
+      Stacks.populate();
     });
   };
   
