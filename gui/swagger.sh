@@ -10,7 +10,7 @@ OUTPUTFILE=js/app/shared/api.js
 docker run --rm -it -v `pwd`/api:/data bodom0015/nodejs-bower-grunt npm install swagger-js-codegen
 
 # Download newest swagger-spec.json
-if [[ "${@/-u/}" != "$@" ]]; then
+if [[ "${@/-u/ }" != "$@" ]]; then
 	echo "Downloading newest Swagger Spec..."
 	sudo curl -L ${DOWNLOADURL} > ${SWAGGERFILE}
 else

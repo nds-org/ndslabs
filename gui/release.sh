@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Always tag develop -> latest (unless -t specified)
-if [[ "${@/-t/}" == "$@" ]]; then
+if [[ "${@/-t/ }" == "$@" ]]; then
 	docker tag ndslabs/ndslabs-gui:develop ndslabs/ndslabs-gui:latest && \
 	docker push ndslabs/ndslabs-gui:latest
 fi
