@@ -36,19 +36,23 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  return refresh;
 }])
 
-.factory('AutoRefresh', [ '$interval', 'SoftRefresh', function($interval, SoftRefresh) {
+.factory('AutoRefresh', [ '$interval', '$log', 'SoftRefresh', function($interval, $log, SoftRefresh) {
   var autoRefresh = {
     interval: null,
+    onInterval: SoftRefresh.partial,
     periodSeconds: 2,
     start: function () {
       autoRefresh.stop();
-      autoRefresh.interval = $interval(SoftRefresh.partial, 1000 * autoRefresh.periodSeconds);
+      autoRefresh.interval = $interval(autoRefresh.onInterval, 1000 * autoRefresh.periodSeconds);
+      $log.debug("Interval starting: " + autoRefresh.interval);
     },
     stop: function() {
       if (autoRefresh.interval !== null) {
-        $interval.cancel(autoRefresh.interval);
+        while (!$interval.cancel(autoRefresh.interval)) { /* NOOP */ }
         autoRefresh.interval = null;
       }
+      $log.debug("Interval stopped: " + autoRefresh.interval);
+      
     },
     toggle: function() {
       if (autoRefresh.interval === null) {

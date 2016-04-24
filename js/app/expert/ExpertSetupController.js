@@ -23,10 +23,21 @@ angular
     $scope.allServices = Specs.all;
     
     // After specs load, grab the other data
-    Project.populate(projectId).then(function() { $scope.project = Project.project; });
-    Stacks.populate(projectId).then(function() { $scope.configuredStacks = Stacks.all; });
-    Volumes.populate(projectId).then(function() { $scope.configuredVolumes = Volumes.all; });
+    Project.populate(projectId);
+    Stacks.populate(projectId);
+    Volumes.populate(projectId);
   });
+  
+  /** 
+   * FIXME: Temporary hack to update $scope when service data changes.
+   * I am hoping asynchronous updates will allow me to remove this/these hack(s)
+   */
+  $scope.$watch(function () { return Project.project }, 
+    function(newValue, oldValue) { $scope.project = Project.project;});
+  $scope.$watch(function () { return Stacks.all },
+    function(newValue, oldValue) { $scope.configuredStacks = Stacks.all; });
+  $scope.$watch(function () { return Volumes.all },
+    function(newValue, oldValue) { $scope.configuredVolumes = Volumes.all; });
   
   /**
    * Selects the given volume (highlight it in the 'Volumes' grid)
@@ -46,9 +57,9 @@ angular
       return _.includes(stk.status, 'ing');
     });
     
-    if (!transient) {
+    if (!transient && AutoRefresh.interval) {
       AutoRefresh.stop();
-    } else {
+    } else if (transient && !AutoRefresh.interval) {
       AutoRefresh.start();
     }
   });
