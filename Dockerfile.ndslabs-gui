@@ -9,7 +9,7 @@ FROM node:latest
 
 # Set build information here before building
 ENV BUILD_VERSION="1.0-alpha" \
-    BUILD_DATE="Fri Apr 22 17:13:27 UTC 2016" \
+    BUILD_DATE="Sun Apr 24 05:02:06 UTC 2016" \
     APISERVER_HOST="192.168.99.100" \
     APISERVER_PORT="30001"
 
