@@ -156,7 +156,6 @@ angular
           });
         },
         next: function() { 
-          console.debug($scope.newStackVolumeRequirements);
           if (!_.isEmpty($scope.extraConfig)) {
             $log.debug('Going to config');
             return 'config';
@@ -205,8 +204,7 @@ angular
             });
           });
         },
-        next: function() { 
-          console.debug($scope.newStackVolumeRequirements);
+        next: function() {
           if ($scope.newStackVolumeRequirements.length > 0) {
             $log.debug('Going to volumes');
             return 'volumes';
