@@ -51,7 +51,7 @@
               <form name="forms.stackNameForm" novalidate>
                 <div class="form-group" 
                 ng-class="{ 'has-error has-feedback':forms.stackNameForm.stackName.$invalid, 'has-success has-feedback': !forms.stackNameForm.stackName.$pristine && forms.stackNameForm.stackName.$valid }">
-                  <label class="control-label" for="stackNameInput">Choose a unique name for your stack</label>
+                  <label class="control-label" for="stackNameInput">Choose a name for your stack</label>
                   <input type="text" name="stackName" class="form-control" minlength="1" maxlength="20" required
                       ng-model="newStack.name" placeholder="Name" id="stackNameInput">
                   <span class="form-control-feedback glyphicon" ng-if="!forms.stackNameForm.stackName.$pristine"
