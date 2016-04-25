@@ -23,6 +23,22 @@ angular
     });
   })();
   
+  $scope.extraConfig = {};
+  $scope.discoverConfigRequirements = function(stack) {
+    $scope.extraConfig = {};
+    angular.forEach(stack.services, function(svc) {
+      var spec = _.find(_.concat(stacks, deps), [ 'key', svc.service ]);
+      
+      // Don't modify specs in-place... make a copy
+      if (spec.config) {
+        $scope.extraConfig[svc.service] = {
+          list: angular.copy(spec.config),
+          defaults: angular.copy(spec.config)
+        };
+      }
+    });
+  };
+  
   $scope.discoverVolumeReqs = function(stack) {
     var reusableVolumes = [];
     var requiredVolumes = [];
@@ -115,6 +131,7 @@ angular
         },
         onNext: function() {
           $scope.discoverVolumeReqs($scope.newStack);
+          $scope.discoverConfigRequirements($scope.newStack);
         }
      }, true),
      
@@ -132,8 +149,8 @@ angular
             $scope.newStack.services.push(new StackService($scope.newStack, svc));
           });
 
-          $log.debug("Discovering volume requirements...");
           $scope.discoverVolumeReqs($scope.newStack);
+          $scope.discoverConfigRequirements($scope.newStack);
           
           // TODO: Asynchronicity here is not handled by the wizard.
           /*var services = _.map($scope.newStack.services, 'service');
@@ -144,18 +161,6 @@ angular
             $log.error('Failed to grab custom config for ' + services);
           });*/
           
-          $scope.extraConfig = {};
-          angular.forEach($scope.newStack.services, function(svc) {
-            var spec = _.find(_.concat(stacks, deps), [ 'key', svc.service ]);
-            
-            // Don't modify specs in-place... make a copy
-            if (spec.config) {
-              $scope.extraConfig[svc.service] = {
-                list: angular.copy(spec.config),
-                defaults: angular.copy(spec.config)
-              };
-            }
-          });
         },
         next: function() { 
           console.debug($scope.newStackVolumeRequirements);
