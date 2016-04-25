@@ -69,27 +69,15 @@ angular.module('ndslabs-services', [])
  */
 .service('Stack', [ 'Stacks', '_', function(Stacks, _) {
   return function(spec) {
-    var counts= _.countBy(Stacks.all, 'key');
-    var count = (++counts[spec.key]) || 1;
-    
-    if (count < 10) {
-      count = '0' + count;
-    }
-    
-    var name = spec.label.slice(0,12) + "-" + count;
+    var key = spec.key;
     
     var stack = {
       id: "",
-      name: name,
-      key: spec.key,
+      name: key,
+      key: key,
       status: "Suspended",
-      services: [],
-  //    createdTime: new Date(),
- //     updateTime: new Date()
+      services: []
     };
-    
-    // TODO: Manage this automatically? Seems like a bad idea...
-    //Stacks.all.push(stack);
     
     return stack;
   };
@@ -103,34 +91,20 @@ angular.module('ndslabs-services', [])
  */
 .service('Volume', [ 'Volumes', '_', function(Volumes, _) {
   return function(stack, service) { 
-    var counts = _.countBy(Volumes.all, 'service');
-    var count = (++counts[service.key]) || '1';
-    
-    if (count < 10) {
-      count = '0' + count;
-    }
-    
-    var name = service.key.slice(0,12) + '-' + count;
+    var key = service.key;
     
     var volume = {
       id: '',
-      defaultName: name,
-      size: 5,
+      defaultName: key,   // This is used only in the UI
+      name: key,
+      size: 1,
       sizeUnit: 'GB',
       format: 'Raw',
       attached: service.id,
-      service: service.key,
+      service: key,
       status: '',
-      formatted: false,
-  //    createdTime: new Date(),
-  //    updateTime: new Date()
+      formatted: false
     };
-    
-    // Initially set our name ot the suggested default
-    volume.name = volume.defaultName;
-    
-    // TODO: Manage this automatically? Seems like a bad idea...
-    //Volumes.all.push(volume);
     
     return volume;
   };
@@ -148,14 +122,8 @@ angular.module('ndslabs-services', [])
       id: "",
       stack: stack.key,
       service: spec.key,
-      status: "",
-   //   createdTime: new Date(),
-   //   updatedTime: new Date()
-      //replicas: 1,
-      //endpoints: []
+      status: ""
     };
-    
-    //stack.services.push(svc);
     
     return svc;
   };

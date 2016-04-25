@@ -15,6 +15,7 @@ angular
   $scope.storageQuota = Project.project.storageQuota;
   $scope.newStackVolumeRequirements = [];
   
+  $scope.forms = {};
   ($scope.onPageChange = function() {
     NdsLabsApi.getRefresh_token().then(function() {
       $log.debug("Refreshed token!");
@@ -97,10 +98,7 @@ angular
         prev: null,
         canPrev: false,
         canNext: function() {
-          return $scope.newStack && $scope.newStack.name !== '' 
-                    && !_.find(configuredStacks, function(stack) { 
-                      return stack.name === $scope.newStack.name;
-                    });
+          return $scope.forms['stackNameForm'].$valid;
         },
         next: function() { 
           if ($scope.newStackOptions.length > 0) {
@@ -243,7 +241,6 @@ angular
           
           // Ensure all volumes have either an id or a name, and have a size/unit set
           return _.every($scope.newStackVolumeRequirements, function(vol) {
-            debugger;
             return vol.id || (vol.name && vol.size && vol.sizeUnit);
           });
         },
@@ -337,10 +334,10 @@ angular
   // Assumption: quota is in GB
   // Assumption: GB is lowest denomination
 
-  var available = angular.copy($scope.storageQuota);
-
-  $scope.availableSpace = available;
-  $scope.usedSpace = $scope.storageQuota - available;
+  $scope.usedSpace = $filter('usedStorage')($scope.configuredVolumes);
+  $scope.availableSpace = $scope.storageQuota - $scope.usedSpace;
+  
+  debugger;
   
   $scope.ok = function () {
     $log.debug("Closing modal with success!");
