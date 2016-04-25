@@ -769,10 +769,6 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	glog.V(4).Infof("Adding stack %s %s\n", stack.Key, stack.Name)
-	if s.stackExists(pid, stack.Name) {
-		w.WriteHeader(http.StatusConflict)
-		return
-	}
 
 	_, err = s.etcd.GetServiceSpec(stack.Key)
 	if err != nil {
@@ -1396,11 +1392,6 @@ func (s *Server) PostVolume(w rest.ResponseWriter, r *rest.Request) {
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if s.volumeExists(pid, vol.Name) {
-		w.WriteHeader(http.StatusConflict)
 		return
 	}
 
