@@ -159,4 +159,71 @@ angular.module('ndslabs-services', [])
     
     return svc;
   };
-}]);
+}])
+
+
+/**
+ * Abstracted logic for discovering service requirements.
+ */
+.factory('ServiceDiscovery', [ '_', 'Specs', 'Volumes', 'Volume', function(_, Specs, Volumes, Volume) {
+  var factory = {
+    discoverConfigRequirements: function(stack) {
+      var config = {};
+      angular.forEach(stack.services, function(svc) {
+        var spec = _.find(Specs.all, [ 'key', svc.service ]);
+        
+        // Don't modify specs in-place... make a copy
+        if (spec.config) {
+          config[svc.service] = {
+            list: angular.copy(spec.config),
+            defaults: angular.copy(spec.config)
+          };
+        }
+      });
+      
+      return config;
+    },
+    discoverOrphanVolumes: function(stack) {
+      var orphanVolumes = [];
+      
+      angular.forEach(stack.services, function(requestedSvc) {
+        var svcSpec = _.find(Specs.all, function(svc) { return svc.key === requestedSvc.service });
+        
+        // TODO: Gross hack.. fix this
+        if (svcSpec.volumeMounts && _.filter(svcSpec.volumeMounts, function(mnt) {
+          return mnt.name !== 'docker';
+        }).length > 0) {
+          var orphan = null;
+          angular.forEach(Volumes.all, function(volume) {
+            if (!volume.attached && svcSpec.key === volume.service) {
+              // This is an orphaned volume from this service... Prompt the user to reuse it
+              orphan = volume;
+              orphanVolumes.push(orphan);
+            }
+          });
+        }
+      });
+      
+      return orphanVolumes;
+    },
+    discoverRequiredVolumes: function(stack) {
+      var requiredVolumes = [];
+      
+      angular.forEach(stack.services, function(requestedSvc) {
+        var svcSpec = _.find(Specs.all, function(svc) { return svc.key === requestedSvc.service });
+        
+        // TODO: Gross hack.. fix this
+        if (svcSpec.volumeMounts && _.filter(svcSpec.volumeMounts, function(mnt) {
+          return mnt.name !== 'docker';
+        }).length > 0) {
+          requiredVolumes.push(new Volume(stack, svcSpec));
+        }
+      });
+      
+      return requiredVolumes;
+    }
+  };
+  
+  return factory;
+}])
+;

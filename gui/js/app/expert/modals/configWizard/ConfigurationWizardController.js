@@ -9,11 +9,13 @@ angular
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
 .controller('ConfigurationWizardCtrl', [ '$scope', '$filter', '$log', '$uibModalInstance', '_', 'NdsLabsApi', 'Project', 'Stack', 'Volume', 
-    'StackService', 'Grid', 'Wizard', 'WizardPage', 'template', 'stacks', 'deps', 'configuredStacks', 'configuredVolumes',
+    'StackService', 'Grid', 'Wizard', 'WizardPage', 'template', 'stacks', 'deps', 'configuredStacks', 'configuredVolumes', 'ServiceDiscovery',
     function($scope, $filter, $log, $uibModalInstance, _, NdsLabsApi, Project, Stack, Volume, StackService, Grid, Wizard, WizardPage, template, 
-    stacks, deps, configuredStacks, configuredVolumes) {
+    stacks, deps, configuredStacks, configuredVolumes, ServiceDiscovery) {
   $scope.storageQuota = Project.project.storageQuota;
   $scope.newStackVolumeRequirements = [];
+  $scope.newStackOrphanedVolumes = [];
+  $scope.extraConfig = {};
   
   ($scope.onPageChange = function() {
     NdsLabsApi.getRefresh_token().then(function() {
@@ -23,59 +25,17 @@ angular
     });
   })();
   
-  $scope.extraConfig = {};
-  $scope.discoverConfigRequirements = function(stack) {
-    $scope.extraConfig = {};
-    angular.forEach(stack.services, function(svc) {
-      var spec = _.find(_.concat(stacks, deps), [ 'key', svc.service ]);
-      
-      // Don't modify specs in-place... make a copy
-      if (spec.config) {
-        $scope.extraConfig[svc.service] = {
-          list: angular.copy(spec.config),
-          defaults: angular.copy(spec.config)
-        };
-      }
-    });
-  };
-  
-  $scope.discoverVolumeReqs = function(stack) {
-    var reusableVolumes = [];
-    var requiredVolumes = [];
-    angular.forEach(stack.services, function(requestedSvc) {
-      var svcSpec = _.find(_.concat(stacks, deps), function(svc) { return svc.key === requestedSvc.service });
-      
-      // TODO: Gross hack.. fix this
-      if (svcSpec.volumeMounts && _.filter(svcSpec.volumeMounts, function(mnt) {
-        return mnt.name !== 'docker';
-      }).length > 0) {
-        var orphan = null;
-        angular.forEach(configuredVolumes, function(volume) {
-          if (!volume.attached && svcSpec.key === volume.service) {
-            // This is an orphaned volume from this service... Prompt the user to reuse it
-            orphan = volume;
-            reusableVolumes.push(orphan);
-          }
-        });
-        
-        var newVolume = new Volume(stack, svcSpec);
-        if (orphan !== null) {
-          newVolume.id = orphan.id;
-          newVolume.name = orphan.name;
-        }
-        requiredVolumes.push(newVolume);
-      }
-    });
-
-    $scope.newStackOrphanedVolumes = reusableVolumes;
-    $scope.newStackVolumeRequirements = requiredVolumes;
+  $scope.rediscover = function(stack) {
+    $scope.newStackOrphanedVolumes = ServiceDiscovery.discoverOrphanVolumes(stack);
+    $scope.newStackVolumeRequirements = ServiceDiscovery.discoverRequiredVolumes(stack);
+    $scope.extraConfig = ServiceDiscovery.discoverConfigRequirements(stack);
     
     // Select first volume req, if we found any
     if ($scope.newStackVolumeRequirements.length > 0) {
       $scope.volume = $scope.newStackVolumeRequirements[0];
     }
   };
-
+    
   // TODO: Use queue for recursion?
   $scope.collectDependencies = function(targetSvc) {
     angular.forEach(targetSvc.depends, function(dependency) {
@@ -130,8 +90,7 @@ angular
           }
         },
         onNext: function() {
-          $scope.discoverVolumeReqs($scope.newStack);
-          $scope.discoverConfigRequirements($scope.newStack);
+          $scope.rediscover($scope.newStack);
         }
      }, true),
      
@@ -149,8 +108,8 @@ angular
             $scope.newStack.services.push(new StackService($scope.newStack, svc));
           });
 
-          $scope.discoverVolumeReqs($scope.newStack);
-          $scope.discoverConfigRequirements($scope.newStack);
+          // Update config / volume based on optional services selected
+          $scope.rediscover($scope.newStack);
           
           // TODO: Asynchronicity here is not handled by the wizard.
           /*var services = _.map($scope.newStack.services, 'service');

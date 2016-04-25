@@ -246,43 +246,57 @@ angular
    * @param {Object} service - the new service to add
    */
   $scope.addStackSvc = function(stack, svc) {
-    // Add this service to our stack locally
-    var spec = _.find(Specs.all, [ 'key', svc.key ]);
-    
-    // Ensure that adding this service does not require new dependencies
-    angular.forEach(spec.depends, function(dependency) {
-      var svc = _.find(Specs.all, function(svc) { return svc.key === dependency.key });
-      var stackSvc = new StackService(stack, svc);
-      
-      // Check if this required dependency is already present on our proposed stack
-      var exists = _.find(stack.services, function(svc) { return svc.service === dependency.key });
-      if (!exists) {
-        // Add the service if it has not already been added
-        stack.services.push(stackSvc);
-      } else {
-        // Skip this service if we see it in the list already
-        $log.debug("Skipping duplicate service: " + svc.key);
+    // See '/app/expert/modals/addService/addService.html'
+    var modalInstance = $uibModal.open({
+      animation: true,
+      templateUrl: '/app/expert/modals/addService/addService.html',
+      controller: 'AddServiceCtrl',
+      size: 'md',
+      keyboard: false,
+      backdrop: 'static',
+      resolve: {
+        stack: function() { return stack; },
+        newService: function() { return svc; }
       }
     });
     
-    // Now that we have all required dependencies, add our target service
-    stack.services.push(new StackService(stack, spec));
-    
-    // TODO: Should client or server handle this? My gut says server...
-    //stack.updatedTime = new Date();
-    
-    // Then update the entire stack in etcd
-    NdsLabsApi.putProjectsByProjectIdStacksByStackId({
-      'stack': stack,
-      'projectId': projectId,
-      'stackId': stack.id
-    }).then(function(data, xhr) {
-      $log.debug('successfully added service ' + svc.key + ' to stack ' + stack.name);
-    }, function(headers) {
-      $log.error('failed to add service ' + svc.key + ' to stack ' + stack.name);
+    // If user pressed "Confirm", attempt to add the configured service to the stack
+    modalInstance.result.then(function(stack) {
+      // Add this service to our stack locally
+      var spec = _.find(Specs.all, [ 'key', svc.key ]);
       
-      // Restore our state from etcd
-      query.stacks();
+      // Ensure that adding this service does not require new dependencies
+      angular.forEach(spec.depends, function(dependency) {
+        var svc = _.find(Specs.all, function(svc) { return svc.key === dependency.key });
+        var stackSvc = new StackService(stack, svc);
+        
+        // Check if this required dependency is already present on our proposed stack
+        var exists = _.find(stack.services, function(svc) { return svc.service === dependency.key });
+        if (!exists) {
+          // Add the service if it has not already been added
+          stack.services.push(stackSvc);
+        } else {
+          // Skip this service if we see it in the list already
+          $log.debug("Skipping duplicate service: " + svc.key);
+        }
+      });
+      
+      // Now that we have all required dependencies, add our target service
+      stack.services.push(new StackService(stack, spec));
+      
+      // Then update the entire stack in etcd
+      NdsLabsApi.putProjectsByProjectIdStacksByStackId({
+        'stack': stack,
+        'projectId': projectId,
+        'stackId': stack.id
+      }).then(function(data, xhr) {
+        $log.debug('successfully added service ' + svc.key + ' to stack ' + stack.name);
+      }, function(headers) {
+        $log.error('failed to add service ' + svc.key + ' to stack ' + stack.name);
+        
+        // Restore our state from etcd
+        query.stacks();
+      });
     });
   };
   
