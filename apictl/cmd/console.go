@@ -8,15 +8,18 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 
+	"github.com/docker/docker/pkg/term"
 	"github.com/spf13/cobra"
 	"golang.org/x/net/websocket"
 )
 
-// execCmd represents the exec command
-var execCmd = &cobra.Command{
-	Use:   "exec [stack service]",
+// consoleCmd represents the console command
+var consoleCmd = &cobra.Command{
+	Use:   "console [stack service]",
 	Short: "Exec into stack service container",
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -27,7 +30,7 @@ var execCmd = &cobra.Command{
 
 		ssid := args[0]
 
-		wsUrl := "ws://localhost:30001/exec?namespace=" + apiUser.username + "&ssid=" + ssid
+		wsUrl := "ws://localhost:30001/console?namespace=" + apiUser.username + "&ssid=" + ssid
 		config := websocket.Config{}
 		config.Version = 13
 		config.Location, _ = url.Parse(wsUrl)
@@ -39,6 +42,33 @@ var execCmd = &cobra.Command{
 		if err != nil {
 			fmt.Printf("Exec failed: %s\n", err)
 			return
+		}
+
+		var stdin io.Reader
+
+		stdin = os.Stdin
+
+		if file, ok := stdin.(*os.File); ok {
+			inFd := file.Fd()
+			if term.IsTerminal(inFd) {
+				oldState, err := term.SetRawTerminal(inFd)
+				if err != nil {
+					fmt.Printf("Exec failed: %s\n", err)
+					return
+				}
+				defer term.RestoreTerminal(inFd, oldState)
+				sigChan := make(chan os.Signal, 1)
+				signal.Notify(sigChan, syscall.SIGTERM)
+				go func() {
+					<-sigChan
+					term.RestoreTerminal(inFd, oldState)
+					os.Exit(0)
+				}()
+			} else {
+				fmt.Println("STDIN is not a terminal")
+			}
+		} else {
+			fmt.Println("Unable to use PTY")
 		}
 
 		var wg sync.WaitGroup
@@ -61,34 +91,20 @@ var execCmd = &cobra.Command{
 			}
 		}()
 		wg.Wait()
-
-		/*
-			reader := bufio.NewReader(os.Stdin)
-			buflen, err := reader.Read(
-			if _, err := ws.Write([]byte("hello, world\n")); err != nil {
-				log.Fatal(err)
-			}
-			var msg = make([]byte, 512)
-			var n int
-			if n, err = ws.Read(msg); err != nil {
-				log.Fatal(err)
-			}
-			log.Printf("Received: %s.", msg[:n])
-		*/
 	},
 }
 
 func init() {
-	RootCmd.AddCommand(execCmd)
+	RootCmd.AddCommand(consoleCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// execCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// consoleCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// execCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// consoleCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 }
