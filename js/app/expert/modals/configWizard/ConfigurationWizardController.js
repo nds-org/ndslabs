@@ -15,6 +15,7 @@ angular
   $scope.storageQuota = Project.project.storageQuota;
   $scope.newStackVolumeRequirements = [];
   
+  $scope.forms = {};
   ($scope.onPageChange = function() {
     NdsLabsApi.getRefresh_token().then(function() {
       $log.debug("Refreshed token!");
@@ -97,10 +98,7 @@ angular
         prev: null,
         canPrev: false,
         canNext: function() {
-          return $scope.newStack && $scope.newStack.name !== '' 
-                    && !_.find(configuredStacks, function(stack) { 
-                      return stack.name === $scope.newStack.name;
-                    });
+          return $scope.forms['stackNameForm'].$valid;
         },
         next: function() { 
           if ($scope.newStackOptions.length > 0) {
@@ -158,7 +156,6 @@ angular
           });
         },
         next: function() { 
-          console.debug($scope.newStackVolumeRequirements);
           if (!_.isEmpty($scope.extraConfig)) {
             $log.debug('Going to config');
             return 'config';
@@ -207,8 +204,7 @@ angular
             });
           });
         },
-        next: function() { 
-          console.debug($scope.newStackVolumeRequirements);
+        next: function() {
           if ($scope.newStackVolumeRequirements.length > 0) {
             $log.debug('Going to volumes');
             return 'volumes';
@@ -331,9 +327,20 @@ angular
                     + '&body=' + body;
                     debugger;
     
+<<<<<<< HEAD
+  // TODO: Add this field to the backend
+  // Assumption: quota is in GB
+  // Assumption: GB is lowest denomination
+
+  $scope.usedSpace = $filter('usedStorage')($scope.configuredVolumes);
+  $scope.availableSpace = $scope.storageQuota - $scope.usedSpace;
+  
+  debugger;
+=======
   // Assumptions: quota is in GB and GB is lowest storage denomination
   $scope.usedSpace = $filter('usedStorage')($scope.configuredVolumes);
   $scope.availableSpace = $scope.storageQuota - $scope.usedSpace;
+>>>>>>> 466a6c19234864ddb9fb2265d231966cc7111e28
   
   $scope.ok = function () {
     $log.debug("Closing modal with success!");
