@@ -181,7 +181,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 
 	api.Use(&rest.IfMiddleware{
 		Condition: func(request *rest.Request) bool {
-			return request.URL.Path != "/authenticate" && request.URL.Path != "/version" && request.URL.Path != "/register"
+			return request.URL.Path != "/authenticate" && request.URL.Path != "/version" && request.URL.Path != "/register" && request.URL.Path != "/console"
 		},
 		IfTrue: jwt,
 	})
@@ -218,7 +218,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Get("/projects/:pid/start/:sid", s.StartStack),
 		rest.Get("/projects/:pid/stop/:sid", s.StopStack),
 		rest.Get("/projects/:pid/logs/:ssid", s.GetLogs),
-		rest.Get("/exec", s.GetExec),
+		rest.Get("/console", s.GetConsole),
 	)
 
 	if err != nil {
@@ -245,7 +245,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 	}
 }
 
-func (s *Server) GetExec(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) GetConsole(w rest.ResponseWriter, r *rest.Request) {
 	pid := r.Request.FormValue("namespace")
 	ssid := r.Request.FormValue("ssid")
 
@@ -253,7 +253,12 @@ func (s *Server) GetExec(w rest.ResponseWriter, r *rest.Request) {
 		rest.NotFound(w, r)
 		return
 	}
-	kube.NewExecHandler(pid, ssid, s.kube).ServeHTTP(w.(http.ResponseWriter), r.Request)
+
+	pods, _ := s.kube.GetPods(pid, "name", ssid)
+	pod := pods[0].Name
+	container := pods[0].Spec.Containers[0].Name
+	glog.V(4).Infof("exec called for %s %s %s\n", pid, ssid, pod)
+	s.kube.Exec(pid, pod, container, s.kube).ServeHTTP(w.(http.ResponseWriter), r.Request)
 }
 
 func (s *Server) initExistingProjects() {

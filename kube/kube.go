@@ -7,16 +7,23 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
-	ndsapi "github.com/ndslabs/apiserver/types"
 	"io/ioutil"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
-	intstr "k8s.io/kubernetes/pkg/util/intstr"
-	utilrand "k8s.io/kubernetes/pkg/util/rand"
 	"net/http"
+	"net/url"
+	"os"
 	"strings"
 	"time"
+
+	"github.com/golang/glog"
+	ndsapi "github.com/ndslabs/apiserver/types"
+	"golang.org/x/net/websocket"
+	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/client/restclient"
+	"k8s.io/kubernetes/pkg/client/unversioned/remotecommand"
+	remotecommandserver "k8s.io/kubernetes/pkg/kubelet/server/remotecommand"
+	intstr "k8s.io/kubernetes/pkg/util/intstr"
+	utilrand "k8s.io/kubernetes/pkg/util/rand"
 )
 
 var apiBase = "/api/v1"
@@ -639,6 +646,7 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 
 	env := []api.EnvVar{}
 	env = append(env, api.EnvVar{Name: "NAMESPACE", Value: ns})
+	env = append(env, api.EnvVar{Name: "TERM", Value: "vt100"})
 
 	for name, addrPort := range *links {
 
@@ -776,4 +784,86 @@ func (k *KubeHelper) GenerateName(stack string, randomLength int) string {
 
 func (k *KubeHelper) GenerateName(randomLength int) string {
 	return fmt.Sprintf("s%s", utilrand.String(randomLength))
+}
+
+func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHelper) *websocket.Handler {
+
+	url, err := url.Parse(k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" +
+		pod + "/exec?container=" + container + "&command=bash&tty=true&stdin=true&stdout=true&stderr=false")
+	if err != nil {
+		glog.Fatal(err)
+	}
+
+	conf := &restclient.Config{
+		Host: k.kubeBase,
+	}
+
+	e, err := remotecommand.NewExecutor(conf, "POST", url)
+	if err != nil {
+		glog.Fatal(err)
+	}
+
+	wsHandler := websocket.Handler(func(ws *websocket.Conn) {
+		defer ws.Close()
+
+		outr, outw, err := os.Pipe()
+		if err != nil {
+			glog.Fatal(err)
+			return
+		}
+		defer outr.Close()
+		defer outw.Close()
+
+		inr, inw, err := os.Pipe()
+		if err != nil {
+			glog.Fatal(err)
+			return
+		}
+		defer inr.Close()
+		defer inw.Close()
+
+		go func() {
+			for {
+
+				in := make([]byte, 2048)
+				n, err := ws.Read(in)
+				if err != nil {
+					//glog.Error(err)
+					return
+				}
+				inLen, err := inw.Write(in[:n])
+				if err != nil {
+					glog.Error(err)
+					return
+				}
+				if inLen < n {
+					panic("pty write overflow")
+				}
+			}
+		}()
+
+		go func() {
+			for {
+				out := make([]byte, 2048)
+				n, err := outr.Read(out)
+				if err != nil {
+					//glog.Error(err)
+					return
+				}
+				_, err = ws.Write(out[:n])
+				if err != nil {
+					glog.Error(err)
+					return
+				}
+			}
+		}()
+
+		err = e.Stream(remotecommandserver.SupportedStreamingProtocols, inr, outw, nil, true)
+		if err != nil {
+			glog.Error(err)
+			return
+		}
+	})
+
+	return &wsHandler
 }
