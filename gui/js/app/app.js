@@ -187,8 +187,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$location', '$log', '$interval', '$cookies', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', '$uibModalStack',
-    function($rootScope, $location, $log, $interval, $cookies, authInfo, LoginRoute, ExpertRoute, NdsLabsApi, $uibModalStack) {
+.run([ '$rootScope', '$location', '$log', '$interval', '$cookies', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', '$uibModalStack', 'AutoRefresh',
+    function($rootScope, $location, $log, $interval, $cookies, authInfo, LoginRoute, ExpertRoute, NdsLabsApi, $uibModalStack, AutoRefresh) {
       
   // Grab saved auth data from cookies and attempt to use the leftover session
   var token = $cookies.get('token');
@@ -217,6 +217,9 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       // Close any open modals
       $uibModalStack.dismissAll();
       
+      // Stop any running auto-refresh interval
+      AutoRefresh.stop();
+      
       // Cancel the auth check interval
       $interval.cancel(checkTokenInterval);
       checkTokenInterval = null;
@@ -227,8 +230,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       }
     };
     
-    // Check our token every 3 minutes
-    var tokenCheckMs = 180000;
+    // Check our token every 60s
+    var tokenCheckMs = 60000;
     
     // Every so often, check that our token is still valid
     var checkTokenInterval = null;
