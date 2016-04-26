@@ -149,11 +149,11 @@ angular
     });
     
     // If user pressed "Confirm", attempt to add the configured service to the stack
-    modalInstance.result.then(function(stack) {
+    modalInstance.result.then(function(service) {
       // Add this service to our stack locally
       var spec = _.find(Specs.all, [ 'key', svc.key ]);
       
-      // Ensure that adding this service does not require new dependencies
+      // Add any new required dependencies introduced
       angular.forEach(spec.depends, function(dependency) {
         // Check if this required dependency is already present on our proposed stack
         var exists = _.find(stack.services, function(svc) { return svc.service === dependency.key });
@@ -179,7 +179,7 @@ angular
         $log.debug('successfully added service ' + svc.key + ' to stack ' + stack.name);
       }, function(headers) {
         $log.error('failed to add service ' + svc.key + ' to stack ' + stack.name);
-        
+      }).finally(function() {
         // Restore our state from etcd
         Stacks.populate();
       });
