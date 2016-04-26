@@ -21,7 +21,7 @@ angular
   $scope.service = new StackService(stack, service);
   
   // Populate its Configuration requirements
-  $scope.extraConfig = ServiceDiscovery.discoverConfigSingle(service.key);
+  $scope.service.config = ServiceDiscovery.discoverConfigSingle(service.key);
       
   // Populate its Volume requirements and options
   $scope.volume = ServiceDiscovery.discoverRequiredSingle(stack, service.key);
@@ -116,6 +116,7 @@ angular
   
   $scope.ok = function(service) {
     $log.debug("Closing modal with success!");
+    $scope.service.config = $scope.service.config.list;
     $uibModalInstance.close(service);
   };
   
