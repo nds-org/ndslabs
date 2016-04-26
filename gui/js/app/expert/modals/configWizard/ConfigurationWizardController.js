@@ -28,7 +28,7 @@ angular
   $scope.discoverConfigRequirements = function(stack) {
     $scope.extraConfig = {};
     angular.forEach(stack.services, function(svc) {
-      var spec = _.find(_.concat(stacks, deps), [ 'key', svc.service ]);
+      var spec = _.find(Specs.all, [ 'key', svc.service ]);
       
       // Don't modify specs in-place... make a copy
       if (spec.config) {
