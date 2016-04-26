@@ -325,22 +325,10 @@ angular
   $scope.mailToLink = 'mailto:' + adminEmail 
                     + '?subject=' + subject
                     + '&body=' + body;
-                    debugger;
     
-<<<<<<< HEAD
-  // TODO: Add this field to the backend
-  // Assumption: quota is in GB
-  // Assumption: GB is lowest denomination
-
-  $scope.usedSpace = $filter('usedStorage')($scope.configuredVolumes);
-  $scope.availableSpace = $scope.storageQuota - $scope.usedSpace;
-  
-  debugger;
-=======
   // Assumptions: quota is in GB and GB is lowest storage denomination
   $scope.usedSpace = $filter('usedStorage')($scope.configuredVolumes);
   $scope.availableSpace = $scope.storageQuota - $scope.usedSpace;
->>>>>>> 466a6c19234864ddb9fb2265d231966cc7111e28
   
   $scope.ok = function () {
     $log.debug("Closing modal with success!");
