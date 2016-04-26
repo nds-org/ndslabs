@@ -242,8 +242,8 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
 .filter('usedStorage', [ '_', function(_) {
   return function(volumes) {
     var used = 0;
-    var allocated = _.uniqBy(volumes, 'id');
-    var created = _.filter(volumes, [ 'id', null ]);
+    var created = _.filter(volumes, function (v) { return !v.id; });
+    var allocated = _.filter(volumes, function (v) { return v.id; });
     
     angular.forEach(_.concat(allocated, created), function(volume) {
       used += volume.sizeUnit === 'TB' ? volume.size * 1000 : volume.size;
