@@ -53,8 +53,8 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  */
 .filter('urlEncode', [ '_', function(_) {
   return function(input) {
-    if(input) {
-      return window.encodeURIComponent(_.replace(input, '\s', '+')); 
+    if (input) {
+      return window.encodeURIComponent(_.replace(input, /\s/g, '+')); 
     }
     return "";
   }
@@ -64,7 +64,7 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  */
 .filter('urlDecode', [ function() {
   return function(input) {
-    if(input) {
+    if (input) {
       return window.decodeURIComponent(input); 
     }
     return "";
