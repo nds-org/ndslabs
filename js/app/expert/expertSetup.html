@@ -51,11 +51,11 @@
     <div class="col-sm-9 fill-height">
       <div class="row">
         <div class="col-sm-12">
-          <button class="btn btn-default btn-sm pull-right" ng-click="toggleAutoRefresh()"
-               ng-class="{ 'btn-info':autoInterval !== null }"
+          <button class="btn btn-default btn-sm pull-right" ng-click="autoRefresh.toggle()"
+               ng-class="{ 'btn-info':autoRefresh.interval !== null }"
                ng-mouseenter="iconSpin = true" ng-mouseleave="iconSpin = false"
                uib-tooltip="Automatically refresh the data on this page?" tooltip-placement="left">
-             <i class="fa fa-refresh fa-fw" ng-class="{ 'fa-spin':iconSpin || autoInterval !== null }"></i>
+             <i class="fa fa-refresh fa-fw" ng-class="{ 'fa-spin':iconSpin || autoRefresh.interval !== null }"></i>
              Auto Refresh
           </button>
         </div>
