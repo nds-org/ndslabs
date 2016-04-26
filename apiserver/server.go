@@ -50,9 +50,10 @@ type Config struct {
 		Address string
 	}
 	Kubernetes struct {
-		Address  string
-		Username string
-		Password string
+		Address   string
+		TokenPath string
+		Username  string
+		Password  string
 	}
 }
 
@@ -78,6 +79,9 @@ func main() {
 	if cfg.Kubernetes.Address == "" {
 		cfg.Kubernetes.Address = "localhost:6443"
 	}
+	if cfg.Kubernetes.TokenPath == "" {
+		cfg.Kubernetes.TokenPath = "/run/secrets/kubernetes.io/serviceaccount/token"
+	}
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -91,7 +95,7 @@ func main() {
 	}
 
 	kube, err := kube.NewKubeHelper(cfg.Kubernetes.Address,
-		cfg.Kubernetes.Username, cfg.Kubernetes.Password)
+		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath)
 	if err != nil {
 		glog.Errorf("Kubernetes API server not available\n")
 		glog.Fatal(err)
