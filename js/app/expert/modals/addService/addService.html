@@ -6,6 +6,10 @@
   </div>
   
   <div class="modal-body">
+    <div class="row">
+      <!-- Wizard Page selector -->
+      <div class="col-md-12">
+    
     <!-- Project quota notification -->
     <div class="row">
       <div class="col-sm-12">
@@ -42,23 +46,7 @@
     <!-- Create New Volumes ng-repeat="volume in newStackVolumeRequirements track by volume.service" -->
     <div class="panel panel-info" ng-if="availableSpace > 0">
       <div class="panel-heading">
-        <div class="row">
-          <div class="col-sm-4">
-            <h4 class="panel-title">{{ volume.service | specProperty:'label' }}</h4>
-          </div>
-          <div class="col-offset-sm-6 col-sm-2 pull-right">
-            <span class="input-group-btn" ng-if="newStackVolumeRequirements.length > 1">  
-              <!-- Display our current page +/- 2 -->
-              <button ng-disabled="currentPage === page" 
-                  ng-repeat="page in getPageRange()"
-                  ng-if="page >= 0 && page < newStackVolumeRequirements.length"
-                  class="btn btn-xs" ng-class="{ 'btn-primary':page === currentPage, 'btn-link':!currentPage === page }"
-                  ng-click="setCurrentPage(page)">
-                {{ page + 1 }}
-              </button>
-            </span>
-          </div>
-        </div>
+        <h4 class="panel-title">{{ volume.service | specProperty:'label' }}</h4>
       </div>
 
       <div class="panel-body">
@@ -94,7 +82,7 @@
             </form>
           </div>
         </div>
-        
+  
         <!-- Create a New Volume -->
         <div class="row">
           <div class="col-sm-12">
@@ -116,7 +104,8 @@
                 </div><!-- /form-group -->
               </div><!-- /col-sm-8 -->
               <div class="col-sm-4">
-                <div class="form-group" ng-class="{ 'has-error': !volumeCreateForm.volumeSize.$pristine && volumeCreateForm.volumeSize.$invalid, 'has-success': !volumeCreateForm.volumeSize.$pristine && volumeCreateForm.volumeSize.$valid }">
+                <div class="form-group" ng-class="{ 'has-error': !volumeCreateForm.volumeSize.$pristine && volumeCreateForm.volumeSize.$invalid, 
+                      'has-success': !volumeCreateForm.volumeSize.$pristine && volumeCreateForm.volumeSize.$valid }">
                   <label class="control-label" for="volumeSize">Size</label>
                   <div class="input-group">
                     <input id="volumeSize" type="number" name="volumeSize" min="1" class="form-control" ng-model="volume.size" required
@@ -143,11 +132,11 @@
       </div><!-- /panel-body -->
     </div><!-- /panel-->
     
-
+    <!-- Config section (lower half) -->
     <div class="row">
       <div class="col-sm-12" ng-repeat="(key, configs) in extraConfig track by key">
         
-        <!-- Required Configuration -->
+        <!-- Required Configuration (Basic) -->
         <p ng-if="!(configs.defaults | mustOverrideAny)">{{ key | specProperty:'label' }} does not require any special configuration.</p>
         <div class="panel panel-default" ng-if="configs.defaults | mustOverrideAny">
           <div class="panel-heading">
@@ -177,7 +166,7 @@
       </div>
     </div>
     
-    <!-- Advanced Configuration (Optional) -->
+    <!-- Optional Configuration (Advanced) -->
     <div class="row">
       <div class="col-sm-12">
         <button type="button" class="btn btn-default btn-block" ng-click="showAdvanced = !showAdvanced">{{ showAdvanced ? 'Basic' : 'Advanced'}} Configuration</button>
@@ -215,9 +204,6 @@
   
   <div class="modal-footer">
     <button type="button" class="btn btn-default pull-left" data-dismiss="modal" ng-click="close()">Cancel</button>
-    
-    <div class="pull-right">
-      <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="ok()">Confirm</button>
-    </div>
+    <button type="button" class="btn btn-success pull-right" data-dismiss="modal" ng-click="ok()">Confirm</button>
   </div>
 </section>
