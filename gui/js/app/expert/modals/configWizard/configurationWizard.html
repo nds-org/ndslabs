@@ -48,16 +48,16 @@
           
           <div class="row">
             <div class="col-sm-12">
-              <form name="stackNameForm" novalidate>
+              <form name="forms.stackNameForm" novalidate>
                 <div class="form-group" 
-                ng-class="{ 'has-error has-feedback':stackNameForm.stackName.$invalid, 'has-success has-feedback': !stackNameForm.stackName.$pristine && stackNameForm.stackName.$valid }">
-                  <label class="control-label" for="stackNameInput">Choose a unique name for your stack</label>
+                ng-class="{ 'has-error has-feedback':forms.stackNameForm.stackName.$invalid, 'has-success has-feedback': !forms.stackNameForm.stackName.$pristine && forms.stackNameForm.stackName.$valid }">
+                  <label class="control-label" for="stackNameInput">Choose a name for your stack</label>
                   <input type="text" name="stackName" class="form-control" minlength="1" maxlength="20" required
                       ng-model="newStack.name" placeholder="Name" id="stackNameInput">
-                  <span class="form-control-feedback glyphicon" ng-if="!stackNameForm.stackName.$pristine"
-                  ng-class="{ 'glyphicon-remove': stackNameForm.stackName.$invalid, 'glyphicon-ok': stackNameForm.stackName.$valid }"></span>
+                  <span class="form-control-feedback glyphicon" ng-if="!forms.stackNameForm.stackName.$pristine"
+                  ng-class="{ 'glyphicon-remove': forms.stackNameForm.stackName.$invalid, 'glyphicon-ok': forms.stackNameForm.stackName.$valid }"></span>
                   
-                  <div ng-messages="stackNameForm.stackName.$error" role="alert" class="text-danger">
+                  <div ng-messages="forms.stackNameForm.stackName.$error" role="alert" class="text-danger">
                     <div ng-message="required">You must name this stack before continuing.</div>
                     <div ng-message="minlength">You must name this stack before continuing.</div>
                     <div ng-message="maxlength">Stack name can be at most 20 characters long.</div>

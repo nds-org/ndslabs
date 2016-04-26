@@ -98,10 +98,6 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       'request': function(config) {
         // If this is a request for our API server
         if (_.includes(config.url, ApiHost + ":" + ApiPort)) {
-          if (DEBUG) {
-            $log.debug('Request:');
-          }
-          
           // If this was *not* an attempt to authenticate
           if (!_.includes(config.url, '/authenticate')) {
             // We need to attach our token to this request
@@ -112,21 +108,13 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       },
       'requestError': function(rejection) {
         if (_.includes(rejection.config.url, ApiHost + ":" + ApiPort)) {
-          if (DEBUG) {
-            $log.debug('Request Rejection:');
-            console.debug(rejection);
-          }
+          $log.error("Request error encountered: " + rejection.config.url);
         }
         return $q.reject(rejection);
       },
       'response': function(response) {
         // If this is a response from our API server
         if (_.includes(response.config.url, ApiHost + ":" + ApiPort)) {
-          if (DEBUG) {
-            $log.debug("Response:")
-            console.debug(response);
-          }
-        
           // If this was in response to an /authenticate or /refresh_token request
           if ((_.includes(response.config.url, '/authenticate') && response.config.method === 'POST')
               || (_.includes(response.config.url, '/refresh_token') && response.config.method === 'GET')) {
@@ -140,10 +128,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       'responseError': function(rejection) {
         // If this is a response from our API server
         if (_.includes(rejection.config.url, ApiHost + ":" + ApiPort)) {
-          if (DEBUG) {
-            $log.debug("Response Rejection:");
-            console.debug(rejection);
-          }
+          $log.error("Response error encountered: " + rejection.config.url);
         
           // Read out the HTTP error code
           var status = rejection.status;
@@ -187,8 +172,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$location', '$log', '$interval', '$cookies', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', '$uibModalStack',
-    function($rootScope, $location, $log, $interval, $cookies, authInfo, LoginRoute, ExpertRoute, NdsLabsApi, $uibModalStack) {
+.run([ '$rootScope', '$location', '$log', '$interval', '$cookies', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', '$uibModalStack', 'AutoRefresh',
+    function($rootScope, $location, $log, $interval, $cookies, authInfo, LoginRoute, ExpertRoute, NdsLabsApi, $uibModalStack, AutoRefresh) {
       
   // Grab saved auth data from cookies and attempt to use the leftover session
   var token = $cookies.get('token');
@@ -217,6 +202,9 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       // Close any open modals
       $uibModalStack.dismissAll();
       
+      // Stop any running auto-refresh interval
+      AutoRefresh.stop();
+      
       // Cancel the auth check interval
       $interval.cancel(checkTokenInterval);
       checkTokenInterval = null;
@@ -227,8 +215,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       }
     };
     
-    // Check our token every 3 minutes
-    var tokenCheckMs = 180000;
+    // Check our token every 60s
+    var tokenCheckMs = 60000;
     
     // Every so often, check that our token is still valid
     var checkTokenInterval = null;
