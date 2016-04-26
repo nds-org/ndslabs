@@ -250,59 +250,81 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 .factory('ServiceDiscovery', [ '_', 'Specs', 'Volumes', 'Volume', function(_, Specs, Volumes, Volume) {
   var factory = {
     discoverConfigRequirements: function(stack) {
-      var config = {};
+      var configs = {};
       angular.forEach(stack.services, function(svc) {
-        var spec = _.find(Specs.all, [ 'key', svc.service ]);
-        
-        // Don't modify specs in-place... make a copy
-        if (spec.config) {
-          config[svc.service] = {
-            list: angular.copy(spec.config),
-            defaults: angular.copy(spec.config)
-          };
+        var svcConfig = factory.discoverConfigSingle(svc.service || svc.key);
+        if (svcConfig) {
+          _.merge(configs, svcConfig);
         }
       });
       
-      return config;
+      return configs;
+    },
+    discoverConfigSingle: function(key) {
+      var spec = _.find(Specs.all, [ 'key', key ]);
+      var ret = {};
+      var svcConfig = {
+        list: [],  
+        defaults: []
+      };
+      
+      // Don't modify specs in-place... make a copy
+      if (spec.config) {
+        svcConfig.list = angular.copy(spec.config) || [];
+        svcConfig.defaults = angular.copy(spec.config) || [];
+        ret[key] = svcConfig;
+      }
+      
+      return ret;
     },
     discoverOrphanVolumes: function(stack) {
       var orphanVolumes = [];
       
       angular.forEach(stack.services, function(requestedSvc) {
-        var svcSpec = _.find(Specs.all, function(svc) { return svc.key === requestedSvc.service });
-        
-        // TODO: Gross hack.. fix this
-        if (svcSpec.volumeMounts && _.filter(svcSpec.volumeMounts, function(mnt) {
-          return mnt.name !== 'docker';
-        }).length > 0) {
-          var orphan = null;
-          angular.forEach(Volumes.all, function(volume) {
-            if (!volume.attached && svcSpec.key === volume.service) {
-              // This is an orphaned volume from this service... Prompt the user to reuse it
-              orphan = volume;
-              orphanVolumes.push(orphan);
-            }
-          });
-        }
+        var key = requestedSvc.service || requestedSvc.key;
+        var orphans = factory.discoverOrphansSingle(key);
+        orphanVolumes = _.concat(orphanVolumes, orphans);
       });
       
       return orphanVolumes;
+    },
+    discoverOrphansSingle: function(key) {
+      // Grab all orphaned volumes from this service to prompt the user to reuse it
+      return _.filter(Volumes.all, function(volume) {
+        if (!volume.attached && key === volume.service) {
+          return volume;
+        }
+      });
     },
     discoverRequiredVolumes: function(stack) {
       var requiredVolumes = [];
       
       angular.forEach(stack.services, function(requestedSvc) {
-        var svcSpec = _.find(Specs.all, function(svc) { return svc.key === requestedSvc.service });
-        
-        // TODO: Gross hack.. fix this
-        if (svcSpec.volumeMounts && _.filter(svcSpec.volumeMounts, function(mnt) {
-          return mnt.name !== 'docker';
-        }).length > 0) {
-          requiredVolumes.push(new Volume(stack, svcSpec));
+        var key = requestedSvc.service || requestedSvc.key;
+        var required = factory.discoverRequiredSingle(stack, key);
+        if (required !== null) {
+          requiredVolumes.push(required);
         }
       });
       
       return requiredVolumes;
+    },
+    discoverRequiredSingle: function(stack, key) {
+      var svcSpec = _.find(Specs.all, function(svc) { return svc.key === key });
+        
+      if (!svcSpec.volumeMounts) {
+        return null;
+      }  
+      
+      // Ignore docker mount
+      var mounts = _.filter(svcSpec.volumeMounts, function(mnt) {
+        return mnt.name !== 'docker';
+      });
+      
+      // If any non-docker mounts exist, return an empty Volume object for them
+      if (mounts.length > 0) {
+        return new Volume(stack, svcSpec);
+      }
     }
   };
   
