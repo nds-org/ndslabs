@@ -331,7 +331,6 @@ angular
   $scope.mailToLink = 'mailto:' + adminEmail 
                     + '?subject=' + subject
                     + '&body=' + body;
-                    debugger;
     
   // Assumptions: quota is in GB and GB is lowest storage denomination
   $scope.usedSpace = $filter('usedStorage')($scope.configuredVolumes);
