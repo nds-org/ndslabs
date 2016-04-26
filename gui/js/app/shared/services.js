@@ -307,5 +307,4 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
   };
   
   return factory;
-}])
-;
+}]);

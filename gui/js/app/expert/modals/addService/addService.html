@@ -6,7 +6,144 @@
   </div>
   
   <div class="modal-body">
-    Configure stack / volumes here.
+    <!-- Project quota notification -->
+    <div class="row">
+      <div class="col-sm-12">
+        <p>Your project is allowed to allocate <strong>{{ storageQuota }} GB</strong> of storage.</p>
+      </div>
+    </div>
+    
+    <!-- Show some fancy volume quota gauges -->
+    <div class="row">
+      <div class="col-sm-5">
+        <justgage width="175" height="175" value="{{ configuredVolumes | usedStorage }}" 
+        title="Current Usage" max="{{ storageQuota }}" label="GB"></justgage>
+      </div>
+      <div class="col-sm-7">
+        <justgage width="175" height="175" relativeGuageSize="true" ng-if="availableSpace != 0 && availableSpace > 0"
+        value="{{ _.concat(configuredVolumes, newStackVolumeRequirements) | usedStorage }}" 
+        title="Projected Usage" max="{{ storageQuota }}" label="GB"></justgage>
+        
+      </div>
+    </div>
+    
+    <!-- No More Space :( -->
+    <div class="row" ng-if="!availableSpace || availableSpace == 0 || availableSpace <= 0">
+      <div class="col-sm-12">
+          <p class="text-danger">You have used all of your allocated storage.</p>
+          <p>
+            <a target="_self" ng-href="{{ mailToLink }}">Contact an administrator</a> 
+            regarding increasing your storage quota.
+          </p>
+          <p>Or you can remove other volumes to make room for a new one.</p>
+      </div>
+    </div>
+    
+    <!-- Create New Volumes ng-repeat="volume in newStackVolumeRequirements track by volume.service" -->
+    <div class="panel panel-info" ng-if="availableSpace > 0">
+      <div class="panel-heading">
+        <div class="row">
+          <div class="col-sm-4">
+            <h4 class="panel-title">{{ volume.service | specProperty:'label' }}</h4>
+          </div>
+          <div class="col-offset-sm-6 col-sm-2 pull-right">
+            <span class="input-group-btn" ng-if="newStackVolumeRequirements.length > 1">  
+              <!-- Display our current page +/- 2 -->
+              <button ng-disabled="currentPage === page" 
+                  ng-repeat="page in getPageRange()"
+                  ng-if="page >= 0 && page < newStackVolumeRequirements.length"
+                  class="btn btn-xs" ng-class="{ 'btn-primary':page === currentPage, 'btn-link':!currentPage === page }"
+                  ng-click="setCurrentPage(page)">
+                {{ page + 1 }}
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-body">
+        <!-- Prompt for Volume Details, assume sane defaults -->
+        <div class="row">
+          <div class="col-sm-12" ng-if="(newStackOrphanedVolumes | orphansExist:volume.service).length">
+            <p>Previous volumes found:</p>
+            <!-- Reuse Orphaned Volumes? -->
+            <form class="form" novalidate>
+              <fieldset>
+                <div class="form-group">
+                  <!-- TODO: Fix this ugly hack -->
+                  <div class="radio" ng-repeat="orphan in newStackOrphanedVolumes | orphansExist:volume.service track by orphan.id" 
+                      ng-click="volume.id=orphan.id;volume.name=orphan.name">
+                    <label>
+                      <input type="radio" ng-checked="volume.id === orphan.id">
+                      Use existing data from <strong tooltip-placement="right" uib-tooltip="{{ orphan.size }} {{ orphan.sizeUnit }}">{{ orphan.name }}</strong>
+                    </label>
+                  </div>
+                  
+                  <!-- TODO: Fix this ugly hack -->
+                  <div class="radio">
+                    <fieldset ng-click="volume.id='';volume.name=volume.defaultName;" ng-disabled="(configuredVolumes | usedStorage) >= storageQuota">
+                      <label ng-style="{ 'cursor': (configuredVolumes | usedStorage) >= storageQuota ? 'not-allowed' : 'pointer' }">
+                        <input type="radio" ng-checked="volume.id === ''">
+                        Create a new volume <small class="text-danger" ng-if="(configuredVolumes | usedStorage) >= storageQuota">(No space remaining)</small>
+                      </label>
+                    </fieldset>
+                  </div>
+                </div>
+              <!--form-group-->
+              </fieldset>
+            </form>
+          </div>
+        </div>
+        
+        <!-- Create a New Volume -->
+        <div class="row">
+          <div class="col-sm-12">
+            <form name="volumeCreateForm" class="form-horizontal" ng-show="volume.id === ''" novalidate>
+              <!-- Volume Name -->
+              <div class="col-sm-8">
+                <div class="form-group"  ng-class="{ 'has-error has-feedback': !volumeCreateForm.volumeName.$pristine && volumeCreateForm.volumeName.$invalid, 'has-success has-feedback':  !volumeCreateForm.volumeName.$pristine && volumeCreateForm.volumeName.$valid }">
+                  <label class="control-label" for="volumeName">Name</label>
+                  <input id="volumeName" type="text" name="volumeName" class="form-control" required maxlength="20"
+                       placeholder="Enter a name for this volume" ng-model="volume.name" />
+                  <span class="form-control-feedback glyphicon"  aria-hidden="true" ng-if="!volumeCreateForm.volumeName.$pristine"
+                    ng-class="{ 'glyphicon-remove': volumeCreateForm.volumeName.$invalid, 'glyphicon-ok': volumeCreateForm.volumeName.$valid }"></span>
+                    
+                  <div ng-messages="volumeCreateForm.volumeName.$error" role="alert" class="alert-danger">
+                    <div ng-message="required">You must name this volume before continuing.</div>
+                    <div ng-message="minlength">You must name this volume before continuing.</div>
+                    <div ng-message="maxlength">Volume name can be at most 20 characters long.</div>
+                  </div>
+                </div><!-- /form-group -->
+              </div><!-- /col-sm-8 -->
+              <div class="col-sm-4">
+                <div class="form-group" ng-class="{ 'has-error': !volumeCreateForm.volumeSize.$pristine && volumeCreateForm.volumeSize.$invalid, 'has-success': !volumeCreateForm.volumeSize.$pristine && volumeCreateForm.volumeSize.$valid }">
+                  <label class="control-label" for="volumeSize">Size</label>
+                  <div class="input-group">
+                    <input id="volumeSize" type="number" name="volumeSize" min="1" class="form-control" ng-model="volume.size" required
+                        max="{{ storageQuota - (_.concat(configuredVolumes, _.without(newStackVolumeRequirements, volume)) | usedStorage) }}" />
+                    <div class="input-group-btn">
+                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        {{ volume.sizeUnit || 'Choose Units' }} <span class="caret"></span>
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-right">
+                        <li><a href="#/home" ng-click="volume.sizeUnit='GB'">GB</a></li>
+                        <li><a href="#/home" ng-click="volume.sizeUnit='TB'">TB</a></li>
+                      </ul>
+                    </div><!-- /btn-group -->
+                  </div><!-- /input-group -->
+                  <div ng-messages="volumeCreateForm.volumeSize.$error" class="alert-danger">
+                    <div ng-message="required">Enter a size.</div>
+                    <div ng-message="max">Not enough space.</div>
+                  </div>
+                </div><!-- /form-group -->
+              </div><!-- /col-sm-4 -->
+            </form>
+          </div><!-- /col-sm-12 -->
+        </div><!-- /row -->
+      </div><!-- /panel-body -->
+    </div><!-- /panel-->
+    
+    
   </div>
   
   <div class="modal-footer">

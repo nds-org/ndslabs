@@ -144,7 +144,7 @@ angular
       backdrop: 'static',
       resolve: {
         stack: function() { return stack; },
-        newService: function() { return svc; }
+        service: function() { return svc; }
       }
     });
     
@@ -153,17 +153,14 @@ angular
       // Add this service to our stack locally
       var spec = _.find(Specs.all, [ 'key', svc.key ]);
       
-<<<<<<< HEAD
       // Ensure that adding this service does not require new dependencies
       angular.forEach(spec.depends, function(dependency) {
-        var svc = _.find(Specs.all, function(svc) { return svc.key === dependency.key });
-        var stackSvc = new StackService(stack, svc);
-        
         // Check if this required dependency is already present on our proposed stack
         var exists = _.find(stack.services, function(svc) { return svc.service === dependency.key });
         if (!exists) {
           // Add the service if it has not already been added
-          stack.services.push(stackSvc);
+          var service = _.find(Specs.all, function(svc) { return svc.key === dependency.key });
+          stack.services.push(new StackService(stack, service));
         } else {
           // Skip this service if we see it in the list already
           $log.debug("Skipping duplicate service: " + svc.key);
@@ -184,12 +181,8 @@ angular
         $log.error('failed to add service ' + svc.key + ' to stack ' + stack.name);
         
         // Restore our state from etcd
-        query.stacks();
+        Stacks.populate();
       });
-=======
-      // Restore our state from etcd
-      Stacks.populate();
->>>>>>> 7a15e0863152dbf973e4d16cd5fa647fce2e6c75
     });
   };
   

@@ -3,12 +3,12 @@
 angular
 .module('ndslabs')
 /**
- * The Controller for our "Log Viewer" Modal Window
+ * The Controller for our "Add Service" Modal Window
  * 
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('AddServiceCtrl', [ '$scope', '$log', '$uibModalInstance', '_', 'ServiceDiscovery', 'stack', 'service', 
+.controller('AddServiceCtrl', [ '$scope', '$log', '$uibModalInstance', '_', 'ServiceDiscovery', 'Project', 'stack', 'service', 
     function($scope, $log, $uibModalInstance, _, ServiceDiscovery, stack, service) {
   // Configuration
   $scope.extraConfigs = ServiceDiscovery.discoverConfigRequirements(stack, service);
