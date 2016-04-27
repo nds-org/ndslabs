@@ -134,7 +134,7 @@
     
     <!-- Config section (lower half) -->
     <div class="row">
-      <div class="col-sm-12" ng-repeat="(key, configs) in service.config track by key">
+      <div class="col-sm-12" ng-repeat="(key, configs) in extraConfig track by key">
         
         <!-- Required Configuration (Basic) -->
         <p ng-if="!(configs.defaults | mustOverrideAny)">{{ key | specProperty:'label' }} does not require any special configuration.</p>
@@ -172,7 +172,7 @@
         <button type="button" class="btn btn-default btn-block" ng-click="showAdvanced = !showAdvanced">{{ showAdvanced ? 'Basic' : 'Advanced'}} Configuration</button>
       	<div uib-collapse="!showAdvanced">
       	  <div class="well-well-sm">
-            <div class="panel panel-default" ng-if="configs.defaults | canOverrideAny" ng-repeat="(key, configs) in service.config track by key">
+            <div class="panel panel-default" ng-if="configs.defaults | canOverrideAny" ng-repeat="(key, configs) in extraConfig track by key">
               <div class="panel-heading">
                 <h3 class="panel-title">{{ key | specProperty:'label' }}</h3>
               </div>
