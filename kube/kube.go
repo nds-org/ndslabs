@@ -811,30 +811,24 @@ func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHe
 	url, err := url.Parse(k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" +
 		pod + "/exec?container=" + container + "&command=bash&tty=true&stdin=true&stdout=true&stderr=false")
 	if err != nil {
-		glog.Fatal(err)
+		glog.Warning(err)
 	}
 
-	tokenPath := "/run/secrets/kubernetes.io/serviceaccount/token"
 	conf := &restclient.Config{
 		Host:     k.kubeBase,
 		Insecure: true,
 	}
 
-	if _, err := os.Stat(tokenPath); err == nil {
-		glog.V(4).Infof("Reading token from %s\n", tokenPath)
-		token, err := ioutil.ReadFile(tokenPath)
-		if err != nil {
-			glog.Error("Unable to read token: %s\n", err)
-		}
-		conf.BearerToken = string(token)
+	if len(k.token) > 0 {
+		conf.BearerToken = string(k.token)
 	} else {
-		conf.Username = "admin"
-		conf.Password = "admin"
+		conf.Username = k.username
+		conf.Password = k.password
 	}
 
 	e, err := remotecommand.NewExecutor(conf, "POST", url)
 	if err != nil {
-		glog.Fatal(err)
+		glog.Warning(err)
 	}
 
 	wsHandler := websocket.Handler(func(ws *websocket.Conn) {
@@ -842,7 +836,7 @@ func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHe
 
 		outr, outw, err := os.Pipe()
 		if err != nil {
-			glog.Fatal(err)
+			glog.Warning(err)
 			return
 		}
 		defer outr.Close()

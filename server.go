@@ -185,7 +185,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 
 	api.Use(&rest.IfMiddleware{
 		Condition: func(request *rest.Request) bool {
-			return request.URL.Path != "/authenticate" && request.URL.Path != "/version" && request.URL.Path != "/register" && request.URL.Path != "/console"
+			return request.URL.Path != "/authenticate" && request.URL.Path != "/version" && request.URL.Path != "/register"
 		},
 		IfTrue: jwt,
 	})
@@ -223,6 +223,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Get("/projects/:pid/stop/:sid", s.StopStack),
 		rest.Get("/projects/:pid/logs/:ssid", s.GetLogs),
 		rest.Get("/console", s.GetConsole),
+		rest.Get("/check_console", s.CheckConsole),
 	)
 
 	if err != nil {
@@ -246,6 +247,19 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 			cfg.Server.SSLCert, cfg.Server.SSLKey, api.MakeHandler()))
 	} else {
 		glog.Fatal(http.ListenAndServe(":"+cfg.Server.Port, api.MakeHandler()))
+	}
+}
+
+func (s *Server) CheckConsole(w rest.ResponseWriter, r *rest.Request) {
+	pid := r.Request.FormValue("namespace")
+	ssid := r.Request.FormValue("ssid")
+
+	if !s.kube.NamespaceExists(pid) || !s.stackServiceExists(pid, ssid) {
+		rest.NotFound(w, r)
+		return
+	} else {
+		w.WriteHeader(http.StatusOK)
+		return
 	}
 }
 
