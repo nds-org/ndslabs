@@ -6,10 +6,6 @@
   </div>
   
   <div class="modal-body">
-    <div class="row">
-      <!-- Wizard Page selector -->
-      <div class="col-md-12">
-    
     <!-- Project quota notification -->
     <div class="row">
       <div class="col-sm-12">
@@ -32,7 +28,7 @@
     </div>
     
     <!-- No More Space :( -->
-    <div class="row" ng-if="!availableSpace || availableSpace == 0 || availableSpace <= 0">
+    <div class="row" ng-if="(!availableSpace || availableSpace == 0 || availableSpace <= 0) && newStackOrphanedVolumes.length > 0">
       <div class="col-sm-12">
           <p class="text-danger">You have used all of your allocated storage.</p>
           <p>

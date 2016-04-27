@@ -72,6 +72,7 @@ angular
    * @param {Object} stack - the stack to launch
    */ 
   $scope.startStack = function(stack) {
+    AutoRefresh.start();
     $scope.starting[stack.id] = true;
     
       // Then send the "start" command to the API server
@@ -84,7 +85,6 @@ angular
       $log.error('failed to start ' + stack.name);
     }).finally(function() {
       $scope.starting[stack.id] = false;
-      AutoRefresh.start();
     });
   };
   
@@ -108,7 +108,7 @@ angular
 
     // Define what we should do when the modal is closed
     modalInstance.result.then(function(stack) {
-      
+      AutoRefresh.start();
       $scope.stopping[stack.id] = true;
     
       // Then send the "stop" command to the API server
@@ -122,7 +122,6 @@ angular
       })
       .finally(function() {
         $scope.stopping[stack.id] = false;
-        AutoRefresh.start();
       });
     });
   };

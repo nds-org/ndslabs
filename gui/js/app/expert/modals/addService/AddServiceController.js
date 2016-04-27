@@ -26,6 +26,16 @@ angular
     $scope.newStackVolumeRequirements = [ $scope.volume ];
   }
   
+  // TODO: Where is this email address going to live?
+  var adminEmail = 'site-admin';
+  var subject = $filter('urlEncode')('Increasing My Storage Quota');
+  var body = $filter('urlEncode')('Hello, Admin! I appear to have reach my storage limit of '
+              + $scope.storageQuota + ' GB on ' + Project.project.namespace 
+              + '. Could we please discuss options for increasing the ' 
+              + 'storage quota of this project? Thank you! --' + Project.project.namespace);
+  $scope.mailToLink = 'mailto:' + adminEmail 
+                    + '?subject=' + subject
+                    + '&body=' + body;
  
   $scope.ok = function() {
     $log.debug("Closing modal with success!");
