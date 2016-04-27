@@ -15,6 +15,9 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 
 .factory('SoftRefresh', [ 'Stacks', 'Volumes', 'Project', 'Specs', function(Stacks, Volumes, Project, Specs) {
  var refresh = {
+   stacks: function() {
+    Stacks.populate(Project.project.namespace);
+   },
     /**
      * Perform a partial "soft-refresh" - refresh the stack/volume data without fully re-rendering the page
      */ 
@@ -39,19 +42,19 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 .factory('AutoRefresh', [ '$interval', '$log', 'SoftRefresh', function($interval, $log, SoftRefresh) {
   var autoRefresh = {
     interval: null,
-    onInterval: SoftRefresh.partial,
-    periodSeconds: 2,
+    onInterval: SoftRefresh.stacks,
+    periodSeconds: 1,
     start: function () {
       autoRefresh.stop();
       autoRefresh.interval = $interval(autoRefresh.onInterval, 1000 * autoRefresh.periodSeconds);
-      $log.debug("Interval starting: " + autoRefresh.interval);
+      $log.debug("Interval starting!");
     },
     stop: function() {
       if (autoRefresh.interval !== null) {
         while (!$interval.cancel(autoRefresh.interval)) { /* NOOP */ }
         autoRefresh.interval = null;
       }
-      $log.debug("Interval stopped: " + autoRefresh.interval);
+      $log.debug("Interval stopped!");
       
     },
     toggle: function() {
