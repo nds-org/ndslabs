@@ -252,7 +252,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
     discoverConfigRequirements: function(stack) {
       var configs = {};
       angular.forEach(stack.services, function(svc) {
-        var svcConfig = factory.discoverConfigSingle(svc.service || svc.key);
+        var svcConfig = factory.discoverConfigSingle(svc.service);
         if (svcConfig) {
           _.merge(configs, svcConfig);
         }
@@ -281,7 +281,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       var orphanVolumes = [];
       
       angular.forEach(stack.services, function(requestedSvc) {
-        var key = requestedSvc.service || requestedSvc.key;
+        var key = requestedSvc.service;
         var orphans = factory.discoverOrphansSingle(key);
         orphanVolumes = _.concat(orphanVolumes, orphans);
       });
@@ -300,7 +300,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       var requiredVolumes = [];
       
       angular.forEach(stack.services, function(requestedSvc) {
-        var key = requestedSvc.service || requestedSvc.key;
+        var key = requestedSvc.service;
         var required = factory.discoverRequiredSingle(stack, key);
         if (required !== null) {
           requiredVolumes.push(required);
