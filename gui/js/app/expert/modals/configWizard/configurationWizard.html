@@ -329,8 +329,8 @@
               <ul class="list-group">
                 <li class="list-group-item disabled" ng-repeat="volume in newStackVolumeRequirements track by volume.name">
                   {{ volume.name }}: 
-                  <span ng-if="volume.size">{{ volume.size }} {{ volume.sizeUnit }}</span>
-                  <span ng-if="!volume.size">{{ volume.name }} (orphan)</span>
+                  <span ng-if="!volume.id">{{ volume.size }} {{ volume.sizeUnit }}</span>
+                  <span ng-if="volume.id">{{ volume.name }} (orphan)</span>
                 </li>
               </ul>
             </div>

@@ -36,10 +36,8 @@ angular
   
   $scope.$watch('volume.id', function(newVal, oldVal) {
     if (newVal) {
-      $log.info("Using orphan!");
       $scope.data = [ $scope.usedSpace, $scope.availableSpace, 0 ];
     } else {
-      $log.info("Creating new volume!");
       $scope.data = [ $scope.usedSpace, $scope.availableSpace - $scope.volume.size, $scope.volume.size ];
     }
   });
@@ -54,7 +52,7 @@ angular
   $scope.usedSpace = $filter('usedStorage')($scope.configuredVolumes);
   $scope.availableSpace = $scope.storageQuota - $scope.usedSpace;
       
-  $scope.labels = [ "Used Space", "Free Space", "This Operation" ];
+  $scope.labels = [ "Used Space", "Free Space", "New Volume" ];
   $scope.data = [ $scope.usedSpace, $scope.availableSpace - $scope.volume.size, $scope.volume.size ];// [300, 500, 100];
   
   if ($scope.volume) {

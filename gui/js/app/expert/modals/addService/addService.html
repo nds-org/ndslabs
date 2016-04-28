@@ -132,9 +132,17 @@
             
             <!-- Optional Config (Advanced) - No validation -->
             <tr ng-repeat="cfg in optional">
-              <td class="col-sm-4"><strong>{{ cfg.label || cfg.name }}</strong></td>
-              <td class="col-sm-7"><input class="form-control" name="cfgValue" placeholder="Value" ng-model="cfg.value" /></td>
-              <td class="col-sm-1"><button class="btn btn-sm btn-danger" ng-click="useDefaultValue(cfg)"><i class="fa fa-times"></i></button></td>
+              <td class="col-sm-5"><strong>{{ cfg.label || cfg.name }}</strong></td>
+              <td class="col-sm-7">
+                <div class="input-group">
+                  <input class="form-control" name="cfgValue" placeholder="Value" ng-model="cfg.value" />
+                  <span class="input-group-btn">
+                    <button uib-tooltip="Use the default value for this property" tooltip-placement="left" class="btn btn-danger" ng-click="useDefaultValue(cfg)">
+                      <i class="fa fa-times"></i>
+                    </button>
+                  </span>
+                </div><!-- /input-group -->
+              </td>
             </tr>
           </tbody>
         </table>
