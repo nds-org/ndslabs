@@ -131,4 +131,7 @@
   border-radius:25px;
   border:1px solid lightgray;
 }
+#addFieldBtn, #addFieldDropdown {
+  cursor: pointer;
+}
 

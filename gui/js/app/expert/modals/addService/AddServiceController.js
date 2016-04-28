@@ -10,17 +10,52 @@ angular
  */
 .controller('AddServiceCtrl', [ '$scope', '$log', '$filter', '$uibModalInstance', '_', 'StackService', 'Wizard', 'WizardPage', 'ServiceDiscovery', 'Project', 'Volumes', 'Specs', 'stack', 'service', 
     function($scope, $log, $filter, $uibModalInstance, _, StackService, Wizard, WizardPage, ServiceDiscovery, Project, Volumes, Specs, stack, service) {
+  $scope.key = service.key;
+  $scope.spec = _.find(Specs.all, [ 'key', service.key ]);
   
-  // Storage quota accounting
-  $scope.availableSpace = ($scope.storageQuota = Project.project.storageQuota)
-      - ($scope.usedSpace = $filter('usedStorage')($scope.configuredVolumes = Volumes.all));
+  $scope.forms = {};
   
-  // Populate its Configuration requirements
-  $scope.extraConfig = ServiceDiscovery.discoverConfigSingle(service.key);
+  // Populate its Configuration requirements / options
+  $scope.config = Object.freeze(angular.copy($scope.spec.config));
+  $scope.required = angular.copy($scope.config);
+  $scope.options = _.remove($scope.required, function(cfg) { return cfg.canOverride && cfg.value; });
+  
+  /** Our overridden optional configs */
+  $scope.optional = [];
+  
+  /** "Adds" a new override (specify custom config values) */
+  $scope.overrideConfig = function(option) { $scope.optional.push(angular.copy(option)); };
+  
+  /** "Removes" a config override (i.e. use its default value) */
+  $scope.useDefaultValue = function(cfg) { $scope.optional.splice($scope.optional.indexOf(cfg), 1); };
+  
+  // Rewrite data when size changes
+  $scope.$watch('volume.size', function(newVal, oldVal) {
+    $scope.data = [ $scope.availableSpace - $scope.volume.size, $scope.usedSpace, $scope.volume.size ];
+  });
+  
+  $scope.$watch('volume.id', function(newVal, oldVal) {
+    if (newVal) {
+      $log.info("Using orphan!");
+      $scope.labels = [ "Used Space", "Free Space" ];
+      $scope.data = [ $scope.usedSpace, $scope.availableSpace,  ];
+    } else {
+      $log.info("Creating new volume!");
+      $scope.labels = [ "Used Space", "Free Space", "This Operation" ];
+      $scope.data = [ $scope.usedSpace, $scope.availableSpace - $scope.volume.size, $scope.volume.size ];// [300, 500, 100];
+    }
+  });
       
   // Populate its Volume requirements and options
   $scope.volume = ServiceDiscovery.discoverRequiredSingle(stack, service.key);
   $scope.newStackOrphanedVolumes = ServiceDiscovery.discoverOrphansSingle(service.key);
+  
+  // Storage quota accounting
+  $scope.availableSpace = ($scope.storageQuota = Project.project.storageQuota)
+      - ($scope.usedSpace = $filter('usedStorage')($scope.configuredVolumes = Volumes.all));
+      
+  $scope.labels = [ "Used Space", "Free Space", "This Operation" ];
+  $scope.data = [ $scope.usedSpace, $scope.availableSpace - $scope.volume.size, $scope.volume.size ];// [300, 500, 100];
   
   if ($scope.volume) {
     $scope.newStackVolumeRequirements = [ $scope.volume ];
@@ -36,14 +71,29 @@ angular
   $scope.mailToLink = 'mailto:' + adminEmail 
                     + '?subject=' + subject
                     + '&body=' + body;
+                    
+  $scope.validate = function () {
+    var valid = true;
+    _.each($scope.forms, function(form) {
+      if (form.$invalid || !form.$valid) {
+        return valid = false;
+      }
+    });
+    return valid;
+  };
  
   $scope.ok = function() {
     $log.debug("Closing modal with success!");
     
     // Accumulate config name-value pairs
     var config = {};
-    angular.forEach($scope.extraConfig[service.key].list, function(cfg) {
+    angular.forEach(_.concat($scope.required, $scope.optional), function(cfg) {
       config[cfg.name] = cfg.value;
+    });
+    
+    // Specify default values for unused fields
+    angular.forEach(_.differenceBy($scope.options, $scope.optional, 'name'), function(def) {
+      config[def.name] = def.value;
     });
     
     $uibModalInstance.close({
