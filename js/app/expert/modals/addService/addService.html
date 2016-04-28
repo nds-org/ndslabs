@@ -8,8 +8,6 @@
   <div class="modal-body">
     <!-- Volume Section -->
     <div ng-if="newStackVolumeRequirements.length > 0">
-      <p>Your project is allowed to allocate <strong>{{ storageQuota }} GB</strong> of storage.</p>
-      
       <div class="well">
         <div class="row">
           <!-- Show free / used space visually -->
@@ -21,6 +19,8 @@
           
           <!-- No more space :( -->
           <div class="col-sm-8">
+            <p>Your project is allowed to allocate <strong>{{ storageQuota }} GB</strong> of storage.</p>
+      
             <form class="form" novalidate ng-if="(newStackOrphanedVolumes | orphansExist:volume.service).length">
               <fieldset>
                 <div class="form-group">
