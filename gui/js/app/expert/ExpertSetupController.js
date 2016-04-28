@@ -9,8 +9,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('ExpertSetupController', [ '$scope', '$log', '$interval', '$uibModal', '_', 'AuthInfo', 'Project', 'Volumes', 'Stacks', 'Specs', 'AutoRefresh', 'SoftRefresh',
-    'StackService', 'NdsLabsApi', function($scope, $log, $interval, $uibModal, _, AuthInfo, Project, Volumes, Stacks, Specs, AutoRefresh, SoftRefresh, 
+.controller('ExpertSetupController', [ '$scope', '$log', '$interval', '$q', '$uibModal', '_', 'AuthInfo', 'Project', 'Volumes', 'Stacks', 'Specs', 'AutoRefresh', 'SoftRefresh',
+    'StackService', 'NdsLabsApi', function($scope, $log, $interval, $q, $uibModal, _, AuthInfo, Project, Volumes, Stacks, Specs, AutoRefresh, SoftRefresh, 
     StackService, NdsLabsApi) {
   
   // Grab our projectId from the login page
@@ -73,7 +73,6 @@ angular
    */ 
   $scope.startStack = function(stack) {
     AutoRefresh.start();
-    
     $scope.starting[stack.id] = true;
     
       // Then send the "start" command to the API server
@@ -94,10 +93,10 @@ angular
    * @param {Object} stack - the stack to shut down
    */ 
   $scope.stopStack = function(stack) {
-    // See '/app/expert/modals/stackStop/stackStop.html'
+    // See 'app/expert/modals/stackStop/stackStop.html'
     var modalInstance = $uibModal.open({
       animation: true,
-      templateUrl: '/app/expert/modals/stackStop/stackStop.html',
+      templateUrl: 'app/expert/modals/stackStop/stackStop.html',
       controller: 'StackStopCtrl',
       size: 'md',
       keyboard: false,
@@ -109,8 +108,7 @@ angular
 
     // Define what we should do when the modal is closed
     modalInstance.result.then(function(stack) {
-      AutoRefresh.stop();
-      
+      AutoRefresh.start();
       $scope.stopping[stack.id] = true;
     
       // Then send the "stop" command to the API server
@@ -134,44 +132,82 @@ angular
    * @param {Object} service - the new service to add
    */
   $scope.addStackSvc = function(stack, svc) {
-    // Add this service to our stack locally
-    var spec = _.find(Specs.all, [ 'key', svc.key ]);
-    
-    // Ensure that adding this service does not require new dependencies
-    angular.forEach(spec.depends, function(dependency) {
-      var svc = _.find(Specs.all, function(svc) { return svc.key === dependency.key });
-      var stackSvc = new StackService(stack, svc);
+    /** Add dependencies, then the service itself, then PUT */
+    var performAdd = function(service, config) {
+      // Add this service to our stack locally
+      var svcSpec = _.find(Specs.all, [ 'key', service.key ]);
+
+      // Add any new required dependencies introduced
+      // TODO: What if dependencies require a volume??
+      angular.forEach(spec.depends, function(dependency) {
+        var key = dependency.key;
+        
+        // Check if required dependency has already been added to our proposed stack
+        if (dependency.required && !_.find(stack.services, function(svc) { return svc.service === key })) {
+          // Add the service if it has not
+          var spec = _.find(Specs.all, [ 'key',  key ]);
+          stack.services.push(new StackService(stack, spec));
+        } else {
+          // Skip this service if we see it in the list already
+          $log.debug("Skipping duplicate service: " + svc.key);
+        }
+      });
       
-      // Check if this required dependency is already present on our proposed stack
-      var exists = _.find(stack.services, function(svc) { return svc.service === dependency.key });
-      if (!exists) {
-        // Add the service if it has not already been added
-        stack.services.push(stackSvc);
-      } else {
-        // Skip this service if we see it in the list already
-        $log.debug("Skipping duplicate service: " + svc.key);
+      // Now that we have all required dependencies, add our target service
+      var newService = new StackService(stack, svcSpec);
+      if (config) {
+        newService.config = config;
       }
-    });
-    
-    // Now that we have all required dependencies, add our target service
-    stack.services.push(new StackService(stack, spec));
-    
-    // TODO: Should client or server handle this? My gut says server...
-    //stack.updatedTime = new Date();
-    
-    // Then update the entire stack in etcd
-    NdsLabsApi.putProjectsByProjectIdStacksByStackId({
-      'stack': stack,
-      'projectId': projectId,
-      'stackId': stack.id
-    }).then(function(data, xhr) {
-      $log.debug('successfully added service ' + svc.key + ' to stack ' + stack.name);
-    }, function(headers) {
-      $log.error('failed to add service ' + svc.key + ' to stack ' + stack.name);
+      stack.services.push(newService);
       
-      // Restore our state from etcd
-      Stacks.populate();
-    });
+      // Then update the entire stack in etcd
+      return NdsLabsApi.putProjectsByProjectIdStacksByStackId({
+        'stack': stack,
+        'projectId': projectId,
+        'stackId': stack.id
+      }).then(function(data, xhr) {
+        $log.debug('successfully added service ' + service.key + ' to stack ' + stack.name);
+        stack = data;
+      }, function(headers) {
+        $log.error('failed to add service ' + service.key + ' to stack ' + stack.name);
+        
+        // Restore our state from etcd
+        Stacks.populate(projectId);
+      });
+    }
+    
+    var spec = _.find(Specs.all, [ 'key', svc.key ]);
+    var mounts = _.filter(spec.volumeMounts, function(mnt) { return mnt.name != 'docker'; });
+    var config = spec.config;
+    
+    if (mounts.length > 0 || config) {
+      // See 'app/expert/modals/addService/addService.html'
+      var modalInstance = $uibModal.open({
+        animation: true,
+        templateUrl: 'app/expert/modals/addService/addService.html',
+        controller: 'AddServiceCtrl',
+        size: 'md',
+        keyboard: false,
+        backdrop: 'static',
+        resolve: {
+          stack: function() { return stack; },
+          service: function() { return svc; }
+        }
+      });
+      
+      // If user pressed "Confirm", attempt to add the configured service to the stack
+      modalInstance.result.then(function(result) {
+        performAdd(result.spec, result.config).then(function() {
+          Stacks.populate(projectId).then(function() {
+            attachOrCreateVolumes(stack, result.volumes).then(function() {
+              Volumes.populate(projectId);
+            });
+          });
+        });
+      });
+    } else {
+      performAdd(svc);
+    }
   };
   
   /** 
@@ -182,7 +218,6 @@ angular
   $scope.removeStackSvc = function(stack, svc) {
     // Remove this services locally
     stack.services.splice(stack.services.indexOf(svc), 1);
-    //stack.updatedTime = new Date();
     
     // Then update the entire stack in etcd
     NdsLabsApi.putProjectsByProjectIdStacksByStackId({
@@ -190,12 +225,12 @@ angular
       'projectId': projectId,
       'stackId': stack.id
     }).then(function(data, xhr) {
-      $log.debug('successfully removed service' + svc.key + '  from stack ' + stack.name);
+      $log.debug('successfully removed service ' + svc.service + ' from stack ' + stack.name);
     }, function(headers) {
-      $log.error('failed to remove service ' + svc.key + ' from stack ' + stack.name);
+      $log.error('failed to remove service ' + svc.service + ' from stack ' + stack.name);
       
       // Restore our state from etcd
-      Stacks.populate();
+      Stacks.populate(projectId);
     });
   };
   
@@ -204,18 +239,16 @@ angular
    * @param {Object} spec - the spec to use to create a new stack
    */ 
   $scope.openWizard = function(spec) {
-    // See '/app/expert/modals/configWizard/configurationWizard.html'
+    // See 'app/expert/modals/configWizard/configurationWizard.html'
     var modalInstance = $uibModal.open({
       animation: true,
-      templateUrl: '/app/expert/modals/configWizard/configurationWizard.html',
+      templateUrl: 'app/expert/modals/configWizard/configurationWizard.html',
       controller: 'ConfigurationWizardCtrl',
       size: 'md',
       backdrop: 'static',
       keyboard: false,
       resolve: {
         template: function() { return spec; },
-        stacks: function() { return $scope.stacks; },
-        deps: function() { return $scope.deps; },
         configuredVolumes: function() { return $scope.configuredVolumes; },
         configuredStacks: function() { return $scope.configuredStacks; }
       }
@@ -226,41 +259,46 @@ angular
       $log.debug('Modal accepted at: ' + new Date());
       
       // Create the stack inside our project first
-      NdsLabsApi.postProjectsByProjectIdStacks({ 'stack': newEntities.stack, 'projectId': projectId }).then(function(stack, xhr) {
+      return NdsLabsApi.postProjectsByProjectIdStacks({ 'stack': newEntities.stack, 'projectId': projectId }).then(function(stack, xhr) {
         $log.debug("successfully posted to /projects/" + projectId + "/stacks!");
         
         // Add the new stack to the UI
         Stacks.all.push(stack);
         
-          // Then attach our necessary volumes
-        if (stack.id) {
-          angular.forEach(newEntities.volumes, function(volume) {
-            var service = _.find(stack.services, ['service', volume.service]);
-            
-            if (!volume.id) {
-              $scope.createVolume(volume, service);
-            } else {
-              var orphanVolume = _.find(Volumes.all, function(vol) { return vol.id === volume.id; });
-              
-              // Attach existing volume to new service
-              $scope.attachVolume(orphanVolume, service);
-            }
-          });
-        }
+        // Then attach our necessary volumes
+        attachOrCreateVolumes(stack, newEntities.volumes).then(function() {
+          Volumes.populate(projectId);
+        });
       }, function(headers) {
         $log.error("error posting to /projects/" + projectId + "/stacks!");
       });
     });
   };
   
-  $scope.attachVolume = function(volume, service) {
+  var attachOrCreateVolumes = function(stack, volumes) {
+    var promises = [];
+    angular.forEach(volumes, function(volume) {
+      var service = _.find(stack.services, ['service', volume.service]);
+      if (!volume.id) {
+        promises.push(createVolume(volume, service));
+      } else {
+        promises.push(attachVolume(volume.id, service));
+      }
+    });
+    return $q.all(promises);
+  };
+  
+  var attachVolume = function(volumeId, service) {
+    // Look up this volume by id
+    var volume = _.find(Volumes.all, [ 'id', volumeId ]);
+    
     // We need to PUT to update existing volume
     volume.attached = service.id;
     
     // Attach existing volume to new service
     return NdsLabsApi.putProjectsByProjectIdVolumesByVolumeId({ 
       'volume': volume,
-      'volumeId': volume.id,
+      'volumeId': volumeId,
       'projectId': projectId
     }).then(function(data, xhr) {
       $log.debug("successfully updated /projects/" + projectId + "/volumes/" + volume.id + "!");
@@ -271,7 +309,7 @@ angular
     });
   };
   
-  $scope.createVolume = function(volume, service) {
+  var createVolume = function(volume, service) {
     // Volume does not exist, so we need to POST to create it
     volume.attached = service.id;
     return NdsLabsApi.postProjectsByProjectIdVolumes({
@@ -292,10 +330,10 @@ angular
    * @param {} service - the service to show logs for
    */ 
   $scope.showLogs = function(service) {
-    // See '/app/expert/modals/logViewer/logViewer.html'
+    // See 'app/expert/modals/logViewer/logViewer.html'
     $uibModal.open({
       animation: true,
-      templateUrl: '/app/expert/modals/logViewer/logViewer.html',
+      templateUrl: 'app/expert/modals/logViewer/logViewer.html',
       controller: 'LogViewerCtrl',
       windowClass: 'log-modal-window',
       size: 'lg',
@@ -313,10 +351,10 @@ angular
    * @param {} service - the service to show logs for
    */ 
   $scope.showConfig = function(service) {
-    // See '/app/expert/modals/logViewer/logViewer.html'
+    // See 'app/expert/modals/logViewer/logViewer.html'
     $uibModal.open({
       animation: true,
-      templateUrl: '/app/expert/modals/configViewer/configViewer.html',
+      templateUrl: 'app/expert/modals/configViewer/configViewer.html',
       controller: 'ConfigViewerCtrl',
       size: 'md',
       keyboard: false,      // Force the user to explicitly click "Close"
@@ -334,10 +372,10 @@ angular
    * TODO: If user specifies, also loop through and delete volumes?
    */
   $scope.deleteStack = function(stack) {
-    // See '/app/expert/modals/stackDelete/stackDelete.html'
+    // See 'app/expert/modals/stackDelete/stackDelete.html'
     var modalInstance = $uibModal.open({
       animation: true,
-      templateUrl: '/app/expert/modals/stackDelete/stackDelete.html',
+      templateUrl: 'app/expert/modals/stackDelete/stackDelete.html',
       controller: 'StackDeleteCtrl',
       size: 'md',
       keyboard: false,
@@ -374,6 +412,8 @@ angular
         });
       }, function(headers) {
         $log.error('failed to delete stack: ' + stack.name);
+      }, function() {
+        Volumes.populate(projectId);
       });
     });
   };
@@ -401,10 +441,10 @@ angular
     if (skipConfirm) {
       performDelete();
     } else {
-      // See '/app/expert/modals/volumeDelete/volumeDelete.html'
+      // See 'app/expert/modals/volumeDelete/volumeDelete.html'
       var modalInstance = $uibModal.open({
         animation: true,
-        templateUrl: '/app/expert/modals/volumeDelete/volumeDelete.html',
+        templateUrl: 'app/expert/modals/volumeDelete/volumeDelete.html',
         controller: 'VolumeDeleteCtrl',
         size: 'md',
         keyboard: false,
