@@ -31,18 +31,16 @@ angular
   
   // Rewrite data when size changes
   $scope.$watch('volume.size', function(newVal, oldVal) {
-    $scope.data = [ $scope.availableSpace - $scope.volume.size, $scope.usedSpace, $scope.volume.size ];
+    $scope.data = [ $scope.usedSpace, $scope.availableSpace - newVal, newVal ];
   });
   
   $scope.$watch('volume.id', function(newVal, oldVal) {
     if (newVal) {
       $log.info("Using orphan!");
-      $scope.labels = [ "Used Space", "Free Space" ];
-      $scope.data = [ $scope.usedSpace, $scope.availableSpace,  ];
+      $scope.data = [ $scope.usedSpace, $scope.availableSpace, 0 ];
     } else {
       $log.info("Creating new volume!");
-      $scope.labels = [ "Used Space", "Free Space", "This Operation" ];
-      $scope.data = [ $scope.usedSpace, $scope.availableSpace - $scope.volume.size, $scope.volume.size ];// [300, 500, 100];
+      $scope.data = [ $scope.usedSpace, $scope.availableSpace - $scope.volume.size, $scope.volume.size ];
     }
   });
       
@@ -51,8 +49,10 @@ angular
   $scope.newStackOrphanedVolumes = ServiceDiscovery.discoverOrphansSingle(service.key);
   
   // Storage quota accounting
-  $scope.availableSpace = ($scope.storageQuota = Project.project.storageQuota)
-      - ($scope.usedSpace = $filter('usedStorage')($scope.configuredVolumes = Volumes.all));
+  $scope.storageQuota = Project.project.storageQuota;
+  $scope.configuredVolumes = Volumes.all;
+  $scope.usedSpace = $filter('usedStorage')($scope.configuredVolumes);
+  $scope.availableSpace = $scope.storageQuota - $scope.usedSpace;
       
   $scope.labels = [ "Used Space", "Free Space", "This Operation" ];
   $scope.data = [ $scope.usedSpace, $scope.availableSpace - $scope.volume.size, $scope.volume.size ];// [300, 500, 100];
