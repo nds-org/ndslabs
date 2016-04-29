@@ -123,9 +123,15 @@ var listProjectsCmd = &cobra.Command{
 
 		w := new(tabwriter.Writer)
 		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
-		fmt.Fprintln(w, "NAMESPACE\tQUOTA\tDESCRIPTION")
+		fmt.Fprintln(w, "NAMESPACE\tSTORAGE\tCPU (Max)\tCPU (Default)\tMEMORY (Max)\tMEMORY (Default)\tDESCRIPTION")
 		for _, project := range *projects {
-			fmt.Fprintf(w, "%s\t%d\t%s\n", project.Namespace, project.StorageQuota, project.Description)
+			fmt.Fprintf(w, "%s\t%d\t%s\t%s\t%s\t%s\t%s\n", project.Namespace,
+				project.ResourceLimits.StorageQuota,
+				project.ResourceLimits.CPUMax,
+				project.ResourceLimits.CPUDefault,
+				project.ResourceLimits.MemoryMax,
+				project.ResourceLimits.MemoryDefault,
+				project.Description)
 		}
 		w.Flush()
 

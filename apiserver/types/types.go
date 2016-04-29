@@ -19,6 +19,7 @@ type ServiceSpec struct {
 	Dependencies   []ServiceDependency `json:"depends"`
 	Access         string              `json:"access"`
 	Display        string              `json:"display"`
+	ResourceLimits ResourceLimits      `json:"resourceLimits"`
 }
 
 type Config struct {
@@ -51,13 +52,21 @@ type ProjectList struct {
 }
 
 type Project struct {
-	Id           string `json:"id"`
-	Name         string `json:"name"`
-	Description  string `json:"description"`
-	Namespace    string `json:"namespace"`
-	StorageQuota int    `json:"storageQuota"`
-	EmailAddress string `json:"email"`
-	Password     string `json:"password"`
+	Id             string         `json:"id"`
+	Name           string         `json:"name"`
+	Description    string         `json:"description"`
+	Namespace      string         `json:"namespace"`
+	EmailAddress   string         `json:"email"`
+	Password       string         `json:"password"`
+	ResourceLimits ResourceLimits `json:"resourceLimits"`
+}
+
+type ResourceLimits struct {
+	CPUMax        string `json:"cpuMax"`
+	CPUDefault    string `json:"cpuDefault"`
+	MemoryMax     string `json:"memMax"`
+	MemoryDefault string `json:"memDefault"`
+	StorageQuota  int    `json:"storageQuota"`
 }
 
 type ServiceList struct {
