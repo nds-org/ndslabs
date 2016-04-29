@@ -50,9 +50,10 @@ type Config struct {
 		Address string
 	}
 	Kubernetes struct {
-		Address  string
-		Username string
-		Password string
+		Address   string
+		TokenPath string
+		Username  string
+		Password  string
 	}
 }
 
@@ -78,6 +79,9 @@ func main() {
 	if cfg.Kubernetes.Address == "" {
 		cfg.Kubernetes.Address = "localhost:6443"
 	}
+	if cfg.Kubernetes.TokenPath == "" {
+		cfg.Kubernetes.TokenPath = "/run/secrets/kubernetes.io/serviceaccount/token"
+	}
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -91,7 +95,7 @@ func main() {
 	}
 
 	kube, err := kube.NewKubeHelper(cfg.Kubernetes.Address,
-		cfg.Kubernetes.Username, cfg.Kubernetes.Password)
+		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath)
 	if err != nil {
 		glog.Errorf("Kubernetes API server not available\n")
 		glog.Fatal(err)
@@ -218,6 +222,8 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Get("/projects/:pid/start/:sid", s.StartStack),
 		rest.Get("/projects/:pid/stop/:sid", s.StopStack),
 		rest.Get("/projects/:pid/logs/:ssid", s.GetLogs),
+		rest.Get("/console", s.GetConsole),
+		rest.Get("/check_console", s.CheckConsole),
 	)
 
 	if err != nil {
@@ -244,6 +250,35 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 	}
 }
 
+func (s *Server) CheckConsole(w rest.ResponseWriter, r *rest.Request) {
+	pid := r.Request.FormValue("namespace")
+	ssid := r.Request.FormValue("ssid")
+
+	if !s.kube.NamespaceExists(pid) || !s.stackServiceExists(pid, ssid) {
+		rest.NotFound(w, r)
+		return
+	} else {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+}
+
+func (s *Server) GetConsole(w rest.ResponseWriter, r *rest.Request) {
+	pid := r.Request.FormValue("namespace")
+	ssid := r.Request.FormValue("ssid")
+
+	if !s.kube.NamespaceExists(pid) || !s.stackServiceExists(pid, ssid) {
+		rest.NotFound(w, r)
+		return
+	}
+
+	pods, _ := s.kube.GetPods(pid, "name", ssid)
+	pod := pods[0].Name
+	container := pods[0].Spec.Containers[0].Name
+	glog.V(4).Infof("exec called for %s %s %s\n", pid, ssid, pod)
+	s.kube.Exec(pid, pod, container, s.kube).ServeHTTP(w.(http.ResponseWriter), r.Request)
+}
+
 func (s *Server) initExistingProjects() {
 	projects, err := s.etcd.GetProjects()
 	if err != nil {
@@ -255,6 +290,7 @@ func (s *Server) initExistingProjects() {
 		if !s.kube.NamespaceExists(project.Namespace) {
 			s.kube.CreateNamespace(project.Namespace)
 		}
+
 		stacks, err := s.etcd.GetStacks(project.Namespace)
 		if err != nil {
 			glog.Error(err)
