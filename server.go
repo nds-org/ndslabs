@@ -254,7 +254,14 @@ func (s *Server) initExistingProjects() {
 	for _, project := range *projects {
 		if !s.kube.NamespaceExists(project.Namespace) {
 			s.kube.CreateNamespace(project.Namespace)
+			s.kube.CreateResourceQuota(project.Namespace,
+				project.ResourceLimits.CPUMax,
+				project.ResourceLimits.MemoryMax)
+			s.kube.CreateLimitRange(project.Namespace,
+				project.ResourceLimits.CPUDefault,
+				project.ResourceLimits.MemoryDefault)
 		}
+
 		stacks, err := s.etcd.GetStacks(project.Namespace)
 		if err != nil {
 			glog.Error(err)
@@ -372,6 +379,23 @@ func (s *Server) PostProject(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	_, err = s.kube.CreateNamespace(project.Namespace)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	_, err = s.kube.CreateResourceQuota(project.Namespace,
+		project.ResourceLimits.CPUMax,
+		project.ResourceLimits.MemoryMax)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_, err = s.kube.CreateLimitRange(project.Namespace,
+		project.ResourceLimits.CPUDefault,
+		project.ResourceLimits.MemoryDefault)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)

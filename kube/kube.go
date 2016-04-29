@@ -11,6 +11,7 @@ import (
 	ndsapi "github.com/ndslabs/apiserver/types"
 	"io/ioutil"
 	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/resource"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	intstr "k8s.io/kubernetes/pkg/util/intstr"
 	utilrand "k8s.io/kubernetes/pkg/util/rand"
@@ -99,6 +100,114 @@ func (k *KubeHelper) CreateNamespace(pid string) (*api.Namespace, error) {
 			return nil, fmt.Errorf("Namespace exists for project %s: %s\n", pid, httpresp.Status)
 		} else {
 			return nil, fmt.Errorf("Error adding namespace for project %s: %s\n", pid, httpresp.Status)
+		}
+	}
+	return nil, nil
+}
+
+func (k *KubeHelper) CreateResourceQuota(pid string, cpu string, mem string) (*api.ResourceQuota, error) {
+
+	glog.V(4).Infof("Creating resource quota for %s: %s, %s\n", pid, cpu, mem)
+	rq := api.ResourceQuota{
+		TypeMeta: unversioned.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "ResourceQuota",
+		},
+		ObjectMeta: api.ObjectMeta{Name: "quota"},
+		Spec: api.ResourceQuotaSpec{
+			Hard: api.ResourceList{
+				api.ResourceCPU:    resource.MustParse(cpu),
+				api.ResourceMemory: resource.MustParse(mem),
+			},
+		},
+	}
+
+	data, err := json.MarshalIndent(rq, "", "    ")
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(string(data))
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/resourcequotas"
+	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusCreated {
+			glog.V(2).Infof("Added quota %s\n", pid)
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			json.Unmarshal(data, &rq)
+			return &rq, nil
+		} else if httpresp.StatusCode == http.StatusConflict {
+			return nil, fmt.Errorf("Quota exists for project %s: %s\n", pid, httpresp.Status)
+		} else {
+			return nil, fmt.Errorf("Error adding quota for project %s: %s\n", pid, httpresp.Status)
+		}
+	}
+	return nil, nil
+}
+
+func (k *KubeHelper) CreateLimitRange(pid string, cpu string, mem string) (*api.LimitRange, error) {
+
+	lr := &api.LimitRange{
+		TypeMeta: unversioned.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "LimitRange",
+		},
+		ObjectMeta: api.ObjectMeta{
+			Name: "limits",
+		},
+		Spec: api.LimitRangeSpec{
+			Limits: []api.LimitRangeItem{
+				{
+					Type: api.LimitTypeContainer,
+					Default: api.ResourceList{
+						api.ResourceCPU:    resource.MustParse(cpu),
+						api.ResourceMemory: resource.MustParse(mem),
+					},
+				},
+			},
+		},
+	}
+
+	data, err := json.MarshalIndent(lr, "", "    ")
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(string(data))
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/limitranges"
+	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusCreated {
+			glog.V(2).Infof("Added limit range %s\n", pid)
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			json.Unmarshal(data, &lr)
+			return lr, nil
+		} else if httpresp.StatusCode == http.StatusConflict {
+			return nil, fmt.Errorf("Quota exists for project %s: %s\n", pid, httpresp.Status)
+		} else {
+			return nil, fmt.Errorf("Error adding limit range for project %s: %s\n", pid, httpresp.Status)
 		}
 	}
 	return nil, nil
@@ -313,7 +422,8 @@ func (k *KubeHelper) GetService(pid string, name string) (*api.Service, error) {
 			json.Unmarshal(data, &service)
 			return &service, nil
 		} else {
-			glog.Warningf("Failed to get Kubernetes service: %s %d", resp.Status, resp.StatusCode)
+			glog.Warningf("Failed to get Kubernetes service %s:%s: %s %d", pid, name,
+				resp.Status, resp.StatusCode)
 		}
 	}
 	return nil, nil
@@ -699,6 +809,17 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 		}
 	}
 
+	k8rq := api.ResourceRequirements{
+		Limits: api.ResourceList{
+			api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUMax),
+			api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryMax),
+		},
+		Requests: api.ResourceList{
+			api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUDefault),
+			api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryDefault),
+		},
+	}
+
 	k8template := api.PodTemplateSpec{
 		ObjectMeta: api.ObjectMeta{
 			Labels: map[string]string{
@@ -717,6 +838,7 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 					Ports:        k8cps,
 					Args:         spec.Args,
 					Command:      spec.Command,
+					Resources:    k8rq,
 				},
 			},
 		},
