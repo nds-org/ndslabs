@@ -131,9 +131,10 @@
                               <tr>
                                 <td width="15%" class="text-center"><strong>Status</strong></td>
                                 <td width="10%" class="text-center"><strong>Volumes</strong></td>
-                                <td width="35%"><strong>Name</strong></td>
-                                <td width="20%" class="text-center"><strong>Config</strong></td>
-                                <td width="20%" class="text-center">
+                                <td width="30%"><strong>Name</strong></td>
+                                <td width="15%" class="text-center"><strong>Console</strong></td>
+                                <td width="15%" class="text-center"><strong>Config</strong></td>
+                                <td width="15%" class="text-center">
                                   <strong ng-if="stack.status !== 'stopped'">Logs</strong>
                                   <strong ng-if="stack.status === 'stopped'">Remove</strong>
                                 </td>
@@ -182,6 +183,15 @@
                                   </a>
                                 </td>
                                 
+                                <!-- Console -->
+                                <td class="text-center">
+                                  <a type="button" class="btn btn-default btn-xs" target="_blank" ng-href="#/console?id={{ svc.id }}"
+                                      ng-disabled="svc.status !== 'ready'">
+                                    <i class="fa fa-terminal"></i>
+                                  </a>
+                                </td>
+                                
+                                <!-- Config -->
                                 <td class="text-center">
                                   <button type="button" class="btn btn-default btn-xs" ng-click="showConfig(svc)"
                                       ng-if="!_.isEmpty(svc.config) || svc.endpoints.length > 0"

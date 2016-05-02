@@ -24,6 +24,19 @@
   border-radius:5px;
 }
 
+.terminal {
+  float: left;
+  border: #000 solid 5px;
+  font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;
+  font-size: 11px;
+  color: #f0f0f0;
+  background: #000;
+}
+
+.terminal-cursor {
+  color: #000;
+  background: #f0f0f0;
+}
 
 .jumbotron {
   margin-left:-15px;
@@ -134,4 +147,6 @@
 #addFieldBtn, #addFieldDropdown {
   cursor: pointer;
 }
+
+
 

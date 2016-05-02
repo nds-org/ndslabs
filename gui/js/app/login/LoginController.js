@@ -16,9 +16,7 @@ angular
   var HomeRoute = ExpertRoute;
   
   // If we found a token, the user should be sent to the HomePage to check its validity
-  if ($scope.settings.token) {
-    $location.path(HomeRoute);
-  } else {
+  if (!$scope.settings.token) {
     $location.path(LoginRoute);
   }
 

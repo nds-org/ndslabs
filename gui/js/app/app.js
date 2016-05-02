@@ -5,7 +5,7 @@
  * Define our ndslabs module here. All other files will 
  * use the single-argument notation for angular.module()
  */
-angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-filters', 'ndslabs-api', 'ngWizard', 'ngGrid', 'ngAlert', 
+angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-filters', 'ndslabs-directives',  'ndslabs-api', 'ngWizard', 'ngGrid', 'ngAlert', 
     'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ngMessages', 'ui.bootstrap', 'ui.pwgen', 'frapontillo.gage', 'chart.js' ])
 
 /**
@@ -159,12 +159,19 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       
   // Setup routes to our different pages
   $routeProvider.when(ExpertRoute, {
+    title: 'NDS Labs',
     controller: 'ExpertSetupController',
     templateUrl: 'app/expert/expertSetup.html'
   })
   .when(LoginRoute, {
+    title: 'Sign into NDS Labs',
     controller: 'LoginController',
     templateUrl: 'app/login/login.html'
+  })
+  .when('/console', {
+    title: 'Console',
+    controller: 'ConsoleController',
+    templateUrl: 'app/expert/console/console.html'
   })
   .otherwise({ redirectTo: LoginRoute });
 }])
@@ -172,9 +179,11 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$location', '$log', '$interval', '$cookies', '_', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', '$uibModalStack', 'AutoRefresh',
-    function($rootScope, $location, $log, $interval, $cookies, _, authInfo, LoginRoute, ExpertRoute, NdsLabsApi, $uibModalStack, AutoRefresh) {
+.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '_', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', '$uibModalStack', 'AutoRefresh',
+    function($rootScope, $window, $location, $log, $interval, $cookies, _, authInfo, LoginRoute, ExpertRoute, NdsLabsApi, $uibModalStack, AutoRefresh) {
       
+  var HomeRoute = ExpertRoute;
+  
   // Grab saved auth data from cookies and attempt to use the leftover session
   var token = $cookies.get('token');
   var namespace = $cookies.get('namespace');
@@ -184,11 +193,14 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     authInfo.get().namespace = namespace;
   }
       
-  var HomeRoute = ExpertRoute;
-  
   // Make _ bindable in partial views
   // TODO: Investigate performance concerns here...
   $rootScope._ = window._;
+  
+  // Change the tab/window title when we change routes
+  $rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
+    $window.document.title = current.$$route.title;
+  });
   
   // When user changes routes, check that they are still authed
   $rootScope.$on( "$routeChangeStart", function(event, next, current) {
@@ -210,7 +222,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       checkTokenInterval = null;
             
       // user needs to log in, redirect to /login
-      if (_.includes(next.templateUrl, "app/login/login.html")) {
+      if (!_.includes(next.templateUrl, "app/login/login.html")) {
         $location.path(LoginRoute);
       }
     };
@@ -243,7 +255,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
         checkTokenInterval = $interval(checkToken, tokenCheckMs);
         
         // Reroute to /home if necessary
-        if (_.includes(next.templateUrl, 'app/expert/expertSetup.html')) {
+        if (!_.includes(next.templateUrl, 'app/expert/')) {
           $location.path(HomeRoute);
         }
       }, function() {
