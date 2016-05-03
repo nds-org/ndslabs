@@ -2,8 +2,8 @@
 
 angular.module('ndslabs-directives', [])
 
-.directive('terminal', [ '$log', '$window', '$location', 'AuthInfo', 'ApiHost', 'ApiPort', 
-        function($log, $window, $location, AuthInfo, ApiHost, ApiPort) {
+.directive('terminal', [ '$log', '$window', '$timeout', '$location', 'AuthInfo', 'ApiHost', 'ApiPort', 'NdsLabsApi',
+        function($log, $window, $timeout, $location, AuthInfo, ApiHost, ApiPort, NdsLabsApi) {
     return {
         restrict: 'E',
         scope: {
@@ -36,9 +36,29 @@ angular.module('ndslabs-directives', [])
             };
         
             ws.onmessage = function (msg) { term.write(msg.data); };
-            term.on('data', function(data) { ws.send(data) });
             term.on('title', function(title) { $window.document.title = title; });
-                    
+            
+            var timeoutMs = 300;
+            var timeout = null;
+            term.on('data', function(data) { 
+                if (timeout !== null) {
+                    $timeout.cancel(timeout);
+                    timeout = null;
+                }
+                
+                ws.send(data);
+                
+                // Debounce the token check ~300ms
+                timeout = $timeout(function() {
+                    NdsLabsApi.getRefresh_token().then(function() { 
+                        $log.debug('Token refreshed!'); 
+                    }, function() {
+                        ws.close();
+                        $log.debug('Token expired! Disconnected: ' + target); 
+                    });
+                }, timeoutMs);
+            });
+            
             term.open(elem.find("div")[0]);
             $log.debug('Connected: ' + target);
         }
