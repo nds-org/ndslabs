@@ -34,6 +34,11 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 .constant('ExpertRoute', '/home')
 
 /**
+ * The route to the stack service console view
+ */ 
+.constant('ConsoleRoute', '/console')
+
+/**
  * The version/revision of this GUI
  */
 .constant('BuildVersion', '1.0-devel')
@@ -85,8 +90,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'ExpertRoute',
-    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, ExpertRoute) {
+.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'ExpertRoute', 'ConsoleRoute',
+    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, ExpertRoute, ConsoleRoute) {
   // Squelch debug-level log messages
   $logProvider.debugEnabled(DEBUG);
       
@@ -168,7 +173,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     controller: 'LoginController',
     templateUrl: 'app/login/login.html'
   })
-  .when('/console', {
+  .when(ConsoleRoute, {
     title: 'Console',
     controller: 'ConsoleController',
     templateUrl: 'app/expert/console/console.html'
