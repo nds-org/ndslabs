@@ -320,8 +320,6 @@ angular
       Volumes.all.push(data);
     }, function(headers) {
       $log.error("error posting to /projects/" + projectId + "/volumes!");
-    }).finally(function() {
-      //$scope.softRefresh();
     });
   };
   
