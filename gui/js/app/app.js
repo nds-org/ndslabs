@@ -176,7 +176,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   .when(ConsoleRoute, {
     title: 'Console',
     controller: 'ConsoleController',
-    templateUrl: 'app/expert/console/console.html'
+    templateUrl: 'app/expert/consoleViewer/console.html'
   })
   .otherwise({ redirectTo: LoginRoute });
 }])

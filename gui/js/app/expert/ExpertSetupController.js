@@ -93,10 +93,10 @@ angular
    * @param {Object} stack - the stack to shut down
    */ 
   $scope.stopStack = function(stack) {
-    // See 'app/expert/modals/stackStop/stackStop.html'
+    // See 'app/expert/stackStop/stackStop.html'
     var modalInstance = $uibModal.open({
       animation: true,
-      templateUrl: 'app/expert/modals/stackStop/stackStop.html',
+      templateUrl: 'app/expert/stackStop/stackStop.html',
       controller: 'StackStopCtrl',
       size: 'md',
       keyboard: false,
@@ -181,10 +181,10 @@ angular
     var config = spec.config;
     
     if (mounts.length > 0 || config) {
-      // See 'app/expert/modals/addService/addService.html'
+      // See 'app/expert/addService/addService.html'
       var modalInstance = $uibModal.open({
         animation: true,
-        templateUrl: 'app/expert/modals/addService/addService.html',
+        templateUrl: 'app/expert/addService/addService.html',
         controller: 'AddServiceCtrl',
         size: 'md',
         keyboard: false,
@@ -239,10 +239,10 @@ angular
    * @param {Object} spec - the spec to use to create a new stack
    */ 
   $scope.openWizard = function(spec) {
-    // See 'app/expert/modals/configWizard/configurationWizard.html'
+    // See 'app/expert/configWizard/configurationWizard.html'
     var modalInstance = $uibModal.open({
       animation: true,
-      templateUrl: 'app/expert/modals/configWizard/configurationWizard.html',
+      templateUrl: 'app/expert/configWizard/configurationWizard.html',
       controller: 'ConfigurationWizardCtrl',
       size: 'md',
       backdrop: 'static',
@@ -330,10 +330,10 @@ angular
    * @param {} service - the service to show logs for
    */ 
   $scope.showLogs = function(service) {
-    // See 'app/expert/modals/logViewer/logViewer.html'
+    // See 'app/expert/logViewer/logViewer.html'
     $uibModal.open({
       animation: true,
-      templateUrl: 'app/expert/modals/logViewer/logViewer.html',
+      templateUrl: 'app/expert/logViewer/logViewer.html',
       controller: 'LogViewerCtrl',
       windowClass: 'log-modal-window',
       size: 'lg',
@@ -351,10 +351,10 @@ angular
    * @param {} service - the service to show logs for
    */ 
   $scope.showConfig = function(service) {
-    // See 'app/expert/modals/logViewer/logViewer.html'
+    // See 'app/expert/logViewer/logViewer.html'
     $uibModal.open({
       animation: true,
-      templateUrl: 'app/expert/modals/configViewer/configViewer.html',
+      templateUrl: 'app/expert/configViewer/configViewer.html',
       controller: 'ConfigViewerCtrl',
       size: 'md',
       keyboard: false,      // Force the user to explicitly click "Close"
@@ -372,10 +372,10 @@ angular
    * TODO: If user specifies, also loop through and delete volumes?
    */
   $scope.deleteStack = function(stack) {
-    // See 'app/expert/modals/stackDelete/stackDelete.html'
+    // See 'app/expert/stackDelete/stackDelete.html'
     var modalInstance = $uibModal.open({
       animation: true,
-      templateUrl: 'app/expert/modals/stackDelete/stackDelete.html',
+      templateUrl: 'app/expert/stackDelete/stackDelete.html',
       controller: 'StackDeleteCtrl',
       size: 'md',
       keyboard: false,
@@ -441,10 +441,10 @@ angular
     if (skipConfirm) {
       performDelete();
     } else {
-      // See 'app/expert/modals/volumeDelete/volumeDelete.html'
+      // See 'app/expert/volumeDelete/volumeDelete.html'
       var modalInstance = $uibModal.open({
         animation: true,
-        templateUrl: 'app/expert/modals/volumeDelete/volumeDelete.html',
+        templateUrl: 'app/expert/volumeDelete/volumeDelete.html',
         controller: 'VolumeDeleteCtrl',
         size: 'md',
         keyboard: false,
