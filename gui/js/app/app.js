@@ -184,8 +184,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '_', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', '$uibModalStack', 'AutoRefresh',
-    function($rootScope, $window, $location, $log, $interval, $cookies, _, authInfo, LoginRoute, ExpertRoute, NdsLabsApi, $uibModalStack, AutoRefresh) {
+.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '_', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', '$uibModalStack', 'AutoRefresh', 'ServerData',
+    function($rootScope, $window, $location, $log, $interval, $cookies, _, authInfo, LoginRoute, ExpertRoute, NdsLabsApi, $uibModalStack, AutoRefresh, ServerData) {
       
   var HomeRoute = ExpertRoute;
   
@@ -222,6 +222,9 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       // Stop any running auto-refresh interval
       AutoRefresh.stop();
       
+      // Purge any server data
+      ServerData.purgeAll();
+      
       // Cancel the auth check interval
       $interval.cancel(checkTokenInterval);
       checkTokenInterval = null;
@@ -252,17 +255,20 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       NdsLabsApi.getRefresh_token().then(function() {
         $log.debug('Token refreshed: ' + authInfo.get().token);
         
+        // Populate all displayed data here from etcd
+        ServerData.populateAll(authInfo.get().namespace).then(function () {
+          // Reroute to /home if necessary
+          if (!_.includes(next.templateUrl, 'app/expert/')) {
+            $location.path(HomeRoute);
+          }
+        });
+        
         // Restart our token check interval
         if (checkTokenInterval) {
           $interval.cancel(checkTokenInterval);
           checkTokenInterval = null;
         }
         checkTokenInterval = $interval(checkToken, tokenCheckMs);
-        
-        // Reroute to /home if necessary
-        if (!_.includes(next.templateUrl, 'app/expert/')) {
-          $location.path(HomeRoute);
-        }
       }, function() {
         $log.debug('Failed to refresh token!');
         

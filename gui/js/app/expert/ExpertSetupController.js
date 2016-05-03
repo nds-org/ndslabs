@@ -16,28 +16,20 @@ angular
   // Grab our projectId from the login page
   var projectId = AuthInfo.get().namespace;
   
-  /**
-   * Populate all shared data from the server into our scope
-   */
-  Specs.populate().then(function() { 
-    $scope.allServices = Specs.all;
-    
-    // After specs load, grab the other data
-    Project.populate(projectId);
-    Stacks.populate(projectId);
-    Volumes.populate(projectId);
-  });
-  
   /** 
    * FIXME: Temporary hack to update $scope when service data changes.
    * I am hoping asynchronous updates will allow me to remove this/these hack(s)
    */
-  $scope.$watch(function () { return Project.project }, 
-    function(newValue, oldValue) { $scope.project = Project.project;});
-  $scope.$watch(function () { return Stacks.all },
-    function(newValue, oldValue) { $scope.configuredStacks = Stacks.all; });
-  $scope.$watch(function () { return Volumes.all },
-    function(newValue, oldValue) { $scope.configuredVolumes = Volumes.all; });
+  var sync = {};
+  sync.project = function(newValue, oldValue) { $scope.project = Project.project; };
+  sync.specs = function(newValue, oldValue) { $scope.allServices = Specs.all; };
+  sync.stacks = function(newValue, oldValue) { $scope.configuredStacks = Stacks.all; };
+  sync.volumes = function(newValue, oldValue) { $scope.configuredVolumes = Volumes.all; };
+   
+  $scope.$watch(function () { return Project.project }, sync.project);
+  $scope.$watch(function () { return Specs.all }, sync.specs);
+  $scope.$watch(function () { return Stacks.all }, sync.stacks);
+  $scope.$watch(function () { return Volumes.all }, sync.volumes);
   
   /**
    * Selects the given volume (highlight it in the 'Volumes' grid)
