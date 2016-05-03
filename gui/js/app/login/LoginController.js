@@ -19,7 +19,7 @@ angular
   if (!$scope.settings.token) {
     $location.path(LoginRoute);
   }
-
+  
   /**
    * Start a local session by asking the server for a token
    */

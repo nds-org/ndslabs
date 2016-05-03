@@ -9,8 +9,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('ExpertSetupController', [ '$scope', '$log', '$interval', '$q', '$uibModal', '_', 'AuthInfo', 'Project', 'Volumes', 'Stacks', 'Specs', 'AutoRefresh', 'SoftRefresh',
-    'StackService', 'NdsLabsApi', function($scope, $log, $interval, $q, $uibModal, _, AuthInfo, Project, Volumes, Stacks, Specs, AutoRefresh, SoftRefresh, 
+.controller('ExpertSetupController', [ '$scope', '$log', '$location', '$interval', '$q', '$uibModal', '_', 'AuthInfo', 'Project', 'Volumes', 'Stacks', 'Specs', 'AutoRefresh', 'SoftRefresh',
+    'StackService', 'NdsLabsApi', function($scope, $log, $location, $interval, $q, $uibModal, _, AuthInfo, Project, Volumes, Stacks, Specs, AutoRefresh, SoftRefresh, 
     StackService, NdsLabsApi) {
   
   // Grab our projectId from the login page
@@ -67,7 +67,7 @@ angular
     AutoRefresh.start();
     $scope.starting[stack.id] = true;
     
-      // Then send the "start" command to the API server
+    // Then send the "start" command to the API server
     NdsLabsApi.getProjectsByProjectIdStartByStackId({
       'projectId': projectId,
       'stackId': stack.id

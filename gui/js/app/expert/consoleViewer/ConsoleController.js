@@ -10,5 +10,5 @@ angular
  */
  
 .controller('ConsoleController', [ '$scope', '$routeParams', '$window', function($scope, $routeParams, $window) {
-  $window.document.title = 'Console: ' + ($scope.svcId = $routeParams.id);
+  $window.document.title = 'Console: ' + ($scope.svcId = $routeParams.ssid);
 }])

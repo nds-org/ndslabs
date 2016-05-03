@@ -29,10 +29,7 @@ angular.module('ndslabs-directives', [])
                 $log.debug('Disconnected: ' + target);
                 
                 //term.destroy();
-                term.write('----------------------------');
-                term.write('Session has been terminated.');
-                term.write('');
-                term.write('You may now close this tab.');
+                term.write('Session has been terminated. You may now close this tab.');
                 
                 $location.path('/home');
                 $window.close();

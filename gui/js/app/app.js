@@ -36,7 +36,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * The route to the stack service console view
  */ 
-.constant('ConsoleRoute', '/console')
+.constant('ConsoleRoute', '/:ssid/console')
 
 /**
  * The version/revision of this GUI
