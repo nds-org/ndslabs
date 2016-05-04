@@ -185,8 +185,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$location', '$log', '$interval', '$cookies', '_', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', '$uibModalStack', 'AutoRefresh',
-    function($rootScope, $location, $log, $interval, $cookies, _, authInfo, LoginRoute, ExpertRoute, NdsLabsApi, $uibModalStack, AutoRefresh) {
+.run([ '$rootScope', '$location', '$log', '$interval', '$cookies', '$uibModalStack', '_', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', 'AutoRefresh',
+    function($rootScope, $location, $log, $interval, $cookies, $uibModalStack, _, authInfo, LoginRoute, ExpertRoute, NdsLabsApi, AutoRefresh) {
       
   // Grab saved auth data from cookies and attempt to use the leftover session
   var token = $cookies.get('token');
