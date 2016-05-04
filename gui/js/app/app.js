@@ -71,7 +71,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   if (ApiPath) {
        ApiUri += ApiPath
   }
-  return new ApiServer(url);
+  return new ApiServer(ApiUri);
 }])
 
 /**
