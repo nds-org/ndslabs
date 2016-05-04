@@ -104,8 +104,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   $logProvider.debugEnabled(DEBUG);
       
   // Setup default behaviors for encountering HTTP errors
-  $httpProvider.interceptors.push(['$rootScope', '$cookies', '$q', '$location', '$log', '_', 'DEBUG', 'ApiHost', 'ApiPort', 'AuthInfo',
-      function (scope, $cookies, $q, $location, $log, _, DEBUG, ApiHost, ApiPort, AuthInfo) {
+  $httpProvider.interceptors.push(['$rootScope', '$cookies', '$q', '$location', '$log', '_', 'DEBUG', 'ApiUri', 'AuthInfo',
+      function (scope, $cookies, $q, $location, $log, _, DEBUG, ApiUri, AuthInfo) {
     return {
       // Attach our auth token to each outgoing request (to the api server)
       'request': function(config) {
