@@ -204,9 +204,9 @@
                                 <td class="text-center">
                                   <!-- View logs button -->
                                   <button type="button" class="btn btn-xs btn-default" 
-                                  uib-tooltip="View {{ svc.service | specProperty:'label' }} Logs" 
-                                  ng-if="stack.status !== 'stopped'"
-                                  ng-disabled="svc.status === ''" tooltip-placement="left" ng-click="showLogs(svc)">
+                                      uib-tooltip="View {{ svc.service | specProperty:'label' }} Logs" 
+                                      ng-if="stack.status !== 'stopped'"
+                                      ng-disabled="svc.status === ''" tooltip-placement="left" ng-click="showLogs(svc)">
                                     <i class="fa fa-fw fa-file-text" ng-class="{ 'animated faa-vertical': stack.status === 'starting' && (svc.status === 'waiting' || svc.status === 'starting') }"></i>
                                   </button>
                                   
@@ -235,6 +235,7 @@
                                 <td>
                                   {{ option.key | specProperty:'label'}}
                                 </td>
+                                <td></td>
                                 <td></td>
                                 <td></td>
                               </tr>
