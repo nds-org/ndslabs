@@ -77,10 +77,10 @@ angular
    * TODO: Remove this ASAP!
    */
   $scope.signUp = function() {
-    // See 'app/login/modals/signUp/signUp.html
+    // See 'app/login/signUp/signUp.html
       var modalInstance = $uibModal.open({
         animation: true,
-        templateUrl: 'app/login/modals/signUp/signUp.html',
+        templateUrl: 'app/login/signUp/signUp.html',
         controller: 'SignUpController',
         size: 'md',
         keyboard: false,
