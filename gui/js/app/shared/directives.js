@@ -2,8 +2,8 @@
 
 angular.module('ndslabs-directives', [])
 
-.directive('terminal', [ '$log', '$window', '$timeout', '$location', 'AuthInfo', 'ApiHost', 'ApiPort', 'NdsLabsApi',
-        function($log, $window, $timeout, $location, AuthInfo, ApiHost, ApiPort, NdsLabsApi) {
+.directive('terminal', [ '$log', '$window', '$timeout', '$location', 'AuthInfo', 'ApiUri', 'NdsLabsApi',
+        function($log, $window, $timeout, $location, AuthInfo, ApiUri, NdsLabsApi) {
     return {
         restrict: 'E',
         scope: {
@@ -22,7 +22,10 @@ angular.module('ndslabs-directives', [])
                 screenKeys: true
             });
             
-            var target = "ws://" + ApiHost + ":" + ApiPort + "/console?namespace=" + AuthInfo.get().namespace + "&ssid=" + scope.service;
+            // TODO: Ingress LB may not currently support WebSockets
+            // See https://github.com/kubernetes/kubernetes/issues/24745
+            // See https://github.com/nginxinc/kubernetes-ingress/issues/10
+            var target = "ws://" + ApiUri + "/console?namespace=" + AuthInfo.get().namespace + "&ssid=" + scope.service;
             var ws = new WebSocket(target);
 
             ws.onclose = function() {
