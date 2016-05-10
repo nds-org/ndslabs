@@ -1,7 +1,8 @@
 #
 # Build: docker build -t ndslabs-gui -f Dockerfile.ndslabs-gui .
 #
-# Usage: docker run -it -d -p 30000:8080 -e APISERVER_HOST=<ExternalIp> -e APISERVER_PORT=30000 ndslabs-gui
+# Single-node Usage: docker run -it -d -p 30000:8080 -e APISERVER_HOST=<ExternalIp> -e APISERVER_PORT=30000 ndslabs-gui
+# Multi-node Usage: docker run -it -d -p 8080:8080 -e APISERVER_HOST=<ClusterIP> -e APISERVER_PATH="/api" ndslabs-gui
 #
 
 # This image will be based on the official nodejs docker image
@@ -9,9 +10,10 @@ FROM node:latest
 
 # Set build information here before building
 ENV BUILD_VERSION="1.0-alpha" \
-    BUILD_DATE="Thu Apr 28 21:59:59 UTC 2016" \
+    BUILD_DATE="Wed May  4 23:08:41 UTC 2016" \
     APISERVER_HOST="192.168.99.100" \
-    APISERVER_PORT="30001"
+    APISERVER_PORT="30001" \
+    APISERVER_PATH=""
 
 # Copy in the source
 COPY . /home/app/
@@ -31,7 +33,8 @@ EXPOSE 8080
 RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${BUILD_VERSION}')#" "/home/app/js/app/app.js" && \
     /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('${BUILD_DATE}'))#" "/home/app/js/app/app.js" && \
     /bin/sed -i -e "s#^\.constant('ApiHost', '.*')#.constant('ApiHost', '${APISERVER_HOST}')#" "/home/app/js/app/app.js" && \
-    /bin/sed -i -e "s#^\.constant('ApiPort', '.*')#.constant('ApiPort', '${APISERVER_PORT}')#" "/home/app/js/app/app.js"
+    /bin/sed -i -e "s#^\.constant('ApiPort', '.*')#.constant('ApiPort', '${APISERVER_PORT}')#" "/home/app/js/app/app.js" && \
+    /bin/sed -i -e "s#^\.constant('ApiPath', '.*')#.constant('ApiPath', '${APISERVER_PATH}')#" "/home/app/js/app/app.js"
 
 # Set in what directory commands will run
 WORKDIR /home/app
