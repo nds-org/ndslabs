@@ -24,7 +24,8 @@
     "font-awesome-animation": "^0.0.8",
     "angular-gage": "^0.1.0",
     "angular-messages": "^1.5.0",
-    "angular-bootstrap-pwgen": "^0.1.1"
+    "angular-bootstrap-pwgen": "^0.1.1",
+    "term.js": "https://github.com/chjj/term.js.git#^0.0.7"
   },
   "resolutions": {
     "angular": ">=1.5.0"

@@ -5,7 +5,7 @@
  * Define our ndslabs module here. All other files will 
  * use the single-argument notation for angular.module()
  */
-angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-filters', 'ndslabs-api', 'ngWizard', 'ngGrid', 'ngAlert', 
+angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-filters', 'ndslabs-directives',  'ndslabs-api', 'ngWizard', 'ngGrid', 'ngAlert', 
     'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ngMessages', 'ui.bootstrap', 'ui.pwgen', 'frapontillo.gage', 'chart.js' ])
 
 /**
@@ -32,6 +32,11 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  * The route to our Expert Setup View
  */ 
 .constant('ExpertRoute', '/home')
+
+/**
+ * The route to the stack service console view
+ */ 
+.constant('ConsoleRoute', '/:ssid/console')
 
 /**
  * The version/revision of this GUI
@@ -98,8 +103,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'ExpertRoute',
-    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, ExpertRoute) {
+.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'ExpertRoute', 'ConsoleRoute',
+    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, ExpertRoute, ConsoleRoute) {
   // Squelch debug-level log messages
   $logProvider.debugEnabled(DEBUG);
       
@@ -172,12 +177,19 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       
   // Setup routes to our different pages
   $routeProvider.when(ExpertRoute, {
+    title: 'NDS Labs',
     controller: 'ExpertSetupController',
     templateUrl: 'app/expert/expertSetup.html'
   })
   .when(LoginRoute, {
+    title: 'Sign into NDS Labs',
     controller: 'LoginController',
     templateUrl: 'app/login/login.html'
+  })
+  .when(ConsoleRoute, {
+    title: 'Console',
+    controller: 'ConsoleController',
+    templateUrl: 'app/expert/consoleViewer/console.html'
   })
   .otherwise({ redirectTo: LoginRoute });
 }])
@@ -185,9 +197,11 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$location', '$log', '$interval', '$cookies', '$uibModalStack', '_', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', 'AutoRefresh',
-    function($rootScope, $location, $log, $interval, $cookies, $uibModalStack, _, authInfo, LoginRoute, ExpertRoute, NdsLabsApi, AutoRefresh) {
+.run([ '$rootScope', '$location', '$log', '$interval', '$cookies', '$uibModalStack', '_', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData',
+    function($rootScope, $location, $log, $interval, $cookies, $uibModalStack, _, authInfo, LoginRoute, ExpertRoute, NdsLabsApi, AutoRefresh, ServerData) {
       
+  var HomeRoute = ExpertRoute;
+  
   // Grab saved auth data from cookies and attempt to use the leftover session
   var token = $cookies.get('token');
   var namespace = $cookies.get('namespace');
@@ -197,11 +211,14 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     authInfo.get().namespace = namespace;
   }
       
-  var HomeRoute = ExpertRoute;
-  
   // Make _ bindable in partial views
   // TODO: Investigate performance concerns here...
   $rootScope._ = window._;
+  
+  // Change the tab/window title when we change routes
+  $rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
+    $window.document.title = current.$$route.title;
+  });
   
   // When user changes routes, check that they are still authed
   $rootScope.$on( "$routeChangeStart", function(event, next, current) {
@@ -218,12 +235,15 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       // Stop any running auto-refresh interval
       AutoRefresh.stop();
       
+      // Purge any server data
+      ServerData.purgeAll();
+      
       // Cancel the auth check interval
       $interval.cancel(checkTokenInterval);
       checkTokenInterval = null;
             
       // user needs to log in, redirect to /login
-      if (_.includes(next.templateUrl, "app/login/login.html")) {
+      if (!_.includes(next.templateUrl, "app/login/login.html")) {
         $location.path(LoginRoute);
       }
     };
@@ -248,17 +268,20 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       NdsLabsApi.getRefresh_token().then(function() {
         $log.debug('Token refreshed: ' + authInfo.get().token);
         
+        // Populate all displayed data here from etcd
+        ServerData.populateAll(authInfo.get().namespace).then(function () {
+          // Reroute to /home if necessary
+          if (!_.includes(next.templateUrl, 'app/expert/')) {
+            $location.path(HomeRoute);
+          }
+        });
+        
         // Restart our token check interval
         if (checkTokenInterval) {
           $interval.cancel(checkTokenInterval);
           checkTokenInterval = null;
         }
         checkTokenInterval = $interval(checkToken, tokenCheckMs);
-        
-        // Reroute to /home if necessary
-        if (_.includes(next.templateUrl, 'app/expert/expertSetup.html')) {
-          $location.path(HomeRoute);
-        }
       }, function() {
         $log.debug('Failed to refresh token!');
         

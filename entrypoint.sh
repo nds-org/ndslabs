@@ -5,7 +5,7 @@
 /bin/sed -i -e "s#^\.constant('ApiPort', '.*')#.constant('ApiPort', '${APISERVER_PORT}')#" "/home/app/js/app/app.js"
 /bin/sed -i -e "s#^\.constant('ApiPath', '.*')#.constant('ApiPath', '${APISERVER_PATH}')#" "/home/app/js/app/app.js"
 
-# Fix this awful hack
+# TODO: Fix this awful hack
 cp -r js/ ui/
 mv ui/ js/
 

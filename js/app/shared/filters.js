@@ -168,13 +168,12 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
     
     var spec = _.find(Specs.all, [ 'key', key ]);
     if (!spec) {
-      $log.error('Spec not found: ' + key);
+      $log.debug('Spec not found: ' + key);
       return '';
     }
     
     if (!angular.isDefined(spec[propertyName])) {
-      $log.error('Property not found: ' + propertyName);
-      debugger;
+      $log.debug('Property not found: ' + propertyName);
       return '';
     }
     
