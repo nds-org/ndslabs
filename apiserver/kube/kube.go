@@ -31,8 +31,8 @@ var apiBase = "/api/v1"
 type ServiceAddrPort struct {
 	Name     string
 	Host     string
-	Port     int
-	NodePort int
+	Port     int32
+	NodePort int32
 }
 
 type KubeHelper struct {

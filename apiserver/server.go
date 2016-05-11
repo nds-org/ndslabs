@@ -45,6 +45,7 @@ type Config struct {
 		SSLKey       string
 		SSLCert      string
 		Timeout      int
+		Prefix       string
 	}
 	Etcd struct {
 		Address string
@@ -122,6 +123,12 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 
+	prefix := "/api/"
+	if cfg.Server.Prefix != "" {
+		prefix = cfg.Server.Prefix
+	}
+	glog.Infof("prefix %s", prefix)
+
 	if len(cfg.Server.Origin) > 0 {
 		glog.Infof("CORS origin %s\n", cfg.Server.Origin)
 
@@ -185,45 +192,48 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 
 	api.Use(&rest.IfMiddleware{
 		Condition: func(request *rest.Request) bool {
-			return request.URL.Path != "/authenticate" && request.URL.Path != "/version" && request.URL.Path != "/register"
+			return request.URL.Path != prefix &&
+				request.URL.Path != prefix+"authenticate" &&
+				request.URL.Path != prefix+"version" &&
+				request.URL.Path != prefix+"register"
 		},
 		IfTrue: jwt,
 	})
 
 	router, err := rest.MakeRouter(
-		rest.Get("/", GetPaths),
-		rest.Get("/version", Version),
-		rest.Post("/authenticate", jwt.LoginHandler),
-		rest.Delete("/authenticate", s.Logout),
-		rest.Get("/check_token", s.CheckToken),
-		rest.Get("/refresh_token", jwt.RefreshHandler),
-		rest.Get("/projects", s.GetAllProjects),
-		rest.Post("/projects/", s.PostProject),
-		rest.Post("/register", s.PostProject),
-		rest.Put("/projects/:pid", s.PutProject),
-		rest.Get("/projects/:pid", s.GetProject),
-		rest.Delete("/projects/:pid", s.DeleteProject),
-		rest.Get("/services", s.GetAllServices),
-		rest.Post("/services", s.PostService),
-		rest.Put("/services/:key", s.PutService),
-		rest.Get("/services/:key", s.GetService),
-		rest.Delete("/services/:key", s.DeleteService),
-		rest.Get("/configs", s.GetConfigs),
-		rest.Get("/projects/:pid/stacks", s.GetAllStacks),
-		rest.Post("/projects/:pid/stacks", s.PostStack),
-		rest.Put("/projects/:pid/stacks/:sid", s.PutStack),
-		rest.Get("/projects/:pid/stacks/:sid", s.GetStack),
-		rest.Delete("/projects/:pid/stacks/:sid", s.DeleteStack),
-		rest.Get("/projects/:pid/volumes", s.GetAllVolumes),
-		rest.Post("/projects/:pid/volumes", s.PostVolume),
-		rest.Put("/projects/:pid/volumes/:vid", s.PutVolume),
-		rest.Get("/projects/:pid/volumes/:vid", s.GetVolume),
-		rest.Delete("/projects/:pid/volumes/:vid", s.DeleteVolume),
-		rest.Get("/projects/:pid/start/:sid", s.StartStack),
-		rest.Get("/projects/:pid/stop/:sid", s.StopStack),
-		rest.Get("/projects/:pid/logs/:ssid", s.GetLogs),
-		rest.Get("/console", s.GetConsole),
-		rest.Get("/check_console", s.CheckConsole),
+		rest.Get(prefix, GetPaths),
+		rest.Get(prefix+"version", Version),
+		rest.Post(prefix+"authenticate", jwt.LoginHandler),
+		rest.Delete(prefix+"authenticate", s.Logout),
+		rest.Get(prefix+"check_token", s.CheckToken),
+		rest.Get(prefix+"refresh_token", jwt.RefreshHandler),
+		rest.Get(prefix+"projects", s.GetAllProjects),
+		rest.Post(prefix+"projects/", s.PostProject),
+		rest.Post(prefix+"register", s.PostProject),
+		rest.Put(prefix+"projects/:pid", s.PutProject),
+		rest.Get(prefix+"projects/:pid", s.GetProject),
+		rest.Delete(prefix+"projects/:pid", s.DeleteProject),
+		rest.Get(prefix+"services", s.GetAllServices),
+		rest.Post(prefix+"services", s.PostService),
+		rest.Put(prefix+"services/:key", s.PutService),
+		rest.Get(prefix+"services/:key", s.GetService),
+		rest.Delete(prefix+"services/:key", s.DeleteService),
+		rest.Get(prefix+"configs", s.GetConfigs),
+		rest.Get(prefix+"projects/:pid/stacks", s.GetAllStacks),
+		rest.Post(prefix+"projects/:pid/stacks", s.PostStack),
+		rest.Put(prefix+"projects/:pid/stacks/:sid", s.PutStack),
+		rest.Get(prefix+"projects/:pid/stacks/:sid", s.GetStack),
+		rest.Delete(prefix+"projects/:pid/stacks/:sid", s.DeleteStack),
+		rest.Get(prefix+"projects/:pid/volumes", s.GetAllVolumes),
+		rest.Post(prefix+"projects/:pid/volumes", s.PostVolume),
+		rest.Put(prefix+"projects/:pid/volumes/:vid", s.PutVolume),
+		rest.Get(prefix+"projects/:pid/volumes/:vid", s.GetVolume),
+		rest.Delete(prefix+"projects/:pid/volumes/:vid", s.DeleteVolume),
+		rest.Get(prefix+"projects/:pid/start/:sid", s.StartStack),
+		rest.Get(prefix+"projects/:pid/stop/:sid", s.StopStack),
+		rest.Get(prefix+"projects/:pid/logs/:ssid", s.GetLogs),
+		rest.Get(prefix+"console", s.GetConsole),
+		rest.Get(prefix+"check_console", s.CheckConsole),
 	)
 
 	if err != nil {
@@ -316,11 +326,11 @@ func (s *Server) initExistingProjects() {
 
 func GetPaths(w rest.ResponseWriter, r *rest.Request) {
 	paths := []string{}
-	paths = append(paths, "/version")
-	paths = append(paths, "/authenticate")
-	paths = append(paths, "/projects")
-	paths = append(paths, "/services")
-	paths = append(paths, "/configs")
+	paths = append(paths, "version")
+	paths = append(paths, "authenticate")
+	paths = append(paths, "projects")
+	paths = append(paths, "services")
+	paths = append(paths, "configs")
 	w.WriteJson(&paths)
 }
 
