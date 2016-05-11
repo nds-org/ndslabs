@@ -40,6 +40,9 @@
 
     <!-- Bridge AngularJS with any external JS / CSS -->
     <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+    
+    <!-- Term.js -->
+    <script src="bower_components/term.js/src/term.js"></script>
 
     <!-- JustGage -->
     <script src="bower_components/justgage-bower/raphael-2.1.4.min.js"></script>
@@ -63,26 +66,28 @@
     <script src="app/shared/footer/FooterController.js"></script>
     <script src="app/shared/api.js"></script>
     <script src="app/shared/services.js"></script>
+    <script src="app/shared/directives.js"></script>
     <script src="app/shared/filters.js"></script>
 
     <!-- Then load the config for our app -->
     <script src="app/app.js"></script>
     
     <!-- Login View -->
-    <script src="app/login/modals/signUp/SignUpController.js"></script>
+    <script src="app/login/signUp/SignUpController.js"></script>
     <script src="app/login/LoginController.js"></script>
     
-    <!-- Expert Setup Main Controller -->
+    <!-- Expert Setup Main Controller(s) -->
     <script src="app/expert/ExpertSetupController.js"></script>
+    <script src="app/expert/consoleViewer/ConsoleController.js"></script>
     
     <!-- Expert Setup Modal Controllers -->
-    <script src="app/expert/modals/configWizard/ConfigurationWizardController.js"></script>
-    <script src="app/expert/modals/configViewer/ConfigViewerController.js"></script>
-    <script src="app/expert/modals/addService/AddServiceController.js"></script>
-    <script src="app/expert/modals/logViewer/LogViewerController.js"></script>
-    <script src="app/expert/modals/stackStop/StackStopController.js"></script>
-    <script src="app/expert/modals/stackDelete/StackDeleteController.js"></script>
-    <script src="app/expert/modals/volumeDelete/VolumeDeleteController.js"></script>
+    <script src="app/expert/configWizard/ConfigurationWizardController.js"></script>
+    <script src="app/expert/configViewer/ConfigViewerController.js"></script>
+    <script src="app/expert/addService/AddServiceController.js"></script>
+    <script src="app/expert/logViewer/LogViewerController.js"></script>
+    <script src="app/expert/stackStop/StackStopController.js"></script>
+    <script src="app/expert/stackDelete/StackDeleteController.js"></script>
+    <script src="app/expert/volumeDelete/VolumeDeleteController.js"></script>
   </head>
 
   <!-- Display the actual contents of the app down here -->

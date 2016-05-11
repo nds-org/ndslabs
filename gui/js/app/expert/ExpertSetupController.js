@@ -9,35 +9,27 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('ExpertSetupController', [ '$scope', '$log', '$interval', '$q', '$uibModal', '_', 'AuthInfo', 'Project', 'Volumes', 'Stacks', 'Specs', 'AutoRefresh', 'SoftRefresh',
-    'StackService', 'NdsLabsApi', function($scope, $log, $interval, $q, $uibModal, _, AuthInfo, Project, Volumes, Stacks, Specs, AutoRefresh, SoftRefresh, 
+.controller('ExpertSetupController', [ '$scope', '$log', '$location', '$interval', '$q', '$uibModal', '_', 'AuthInfo', 'Project', 'Volumes', 'Stacks', 'Specs', 'AutoRefresh', 'SoftRefresh',
+    'StackService', 'NdsLabsApi', function($scope, $log, $location, $interval, $q, $uibModal, _, AuthInfo, Project, Volumes, Stacks, Specs, AutoRefresh, SoftRefresh, 
     StackService, NdsLabsApi) {
   
   // Grab our projectId from the login page
   var projectId = AuthInfo.get().namespace;
   
-  /**
-   * Populate all shared data from the server into our scope
-   */
-  Specs.populate().then(function() { 
-    $scope.allServices = Specs.all;
-    
-    // After specs load, grab the other data
-    Project.populate(projectId);
-    Stacks.populate(projectId);
-    Volumes.populate(projectId);
-  });
-  
   /** 
    * FIXME: Temporary hack to update $scope when service data changes.
    * I am hoping asynchronous updates will allow me to remove this/these hack(s)
    */
-  $scope.$watch(function () { return Project.project }, 
-    function(newValue, oldValue) { $scope.project = Project.project;});
-  $scope.$watch(function () { return Stacks.all },
-    function(newValue, oldValue) { $scope.configuredStacks = Stacks.all; });
-  $scope.$watch(function () { return Volumes.all },
-    function(newValue, oldValue) { $scope.configuredVolumes = Volumes.all; });
+  var sync = {};
+  sync.project = function(newValue, oldValue) { $scope.project = Project.project; };
+  sync.specs = function(newValue, oldValue) { $scope.allServices = Specs.all; };
+  sync.stacks = function(newValue, oldValue) { $scope.configuredStacks = Stacks.all; };
+  sync.volumes = function(newValue, oldValue) { $scope.configuredVolumes = Volumes.all; };
+   
+  $scope.$watch(function () { return Project.project }, sync.project);
+  $scope.$watch(function () { return Specs.all }, sync.specs);
+  $scope.$watch(function () { return Stacks.all }, sync.stacks);
+  $scope.$watch(function () { return Volumes.all }, sync.volumes);
   
   /**
    * Selects the given volume (highlight it in the 'Volumes' grid)
@@ -75,7 +67,7 @@ angular
     AutoRefresh.start();
     $scope.starting[stack.id] = true;
     
-      // Then send the "start" command to the API server
+    // Then send the "start" command to the API server
     NdsLabsApi.getProjectsByProjectIdStartByStackId({
       'projectId': projectId,
       'stackId': stack.id
@@ -93,10 +85,10 @@ angular
    * @param {Object} stack - the stack to shut down
    */ 
   $scope.stopStack = function(stack) {
-    // See 'app/expert/modals/stackStop/stackStop.html'
+    // See 'app/expert/stackStop/stackStop.html'
     var modalInstance = $uibModal.open({
       animation: true,
-      templateUrl: 'app/expert/modals/stackStop/stackStop.html',
+      templateUrl: 'app/expert/stackStop/stackStop.html',
       controller: 'StackStopCtrl',
       size: 'md',
       keyboard: false,
@@ -181,10 +173,10 @@ angular
     var config = spec.config;
     
     if (mounts.length > 0 || config) {
-      // See 'app/expert/modals/addService/addService.html'
+      // See 'app/expert/addService/addService.html'
       var modalInstance = $uibModal.open({
         animation: true,
-        templateUrl: 'app/expert/modals/addService/addService.html',
+        templateUrl: 'app/expert/addService/addService.html',
         controller: 'AddServiceCtrl',
         size: 'md',
         keyboard: false,
@@ -239,10 +231,10 @@ angular
    * @param {Object} spec - the spec to use to create a new stack
    */ 
   $scope.openWizard = function(spec) {
-    // See 'app/expert/modals/configWizard/configurationWizard.html'
+    // See 'app/expert/configWizard/configurationWizard.html'
     var modalInstance = $uibModal.open({
       animation: true,
-      templateUrl: 'app/expert/modals/configWizard/configurationWizard.html',
+      templateUrl: 'app/expert/configWizard/configurationWizard.html',
       controller: 'ConfigurationWizardCtrl',
       size: 'md',
       backdrop: 'static',
@@ -320,8 +312,6 @@ angular
       Volumes.all.push(data);
     }, function(headers) {
       $log.error("error posting to /projects/" + projectId + "/volumes!");
-    }).finally(function() {
-      //$scope.softRefresh();
     });
   };
   
@@ -330,10 +320,10 @@ angular
    * @param {} service - the service to show logs for
    */ 
   $scope.showLogs = function(service) {
-    // See 'app/expert/modals/logViewer/logViewer.html'
+    // See 'app/expert/logViewer/logViewer.html'
     $uibModal.open({
       animation: true,
-      templateUrl: 'app/expert/modals/logViewer/logViewer.html',
+      templateUrl: 'app/expert/logViewer/logViewer.html',
       controller: 'LogViewerCtrl',
       windowClass: 'log-modal-window',
       size: 'lg',
@@ -351,10 +341,10 @@ angular
    * @param {} service - the service to show logs for
    */ 
   $scope.showConfig = function(service) {
-    // See 'app/expert/modals/logViewer/logViewer.html'
+    // See 'app/expert/logViewer/logViewer.html'
     $uibModal.open({
       animation: true,
-      templateUrl: 'app/expert/modals/configViewer/configViewer.html',
+      templateUrl: 'app/expert/configViewer/configViewer.html',
       controller: 'ConfigViewerCtrl',
       size: 'md',
       keyboard: false,      // Force the user to explicitly click "Close"
@@ -372,10 +362,10 @@ angular
    * TODO: If user specifies, also loop through and delete volumes?
    */
   $scope.deleteStack = function(stack) {
-    // See 'app/expert/modals/stackDelete/stackDelete.html'
+    // See 'app/expert/stackDelete/stackDelete.html'
     var modalInstance = $uibModal.open({
       animation: true,
-      templateUrl: 'app/expert/modals/stackDelete/stackDelete.html',
+      templateUrl: 'app/expert/stackDelete/stackDelete.html',
       controller: 'StackDeleteCtrl',
       size: 'md',
       keyboard: false,
@@ -441,10 +431,10 @@ angular
     if (skipConfirm) {
       performDelete();
     } else {
-      // See 'app/expert/modals/volumeDelete/volumeDelete.html'
+      // See 'app/expert/volumeDelete/volumeDelete.html'
       var modalInstance = $uibModal.open({
         animation: true,
-        templateUrl: 'app/expert/modals/volumeDelete/volumeDelete.html',
+        templateUrl: 'app/expert/volumeDelete/volumeDelete.html',
         controller: 'VolumeDeleteCtrl',
         size: 'md',
         keyboard: false,

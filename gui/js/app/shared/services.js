@@ -74,6 +74,9 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  */
 .factory('Project', [ '$log', 'NdsLabsApi', function($log, NdsLabsApi) {
   var project = {
+    purge: function() {
+      project.project = {};
+    },
     // Grab the project associated with our current namespace
     populate: function(projectId) {
       return NdsLabsApi.getProjectsByProjectId({ 
@@ -98,6 +101,9 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 .factory('Specs', [ '$log', '_', 'NdsLabsApi', function($log, _, NdsLabsApi) {
   // An empty place-holder for our service/stack specs
   var specs = {
+    purge: function() {
+      specs.all = specs.stacks = specs.deps = [];
+    },
     /**
      * Grab the current site's available services
      */ 
@@ -129,6 +135,9 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 .factory('Stacks', [ '$log', 'NdsLabsApi', function($log, NdsLabsApi) {
   // An empty place-holder for our deployed stacks
   var stacks = {
+    purge: function() {
+      stacks.all = [];
+    },
      /**
       * Grab the list of configured stacks in our project
       */
@@ -154,6 +163,9 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  */
 .factory('Volumes', [ '$log', '_', 'NdsLabsApi', function($log, _, NdsLabsApi) {
   var volumes = {
+    purge: function() {
+      volumes.all = volumes.orphans = volumes.attached = [];
+    },
     /**
      * Grab the list of configured volumes in our project
      */ 
@@ -246,6 +258,40 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
   };
 }])
 
+/**
+ * 
+ */
+.factory('ServerData', [ '$log', '$q', 'Specs', 'Stacks', 'Volumes', 'Project', function($log, $q, Specs, Stacks, Volumes, Project) {
+  var data = {
+    /**
+     * Purges all shared data from the server
+     */
+    purgeAll: function() {
+      Specs.purge();
+      Project.purge();
+      Stacks.purge();
+      Volumes.purge();
+    },
+      
+    /**
+     * Populate all shared data from the server into our scope
+     */
+    populateAll: function(projectId) {
+      return $q.all([
+        Specs.populate(),
+        Project.populate(projectId),
+        Stacks.populate(projectId),
+        Volumes.populate(projectId)
+      ]);
+    },
+    specs: Specs,
+    stacks: Stacks,
+    volumes: Volumes,
+    project: Project
+  };
+  
+  return data;
+}])
 
 /**
  * Abstracted logic for discovering service requirements.
