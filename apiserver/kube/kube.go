@@ -2,12 +2,14 @@
 package kube
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/ndslabs/apiserver/events"
 	ndsapi "github.com/ndslabs/apiserver/types"
 	"io/ioutil"
 	"k8s.io/kubernetes/pkg/api"
@@ -15,6 +17,7 @@ import (
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	intstr "k8s.io/kubernetes/pkg/util/intstr"
 	utilrand "k8s.io/kubernetes/pkg/util/rand"
+	watch "k8s.io/kubernetes/pkg/watch/json"
 	"net/http"
 	"strings"
 	"time"
@@ -25,8 +28,8 @@ var apiBase = "/api/v1"
 type ServiceAddrPort struct {
 	Name     string
 	Host     string
-	Port     int
-	NodePort int
+	Port     int32
+	NodePort int32
 }
 
 type KubeHelper struct {
@@ -809,16 +812,18 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 		}
 	}
 
-	k8rq := api.ResourceRequirements{
-		Limits: api.ResourceList{
-			api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUMax),
-			api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryMax),
-		},
-		Requests: api.ResourceList{
-			api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUDefault),
-			api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryDefault),
-		},
-	}
+	/*
+		k8rq := api.ResourceRequirements{
+			Limits: api.ResourceList{
+				api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUMax),
+				api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryMax),
+			},
+			Requests: api.ResourceList{
+				api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUDefault),
+				api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryDefault),
+			},
+		}
+	*/
 
 	k8template := api.PodTemplateSpec{
 		ObjectMeta: api.ObjectMeta{
@@ -838,7 +843,7 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 					Ports:        k8cps,
 					Args:         spec.Args,
 					Command:      spec.Command,
-					Resources:    k8rq,
+					//Resources:    k8rq,
 				},
 			},
 		},
@@ -884,18 +889,130 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	return &k8rc
 }
 
-/*
-func (k *KubeHelper) GenerateName(stack string, service string, randomLength int) string {
-	return fmt.Sprintf("%s-%s-%s", stack, service, utilrand.String(randomLength))
-}
-*/
-
-/*
-func (k *KubeHelper) GenerateName(stack string, randomLength int) string {
-	return fmt.Sprintf("%s-%s", stack, utilrand.String(randomLength))
-}
-*/
-
 func (k *KubeHelper) GenerateName(randomLength int) string {
 	return fmt.Sprintf("s%s", utilrand.String(randomLength))
+}
+
+func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
+	url := k.kubeBase + apiBase + "/watch/events"
+	request, _ := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return
+	} else {
+		if httpresp.StatusCode == http.StatusOK {
+			reader := bufio.NewReader(httpresp.Body)
+			for {
+				data, err := reader.ReadBytes('\n')
+				if err != nil {
+					glog.Error(httperr)
+				}
+
+				wevent := watch.WatchEvent{}
+				json.Unmarshal(data, &wevent)
+
+				event := api.Event{}
+
+				json.Unmarshal([]byte(wevent.Object.Raw), &event)
+
+				if event.InvolvedObject.Kind == "Pod" {
+					pod, err := k.GetPod(event.InvolvedObject.Namespace, event.InvolvedObject.Name)
+					if err != nil {
+						fmt.Println(err)
+					}
+				}
+
+				/*
+					fmt.Printf("\tType=%s\n", event.Type)
+					fmt.Printf("\tReason=%s\n", event.Reason)
+					fmt.Printf("\tMessage=%s\n", event.Message)
+					fmt.Printf("\tInvolvedObject:\n")
+					fmt.Printf("\t\tKind: %s\n", event.InvolvedObject.Kind)
+					fmt.Printf("\t\tName: %s\n", event.InvolvedObject.Name)
+					fmt.Printf("\t\tNamespace: %s\n", event.InvolvedObject.Namespace)
+
+					if event.InvolvedObject.Kind == "Pod" {
+						pod, err := k.GetPod(event.InvolvedObject.Namespace, event.InvolvedObject.Name)
+						if err != nil {
+							fmt.Println(err)
+						}
+						fmt.Printf("\t\ttype=%s\n", event.Type)
+						fmt.Printf("\t\tstack=%s\n", pod.ObjectMeta.Labels["stack"])
+						fmt.Printf("\t\tphase=%s\n", pod.Status.Phase)
+						if len(pod.Status.Conditions) > 0 {
+							fmt.Printf("\t\t%s %s\n", pod.Status.Conditions[0].Type, pod.Status.Conditions[0].Status)
+						}
+					}
+				*/
+			}
+		}
+	}
+}
+
+func (k *KubeHelper) WatchPods(handler events.EventHandler) {
+	url := k.kubeBase + apiBase + "/watch/pods"
+	request, _ := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return
+	} else {
+		if httpresp.StatusCode == http.StatusOK {
+			reader := bufio.NewReader(httpresp.Body)
+			for {
+				data, err := reader.ReadBytes('\n')
+				if err != nil {
+					glog.Error(err)
+				}
+
+				event := watch.WatchEvent{}
+				json.Unmarshal(data, &event)
+
+				pod := api.Pod{}
+
+				json.Unmarshal([]byte(event.Object.Raw), &pod)
+				fmt.Printf("%s/%s\n", pod.ObjectMeta.Namespace, pod.Name)
+				fmt.Printf("\ttype=%s\n", event.Type)
+				fmt.Printf("\tstack=%s\n", pod.ObjectMeta.Labels["stack"])
+				fmt.Printf("\tphase=%s\n", pod.Status.Phase)
+				if len(pod.Status.Conditions) > 0 {
+					fmt.Printf("\t%s %s\n", pod.Status.Conditions[0].Type, pod.Status.Conditions[0].Status)
+				}
+			}
+		}
+	}
+}
+
+func (k *KubeHelper) GetPod(pid string, name string) (*api.Pod, error) {
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + name
+	request, _ := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+	resp, err := k.client.Do(request)
+
+	if err != nil {
+		glog.Error(err)
+		return nil, err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				glog.Error(err)
+				return nil, err
+			}
+
+			pod := api.Pod{}
+			json.Unmarshal(data, &pod)
+			return &pod, nil
+		} else {
+			fmt.Printf("Get pods failed: %s %d", resp.Status, resp.StatusCode)
+		}
+	}
+	return nil, nil
 }

@@ -2,7 +2,7 @@
     "id": "demo",
     "name": "demo project",
     "description": "demo project description",
-    "namespace": "demo" ,
-    "password": "12345" 
+    "namespace": "demo",
+    "password": "12345"
 }
 

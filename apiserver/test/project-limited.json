@@ -1,0 +1,15 @@
+{ 
+    "id": "demo",
+    "name": "demo project",
+    "description": "demo project description",
+    "namespace": "demo",
+    "password": "12345",
+	"resourceLimits": {
+		"cpuMax": "2",
+		"cpuDefault": "1",
+		"memMax": "8Gi",
+		"memDefault": "100Mi",
+		"storageQuota": "10Gb"
+	}
+}
+

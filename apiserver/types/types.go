@@ -31,7 +31,7 @@ type Config struct {
 }
 
 type Port struct {
-	Port     int    `json:"port"`
+	Port     int32  `json:"port"`
 	Protocol string `json:"protocol"`
 }
 
@@ -43,8 +43,8 @@ type ReadyProbe struct {
 	Type         string `json:"type"`
 	Path         string `json:"path"`
 	Port         int    `json:"port"`
-	InitialDelay int    `json:"initialDelay"`
-	Timeout      int    `json:"timeout"`
+	InitialDelay int32  `json:"initialDelay"`
+	Timeout      int32  `json:"timeout"`
 }
 
 type ProjectList struct {
@@ -66,7 +66,7 @@ type ResourceLimits struct {
 	CPUDefault    string `json:"cpuDefault"`
 	MemoryMax     string `json:"memMax"`
 	MemoryDefault string `json:"memDefault"`
-	StorageQuota  int    `json:"storageQuota"`
+	StorageQuota  string `json:"storageQuota"`
 }
 
 type ServiceList struct {
@@ -118,8 +118,8 @@ type StackService struct {
 
 type Endpoint struct {
 	InternalIP string `json:"internalIP"`
-	Port       int    `json:"port"`
-	NodePort   int    `json:"nodePort"`
+	Port       int32  `json:"port"`
+	NodePort   int32  `json:"nodePort"`
 	Protocol   string `json:"protocol"`
 }
 

@@ -103,6 +103,8 @@ func main() {
 	server.kube = kube
 	server.volDir = cfg.Server.VolDir
 	server.start(cfg, adminPasswd)
+
+	kube.WatchEvents(&server)
 }
 
 func (s *Server) start(cfg Config, adminPasswd string) {
@@ -254,12 +256,16 @@ func (s *Server) initExistingProjects() {
 	for _, project := range *projects {
 		if !s.kube.NamespaceExists(project.Namespace) {
 			s.kube.CreateNamespace(project.Namespace)
-			s.kube.CreateResourceQuota(project.Namespace,
-				project.ResourceLimits.CPUMax,
-				project.ResourceLimits.MemoryMax)
-			s.kube.CreateLimitRange(project.Namespace,
-				project.ResourceLimits.CPUDefault,
-				project.ResourceLimits.MemoryDefault)
+
+			if len(project.ResourceLimits.CPUMax) > 0 &&
+				len(project.ResourceLimits.MemoryMax) > 0 {
+				s.kube.CreateResourceQuota(project.Namespace,
+					project.ResourceLimits.CPUMax,
+					project.ResourceLimits.MemoryMax)
+				s.kube.CreateLimitRange(project.Namespace,
+					project.ResourceLimits.CPUDefault,
+					project.ResourceLimits.MemoryDefault)
+			}
 		}
 
 		stacks, err := s.etcd.GetStacks(project.Namespace)
@@ -384,22 +390,25 @@ func (s *Server) PostProject(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	_, err = s.kube.CreateResourceQuota(project.Namespace,
-		project.ResourceLimits.CPUMax,
-		project.ResourceLimits.MemoryMax)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	if len(project.ResourceLimits.CPUMax) > 0 &&
+		len(project.ResourceLimits.MemoryMax) > 0 {
+		_, err = s.kube.CreateResourceQuota(project.Namespace,
+			project.ResourceLimits.CPUMax,
+			project.ResourceLimits.MemoryMax)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	_, err = s.kube.CreateLimitRange(project.Namespace,
-		project.ResourceLimits.CPUDefault,
-		project.ResourceLimits.MemoryDefault)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		_, err = s.kube.CreateLimitRange(project.Namespace,
+			project.ResourceLimits.CPUDefault,
+			project.ResourceLimits.MemoryDefault)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	err = s.etcd.PutProject(project.Namespace, &project)
@@ -1692,4 +1701,8 @@ func (s *Server) loadSpecs(path string) error {
 		}
 	}
 	return nil
+}
+
+func (s *Server) HandleEvent(event k8api.Event, pod k8api.Pod) {
+	fmt.Println("Event")
 }
