@@ -31,8 +31,8 @@ var apiBase = "/api/v1"
 type ServiceAddrPort struct {
 	Name     string
 	Host     string
-	Port     int
-	NodePort int
+	Port     int32
+	NodePort int32
 }
 
 type KubeHelper struct {
@@ -667,6 +667,9 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	env := []api.EnvVar{}
 	env = append(env, api.EnvVar{Name: "NAMESPACE", Value: ns})
 	env = append(env, api.EnvVar{Name: "TERM", Value: "vt100"})
+	//env = append(env, api.EnvVar{Name: "TERM", Value: "linux"})
+	//env = append(env, api.EnvVar{Name: "COLUMNS", Value: "100"})
+	//env = append(env, api.EnvVar{Name: "LINES", Value: "50"})
 
 	for name, addrPort := range *links {
 
