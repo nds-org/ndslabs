@@ -8,20 +8,18 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('LoginController', [ '$scope', '$cookies', '$location', '$log', '$uibModal', 'AuthInfo', 'NdsLabsApi', 'LoginRoute', 'ExpertRoute', '$uibModalStack',
-    function($scope, $cookies, $location, $log, $uibModal, authInfo, NdsLabsApi, LoginRoute, ExpertRoute, $uibModalStack) {
+.controller('LoginController', [ '$scope', '$cookies', '$location', '$log', '$uibModal', 'AuthInfo', 'NdsLabsApi', 'LoginRoute', 'ExpertRoute', '$uibModalStack', 'ServerData',
+    function($scope, $cookies, $location, $log, $uibModal, authInfo, NdsLabsApi, LoginRoute, ExpertRoute, $uibModalStack, ServerData) {
   // Grab our injected AuthInfo from the provider
   $scope.settings = authInfo.get();
   
   var HomeRoute = ExpertRoute;
   
   // If we found a token, the user should be sent to the HomePage to check its validity
-  if ($scope.settings.token) {
-    $location.path(HomeRoute);
-  } else {
+  if (!$scope.settings.token) {
     $location.path(LoginRoute);
   }
-
+  
   /**
    * Start a local session by asking the server for a token
    */
@@ -79,10 +77,10 @@ angular
    * TODO: Remove this ASAP!
    */
   $scope.signUp = function() {
-    // See '/app/login/modals/signUp/signUp.html
+    // See 'app/login/signUp/signUp.html
       var modalInstance = $uibModal.open({
         animation: true,
-        templateUrl: '/app/login/modals/signUp/signUp.html',
+        templateUrl: 'app/login/signUp/signUp.html',
         controller: 'SignUpController',
         size: 'md',
         keyboard: false,

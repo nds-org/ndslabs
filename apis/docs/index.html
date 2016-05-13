@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title>NDS Labs API</title>
+    <title>ndslabs</title>
     <style type="text/css">
       body { 
 	font-family: Trebuchet MS, sans-serif;
@@ -181,11 +181,11 @@ font-style: italic;
     </style>
   </head>
   <body>
-  <h1>NDS Labs API</h1>
-    <div class="app-desc">NDS Labs API specification</div>
-    <div class="app-desc">More information: <a href="http://www.nationaldataservice.org">http://www.nationaldataservice.org</a></div>
-    <div class="app-desc">Contact Info: <a href="willis8@illinois.edu">willis8@illinois.edu</a></div>
-    <div class="app-desc">Version: 0.0</div>
+  <h1>ndslabs</h1>
+    <div class="app-desc">A sample swagger server</div>
+    <div class="app-desc">More information: <a href="https://helloreverb.com">https://helloreverb.com</a></div>
+    <div class="app-desc">Contact Info: <a href="hello@helloreverb.com">hello@helloreverb.com</a></div>
+    <div class="app-desc">Version: 0.1</div>
     <div class="license-info">All rights reserved</div>
     <div class="license-url">http://apache.org/licenses/LICENSE-2.0.html</div>
   <h2>Access</h2>
@@ -202,19 +202,65 @@ font-style: italic;
   
   
   
+  <li><a href="#authenticatePost"><code><span class="http-method">post</span> /authenticate</code></a></li>
+  
+  <li><a href="#authenticateDelete"><code><span class="http-method">delete</span> /authenticate</code></a></li>
+  
+  <li><a href="#checkTokenGet"><code><span class="http-method">get</span> /check_token</code></a></li>
+  
+  <li><a href="#configsGet"><code><span class="http-method">get</span> /configs</code></a></li>
+  
   <li><a href="#projectsGet"><code><span class="http-method">get</span> /projects</code></a></li>
+  
+  <li><a href="#projectsPost"><code><span class="http-method">post</span> /projects</code></a></li>
   
   <li><a href="#projectsProjectIdGet"><code><span class="http-method">get</span> /projects/{project-id}</code></a></li>
   
-  <li><a href="#projectsProjectIdServiceInstancesGet"><code><span class="http-method">get</span> /projects/{project-id}/serviceInstances</code></a></li>
+  <li><a href="#projectsProjectIdPut"><code><span class="http-method">put</span> /projects/{project-id}</code></a></li>
   
-  <li><a href="#projectsProjectIdServiceInstancesPost"><code><span class="http-method">post</span> /projects/{project-id}/serviceInstances</code></a></li>
+  <li><a href="#projectsProjectIdDelete"><code><span class="http-method">delete</span> /projects/{project-id}</code></a></li>
   
-  <li><a href="#projectsProjectIdServiceInstancesInstanceIdDelete"><code><span class="http-method">delete</span> /projects/{project-id}/serviceInstances/{instance-id}</code></a></li>
+  <li><a href="#projectsProjectIdLogsStackServiceIdGet"><code><span class="http-method">get</span> /projects/{project-id}/logs/{stack-service-id}</code></a></li>
+  
+  <li><a href="#projectsProjectIdStacksGet"><code><span class="http-method">get</span> /projects/{project-id}/stacks</code></a></li>
+  
+  <li><a href="#projectsProjectIdStacksPost"><code><span class="http-method">post</span> /projects/{project-id}/stacks</code></a></li>
+  
+  <li><a href="#projectsProjectIdStacksStackIdGet"><code><span class="http-method">get</span> /projects/{project-id}/stacks/{stack-id}</code></a></li>
+  
+  <li><a href="#projectsProjectIdStacksStackIdPut"><code><span class="http-method">put</span> /projects/{project-id}/stacks/{stack-id}</code></a></li>
+  
+  <li><a href="#projectsProjectIdStacksStackIdDelete"><code><span class="http-method">delete</span> /projects/{project-id}/stacks/{stack-id}</code></a></li>
+  
+  <li><a href="#projectsProjectIdStartStackIdGet"><code><span class="http-method">get</span> /projects/{project-id}/start/{stack-id}</code></a></li>
+  
+  <li><a href="#projectsProjectIdStopStackIdGet"><code><span class="http-method">get</span> /projects/{project-id}/stop/{stack-id}</code></a></li>
+  
+  <li><a href="#projectsProjectIdVolumesGet"><code><span class="http-method">get</span> /projects/{project-id}/volumes</code></a></li>
+  
+  <li><a href="#projectsProjectIdVolumesPost"><code><span class="http-method">post</span> /projects/{project-id}/volumes</code></a></li>
+  
+  <li><a href="#projectsProjectIdVolumesVolumeIdGet"><code><span class="http-method">get</span> /projects/{project-id}/volumes/{volume-id}</code></a></li>
+  
+  <li><a href="#projectsProjectIdVolumesVolumeIdPut"><code><span class="http-method">put</span> /projects/{project-id}/volumes/{volume-id}</code></a></li>
+  
+  <li><a href="#projectsProjectIdVolumesVolumeIdDelete"><code><span class="http-method">delete</span> /projects/{project-id}/volumes/{volume-id}</code></a></li>
+  
+  <li><a href="#refreshTokenGet"><code><span class="http-method">get</span> /refresh_token</code></a></li>
+  
+  <li><a href="#registerPost"><code><span class="http-method">post</span> /register</code></a></li>
   
   <li><a href="#servicesGet"><code><span class="http-method">get</span> /services</code></a></li>
   
+  <li><a href="#servicesPost"><code><span class="http-method">post</span> /services</code></a></li>
+  
   <li><a href="#servicesServiceIdGet"><code><span class="http-method">get</span> /services/{service-id}</code></a></li>
+  
+  <li><a href="#servicesServiceIdPut"><code><span class="http-method">put</span> /services/{service-id}</code></a></li>
+  
+  <li><a href="#servicesServiceIdDelete"><code><span class="http-method">delete</span> /services/{service-id}</code></a></li>
+  
+  <li><a href="#versionGet"><code><span class="http-method">get</span> /version</code></a></li>
   
   
   
@@ -225,13 +271,84 @@ font-style: italic;
   
   
   
-  <div class="method"><a name="projectsGet"/>
+  <div class="method"><a name="authenticatePost"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /projects</code></pre></div>
-    <div class="method-summary"> (<span class="nickname">projectsGet</span>)</div>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /authenticate</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">authenticatePost</span>)</div>
     
-    <div class="method-notes">Global list of NDSLabs projects.</div>
+    <div class="method-notes">Authenticate a user (login)</div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">auth (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; Auth definition </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200">inline_response_200</a>
+      
+    </div>
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    OK
+    
+    
+    <h4 class="field-label">401</h4>
+    Not logged in
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="authenticateDelete"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /authenticate</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">authenticateDelete</span>)</div>
+    
+    <div class="method-notes">Logout a user</div>
 
     
 
@@ -285,21 +402,14 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   
-  <div class="method"><a name="projectsProjectIdGet"/>
+  <div class="method"><a name="checkTokenGet"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /projects/{project-id}</code></pre></div>
-    <div class="method-summary"> (<span class="nickname">projectsProjectIdGet</span>)</div>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /check_token</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">checkTokenGet</span>)</div>
     
-    <div class="method-notes">Basic information about a project.</div>
+    <div class="method-notes">Validate the JWT token</div>
 
-    
-    <h3 class="field-label">Path parameters</h3>
-    <div class="field-items">
-      <div class="param">projectId (required)</div>
-
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique project identifier </div>
-    </div>  <!-- field-items -->
     
 
     
@@ -316,6 +426,71 @@ font-style: italic;
 
     
 
+    
+
+    
+
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    OK
+    
+    
+    <h4 class="field-label">401</h4>
+    Not logged in
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="configsGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /configs</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">configsGet</span>)</div>
+    
+    <div class="method-notes">Retrieves a list of service configuration options</div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">services (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; services to filter by </div>
+    </div>  <!-- field-items -->
     
 
     
@@ -346,27 +521,20 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     
     <h4 class="field-label">200</h4>
-    The project object
+    OK
     
     
   </div> <!-- method -->
   <hr/>
   
-  <div class="method"><a name="projectsProjectIdServiceInstancesGet"/>
+  <div class="method"><a name="projectsGet"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /projects/{project-id}/serviceInstances</code></pre></div>
-    <div class="method-summary"> (<span class="nickname">projectsProjectIdServiceInstancesGet</span>)</div>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /projects</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">projectsGet</span>)</div>
     
-    <div class="method-notes">List of services configured for this project.</div>
+    <div class="method-notes">Retrieves a site-wide list of NDSLabs projects.</div>
 
-    
-    <h3 class="field-label">Path parameters</h3>
-    <div class="field-items">
-      <div class="param">projectId (required)</div>
-
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique project identifier </div>
-    </div>  <!-- field-items -->
     
 
     
@@ -413,19 +581,151 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     
     <h4 class="field-label">200</h4>
-    The project object
+    OK
+    
+    
+    <h4 class="field-label">404</h4>
+    Not found
     
     
   </div> <!-- method -->
   <hr/>
   
-  <div class="method"><a name="projectsProjectIdServiceInstancesPost"/>
+  <div class="method"><a name="projectsPost"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /projects/{project-id}/serviceInstances</code></pre></div>
-    <div class="method-summary"> (<span class="nickname">projectsProjectIdServiceInstancesPost</span>)</div>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /projects</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">projectsPost</span>)</div>
     
-    <div class="method-notes">Add service instance</div>
+    <div class="method-notes">Adds a new project</div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">project (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; Project definition </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">201</h4>
+    Created
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="projectsProjectIdGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /projects/{project-id}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">projectsProjectIdGet</span>)</div>
+    
+    <div class="method-notes">Retrieves basic information about a project.</div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">projectId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique project identifier </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200_3">inline_response_200_3</a>
+      
+    </div>
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    OK
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="projectsProjectIdPut"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="put"><code class="huge"><span class="http-method">put</span> /projects/{project-id}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">projectsProjectIdPut</span>)</div>
+    
+    <div class="method-notes">Updates project information</div>
 
     
     <h3 class="field-label">Path parameters</h3>
@@ -449,9 +749,9 @@ font-style: italic;
     
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">service (optional)</div>
+      <div class="param">project (required)</div>
 
-      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; ID of service to add </div>
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; Project definition </div>
     </div>  <!-- field-items -->
     
 
@@ -461,12 +761,6 @@ font-style: italic;
 
     
 
-    
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#inline_response_200_3">inline_response_200_3</a>
-      
-    </div>
     
 
     <!--Todo: process Response Object and its headers, schema, examples -->
@@ -486,29 +780,27 @@ font-style: italic;
 
     <h3 class="field-label">Responses</h3>
     
-    <h4 class="field-label">200</h4>
-    OK
+    <h4 class="field-label">201</h4>
+    Updated
     
     
   </div> <!-- method -->
   <hr/>
   
-  <div class="method"><a name="projectsProjectIdServiceInstancesInstanceIdDelete"/>
+  <div class="method"><a name="projectsProjectIdDelete"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /projects/{project-id}/serviceInstances/{instance-id}</code></pre></div>
-    <div class="method-summary"> (<span class="nickname">projectsProjectIdServiceInstancesInstanceIdDelete</span>)</div>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /projects/{project-id}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">projectsProjectIdDelete</span>)</div>
     
-    <div class="method-notes">Delete a service instance</div>
+    <div class="method-notes">Delete a project</div>
 
     
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
       <div class="param">projectId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique project identifier </div><div class="param">instanceId (required)</div>
-
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique service instance identifier </div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique project identifier </div>
     </div>  <!-- field-items -->
     
 
@@ -531,12 +823,6 @@ font-style: italic;
     
 
     
-    <h3 class="field-label">Return type</h3>
-    <div class="return-type">
-      <a href="#inline_response_200_3">inline_response_200_3</a>
-      
-    </div>
-    
 
     <!--Todo: process Response Object and its headers, schema, examples -->
 
@@ -562,14 +848,23 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   
-  <div class="method"><a name="servicesGet"/>
+  <div class="method"><a name="projectsProjectIdLogsStackServiceIdGet"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /services</code></pre></div>
-    <div class="method-summary"> (<span class="nickname">servicesGet</span>)</div>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /projects/{project-id}/logs/{stack-service-id}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">projectsProjectIdLogsStackServiceIdGet</span>)</div>
     
-    <div class="method-notes">Global list of available NDSLabs services. These are logical\nservices that relate to one or more Kubernetes service definition.</div>
+    <div class="method-notes">Retrieves the stack service log.</div>
 
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">projectId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique project identifier </div><div class="param">stackServiceId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique stack service identifier </div>
+    </div>  <!-- field-items -->
     
 
     
@@ -622,20 +917,20 @@ font-style: italic;
   </div> <!-- method -->
   <hr/>
   
-  <div class="method"><a name="servicesServiceIdGet"/>
+  <div class="method"><a name="projectsProjectIdStacksGet"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /services/{service-id}</code></pre></div>
-    <div class="method-summary"> (<span class="nickname">servicesServiceIdGet</span>)</div>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /projects/{project-id}/stacks</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">projectsProjectIdStacksGet</span>)</div>
     
-    <div class="method-notes">Basic information about a global service.</div>
+    <div class="method-notes">Retrieves a list of stacks for this project.</div>
 
     
     <h3 class="field-label">Path parameters</h3>
     <div class="field-items">
-      <div class="param">serviceId (required)</div>
+      <div class="param">projectId (required)</div>
 
-      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique service identifier </div>
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique project identifier </div>
     </div>  <!-- field-items -->
     
 
@@ -683,7 +978,1257 @@ font-style: italic;
     <h3 class="field-label">Responses</h3>
     
     <h4 class="field-label">200</h4>
+    OK
+    
+    
+    <h4 class="field-label">404</h4>
+    Not found
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="projectsProjectIdStacksPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /projects/{project-id}/stacks</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">projectsProjectIdStacksPost</span>)</div>
+    
+    <div class="method-notes">Adds a new stack to this project</div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">projectId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique project identifier </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">stack (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; Stack definition </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">201</h4>
+    Created
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="projectsProjectIdStacksStackIdGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /projects/{project-id}/stacks/{stack-id}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">projectsProjectIdStacksStackIdGet</span>)</div>
+    
+    <div class="method-notes">Retrieves the stack definition.</div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">projectId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique project identifier </div><div class="param">stackId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique stack identifier </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200_6">inline_response_200_6</a>
+      
+    </div>
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    OK
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="projectsProjectIdStacksStackIdPut"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="put"><code class="huge"><span class="http-method">put</span> /projects/{project-id}/stacks/{stack-id}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">projectsProjectIdStacksStackIdPut</span>)</div>
+    
+    <div class="method-notes">Updates stack information</div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">projectId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique project identifier </div><div class="param">stackId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique stack identifier </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">stack (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; Stack definition </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">201</h4>
+    Updated
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="projectsProjectIdStacksStackIdDelete"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /projects/{project-id}/stacks/{stack-id}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">projectsProjectIdStacksStackIdDelete</span>)</div>
+    
+    <div class="method-notes">Delete a stack</div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">projectId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique project identifier </div><div class="param">stackId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique stack identifier </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    OK
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="projectsProjectIdStartStackIdGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /projects/{project-id}/start/{stack-id}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">projectsProjectIdStartStackIdGet</span>)</div>
+    
+    <div class="method-notes">Starts the specified stack</div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">projectId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique project identifier </div><div class="param">stackId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique stack identifier </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    OK
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="projectsProjectIdStopStackIdGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /projects/{project-id}/stop/{stack-id}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">projectsProjectIdStopStackIdGet</span>)</div>
+    
+    <div class="method-notes">Stops the specified stack</div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">projectId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique project identifier </div><div class="param">stackId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique stack identifier </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    OK
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="projectsProjectIdVolumesGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /projects/{project-id}/volumes</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">projectsProjectIdVolumesGet</span>)</div>
+    
+    <div class="method-notes">Retrieves a list of volumes for this project.</div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">projectId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique project identifier </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200_7">inline_response_200_7</a>
+      
+    </div>
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    OK
+    
+    
+    <h4 class="field-label">404</h4>
+    Not found
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="projectsProjectIdVolumesPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /projects/{project-id}/volumes</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">projectsProjectIdVolumesPost</span>)</div>
+    
+    <div class="method-notes">Adds a new volume to this project</div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">projectId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique project identifier </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">volume (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; Volume definition </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">201</h4>
+    Created
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="projectsProjectIdVolumesVolumeIdGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /projects/{project-id}/volumes/{volume-id}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">projectsProjectIdVolumesVolumeIdGet</span>)</div>
+    
+    <div class="method-notes">Retrieves the volume definition.</div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">projectId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique project identifier </div><div class="param">volumeId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique volume identifier </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200_8">inline_response_200_8</a>
+      
+    </div>
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    OK
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="projectsProjectIdVolumesVolumeIdPut"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="put"><code class="huge"><span class="http-method">put</span> /projects/{project-id}/volumes/{volume-id}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">projectsProjectIdVolumesVolumeIdPut</span>)</div>
+    
+    <div class="method-notes">Updates volume information</div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">projectId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique project identifier </div><div class="param">volumeId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique volume identifier </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">volume (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; Volume definition </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">201</h4>
+    Updated
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="projectsProjectIdVolumesVolumeIdDelete"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /projects/{project-id}/volumes/{volume-id}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">projectsProjectIdVolumesVolumeIdDelete</span>)</div>
+    
+    <div class="method-notes">Delete a volume</div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">projectId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique project identifier </div><div class="param">volumeId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique volume identifier </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    OK
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="refreshTokenGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /refresh_token</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">refreshTokenGet</span>)</div>
+    
+    <div class="method-notes">Refresh the JWT token</div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200">inline_response_200</a>
+      
+    </div>
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    OK
+    
+    
+    <h4 class="field-label">401</h4>
+    Not logged in
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="registerPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /register</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">registerPost</span>)</div>
+    
+    <div class="method-notes">Register</div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">project (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; Project definition </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">201</h4>
+    Created
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="servicesGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /services</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">servicesGet</span>)</div>
+    
+    <div class="method-notes">Retrieves a site-wide list of available service definitions.</div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">stack (optional)</div>
+
+      <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Filter list for stacks (true or false) </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200_9">inline_response_200_9</a>
+      
+    </div>
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    OK
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="servicesPost"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /services</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">servicesPost</span>)</div>
+    
+    <div class="method-notes">Adds a new service to the service library</div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">service (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; Service definition </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">201</h4>
+    Created
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="servicesServiceIdGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /services/{service-id}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">servicesServiceIdGet</span>)</div>
+    
+    <div class="method-notes">Retrieves the service definition.</div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">serviceId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique service identifier </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200_10">inline_response_200_10</a>
+      
+    </div>
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
     The service object
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="servicesServiceIdPut"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="put"><code class="huge"><span class="http-method">put</span> /services/{service-id}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">servicesServiceIdPut</span>)</div>
+    
+    <div class="method-notes">Updates a service definition in the service library</div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">serviceId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique service identifier </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">service (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; Service definition </div>
+    </div>  <!-- field-items -->
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">201</h4>
+    Updated
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="servicesServiceIdDelete"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /services/{service-id}</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">servicesServiceIdDelete</span>)</div>
+    
+    <div class="method-notes">Delete a service</div>
+
+    
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">serviceId (required)</div>
+
+      <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; The unique service identifier </div>
+    </div>  <!-- field-items -->
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    OK
+    
+    
+  </div> <!-- method -->
+  <hr/>
+  
+  <div class="method"><a name="versionGet"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /version</code></pre></div>
+    <div class="method-summary"> (<span class="nickname">versionGet</span>)</div>
+    
+    <div class="method-notes">Retrieve the server version</div>
+
+    
+
+    
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="heaader">Content-Type</span> request header:
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200_11">inline_response_200_11</a>
+      
+    </div>
+    
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    
+
+    
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="heaader">Content-Type</span> response header.
+    <ul>
+    
+      <li><code>application/json</code></li>
+    
+    </ul>
+    
+
+    <h3 class="field-label">Responses</h3>
+    
+    <h4 class="field-label">200</h4>
+    OK
     
     
   </div> <!-- method -->
@@ -701,7 +2246,15 @@ font-style: italic;
   <ol>
   
   
-    <li><a href="#Project"><code>Project</code></a></li>
+    <li><a href="#Auth"><code>Auth</code></a></li>
+  
+  
+  
+    <li><a href="#Token"><code>Token</code></a></li>
+  
+  
+  
+    <li><a href="#VolumeMount"><code>VolumeMount</code></a></li>
   
   
   
@@ -709,7 +2262,39 @@ font-style: italic;
   
   
   
-    <li><a href="#ServiceInstance"><code>ServiceInstance</code></a></li>
+    <li><a href="#ReadyProbe"><code>ReadyProbe</code></a></li>
+  
+  
+  
+    <li><a href="#Port"><code>Port</code></a></li>
+  
+  
+  
+    <li><a href="#ServiceDependency"><code>ServiceDependency</code></a></li>
+  
+  
+  
+    <li><a href="#Project"><code>Project</code></a></li>
+  
+  
+  
+    <li><a href="#Stack"><code>Stack</code></a></li>
+  
+  
+  
+    <li><a href="#StackService"><code>StackService</code></a></li>
+  
+  
+  
+    <li><a href="#Volume"><code>Volume</code></a></li>
+  
+  
+  
+    <li><a href="#Log"><code>Log</code></a></li>
+  
+  
+  
+    <li><a href="#Config"><code>Config</code></a></li>
   
   
   
@@ -737,7 +2322,27 @@ font-style: italic;
   
   
   
-    <li><a href="#Project_contact"><code>Project_contact</code></a></li>
+    <li><a href="#Inline_response_200_6"><code>Inline_response_200_6</code></a></li>
+  
+  
+  
+    <li><a href="#Inline_response_200_7"><code>Inline_response_200_7</code></a></li>
+  
+  
+  
+    <li><a href="#Inline_response_200_8"><code>Inline_response_200_8</code></a></li>
+  
+  
+  
+    <li><a href="#Inline_response_200_9"><code>Inline_response_200_9</code></a></li>
+  
+  
+  
+    <li><a href="#Inline_response_200_10"><code>Inline_response_200_10</code></a></li>
+  
+  
+  
+    <li><a href="#Inline_response_200_11"><code>Inline_response_200_11</code></a></li>
   
   
   
@@ -745,7 +2350,7 @@ font-style: italic;
   
   
   
-    <li><a href="#Service_links"><code>Service_links</code></a></li>
+    <li><a href="#StackService_endpoints"><code>StackService_endpoints</code></a></li>
   
   
   </ol>
@@ -753,17 +2358,35 @@ font-style: italic;
   
   
   <div class="model">
-    <h3 class="field-label"><a name="Project">Project</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3 class="field-label"><a name="Auth">Auth</a> <a class="up" href="#__Models">Up</a></h3>
     <div class="field-items">
-      <div class="param">id </div><div class="param-desc"><span class="param-type">Integer</span> </div>
+      <div class="param">username </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">password </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Token">Token</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">token </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="VolumeMount">VolumeMount</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">mountPath </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
-      <div class="param">description </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
-      <div class="param">contact </div><div class="param-desc"><span class="param-type">Project_contact</span> </div>
-      
-      <div class="param">quotas </div><div class="param-desc"><span class="param-type">Project_quotas</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -774,21 +2397,41 @@ font-style: italic;
   <div class="model">
     <h3 class="field-label"><a name="Service">Service</a> <a class="up" href="#__Models">Up</a></h3>
     <div class="field-items">
-      <div class="param">uid </div><div class="param-desc"><span class="param-type">Integer</span> </div>
-      
-      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      <div class="param">id </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       <div class="param">key </div><div class="param-desc"><span class="param-type">String</span> </div>
       
+      <div class="param">label </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
       <div class="param">description </div><div class="param-desc"><span class="param-type">String</span> </div>
       
-      <div class="param">standalone </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
+      <div class="param">maintainer </div><div class="param-desc"><span class="param-type">String</span> </div>
       
-      <div class="param">persistent </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
+      <div class="param">requiresVolume </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
-      <div class="param">template </div><div class="param-desc"><span class="param-type">String</span> </div>
+      <div class="param">isStack </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
-      <div class="param">links </div><div class="param-desc"><span class="param-type">Service_links</span> </div>
+      <div class="param">isService </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
+      
+      <div class="param">isPublic </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
+      
+      <div class="param">isStandalone </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
+      
+      <div class="param">readinessProbe </div><div class="param-desc"><span class="param-type">ReadyProbe</span> </div>
+      
+      <div class="param">depends </div><div class="param-desc"><span class="param-type">array[ServiceDependency]</span> </div>
+      
+      <div class="param">image </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">ports </div><div class="param-desc"><span class="param-type">array[Port]</span> </div>
+      
+      <div class="param">volumeMounts </div><div class="param-desc"><span class="param-type">array[VolumeMount]</span> </div>
+      
+      <div class="param">args </div><div class="param-desc"><span class="param-type">array[String]</span> </div>
+      
+      <div class="param">createdTime </div><div class="param-desc"><span class="param-type">Integer</span> </div>
+      
+      <div class="param">updatedTime </div><div class="param-desc"><span class="param-type">Integer</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -797,17 +2440,165 @@ font-style: italic;
   
   
   <div class="model">
-    <h3 class="field-label"><a name="ServiceInstance">ServiceInstance</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3 class="field-label"><a name="ReadyProbe">ReadyProbe</a> <a class="up" href="#__Models">Up</a></h3>
     <div class="field-items">
-      <div class="param">id </div><div class="param-desc"><span class="param-type">Integer</span> </div>
+      <div class="param">path </div><div class="param-desc"><span class="param-type">String</span> </div>
       
-      <div class="param">service </div><div class="param-desc"><span class="param-type">Service</span> </div>
+      <div class="param">port </div><div class="param-desc"><span class="param-type">Integer</span> </div>
       
-      <div class="param">creationTimestamp </div><div class="param-desc"><span class="param-type">Integer</span> </div>
+      <div class="param">initialDelay </div><div class="param-desc"><span class="param-type">Integer</span> </div>
       
-      <div class="param">replicas </div><div class="param-desc"><span class="param-type">Integer</span> </div>
+      <div class="param">timeout </div><div class="param-desc"><span class="param-type">Integer</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Port">Port</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">port </div><div class="param-desc"><span class="param-type">Integer</span> </div>
+      
+      <div class="param">protocol </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="ServiceDependency">ServiceDependency</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">serviceId </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">required </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Project">Project</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">description </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">namespace </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">quotas </div><div class="param-desc"><span class="param-type">Project_quotas</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Stack">Stack</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">key </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">services </div><div class="param-desc"><span class="param-type">array[StackService]</span> </div>
       
       <div class="param">status </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">action </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">createTime </div><div class="param-desc"><span class="param-type">Integer</span> </div>
+      
+      <div class="param">updateTime </div><div class="param-desc"><span class="param-type">Integer</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="StackService">StackService</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">stackId </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">serviceId </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">status </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">endpoints </div><div class="param-desc"><span class="param-type">array[StackService_endpoints]</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Volume">Volume</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">id </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">size </div><div class="param-desc"><span class="param-type">Integer</span> </div>
+      
+      <div class="param">sizeUnit </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">format </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">attached </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">service </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">status </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">formatted </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
+      
+      <div class="param">createTime </div><div class="param-desc"><span class="param-type">Integer</span> </div>
+      
+      <div class="param">updateTime </div><div class="param-desc"><span class="param-type">Integer</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Log">Log</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">text </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Config">Config</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">value </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">label </div><div class="param-desc"><span class="param-type">String</span> </div>
+      
+      <div class="param">canOverride </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
+      
+      <div class="param">isPassword </div><div class="param-desc"><span class="param-type">Boolean</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -818,7 +2609,7 @@ font-style: italic;
   <div class="model">
     <h3 class="field-label"><a name="Inline_response_200">Inline_response_200</a> <a class="up" href="#__Models">Up</a></h3>
     <div class="field-items">
-      <div class="param">data </div><div class="param-desc"><span class="param-type">array[Project]</span> </div>
+      <div class="param">data </div><div class="param-desc"><span class="param-type">Token</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -829,7 +2620,7 @@ font-style: italic;
   <div class="model">
     <h3 class="field-label"><a name="Inline_response_200_1">Inline_response_200_1</a> <a class="up" href="#__Models">Up</a></h3>
     <div class="field-items">
-      <div class="param">data </div><div class="param-desc"><span class="param-type">Project</span> </div>
+      <div class="param">data </div><div class="param-desc"><span class="param-type">array[Config]</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -840,7 +2631,7 @@ font-style: italic;
   <div class="model">
     <h3 class="field-label"><a name="Inline_response_200_2">Inline_response_200_2</a> <a class="up" href="#__Models">Up</a></h3>
     <div class="field-items">
-      <div class="param">data </div><div class="param-desc"><span class="param-type">array[ServiceInstance]</span> </div>
+      <div class="param">data </div><div class="param-desc"><span class="param-type">array[Project]</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -851,7 +2642,7 @@ font-style: italic;
   <div class="model">
     <h3 class="field-label"><a name="Inline_response_200_3">Inline_response_200_3</a> <a class="up" href="#__Models">Up</a></h3>
     <div class="field-items">
-      <div class="param">code </div><div class="param-desc"><span class="param-type">BigDecimal</span> </div>
+      <div class="param">data </div><div class="param-desc"><span class="param-type">Project</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -862,7 +2653,7 @@ font-style: italic;
   <div class="model">
     <h3 class="field-label"><a name="Inline_response_200_4">Inline_response_200_4</a> <a class="up" href="#__Models">Up</a></h3>
     <div class="field-items">
-      <div class="param">data </div><div class="param-desc"><span class="param-type">array[Service]</span> </div>
+      <div class="param">data </div><div class="param-desc"><span class="param-type">Log</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -873,6 +2664,61 @@ font-style: italic;
   <div class="model">
     <h3 class="field-label"><a name="Inline_response_200_5">Inline_response_200_5</a> <a class="up" href="#__Models">Up</a></h3>
     <div class="field-items">
+      <div class="param">data </div><div class="param-desc"><span class="param-type">array[Stack]</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Inline_response_200_6">Inline_response_200_6</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">data </div><div class="param-desc"><span class="param-type">Stack</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Inline_response_200_7">Inline_response_200_7</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">data </div><div class="param-desc"><span class="param-type">array[Volume]</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Inline_response_200_8">Inline_response_200_8</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">data </div><div class="param-desc"><span class="param-type">Volume</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Inline_response_200_9">Inline_response_200_9</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
+      <div class="param">data </div><div class="param-desc"><span class="param-type">array[Service]</span> </div>
+      
+      
+    </div>  <!-- field-items -->
+  </div>
+  
+  
+  
+  <div class="model">
+    <h3 class="field-label"><a name="Inline_response_200_10">Inline_response_200_10</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class="field-items">
       <div class="param">data </div><div class="param-desc"><span class="param-type">Service</span> </div>
       
       
@@ -882,11 +2728,9 @@ font-style: italic;
   
   
   <div class="model">
-    <h3 class="field-label"><a name="Project_contact">Project_contact</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3 class="field-label"><a name="Inline_response_200_11">Inline_response_200_11</a> <a class="up" href="#__Models">Up</a></h3>
     <div class="field-items">
-      <div class="param">name </div><div class="param-desc"><span class="param-type">String</span> </div>
-      
-      <div class="param">email </div><div class="param-desc"><span class="param-type">String</span> </div>
+      <div class="param">data </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -897,7 +2741,7 @@ font-style: italic;
   <div class="model">
     <h3 class="field-label"><a name="Project_quotas">Project_quotas</a> <a class="up" href="#__Models">Up</a></h3>
     <div class="field-items">
-      <div class="param">cpus </div><div class="param-desc"><span class="param-type">Integer</span> </div>
+      <div class="param">storage </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->
@@ -906,11 +2750,9 @@ font-style: italic;
   
   
   <div class="model">
-    <h3 class="field-label"><a name="Service_links">Service_links</a> <a class="up" href="#__Models">Up</a></h3>
+    <h3 class="field-label"><a name="StackService_endpoints">StackService_endpoints</a> <a class="up" href="#__Models">Up</a></h3>
     <div class="field-items">
-      <div class="param">optional </div><div class="param-desc"><span class="param-type">array[String]</span> </div>
-      
-      <div class="param">required </div><div class="param-desc"><span class="param-type">array[String]</span> </div>
+      <div class="param">url </div><div class="param-desc"><span class="param-type">String</span> </div>
       
       
     </div>  <!-- field-items -->

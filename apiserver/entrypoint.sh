@@ -15,6 +15,10 @@ if [ "$1" = 'apiserver' ]; then
 	if [ -z "$CORS_ORIGIN_ADDR" ]; then 
 		CORS_ORIGIN_ADDR="http://localhost"
 	fi
+	
+	if [ -z "$PREFIX" ]; then 
+		PREFIX="/api/"
+	fi
 
 	if [ -z "$TIMEOUT" ]; then 
 		TIMEOUT="30"
@@ -28,6 +32,7 @@ VolDir=/volumes
 VolumeSource=local
 SpecsDir=/specs
 Timeout=$TIMEOUT
+Prefix=$PREFIX
 
 [Etcd]
 Address=$ETCD_ADDR

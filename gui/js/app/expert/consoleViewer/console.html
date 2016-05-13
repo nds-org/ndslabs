@@ -1,0 +1,16 @@
+<section>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-primary" id="consolePanel">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><i class="fa fa-fw fa-terminal"></i> Console<span ng-if="svcId">: {{ svcId }}</span></h3>
+                </div>
+                
+                <div class="panel-body">
+                    <!-- Show console if service is selected -->
+                    <terminal service="svcId"></terminal>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

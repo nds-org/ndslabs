@@ -168,13 +168,12 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
     
     var spec = _.find(Specs.all, [ 'key', key ]);
     if (!spec) {
-      $log.error('Spec not found: ' + key);
+      $log.debug('Spec not found: ' + key);
       return '';
     }
     
     if (!angular.isDefined(spec[propertyName])) {
-      $log.error('Property not found: ' + propertyName);
-      debugger;
+      $log.debug('Property not found: ' + propertyName);
       return '';
     }
     
@@ -241,15 +240,16 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  */
 .filter('usedStorage', [ '_', function(_) {
   return function(volumes) {
-    var used = 0;
-    var created = _.filter(volumes, function (v) { return !v.id; });
-    var allocated = _.filter(volumes, function (v) { return v.id; });
+    // Any volumes without IDs have not yet been created
+    var newVolumes = _.filter(volumes, function (v) { return !v.id; });
     
-    angular.forEach(_.concat(allocated, created), function(volume) {
-      used += volume.sizeUnit === 'TB' ? volume.size * 1000 : volume.size;
+    // Any previously-created volumes have a unique ID
+    var configuredVolumes = _.uniqBy(_.filter(volumes, function (v) { return v.id; }), 'id');
+    
+    // Sum the total storage used in both of these lists
+    return _.sumBy(_.concat(configuredVolumes, newVolumes), function(volume) { 
+      return volume.sizeUnit === 'TB' ? volume.size * 1000 : volume.size;
     });
-    
-    return used;
   };
 }])
 /**

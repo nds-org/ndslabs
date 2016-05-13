@@ -40,7 +40,7 @@ angular
   
   $scope.home = 
   {
-    name:'NDSLabs',
+    name:'NDS Labs',
     url: '#' + LoginRoute
   };
   

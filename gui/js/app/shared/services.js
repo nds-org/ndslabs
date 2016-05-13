@@ -15,6 +15,9 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 
 .factory('SoftRefresh', [ 'Stacks', 'Volumes', 'Project', 'Specs', function(Stacks, Volumes, Project, Specs) {
  var refresh = {
+   stacks: function() {
+    Stacks.populate(Project.project.namespace);
+   },
     /**
      * Perform a partial "soft-refresh" - refresh the stack/volume data without fully re-rendering the page
      */ 
@@ -39,19 +42,19 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 .factory('AutoRefresh', [ '$interval', '$log', 'SoftRefresh', function($interval, $log, SoftRefresh) {
   var autoRefresh = {
     interval: null,
-    onInterval: SoftRefresh.partial,
-    periodSeconds: 2,
+    onInterval: SoftRefresh.stacks,
+    periodSeconds: 1,
     start: function () {
       autoRefresh.stop();
       autoRefresh.interval = $interval(autoRefresh.onInterval, 1000 * autoRefresh.periodSeconds);
-      $log.debug("Interval starting: " + autoRefresh.interval);
+      $log.debug("Interval starting!");
     },
     stop: function() {
       if (autoRefresh.interval !== null) {
         while (!$interval.cancel(autoRefresh.interval)) { /* NOOP */ }
         autoRefresh.interval = null;
       }
-      $log.debug("Interval stopped: " + autoRefresh.interval);
+      $log.debug("Interval stopped!");
       
     },
     toggle: function() {
@@ -71,6 +74,9 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  */
 .factory('Project', [ '$log', 'NdsLabsApi', function($log, NdsLabsApi) {
   var project = {
+    purge: function() {
+      project.project = {};
+    },
     // Grab the project associated with our current namespace
     populate: function(projectId) {
       return NdsLabsApi.getProjectsByProjectId({ 
@@ -95,6 +101,9 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 .factory('Specs', [ '$log', '_', 'NdsLabsApi', function($log, _, NdsLabsApi) {
   // An empty place-holder for our service/stack specs
   var specs = {
+    purge: function() {
+      specs.all = specs.stacks = specs.deps = [];
+    },
     /**
      * Grab the current site's available services
      */ 
@@ -126,6 +135,9 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 .factory('Stacks', [ '$log', 'NdsLabsApi', function($log, NdsLabsApi) {
   // An empty place-holder for our deployed stacks
   var stacks = {
+    purge: function() {
+      stacks.all = [];
+    },
      /**
       * Grab the list of configured stacks in our project
       */
@@ -151,6 +163,9 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  */
 .factory('Volumes', [ '$log', '_', 'NdsLabsApi', function($log, _, NdsLabsApi) {
   var volumes = {
+    purge: function() {
+      volumes.all = volumes.orphans = volumes.attached = [];
+    },
     /**
      * Grab the list of configured volumes in our project
      */ 
@@ -241,4 +256,126 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
     
     return svc;
   };
+}])
+
+/**
+ * 
+ */
+.factory('ServerData', [ '$log', '$q', 'Specs', 'Stacks', 'Volumes', 'Project', function($log, $q, Specs, Stacks, Volumes, Project) {
+  var data = {
+    /**
+     * Purges all shared data from the server
+     */
+    purgeAll: function() {
+      Specs.purge();
+      Project.purge();
+      Stacks.purge();
+      Volumes.purge();
+    },
+      
+    /**
+     * Populate all shared data from the server into our scope
+     */
+    populateAll: function(projectId) {
+      return $q.all([
+        Specs.populate(),
+        Project.populate(projectId),
+        Stacks.populate(projectId),
+        Volumes.populate(projectId)
+      ]);
+    },
+    specs: Specs,
+    stacks: Stacks,
+    volumes: Volumes,
+    project: Project
+  };
+  
+  return data;
+}])
+
+/**
+ * Abstracted logic for discovering service requirements.
+ */
+.factory('ServiceDiscovery', [ '_', 'Specs', 'Volumes', 'Volume', function(_, Specs, Volumes, Volume) {
+  var factory = {
+    discoverConfigRequirements: function(stack) {
+      var configs = {};
+      angular.forEach(stack.services, function(svc) {
+        var svcConfig = factory.discoverConfigSingle(svc.service);
+        if (svcConfig) {
+          _.merge(configs, svcConfig);
+        }
+      });
+      
+      return configs;
+    },
+    discoverConfigSingle: function(key) {
+      var spec = _.find(Specs.all, [ 'key', key ]);
+      var ret = {};
+      var svcConfig = {
+        list: [],  
+        defaults: []
+      };
+      
+      // Don't modify specs in-place... make a copy
+      if (spec.config) {
+        svcConfig.list = angular.copy(spec.config) || [];
+        svcConfig.defaults = angular.copy(spec.config) || [];
+        ret[key] = svcConfig;
+      }
+      
+      return ret;
+    },
+    discoverOrphanVolumes: function(stack) {
+      var orphanVolumes = [];
+      
+      angular.forEach(stack.services, function(requestedSvc) {
+        var key = requestedSvc.service;
+        var orphans = factory.discoverOrphansSingle(key);
+        orphanVolumes = _.concat(orphanVolumes, orphans);
+      });
+      
+      return orphanVolumes;
+    },
+    discoverOrphansSingle: function(key) {
+      // Grab all orphaned volumes from this service to prompt the user to reuse it
+      return _.filter(Volumes.all, function(volume) {
+        if (!volume.attached && key === volume.service) {
+          return volume;
+        }
+      });
+    },
+    discoverRequiredVolumes: function(stack) {
+      var requiredVolumes = [];
+      
+      angular.forEach(stack.services, function(requestedSvc) {
+        var key = requestedSvc.service;
+        var required = factory.discoverRequiredSingle(stack, key);
+        if (required !== null) {
+          requiredVolumes.push(required);
+        }
+      });
+      
+      return requiredVolumes;
+    },
+    discoverRequiredSingle: function(stack, key) {
+      var svcSpec = _.find(Specs.all, function(svc) { return svc.key === key });
+        
+      if (!svcSpec.volumeMounts) {
+        return null;
+      }  
+      
+      // Ignore docker mount
+      var mounts = _.filter(svcSpec.volumeMounts, function(mnt) {
+        return mnt.name !== 'docker';
+      });
+      
+      // If any non-docker mounts exist, return an empty Volume object for them
+      if (mounts.length > 0) {
+        return new Volume(stack, svcSpec);
+      }
+    }
+  };
+  
+  return factory;
 }]);

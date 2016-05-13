@@ -6,9 +6,18 @@ import (
 	"errors"
 	"fmt"
 	api "github.com/ndslabs/apiserver/types"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"os"
+	"os/signal"
 	"strings"
+	"sync"
+	"syscall"
+
+	"github.com/docker/docker/pkg/term"
+	"golang.org/x/net/websocket"
 )
 
 type Client struct {
@@ -776,6 +785,97 @@ func (c *Client) Version() (string, error) {
 			return version, nil
 		} else {
 			return "", errors.New(resp.Status)
+		}
+	}
+}
+
+func (c *Client) Console(pid string, ssid string) error {
+
+	var wsServer string
+	if c.BasePath[:5] == "https" {
+		wsServer = strings.Replace(c.BasePath, "https", "wss", 1)
+	} else {
+		wsServer = strings.Replace(c.BasePath, "http", "ws", 1)
+	}
+
+	wsUrl := wsServer + "console?namespace=" + pid + "&ssid=" + ssid
+	config := websocket.Config{}
+	config.Version = 13
+	config.Location, _ = url.Parse(wsUrl)
+	config.Header = http.Header{}
+	config.Origin, _ = url.Parse(c.BasePath)
+	config.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+
+	ws, err := websocket.DialConfig(&config)
+	if err != nil {
+		fmt.Printf("%s\n", ws)
+		return err
+	}
+
+	var stdin io.Reader
+
+	stdin = os.Stdin
+
+	if file, ok := stdin.(*os.File); ok {
+		inFd := file.Fd()
+		if term.IsTerminal(inFd) {
+			oldState, err := term.SetRawTerminal(inFd)
+			if err != nil {
+				return err
+			}
+			defer term.RestoreTerminal(inFd, oldState)
+			sigChan := make(chan os.Signal, 1)
+			signal.Notify(sigChan, syscall.SIGTERM)
+			go func() {
+				<-sigChan
+				term.RestoreTerminal(inFd, oldState)
+				os.Exit(0)
+			}()
+		} else {
+			fmt.Println("STDIN is not a terminal")
+		}
+	} else {
+		fmt.Println("Unable to use PTY")
+	}
+
+	var wg sync.WaitGroup
+
+	go func() {
+		if _, err := io.Copy(ws, os.Stdin); err != nil {
+			if err != nil {
+				fmt.Printf("%s\n", err)
+			}
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		if _, err := io.Copy(os.Stdout, ws); err != nil {
+			if err != nil {
+				fmt.Printf("%s\n", err)
+			}
+		}
+	}()
+	wg.Wait()
+	return nil
+}
+
+func (c *Client) CheckConsole(pid string, ssid string) error {
+
+	url := c.BasePath + "check_console?namespace=" + pid + "&ssid=" + ssid
+
+	request, err := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			return nil
+		} else {
+			return errors.New(resp.Status)
 		}
 	}
 }

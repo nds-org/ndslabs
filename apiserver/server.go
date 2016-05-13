@@ -34,6 +34,7 @@ type Server struct {
 	volDir    string
 	hostname  string
 	jwt       *jwt.JWTMiddleware
+	prefix    string
 }
 
 type Config struct {
@@ -46,14 +47,16 @@ type Config struct {
 		SSLKey       string
 		SSLCert      string
 		Timeout      int
+		Prefix       string
 	}
 	Etcd struct {
 		Address string
 	}
 	Kubernetes struct {
-		Address  string
-		Username string
-		Password string
+		Address   string
+		TokenPath string
+		Username  string
+		Password  string
 	}
 }
 
@@ -79,6 +82,9 @@ func main() {
 	if cfg.Kubernetes.Address == "" {
 		cfg.Kubernetes.Address = "localhost:6443"
 	}
+	if cfg.Kubernetes.TokenPath == "" {
+		cfg.Kubernetes.TokenPath = "/run/secrets/kubernetes.io/serviceaccount/token"
+	}
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -92,7 +98,7 @@ func main() {
 	}
 
 	kube, err := kube.NewKubeHelper(cfg.Kubernetes.Address,
-		cfg.Kubernetes.Username, cfg.Kubernetes.Password)
+		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath)
 	if err != nil {
 		glog.Errorf("Kubernetes API server not available\n")
 		glog.Fatal(err)
@@ -104,6 +110,10 @@ func main() {
 	server.kube = kube
 	server.volDir = cfg.Server.VolDir
 
+	server.prefix = "/api/"
+	if cfg.Server.Prefix != "" {
+		server.prefix = cfg.Server.Prefix
+	}
 	server.start(cfg, adminPasswd)
 
 }
@@ -120,6 +130,8 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
+
+	glog.Infof("prefix %s", s.prefix)
 
 	if len(cfg.Server.Origin) > 0 {
 		glog.Infof("CORS origin %s\n", cfg.Server.Origin)
@@ -184,44 +196,55 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 
 	api.Use(&rest.IfMiddleware{
 		Condition: func(request *rest.Request) bool {
-			return request.URL.Path != "/authenticate" && request.URL.Path != "/version" && request.URL.Path != "/register"
+			return strings.HasPrefix(request.URL.Path, s.prefix+"projects") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"services") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"configs") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"check_token") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"refresh_token") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"check_console")
 		},
 		IfTrue: jwt,
 	})
 
-	router, err := rest.MakeRouter(
-		rest.Get("/", GetPaths),
-		rest.Get("/version", Version),
-		rest.Post("/authenticate", jwt.LoginHandler),
-		rest.Delete("/authenticate", s.Logout),
-		rest.Get("/check_token", s.CheckToken),
-		rest.Get("/refresh_token", jwt.RefreshHandler),
-		rest.Get("/projects", s.GetAllProjects),
-		rest.Post("/projects/", s.PostProject),
-		rest.Post("/register", s.PostProject),
-		rest.Put("/projects/:pid", s.PutProject),
-		rest.Get("/projects/:pid", s.GetProject),
-		rest.Delete("/projects/:pid", s.DeleteProject),
-		rest.Get("/services", s.GetAllServices),
-		rest.Post("/services", s.PostService),
-		rest.Put("/services/:key", s.PutService),
-		rest.Get("/services/:key", s.GetService),
-		rest.Delete("/services/:key", s.DeleteService),
-		rest.Get("/configs", s.GetConfigs),
-		rest.Get("/projects/:pid/stacks", s.GetAllStacks),
-		rest.Post("/projects/:pid/stacks", s.PostStack),
-		rest.Put("/projects/:pid/stacks/:sid", s.PutStack),
-		rest.Get("/projects/:pid/stacks/:sid", s.GetStack),
-		rest.Delete("/projects/:pid/stacks/:sid", s.DeleteStack),
-		rest.Get("/projects/:pid/volumes", s.GetAllVolumes),
-		rest.Post("/projects/:pid/volumes", s.PostVolume),
-		rest.Put("/projects/:pid/volumes/:vid", s.PutVolume),
-		rest.Get("/projects/:pid/volumes/:vid", s.GetVolume),
-		rest.Delete("/projects/:pid/volumes/:vid", s.DeleteVolume),
-		rest.Get("/projects/:pid/start/:sid", s.StartStack),
-		rest.Get("/projects/:pid/stop/:sid", s.StopStack),
-		rest.Get("/projects/:pid/logs/:ssid", s.GetLogs),
+	routes := make([]*rest.Route, 0)
+
+	routes = append(routes,
+		rest.Get(s.prefix, s.GetPaths),
+		rest.Get(s.prefix+"version", Version),
+		rest.Post(s.prefix+"authenticate", jwt.LoginHandler),
+		rest.Delete(s.prefix+"authenticate", s.Logout),
+		rest.Get(s.prefix+"check_token", s.CheckToken),
+		rest.Get(s.prefix+"refresh_token", jwt.RefreshHandler),
+		rest.Get(s.prefix+"projects", s.GetAllProjects),
+		rest.Post(s.prefix+"projects/", s.PostProject),
+		rest.Post(s.prefix+"register", s.PostProject),
+		rest.Put(s.prefix+"projects/:pid", s.PutProject),
+		rest.Get(s.prefix+"projects/:pid", s.GetProject),
+		rest.Delete(s.prefix+"projects/:pid", s.DeleteProject),
+		rest.Get(s.prefix+"services", s.GetAllServices),
+		rest.Post(s.prefix+"services", s.PostService),
+		rest.Put(s.prefix+"services/:key", s.PutService),
+		rest.Get(s.prefix+"services/:key", s.GetService),
+		rest.Delete(s.prefix+"services/:key", s.DeleteService),
+		rest.Get(s.prefix+"configs", s.GetConfigs),
+		rest.Get(s.prefix+"projects/:pid/stacks", s.GetAllStacks),
+		rest.Post(s.prefix+"projects/:pid/stacks", s.PostStack),
+		rest.Put(s.prefix+"projects/:pid/stacks/:sid", s.PutStack),
+		rest.Get(s.prefix+"projects/:pid/stacks/:sid", s.GetStack),
+		rest.Delete(s.prefix+"projects/:pid/stacks/:sid", s.DeleteStack),
+		rest.Get(s.prefix+"projects/:pid/volumes", s.GetAllVolumes),
+		rest.Post(s.prefix+"projects/:pid/volumes", s.PostVolume),
+		rest.Put(s.prefix+"projects/:pid/volumes/:vid", s.PutVolume),
+		rest.Get(s.prefix+"projects/:pid/volumes/:vid", s.GetVolume),
+		rest.Delete(s.prefix+"projects/:pid/volumes/:vid", s.DeleteVolume),
+		rest.Get(s.prefix+"projects/:pid/start/:sid", s.StartStack),
+		rest.Get(s.prefix+"projects/:pid/stop/:sid", s.StopStack),
+		rest.Get(s.prefix+"projects/:pid/logs/:ssid", s.GetLogs),
+		rest.Get(s.prefix+"console", s.GetConsole),
+		rest.Get(s.prefix+"check_console", s.CheckConsole),
 	)
+
+	router, err := rest.MakeRouter(routes...)
 
 	if err != nil {
 		glog.Fatal(err)
@@ -240,13 +263,45 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 
 	go s.kube.WatchEvents(s)
 	go s.kube.WatchPods(s)
+
+	http.Handle(s.prefix, api.MakeHandler())
+
 	glog.Infof("Listening on %s", cfg.Server.Port)
 	if len(cfg.Server.SSLCert) > 0 {
 		glog.Fatal(http.ListenAndServeTLS(":"+cfg.Server.Port,
-			cfg.Server.SSLCert, cfg.Server.SSLKey, api.MakeHandler()))
+			cfg.Server.SSLCert, cfg.Server.SSLKey, nil))
 	} else {
-		glog.Fatal(http.ListenAndServe(":"+cfg.Server.Port, api.MakeHandler()))
+		glog.Fatal(http.ListenAndServe(":"+cfg.Server.Port, nil))
 	}
+}
+
+func (s *Server) CheckConsole(w rest.ResponseWriter, r *rest.Request) {
+	pid := r.Request.FormValue("namespace")
+	ssid := r.Request.FormValue("ssid")
+
+	if !s.kube.NamespaceExists(pid) || !s.stackServiceExists(pid, ssid) {
+		rest.NotFound(w, r)
+		return
+	} else {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+}
+
+func (s *Server) GetConsole(w rest.ResponseWriter, r *rest.Request) {
+	pid := r.Request.FormValue("namespace")
+	ssid := r.Request.FormValue("ssid")
+
+	if !s.kube.NamespaceExists(pid) || !s.stackServiceExists(pid, ssid) {
+		rest.NotFound(w, r)
+		return
+	}
+
+	pods, _ := s.kube.GetPods(pid, "name", ssid)
+	pod := pods[0].Name
+	container := pods[0].Spec.Containers[0].Name
+	glog.V(4).Infof("exec called for %s %s %s\n", pid, ssid, pod)
+	s.kube.Exec(pid, pod, container, s.kube).ServeHTTP(w.(http.ResponseWriter), r.Request)
 }
 
 func (s *Server) initExistingProjects() {
@@ -294,13 +349,16 @@ func (s *Server) initExistingProjects() {
 	}
 }
 
-func GetPaths(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) GetPaths(w rest.ResponseWriter, r *rest.Request) {
 	paths := []string{}
-	paths = append(paths, "/version")
-	paths = append(paths, "/authenticate")
-	paths = append(paths, "/projects")
-	paths = append(paths, "/services")
-	paths = append(paths, "/configs")
+	paths = append(paths, s.prefix+"authenticate")
+	paths = append(paths, s.prefix+"configs")
+	paths = append(paths, s.prefix+"console")
+	paths = append(paths, s.prefix+"projects")
+	paths = append(paths, s.prefix+"register")
+	paths = append(paths, s.prefix+"services")
+	paths = append(paths, s.prefix+"version")
+
 	w.WriteJson(&paths)
 }
 
