@@ -19,6 +19,7 @@ import (
 	api "github.com/ndslabs/apiserver/types"
 	gcfg "gopkg.in/gcfg.v1"
 	k8api "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/watch"
 
 	"github.com/StephanDollberg/go-json-rest-middleware-jwt"
 	"github.com/ant0ine/go-json-rest/rest"
@@ -102,9 +103,9 @@ func main() {
 	server.etcd = etcd
 	server.kube = kube
 	server.volDir = cfg.Server.VolDir
+
 	server.start(cfg, adminPasswd)
 
-	kube.WatchEvents(&server)
 }
 
 func (s *Server) start(cfg Config, adminPasswd string) {
@@ -237,6 +238,8 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 
 	go s.initExistingProjects()
 
+	go s.kube.WatchEvents(s)
+	go s.kube.WatchPods(s)
 	glog.Infof("Listening on %s", cfg.Server.Port)
 	if len(cfg.Server.SSLCert) > 0 {
 		glog.Fatal(http.ListenAndServeTLS(":"+cfg.Server.Port,
@@ -1703,6 +1706,20 @@ func (s *Server) loadSpecs(path string) error {
 	return nil
 }
 
-func (s *Server) HandleEvent(event k8api.Event, pod k8api.Pod) {
-	fmt.Println("Event")
+func (s *Server) HandleEvent(eventType watch.EventType, event *k8api.Event, pod *k8api.Pod) {
+	glog.V(4).Infof("HandleEvent %s", eventType)
+
+	if event != nil {
+		fmt.Printf("\tKind=%s\n", event.Kind)
+		fmt.Printf("\tType=%s\n", event.Type)
+		fmt.Printf("\tReason=%s\n", event.Reason)
+		fmt.Printf("\tMessage=%s\n", event.Message)
+	}
+	fmt.Printf("\tName: %s\n", pod.Name)
+	fmt.Printf("\tNamespace: %s\n", pod.Namespace)
+	fmt.Printf("\tStack=%s\n", pod.ObjectMeta.Labels["stack"])
+	fmt.Printf("\tPhase=%s\n", pod.Status.Phase)
+	if len(pod.Status.Conditions) > 0 {
+		fmt.Printf("\t\t%s %s\n", pod.Status.Conditions[0].Type, pod.Status.Conditions[0].Status)
+	}
 }
