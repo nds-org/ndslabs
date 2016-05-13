@@ -36,6 +36,7 @@ type KubeHelper struct {
 	kubeBase  string
 	basicAuth string
 	client    *http.Client
+	startTime time.Time
 }
 
 func NewKubeHelper(kubeBase string, username string, password string) (*KubeHelper, error) {
@@ -49,6 +50,7 @@ func NewKubeHelper(kubeBase string, username string, password string) (*KubeHelp
 		kubeBase:  kubeBase,
 		basicAuth: base64.StdEncoding.EncodeToString([]byte(auth)),
 		client:    &http.Client{Transport: tr},
+		startTime: time.Now(),
 	}
 
 	err := kubeHelper.isRunning()
@@ -317,6 +319,8 @@ func (k *KubeHelper) StartController(pid string, spec *api.ReplicationController
 	// Wait for pods in ready state
 	ready := 0
 	pods, _ := k.GetPods(pid, "rc", name)
+
+	// TODO:  Wait for stack services to be ready
 	glog.V(4).Infof("Waiting for %d pod to be ready %s\n", len(pods), name)
 	for ready < len(pods) {
 		for _, pod := range pods {
@@ -922,13 +926,17 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 
 					json.Unmarshal([]byte(wevent.Object.Raw), &event)
 
-					if event.InvolvedObject.Kind == "Pod" {
-						pod, err := k.GetPod(event.InvolvedObject.Namespace, event.InvolvedObject.Name)
-						if err != nil {
-							fmt.Println(err)
-						}
-						if pod != nil {
-							handler.HandleEvent(wevent.Type, &event, pod)
+					created := event.LastTimestamp
+					if created.After(k.startTime) {
+
+						if event.InvolvedObject.Kind == "Pod" {
+							pod, err := k.GetPod(event.InvolvedObject.Namespace, event.InvolvedObject.Name)
+							if err != nil {
+								fmt.Println(err)
+							}
+							if pod != nil {
+								handler.HandleEvent(wevent.Type, &event, pod)
+							}
 						}
 					}
 				}
@@ -938,6 +946,7 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 }
 
 func (k *KubeHelper) WatchPods(handler events.EventHandler) {
+	glog.V(4).Infoln("WatchPods started")
 	url := k.kubeBase + apiBase + "/watch/pods"
 
 	for {

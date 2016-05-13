@@ -1027,43 +1027,62 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 	// Give Kubernetes time to create the pods for the RC
 	time.Sleep(time.Second * 3)
 
-	// Wait for pods in ready state
+	// Wait for stack service to be in ready state
 	ready := 0
 	failed := 0
-	name = fmt.Sprintf("%s-%s", stack.Id, serviceKey)
-	pods, _ = s.kube.GetPods(pid, "name", name)
-	glog.V(4).Infof("Waiting for %d pod to be ready %s\n", len(pods), name)
-	for (ready + failed) < len(pods) {
-		for _, pod := range pods {
-			if len(pod.Status.Conditions) > 0 {
-				condition := pod.Status.Conditions[0]
-				phase := pod.Status.Phase
-				containerState := ""
-				if len(pod.Status.ContainerStatuses) > 0 {
-					state := pod.Status.ContainerStatuses[0].LastTerminationState
-					switch {
-					case state.Running != nil:
-						containerState = "running"
-					case state.Waiting != nil:
-						containerState = "waiting"
-					case state.Terminated != nil:
-						containerState = "terminated"
-					}
-				}
 
-				glog.V(4).Infof("Waiting for pod %s (%s=%s) [%s, %s] %d %d\n", pod.Name, condition.Type, condition.Status, phase, containerState, (ready + failed), len(pods))
-				stackService.Status = string(pod.Status.Phase)
-				if condition.Type == "Ready" && condition.Status == "True" {
-					ready++
-				} else if containerState == "terminated" {
-					failed++
-				} else {
-					pods, _ = s.kube.GetPods(pid, "name", name)
-					time.Sleep(time.Second * 3)
+	for (ready + failed) < len(stack.Services) {
+		stack, _ := s.etcd.GetStack(pid, stack.Id)
+		for _, stackService := range stack.Services {
+			glog.V(4).Infof("Stack service %s: status=%s\n", stackService.Id, stackService.Status)
+			if stackService.Status == "ready" {
+				ready++
+			} else if stackService.Status == "error" {
+				failed++
+			}
+		}
+		time.Sleep(time.Second * 3)
+	}
+
+	// Wait for pods in ready state
+	/*
+		ready := 0
+		failed := 0
+		name = fmt.Sprintf("%s-%s", stack.Id, serviceKey)
+		pods, _ = s.kube.GetPods(pid, "name", name)
+		glog.V(4).Infof("Waiting for %d pod to be ready %s\n", len(pods), name)
+		for (ready + failed) < len(pods) {
+			for _, pod := range pods {
+				if len(pod.Status.Conditions) > 0 {
+					condition := pod.Status.Conditions[0]
+					phase := pod.Status.Phase
+					containerState := ""
+					if len(pod.Status.ContainerStatuses) > 0 {
+						state := pod.Status.ContainerStatuses[0].LastTerminationState
+						switch {
+						case state.Running != nil:
+							containerState = "running"
+						case state.Waiting != nil:
+							containerState = "waiting"
+						case state.Terminated != nil:
+							containerState = "terminated"
+						}
+					}
+
+					glog.V(4).Infof("Waiting for pod %s (%s=%s) [%s, %s] %d %d\n", pod.Name, condition.Type, condition.Status, phase, containerState, (ready + failed), len(pods))
+					stackService.Status = string(pod.Status.Phase)
+					if condition.Type == "Ready" && condition.Status == "True" {
+						ready++
+					} else if containerState == "terminated" {
+						failed++
+					} else {
+						pods, _ = s.kube.GetPods(pid, "name", name)
+						time.Sleep(time.Second * 3)
+					}
 				}
 			}
 		}
-	}
+	*/
 
 	if failed > 0 {
 		return false, nil
@@ -1207,54 +1226,56 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 		return nil, nil
 	}
 
-	// Get the pods for this stack
-	podStatus := make(map[string]string)
+	/*
+		// Get the pods for this stack
+		podStatus := make(map[string]string)
 
-	pods, _ := s.kube.GetPods(pid, "stack", sid)
-	for _, pod := range pods {
-		label := pod.Labels["service"]
-		if len(pod.Status.Conditions) > 0 {
-			// Node Condition describes the condition of a running node. Only condition it "Ready"
-			condition := pod.Status.Conditions[0]
-			phase := pod.Status.Phase
-			containerState := ""
-			if len(pod.Status.ContainerStatuses) > 0 {
+		pods, _ := s.kube.GetPods(pid, "stack", sid)
+		for _, pod := range pods {
+			label := pod.Labels["service"]
+			if len(pod.Status.Conditions) > 0 {
+				// Node Condition describes the condition of a running node. Only condition it "Ready"
+				condition := pod.Status.Conditions[0]
+				phase := pod.Status.Phase
+				containerState := ""
+				if len(pod.Status.ContainerStatuses) > 0 {
 
-				state := pod.Status.ContainerStatuses[0].LastTerminationState
-				switch {
-				case state.Running != nil:
-					containerState = "running"
-				case state.Waiting != nil:
-					containerState = "waiting"
-				case state.Terminated != nil:
-					containerState = "terminated"
+					state := pod.Status.ContainerStatuses[0].LastTerminationState
+					switch {
+					case state.Running != nil:
+						containerState = "running"
+					case state.Waiting != nil:
+						containerState = "waiting"
+					case state.Terminated != nil:
+						containerState = "terminated"
+					}
 				}
-			}
 
-			status := ""
-			if phase == "Running" {
-				if condition.Type == "Ready" && condition.Status == "True" {
-					status = "ready"
-				} else if containerState == "running" || containerState == "waiting" {
-					status = "starting"
-				} else if containerState == "terminated" {
-					status = "error"
-				} else if containerState == "" {
-					status = stack.Status
+				status := ""
+				if phase == "Running" {
+					if condition.Type == "Ready" && condition.Status == "True" {
+						status = "ready"
+					} else if containerState == "running" || containerState == "waiting" {
+						status = "starting"
+					} else if containerState == "terminated" {
+						status = "error"
+					} else if containerState == "" {
+						status = stack.Status
+					}
+				} else if phase == "Pending" {
+					status = "waiting"
+				} else if phase == "Terminated" {
+					status = "stopped"
+				} else if phase == "Failed" {
+					status = "failed"
 				}
-			} else if phase == "Pending" {
-				status = "waiting"
-			} else if phase == "Terminated" {
-				status = "stopped"
-			} else if phase == "Failed" {
-				status = "failed"
-			}
 
-			glog.V(4).Infof("Pod Status: label=%s phase=%s containerState=%s status=%s\n", label, phase, containerState, status)
-			// Final status
-			podStatus[label] = status
+				glog.V(4).Infof("Pod Status: label=%s phase=%s containerState=%s status=%s\n", label, phase, containerState, status)
+				// Final status
+				podStatus[label] = status
+			}
 		}
-	}
+	*/
 
 	k8services, _ := s.kube.GetServices(pid, sid)
 	endpoints := make(map[string]api.Endpoint)
@@ -1273,9 +1294,10 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 		stackService := &stack.Services[i]
 		stackService.Endpoints = []api.Endpoint{}
 
-		glog.V(4).Infof("Stack Service %s %s\n", stackService.Service, podStatus[stackService.Service])
+		//glog.V(4).Infof("Stack Service %s %s\n", stackService.Service, podStatus[stackService.Service])
+		glog.V(4).Infof("Stack service %s: status=%s, message=%s\n", stackService.Id, stackService.Status, stackService.StatusMessage)
 
-		stackService.Status = podStatus[stackService.Service]
+		//stackService.Status = podStatus[stackService.Service]
 		endpoint, ok := endpoints[stackService.Service]
 		if ok {
 			// Get the port protocol for the service endpoint
@@ -1707,19 +1729,62 @@ func (s *Server) loadSpecs(path string) error {
 }
 
 func (s *Server) HandleEvent(eventType watch.EventType, event *k8api.Event, pod *k8api.Pod) {
-	glog.V(4).Infof("HandleEvent %s", eventType)
 
-	if event != nil {
-		fmt.Printf("\tKind=%s\n", event.Kind)
-		fmt.Printf("\tType=%s\n", event.Type)
-		fmt.Printf("\tReason=%s\n", event.Reason)
-		fmt.Printf("\tMessage=%s\n", event.Message)
-	}
-	fmt.Printf("\tName: %s\n", pod.Name)
-	fmt.Printf("\tNamespace: %s\n", pod.Namespace)
-	fmt.Printf("\tStack=%s\n", pod.ObjectMeta.Labels["stack"])
-	fmt.Printf("\tPhase=%s\n", pod.Status.Phase)
-	if len(pod.Status.Conditions) > 0 {
-		fmt.Printf("\t\t%s %s\n", pod.Status.Conditions[0].Type, pod.Status.Conditions[0].Status)
+	if pod.Namespace != "default" && pod.Namespace != "kube-system" {
+		glog.V(4).Infof("HandleEvent %s", eventType)
+
+		//name := pod.Name
+		pid := pod.Namespace
+		sid := pod.ObjectMeta.Labels["stack"]
+		ssid := pod.ObjectMeta.Labels["name"]
+		//phase := pod.Status.Phase
+		ready := false
+
+		// Get stack service from Pod name
+		stack, err := s.etcd.GetStack(pid, sid)
+		if err != nil {
+			glog.Errorf("Error getting stack: %s\n", err)
+			return
+		}
+
+		var stackService *api.StackService
+		for i := range stack.Services {
+			if stack.Services[i].Id == ssid {
+				stackService = &stack.Services[i]
+			}
+		}
+
+		if len(pod.Status.Conditions) > 0 && pod.Status.Conditions[0].Type == "Ready" {
+			ready = (pod.Status.Conditions[0].Status == "True")
+		}
+
+		if event != nil {
+			// This is a general Event
+			if event.Reason == "MissingClusterDNS" || event.Reason == "FailedSync" {
+				// Ignore these for now
+				return
+			}
+			if event.Type == "Warning" {
+				// This is an error
+				stackService.Status = "error"
+			}
+
+			stackService.StatusMessage = fmt.Sprintf("Reason=%s, Message=%s", event.Reason, event.Message)
+			glog.V(4).Infof("Namespace: %s, Pod: %s, Status: %s, StatusMessage: %s\n", pid, pod.Name,
+				stackService.Status, stackService.StatusMessage)
+		} else {
+			// This is a Pod event
+			if ready {
+				stackService.Status = "ready"
+			} else {
+				if eventType == "ADDED" {
+					stackService.Status = "starting"
+				} else if eventType == "DELETED" {
+					stackService.Status = "stopped"
+				}
+			}
+			stackService.StatusMessage = ""
+		}
+		s.etcd.PutStack(pid, sid, stack)
 	}
 }

@@ -106,14 +106,15 @@ type Stack struct {
 }
 
 type StackService struct {
-	Id          string            `json:"id"`
-	Stack       string            `json:"stack"`
-	Service     string            `json:"service"`
-	Status      string            `json:"status"`
-	Endpoints   []Endpoint        `json:"endpoints,omitempty"`
-	CreatedTime int               `json:"createdTime"`
-	UpdatedTime int               `json:"updateTime"`
-	Config      map[string]string `json:"config"`
+	Id            string            `json:"id"`
+	Stack         string            `json:"stack"`
+	Service       string            `json:"service"`
+	Status        string            `json:"status"`
+	StatusMessage string            `json:"statusMessage"`
+	Endpoints     []Endpoint        `json:"endpoints,omitempty"`
+	CreatedTime   int               `json:"createdTime"`
+	UpdatedTime   int               `json:"updateTime"`
+	Config        map[string]string `json:"config"`
 }
 
 type Endpoint struct {
