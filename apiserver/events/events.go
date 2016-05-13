@@ -2,8 +2,9 @@ package events
 
 import (
 	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/watch"
 )
 
 type EventHandler interface {
-	HandleEvent(event api.Event, pod api.Pod)
+	HandleEvent(eventType watch.EventType, event *api.Event, pod *api.Pod)
 }

@@ -894,59 +894,44 @@ func (k *KubeHelper) GenerateName(randomLength int) string {
 }
 
 func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
-	url := k.kubeBase + apiBase + "/watch/events"
-	request, _ := http.NewRequest("GET", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return
-	} else {
-		if httpresp.StatusCode == http.StatusOK {
-			reader := bufio.NewReader(httpresp.Body)
-			for {
-				data, err := reader.ReadBytes('\n')
-				if err != nil {
-					glog.Error(httperr)
-				}
+	glog.V(4).Infoln("WatchEvents started")
 
-				wevent := watch.WatchEvent{}
-				json.Unmarshal(data, &wevent)
-
-				event := api.Event{}
-
-				json.Unmarshal([]byte(wevent.Object.Raw), &event)
-
-				if event.InvolvedObject.Kind == "Pod" {
-					pod, err := k.GetPod(event.InvolvedObject.Namespace, event.InvolvedObject.Name)
+	for {
+		url := k.kubeBase + apiBase + "/watch/events"
+		request, _ := http.NewRequest("GET", url, nil)
+		request.Header.Set("Content-Type", "application/json")
+		request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+		httpresp, httperr := k.client.Do(request)
+		if httperr != nil {
+			glog.Error(httperr)
+			return
+		} else {
+			if httpresp.StatusCode == http.StatusOK {
+				reader := bufio.NewReader(httpresp.Body)
+				for {
+					data, err := reader.ReadBytes('\n')
 					if err != nil {
-						fmt.Println(err)
+						glog.Error(err)
+						continue
 					}
-				}
 
-				/*
-					fmt.Printf("\tType=%s\n", event.Type)
-					fmt.Printf("\tReason=%s\n", event.Reason)
-					fmt.Printf("\tMessage=%s\n", event.Message)
-					fmt.Printf("\tInvolvedObject:\n")
-					fmt.Printf("\t\tKind: %s\n", event.InvolvedObject.Kind)
-					fmt.Printf("\t\tName: %s\n", event.InvolvedObject.Name)
-					fmt.Printf("\t\tNamespace: %s\n", event.InvolvedObject.Namespace)
+					wevent := watch.WatchEvent{}
+					json.Unmarshal(data, &wevent)
+
+					event := api.Event{}
+
+					json.Unmarshal([]byte(wevent.Object.Raw), &event)
 
 					if event.InvolvedObject.Kind == "Pod" {
 						pod, err := k.GetPod(event.InvolvedObject.Namespace, event.InvolvedObject.Name)
 						if err != nil {
 							fmt.Println(err)
 						}
-						fmt.Printf("\t\ttype=%s\n", event.Type)
-						fmt.Printf("\t\tstack=%s\n", pod.ObjectMeta.Labels["stack"])
-						fmt.Printf("\t\tphase=%s\n", pod.Status.Phase)
-						if len(pod.Status.Conditions) > 0 {
-							fmt.Printf("\t\t%s %s\n", pod.Status.Conditions[0].Type, pod.Status.Conditions[0].Status)
+						if pod != nil {
+							handler.HandleEvent(wevent.Type, &event, pod)
 						}
 					}
-				*/
+				}
 			}
 		}
 	}
@@ -954,34 +939,32 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 
 func (k *KubeHelper) WatchPods(handler events.EventHandler) {
 	url := k.kubeBase + apiBase + "/watch/pods"
-	request, _ := http.NewRequest("GET", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return
-	} else {
-		if httpresp.StatusCode == http.StatusOK {
-			reader := bufio.NewReader(httpresp.Body)
-			for {
-				data, err := reader.ReadBytes('\n')
-				if err != nil {
-					glog.Error(err)
-				}
 
-				event := watch.WatchEvent{}
-				json.Unmarshal(data, &event)
+	for {
+		request, _ := http.NewRequest("GET", url, nil)
+		request.Header.Set("Content-Type", "application/json")
+		request.Header.Set("Authorization", fmt.Sprintf("Basic %s", k.basicAuth))
+		httpresp, httperr := k.client.Do(request)
+		if httperr != nil {
+			glog.Error(httperr)
+			return
+		} else {
+			if httpresp.StatusCode == http.StatusOK {
+				reader := bufio.NewReader(httpresp.Body)
+				for {
+					data, err := reader.ReadBytes('\n')
+					if err != nil {
+						glog.Error(err)
+						continue
+					}
 
-				pod := api.Pod{}
+					wevent := watch.WatchEvent{}
+					json.Unmarshal(data, &wevent)
 
-				json.Unmarshal([]byte(event.Object.Raw), &pod)
-				fmt.Printf("%s/%s\n", pod.ObjectMeta.Namespace, pod.Name)
-				fmt.Printf("\ttype=%s\n", event.Type)
-				fmt.Printf("\tstack=%s\n", pod.ObjectMeta.Labels["stack"])
-				fmt.Printf("\tphase=%s\n", pod.Status.Phase)
-				if len(pod.Status.Conditions) > 0 {
-					fmt.Printf("\t%s %s\n", pod.Status.Conditions[0].Type, pod.Status.Conditions[0].Status)
+					pod := api.Pod{}
+
+					json.Unmarshal([]byte(wevent.Object.Raw), &pod)
+					handler.HandleEvent(wevent.Type, nil, &pod)
 				}
 			}
 		}
@@ -1011,7 +994,7 @@ func (k *KubeHelper) GetPod(pid string, name string) (*api.Pod, error) {
 			json.Unmarshal(data, &pod)
 			return &pod, nil
 		} else {
-			fmt.Printf("Get pods failed: %s %d", resp.Status, resp.StatusCode)
+			glog.Warningf("Get pod failed (%s): %s %d", name, resp.Status, resp.StatusCode)
 		}
 	}
 	return nil, nil
