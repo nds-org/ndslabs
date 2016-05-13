@@ -193,12 +193,12 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 
 	api.Use(&rest.IfMiddleware{
 		Condition: func(request *rest.Request) bool {
-			return request.URL.Path != s.prefix &&
-				request.URL.Path != s.prefix+"authenticate" &&
-				request.URL.Path != s.prefix+"version" &&
-				request.URL.Path != s.prefix+"register" &&
-				request.URL.Path != s.prefix+"console" &&
-				request.URL.Path != "/"
+			return strings.HasPrefix(request.URL.Path, s.prefix+"projects") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"services") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"configs") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"check_token") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"refresh_token") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"check_console")
 		},
 		IfTrue: jwt,
 	})
@@ -206,7 +206,6 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 	routes := make([]*rest.Route, 0)
 
 	routes = append(routes,
-		rest.Get("/", s.GetPaths),
 		rest.Get(s.prefix, s.GetPaths),
 		rest.Get(s.prefix+"version", Version),
 		rest.Post(s.prefix+"authenticate", jwt.LoginHandler),
@@ -259,12 +258,14 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 
 	go s.initExistingProjects()
 
+	http.Handle(s.prefix, api.MakeHandler())
+
 	glog.Infof("Listening on %s", cfg.Server.Port)
 	if len(cfg.Server.SSLCert) > 0 {
 		glog.Fatal(http.ListenAndServeTLS(":"+cfg.Server.Port,
-			cfg.Server.SSLCert, cfg.Server.SSLKey, api.MakeHandler()))
+			cfg.Server.SSLCert, cfg.Server.SSLKey, nil))
 	} else {
-		glog.Fatal(http.ListenAndServe(":"+cfg.Server.Port, api.MakeHandler()))
+		glog.Fatal(http.ListenAndServe(":"+cfg.Server.Port, nil))
 	}
 }
 
