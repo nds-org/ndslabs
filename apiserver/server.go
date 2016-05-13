@@ -33,6 +33,7 @@ type Server struct {
 	volDir    string
 	hostname  string
 	jwt       *jwt.JWTMiddleware
+	prefix    string
 }
 
 type Config struct {
@@ -107,6 +108,10 @@ func main() {
 	server.etcd = etcd
 	server.kube = kube
 	server.volDir = cfg.Server.VolDir
+	server.prefix = "/api/"
+	if cfg.Server.Prefix != "" {
+		server.prefix = cfg.Server.Prefix
+	}
 	server.start(cfg, adminPasswd)
 }
 
@@ -123,11 +128,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 
-	prefix := "/api/"
-	if cfg.Server.Prefix != "" {
-		prefix = cfg.Server.Prefix
-	}
-	glog.Infof("prefix %s", prefix)
+	glog.Infof("prefix %s", s.prefix)
 
 	if len(cfg.Server.Origin) > 0 {
 		glog.Infof("CORS origin %s\n", cfg.Server.Origin)
@@ -192,49 +193,56 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 
 	api.Use(&rest.IfMiddleware{
 		Condition: func(request *rest.Request) bool {
-			return request.URL.Path != prefix &&
-				request.URL.Path != prefix+"authenticate" &&
-				request.URL.Path != prefix+"version" &&
-				request.URL.Path != prefix+"register"
+			return request.URL.Path != s.prefix &&
+				request.URL.Path != s.prefix+"authenticate" &&
+				request.URL.Path != s.prefix+"version" &&
+				request.URL.Path != s.prefix+"register" &&
+				request.URL.Path != s.prefix+"console" &&
+				request.URL.Path != "/"
 		},
 		IfTrue: jwt,
 	})
 
-	router, err := rest.MakeRouter(
-		rest.Get(prefix, GetPaths),
-		rest.Get(prefix+"version", Version),
-		rest.Post(prefix+"authenticate", jwt.LoginHandler),
-		rest.Delete(prefix+"authenticate", s.Logout),
-		rest.Get(prefix+"check_token", s.CheckToken),
-		rest.Get(prefix+"refresh_token", jwt.RefreshHandler),
-		rest.Get(prefix+"projects", s.GetAllProjects),
-		rest.Post(prefix+"projects/", s.PostProject),
-		rest.Post(prefix+"register", s.PostProject),
-		rest.Put(prefix+"projects/:pid", s.PutProject),
-		rest.Get(prefix+"projects/:pid", s.GetProject),
-		rest.Delete(prefix+"projects/:pid", s.DeleteProject),
-		rest.Get(prefix+"services", s.GetAllServices),
-		rest.Post(prefix+"services", s.PostService),
-		rest.Put(prefix+"services/:key", s.PutService),
-		rest.Get(prefix+"services/:key", s.GetService),
-		rest.Delete(prefix+"services/:key", s.DeleteService),
-		rest.Get(prefix+"configs", s.GetConfigs),
-		rest.Get(prefix+"projects/:pid/stacks", s.GetAllStacks),
-		rest.Post(prefix+"projects/:pid/stacks", s.PostStack),
-		rest.Put(prefix+"projects/:pid/stacks/:sid", s.PutStack),
-		rest.Get(prefix+"projects/:pid/stacks/:sid", s.GetStack),
-		rest.Delete(prefix+"projects/:pid/stacks/:sid", s.DeleteStack),
-		rest.Get(prefix+"projects/:pid/volumes", s.GetAllVolumes),
-		rest.Post(prefix+"projects/:pid/volumes", s.PostVolume),
-		rest.Put(prefix+"projects/:pid/volumes/:vid", s.PutVolume),
-		rest.Get(prefix+"projects/:pid/volumes/:vid", s.GetVolume),
-		rest.Delete(prefix+"projects/:pid/volumes/:vid", s.DeleteVolume),
-		rest.Get(prefix+"projects/:pid/start/:sid", s.StartStack),
-		rest.Get(prefix+"projects/:pid/stop/:sid", s.StopStack),
-		rest.Get(prefix+"projects/:pid/logs/:ssid", s.GetLogs),
-		rest.Get(prefix+"console", s.GetConsole),
-		rest.Get(prefix+"check_console", s.CheckConsole),
+	routes := make([]*rest.Route, 0)
+
+	routes = append(routes,
+		rest.Get("/", s.GetPaths),
+		rest.Get(s.prefix, s.GetPaths),
+		rest.Get(s.prefix+"version", Version),
+		rest.Post(s.prefix+"authenticate", jwt.LoginHandler),
+		rest.Delete(s.prefix+"authenticate", s.Logout),
+		rest.Get(s.prefix+"check_token", s.CheckToken),
+		rest.Get(s.prefix+"refresh_token", jwt.RefreshHandler),
+		rest.Get(s.prefix+"projects", s.GetAllProjects),
+		rest.Post(s.prefix+"projects/", s.PostProject),
+		rest.Post(s.prefix+"register", s.PostProject),
+		rest.Put(s.prefix+"projects/:pid", s.PutProject),
+		rest.Get(s.prefix+"projects/:pid", s.GetProject),
+		rest.Delete(s.prefix+"projects/:pid", s.DeleteProject),
+		rest.Get(s.prefix+"services", s.GetAllServices),
+		rest.Post(s.prefix+"services", s.PostService),
+		rest.Put(s.prefix+"services/:key", s.PutService),
+		rest.Get(s.prefix+"services/:key", s.GetService),
+		rest.Delete(s.prefix+"services/:key", s.DeleteService),
+		rest.Get(s.prefix+"configs", s.GetConfigs),
+		rest.Get(s.prefix+"projects/:pid/stacks", s.GetAllStacks),
+		rest.Post(s.prefix+"projects/:pid/stacks", s.PostStack),
+		rest.Put(s.prefix+"projects/:pid/stacks/:sid", s.PutStack),
+		rest.Get(s.prefix+"projects/:pid/stacks/:sid", s.GetStack),
+		rest.Delete(s.prefix+"projects/:pid/stacks/:sid", s.DeleteStack),
+		rest.Get(s.prefix+"projects/:pid/volumes", s.GetAllVolumes),
+		rest.Post(s.prefix+"projects/:pid/volumes", s.PostVolume),
+		rest.Put(s.prefix+"projects/:pid/volumes/:vid", s.PutVolume),
+		rest.Get(s.prefix+"projects/:pid/volumes/:vid", s.GetVolume),
+		rest.Delete(s.prefix+"projects/:pid/volumes/:vid", s.DeleteVolume),
+		rest.Get(s.prefix+"projects/:pid/start/:sid", s.StartStack),
+		rest.Get(s.prefix+"projects/:pid/stop/:sid", s.StopStack),
+		rest.Get(s.prefix+"projects/:pid/logs/:ssid", s.GetLogs),
+		rest.Get(s.prefix+"console", s.GetConsole),
+		rest.Get(s.prefix+"check_console", s.CheckConsole),
 	)
+
+	router, err := rest.MakeRouter(routes...)
 
 	if err != nil {
 		glog.Fatal(err)
@@ -324,13 +332,16 @@ func (s *Server) initExistingProjects() {
 	}
 }
 
-func GetPaths(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) GetPaths(w rest.ResponseWriter, r *rest.Request) {
 	paths := []string{}
-	paths = append(paths, "version")
-	paths = append(paths, "authenticate")
-	paths = append(paths, "projects")
-	paths = append(paths, "services")
-	paths = append(paths, "configs")
+	paths = append(paths, s.prefix+"authenticate")
+	paths = append(paths, s.prefix+"configs")
+	paths = append(paths, s.prefix+"console")
+	paths = append(paths, s.prefix+"projects")
+	paths = append(paths, s.prefix+"register")
+	paths = append(paths, s.prefix+"services")
+	paths = append(paths, s.prefix+"version")
+
 	w.WriteJson(&paths)
 }
 
