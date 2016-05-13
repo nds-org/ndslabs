@@ -61,13 +61,13 @@ var listStacksCmd = &cobra.Command{
 		}
 		w := new(tabwriter.Writer)
 		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
-		fmt.Fprintln(w, "STACK\tSERVICE\tSTATUS\tSID")
+		fmt.Fprintln(w, "STACK\tSERVICE\tSTATUS\tSID\tMESSAGE")
 		for _, stack := range *stacks {
 
 			fmt.Fprintf(w, "%s\t\t%s\t%s\n", stack.Name, stack.Status, stack.Id)
 			for _, service := range stack.Services {
 				//spec, _ := client.GetService(service.Service)
-				fmt.Fprintf(w, "\t%s\t%s\t%s\n", service.Service, service.Status, service.Id)
+				fmt.Fprintf(w, "\t%s\t%s\t%s\t%s\n", service.Service, service.Status, service.Id, service.StatusMessage)
 			}
 		}
 		w.Flush()
