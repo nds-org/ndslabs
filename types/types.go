@@ -56,6 +56,7 @@ type Project struct {
 	Name           string         `json:"name"`
 	Description    string         `json:"description"`
 	Namespace      string         `json:"namespace"`
+	StorageQuota   int            `json:"storageQuota"`
 	EmailAddress   string         `json:"email"`
 	Password       string         `json:"password"`
 	ResourceLimits ResourceLimits `json:"resourceLimits"`

@@ -6,5 +6,6 @@ import (
 )
 
 type EventHandler interface {
-	HandleEvent(eventType watch.EventType, event *api.Event, pod *api.Pod)
+	HandlePodEvent(eventType watch.EventType, event *api.Event, pod *api.Pod)
+	HandleReplicationControllerEvent(eventType watch.EventType, event *api.Event, rc *api.ReplicationController)
 }

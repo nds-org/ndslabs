@@ -4,6 +4,7 @@
     "description": "demo project description",
     "namespace": "demo",
     "password": "12345",
+	"storageQuota": "10",
 	"resourceLimits": {
 		"cpuMax": "2",
 		"cpuDefault": "1",

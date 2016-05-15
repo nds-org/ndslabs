@@ -40,12 +40,11 @@ type ServiceAddrPort struct {
 }
 
 type KubeHelper struct {
-	kubeBase  string
-	client    *http.Client
-	startTime time.Time
-	username  string
-	password  string
-	token     string
+	kubeBase string
+	client   *http.Client
+	username string
+	password string
+	token    string
 }
 
 func NewKubeHelper(kubeBase string, username string, password string, tokenPath string) (*KubeHelper, error) {
@@ -56,7 +55,6 @@ func NewKubeHelper(kubeBase string, username string, password string, tokenPath 
 	kubeHelper := KubeHelper{}
 	kubeHelper.kubeBase = kubeBase
 	kubeHelper.client = &http.Client{Transport: tr}
-	kubeHelper.startTime = time.Now()
 
 	if _, err := os.Stat(tokenPath); err == nil {
 		glog.V(4).Infof("Reading token from %s\n", tokenPath)
@@ -847,18 +845,19 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 		}
 	}
 
-	/*
-		k8rq := api.ResourceRequirements{
-			Limits: api.ResourceList{
-				api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUMax),
-				api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryMax),
-			},
-			Requests: api.ResourceList{
-				api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUDefault),
-				api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryDefault),
-			},
+	k8rq := api.ResourceRequirements{}
+	if len(spec.ResourceLimits.CPUMax) > 0 && len(spec.ResourceLimits.MemoryMax) > 0 {
+		k8rq.Limits = api.ResourceList{
+			api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUMax),
+			api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryMax),
 		}
-	*/
+		k8rq.Requests = api.ResourceList{
+			api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUDefault),
+			api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryDefault),
+		}
+	} else {
+		glog.Warningf("No resource requirements specified for service %s\n", spec.Label)
+	}
 
 	k8template := api.PodTemplateSpec{
 		ObjectMeta: api.ObjectMeta{
@@ -878,7 +877,7 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 					Ports:        k8cps,
 					Args:         spec.Args,
 					Command:      spec.Command,
-					//Resources:    k8rq,
+					Resources:    k8rq,
 				},
 			},
 		},
@@ -932,6 +931,7 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 	glog.V(4).Infoln("WatchEvents started")
 
 	for {
+		startTime := time.Now()
 		url := k.kubeBase + apiBase + "/watch/events"
 		request, _ := http.NewRequest("GET", url, nil)
 		request.Header.Set("Content-Type", "application/json")
@@ -947,7 +947,7 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 					data, err := reader.ReadBytes('\n')
 					if err != nil {
 						glog.Error(err)
-						continue
+						break
 					}
 
 					wevent := watch.WatchEvent{}
@@ -958,15 +958,24 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 					json.Unmarshal([]byte(wevent.Object.Raw), &event)
 
 					created := event.LastTimestamp
-					if created.After(k.startTime) {
+					if created.After(startTime) {
 
 						if event.InvolvedObject.Kind == "Pod" {
 							pod, err := k.GetPod(event.InvolvedObject.Namespace, event.InvolvedObject.Name)
 							if err != nil {
-								fmt.Println(err)
+								glog.Error(err)
 							}
 							if pod != nil {
-								handler.HandleEvent(wevent.Type, &event, pod)
+								handler.HandlePodEvent(wevent.Type, &event, pod)
+							}
+						} else if event.InvolvedObject.Kind == "ReplicationController" {
+							rc, err := k.GetReplicationController(event.InvolvedObject.Namespace,
+								event.InvolvedObject.Name)
+							if err != nil {
+								glog.Error(err)
+							}
+							if rc != nil {
+								handler.HandleReplicationControllerEvent(wevent.Type, &event, rc)
 							}
 						}
 					}
@@ -995,7 +1004,7 @@ func (k *KubeHelper) WatchPods(handler events.EventHandler) {
 					data, err := reader.ReadBytes('\n')
 					if err != nil {
 						glog.Error(err)
-						continue
+						break
 					}
 
 					wevent := watch.WatchEvent{}
@@ -1004,7 +1013,8 @@ func (k *KubeHelper) WatchPods(handler events.EventHandler) {
 					pod := api.Pod{}
 
 					json.Unmarshal([]byte(wevent.Object.Raw), &pod)
-					handler.HandleEvent(wevent.Type, nil, &pod)
+
+					handler.HandlePodEvent(wevent.Type, nil, &pod)
 				}
 			}
 		}
@@ -1035,6 +1045,35 @@ func (k *KubeHelper) GetPod(pid string, name string) (*api.Pod, error) {
 			return &pod, nil
 		} else {
 			glog.Warningf("Get pod failed (%s): %s %d", name, resp.Status, resp.StatusCode)
+		}
+	}
+	return nil, nil
+}
+
+func (k *KubeHelper) GetReplicationController(pid string, name string) (*api.ReplicationController, error) {
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers/" + name
+	request, _ := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", k.getAuthHeader())
+	resp, err := k.client.Do(request)
+
+	if err != nil {
+		glog.Error(err)
+		return nil, err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				glog.Error(err)
+				return nil, err
+			}
+
+			rc := api.ReplicationController{}
+			json.Unmarshal(data, &rc)
+			return &rc, nil
+		} else {
+			glog.Warningf("Get replicationcontroller failed (%s): %s %d", name, resp.Status, resp.StatusCode)
 		}
 	}
 	return nil, nil
