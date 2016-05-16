@@ -86,7 +86,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   
   // Add on the path suffix, if applicable
    ApiUri.api += ApiPath
-   ApiUri.ws += WebsocketPath
+   ApiUri.ws += ApiPath + WebsocketPath
   
   // Instantiate a new client for the ApiServer using our newly built uri
   return new ApiServer(ApiUri.api);
