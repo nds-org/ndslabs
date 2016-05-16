@@ -345,7 +345,6 @@ func (k *KubeHelper) StartController(pid string, spec *api.ReplicationController
 	ready := 0
 	pods, _ := k.GetPods(pid, "rc", name)
 
-	// TODO:  Wait for stack services to be ready
 	glog.V(4).Infof("Waiting for %d pod to be ready %s\n", len(pods), name)
 	for ready < len(pods) {
 		for _, pod := range pods {
@@ -376,6 +375,7 @@ func (k *KubeHelper) StartController(pid string, spec *api.ReplicationController
 			}
 		}
 	}
+	glog.V(4).Infof("Pods ready for %s %s\n", pid, name)
 	return true, nil
 }
 

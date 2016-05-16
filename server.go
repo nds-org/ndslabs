@@ -1079,6 +1079,8 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 	fmt.Printf("Starting controller %s\n", name)
 	_, err := s.kube.StartController(pid, template)
 	if err != nil {
+		stackService.Status = "error"
+		stackService.StatusMessage = fmt.Sprintf("Error starting stack service: %s\n", err)
 		return false, err
 	}
 
