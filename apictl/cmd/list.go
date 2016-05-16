@@ -67,7 +67,11 @@ var listStacksCmd = &cobra.Command{
 			fmt.Fprintf(w, "%s\t\t%s\t%s\n", stack.Name, stack.Status, stack.Id)
 			for _, service := range stack.Services {
 				//spec, _ := client.GetService(service.Service)
-				fmt.Fprintf(w, "\t%s\t%s\t%s\t%s\n", service.Service, service.Status, service.Id, service.StatusMessage)
+				message := ""
+				if len(service.StatusMessages) > 0 {
+					message = service.StatusMessages[len(service.StatusMessages)-1]
+				}
+				fmt.Fprintf(w, "\t%s\t%s\t%s\t%s\n", service.Service, service.Status, service.Id, message)
 			}
 		}
 		w.Flush()
