@@ -1,6 +1,0 @@
-{
-  "key": "elasticsearch",
-  "label": "ElasticSearch",
-  "isService": true,
-  "requiresVolume": false
-}
