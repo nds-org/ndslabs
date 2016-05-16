@@ -197,8 +197,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$location', '$log', '$interval', '$cookies', '$uibModalStack', '_', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData',
-    function($rootScope, $location, $log, $interval, $cookies, $uibModalStack, _, authInfo, LoginRoute, ExpertRoute, NdsLabsApi, AutoRefresh, ServerData) {
+.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '$uibModalStack', '_', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData',
+    function($rootScope, $window, $location, $log, $interval, $cookies, $uibModalStack, _, authInfo, LoginRoute, ExpertRoute, NdsLabsApi, AutoRefresh, ServerData) {
       
   var HomeRoute = ExpertRoute;
   
