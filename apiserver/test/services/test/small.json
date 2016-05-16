@@ -1,0 +1,20 @@
+{
+    "key": "smalltest",
+    "label": "Test - Small container",
+    "image": "nginx",
+    "display": "stack",
+    "access": "external",
+    "description": "A test container for resource limits",
+    "ports": [
+        {
+            "port": 8080,
+            "protocol": "http"
+        }
+    ],
+    "resourceLimits": {
+        "cpuMax": "1",
+        "cpuDefault": "1m",
+        "memMax": "10Mi",
+        "memDefault": "1Mi"
+    }
+}
