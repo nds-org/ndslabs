@@ -1080,7 +1080,8 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 	_, err := s.kube.StartController(pid, template)
 	if err != nil {
 		stackService.Status = "error"
-		stackService.StatusMessage = fmt.Sprintf("Error starting stack service: %s\n", err)
+		stackService.StatusMessages = append(stackService.StatusMessages,
+			fmt.Sprintf("Error starting stack service: %s\n", err))
 		return false, err
 	}
 
@@ -1182,9 +1183,22 @@ func (s *Server) startStack(pid string, stack *api.Stack) (*api.Stack, error) {
 	// For each stack service, if no dependencies or dependency == started,
 	// start service. Otherwise wait
 	started := map[string]int{}
+	errors := map[string]int{}
+	glog.V(4).Infof("Starting services for %s %s\n", pid, sid)
 	for len(started) < len(stackServices) {
+		if len(errors) > 0 {
+			// Dependent service is in error, abort
+			glog.V(4).Infof("Aborting startup due to error\n")
+			break
+		}
+
 		stack, _ = s.getStackWithStatus(pid, sid)
 		for _, stackService := range stack.Services {
+			if stackService.Status == "error" {
+				errors[stackService.Service] = 1
+				break
+			}
+
 			if started[stackService.Service] == 1 {
 				continue
 			}
@@ -1211,7 +1225,6 @@ func (s *Server) startStack(pid string, stack *api.Stack) (*api.Stack, error) {
 	}
 
 	ready := map[string]int{}
-	errors := map[string]int{}
 	for len(ready) < len(started) && len(errors) == 0 {
 		stack, _ = s.getStackWithStatus(pid, sid)
 		for _, stackService := range stack.Services {
@@ -1314,8 +1327,7 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 		stackService := &stack.Services[i]
 		stackService.Endpoints = []api.Endpoint{}
 
-		//glog.V(4).Infof("Stack Service %s %s\n", stackService.Service, podStatus[stackService.Service])
-		glog.V(4).Infof("Stack service %s: status=%s, message=%s\n", stackService.Id, stackService.Status, stackService.StatusMessage)
+		glog.V(4).Infof("Stack service %s: status=%s\n", stackService.Id, stackService.Status)
 
 		//stackService.Status = podStatus[stackService.Service]
 		endpoint, ok := endpoints[stackService.Service]
@@ -1441,6 +1453,7 @@ func (s *Server) stopStack(pid string, sid string) (*api.Stack, error) {
 	for i := range stack.Services {
 		stackService := &stack.Services[i]
 		stackService.Status = podStatus[stackService.Service]
+		stackService.StatusMessages = []string{}
 		stackService.Endpoints = nil
 	}
 
@@ -1694,15 +1707,21 @@ func (s *Server) getLogs(pid string, sid string, ssid string, tailLines int) (st
 		return "", err
 	}
 
+	log := ""
 	for _, ss := range stack.Services {
 		if ss.Id == ssid {
+
+			for _, msg := range ss.StatusMessages {
+				log += msg + "\n"
+			}
 			// Find the pod for this service
 			for _, pod := range pods {
 				if pod.Labels["name"] == ssid {
-					log, err := s.kube.GetLog(pid, pod.Name, tailLines)
+					podLog, err := s.kube.GetLog(pid, pod.Name, tailLines)
 					if err != nil {
 						return "", err
 					} else {
+						log += podLog
 						return log, nil
 					}
 				}
@@ -1786,7 +1805,8 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 				stackService.Status = "error"
 			}
 
-			stackService.StatusMessage = fmt.Sprintf("Reason=%s, Message=%s", event.Reason, event.Message)
+			stackService.StatusMessages = append(stackService.StatusMessages,
+				fmt.Sprintf("Reason=%s, Message=%s", event.Reason, event.Message))
 		} else {
 			// This is a Pod event
 			ready := false
@@ -1801,16 +1821,16 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 						reason := pod.Status.ContainerStatuses[0].State.Terminated.Reason
 						message := pod.Status.ContainerStatuses[0].State.Terminated.Message
 						stackService.Status = "error"
-						stackService.StatusMessage = fmt.Sprintf("Reason=%s, Message=%s", reason, message)
+						stackService.StatusMessages = append(stackService.StatusMessages,
+							fmt.Sprintf("Reason=%s, Message=%s", reason, message))
 					}
 				} else {
 					reason := pod.Status.Conditions[0].Reason
 					message := pod.Status.Conditions[0].Message
-					stackService.StatusMessage = fmt.Sprintf("Reason=%s, Message=%s", reason, message)
+					stackService.StatusMessages = append(stackService.StatusMessages,
+						fmt.Sprintf("Reason=%s, Message=%s", reason, message))
 				}
 
-			} else {
-				stackService.StatusMessage = ""
 			}
 
 			if ready {
@@ -1823,8 +1843,12 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 				}
 			}
 		}
+		message := ""
+		if len(stackService.StatusMessages) > 0 {
+			message = stackService.StatusMessages[len(stackService.StatusMessages)-1]
+		}
 		glog.V(4).Infof("Namespace: %s, Pod: %s, Status: %s, StatusMessage: %s\n", pid, pod.Name,
-			stackService.Status, stackService.StatusMessage)
+			stackService.Status, message)
 		s.etcd.PutStack(pid, sid, stack)
 	}
 }
@@ -1859,9 +1883,11 @@ func (s *Server) HandleReplicationControllerEvent(eventType watch.EventType, eve
 				stackService.Status = "error"
 			}
 
-			stackService.StatusMessage = fmt.Sprintf("Reason=%s, Message=%s", event.Reason, event.Message)
+			stackService.StatusMessages = append(stackService.StatusMessages,
+				fmt.Sprintf("Reason=%s, Message=%s", event.Reason, event.Message))
+
 			glog.V(4).Infof("Namespace: %s, ReplicationController: %s, Status: %s, StatusMessage: %s\n", pid, rc.Name,
-				stackService.Status, stackService.StatusMessage)
+				stackService.Status, stackService.StatusMessages[len(stackService.StatusMessages)-1])
 		}
 		s.etcd.PutStack(pid, sid, stack)
 	}

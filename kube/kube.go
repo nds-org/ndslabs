@@ -342,40 +342,42 @@ func (k *KubeHelper) StartController(pid string, spec *api.ReplicationController
 	time.Sleep(time.Second * 5)
 
 	// Wait for pods in ready state
-	ready := 0
-	pods, _ := k.GetPods(pid, "rc", name)
+	/*
+		ready := 0
+		pods, _ := k.GetPods(pid, "rc", name)
 
-	glog.V(4).Infof("Waiting for %d pod to be ready %s\n", len(pods), name)
-	for ready < len(pods) {
-		for _, pod := range pods {
-			if len(pod.Status.Conditions) > 0 {
-				condition := pod.Status.Conditions[0]
-				phase := pod.Status.Phase
-				containerState := ""
-				if len(pod.Status.ContainerStatuses) > 0 {
-					state := pod.Status.ContainerStatuses[0].State
-					switch {
-					case state.Running != nil:
-						containerState = "running"
-					case state.Waiting != nil:
-						containerState = "waiting"
-					case state.Terminated != nil:
-						containerState = "terminated"
+		glog.V(4).Infof("Waiting for %d pod to be ready %s\n", len(pods), name)
+		for ready < len(pods) {
+			for _, pod := range pods {
+				if len(pod.Status.Conditions) > 0 {
+					condition := pod.Status.Conditions[0]
+					phase := pod.Status.Phase
+					containerState := ""
+					if len(pod.Status.ContainerStatuses) > 0 {
+						state := pod.Status.ContainerStatuses[0].State
+						switch {
+						case state.Running != nil:
+							containerState = "running"
+						case state.Waiting != nil:
+							containerState = "waiting"
+						case state.Terminated != nil:
+							containerState = "terminated"
+						}
 					}
-				}
 
-				glog.V(4).Infof("Waiting for pod %s (%s=%s) [%s, %#v]\n", pod.Name, condition.Type, condition.Status, phase, containerState)
+					glog.V(4).Infof("Waiting for pod %s (%s=%s) [%s, %#v]\n", pod.Name, condition.Type, condition.Status, phase, containerState)
 
-				if condition.Type == "Ready" && condition.Status == "True" {
-					ready++
-				} else {
-					pods, _ = k.GetPods(pid, "rc", name)
-					time.Sleep(time.Second * 2)
+					if condition.Type == "Ready" && condition.Status == "True" {
+						ready++
+					} else {
+						pods, _ = k.GetPods(pid, "rc", name)
+						time.Sleep(time.Second * 2)
+					}
 				}
 			}
 		}
-	}
-	glog.V(4).Infof("Pods ready for %s %s\n", pid, name)
+		glog.V(4).Infof("Pods ready for %s %s\n", pid, name)
+	*/
 	return true, nil
 }
 

@@ -12,7 +12,7 @@
         }
     ],
 	"depends": [
-	    { "key": "memhog", "required": true }
+	    { "key": "noimagetest", "required": true }
 	],
     "resourceLimits": {
         "cpuMax": "1",
