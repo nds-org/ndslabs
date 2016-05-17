@@ -865,6 +865,29 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
+	// Get the existing stack
+	existingStack, err := s.etcd.GetStack(pid, sid)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Find any services that have been added or removed
+	for _, ss1 := range existingStack.Services {
+		found := false
+		for _, ss2 := range stack.Services {
+			if ss1.Id == ss2.Id {
+				found = true
+			}
+		}
+
+		if !found {
+			// Service has been removed, detach the associated volume
+			s.detachVolume(pid, ss1.Id)
+		}
+	}
+
 	for i := range stack.Services {
 		stackService := &stack.Services[i]
 		stackService.Id = fmt.Sprintf("%s-%s", sid, stackService.Service)
@@ -1726,4 +1749,19 @@ func (s *Server) loadSpecs(path string) error {
 		}
 	}
 	return nil
+}
+
+func (s *Server) detachVolume(pid string, ssid string) bool {
+	volumes, _ := s.etcd.GetVolumes(pid)
+
+	for _, volume := range *volumes {
+		if volume.Attached == ssid {
+			glog.V(4).Infof("Detaching volume %s\n", volume.Id)
+			volume.Attached = ""
+			volume.Status = "available"
+			s.etcd.PutVolume(pid, volume.Id, volume)
+			return true
+		}
+	}
+	return false
 }
