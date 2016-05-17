@@ -501,6 +501,13 @@ func (s *Server) DeleteProject(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	err = os.RemoveAll(s.volDir + "/" + pid)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -1014,18 +1021,11 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 
 				if volume.Format == "hostPath" {
 					k8hostPath := k8api.HostPathVolumeSource{}
-					k8hostPath.Path = s.volDir + "/" + volume.Id
+					k8hostPath.Path = s.volDir + "/" + pid + "/" + volume.Id
 					k8vol.HostPath = &k8hostPath
 					k8vols = append(k8vols, k8vol)
 
-					glog.V(4).Infof("Attaching %s\n", s.volDir+"/"+volume.Id)
-				} else if volume.Format == "cinder" {
-					k8cinder := k8api.CinderVolumeSource{}
-					k8cinder.VolumeID = volume.Id
-					k8cinder.FSType = "xfs"
-					k8vol.Cinder = &k8cinder
-					k8vols = append(k8vols, k8vol)
-					glog.V(4).Infof("Attaching cinder %s\n", volume.Id)
+					glog.V(4).Infof("Attaching %s\n", s.volDir+"/"+pid+"/"+volume.Id)
 				} else {
 					glog.Warning("Invalid volume format\n")
 				}
@@ -1476,7 +1476,7 @@ func (s *Server) PostVolume(w rest.ResponseWriter, r *rest.Request) {
 	}
 	vol.Id = uid
 
-	err = os.Mkdir(s.volDir+"/"+uid, 0755)
+	err = os.MkdirAll(s.volDir+"/"+pid+"/"+uid, 0755)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1584,7 +1584,7 @@ func (s *Server) DeleteVolume(w rest.ResponseWriter, r *rest.Request) {
 
 	glog.V(4).Infof("Format %s\n", volume.Format)
 	if volume.Format == "hostPath" {
-		err = os.RemoveAll(s.volDir + "/" + volume.Id)
+		err = os.RemoveAll(s.volDir + "/" + pid + "/" + volume.Id)
 		if err != nil {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
