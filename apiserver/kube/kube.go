@@ -19,6 +19,7 @@ import (
 	"golang.org/x/net/websocket"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/client/unversioned/remotecommand"
 	remotecommandserver "k8s.io/kubernetes/pkg/kubelet/server/remotecommand"
@@ -27,6 +28,7 @@ import (
 )
 
 var apiBase = "/api/v1"
+var extBase = "/apis/extensions/v1beta1"
 
 type ServiceAddrPort struct {
 	Name     string
@@ -262,6 +264,7 @@ func (k *KubeHelper) StartController(pid string, spec *api.ReplicationController
 			}
 		}
 	}
+
 	return true, nil
 }
 
@@ -308,6 +311,7 @@ func (k *KubeHelper) StartService(pid string, spec *api.Service) (*api.Service, 
 			}
 		}
 	}
+
 	return nil, nil
 }
 
@@ -793,18 +797,6 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	return &k8rc
 }
 
-/*
-func (k *KubeHelper) GenerateName(stack string, service string, randomLength int) string {
-	return fmt.Sprintf("%s-%s-%s", stack, service, utilrand.String(randomLength))
-}
-*/
-
-/*
-func (k *KubeHelper) GenerateName(stack string, randomLength int) string {
-	return fmt.Sprintf("%s-%s", stack, utilrand.String(randomLength))
-}
-*/
-
 func (k *KubeHelper) GenerateName(randomLength int) string {
 	return fmt.Sprintf("s%s", utilrand.String(randomLength))
 }
@@ -897,4 +889,104 @@ func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHe
 	})
 
 	return &wsHandler
+}
+
+func (k *KubeHelper) CreateIngress(pid string, host string, service string, port int, secretName string) (*extensions.Ingress, error) {
+
+	ingress := extensions.Ingress{
+		ObjectMeta: api.ObjectMeta{
+			Name:      service + "-ingress",
+			Namespace: pid,
+		},
+		Spec: extensions.IngressSpec{
+			/*
+				TLS: []extensions.IngressTLS{
+					extensions.IngressTLS{
+						Hosts: []string{host},
+						SecretName: secretName,
+					},
+				},
+			*/
+			Rules: []extensions.IngressRule{
+				extensions.IngressRule{
+					Host: host,
+					IngressRuleValue: extensions.IngressRuleValue{
+						HTTP: &extensions.HTTPIngressRuleValue{
+							Paths: []extensions.HTTPIngressPath{
+								extensions.HTTPIngressPath{
+									Path: "/",
+									Backend: extensions.IngressBackend{
+										ServiceName: service,
+										ServicePort: intstr.FromInt(port),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	data, err := json.Marshal(ingress)
+	if err != nil {
+		return nil, err
+	}
+
+	url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses/"
+	glog.V(4).Infoln(url)
+	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", k.getAuthHeader())
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusCreated {
+			glog.V(2).Infof("Added ingress %s-%s\n", pid, service)
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			json.Unmarshal(data, &ingress)
+			return &ingress, nil
+		} else if httpresp.StatusCode == http.StatusConflict {
+			return nil, fmt.Errorf("Ingress exists for namespace %s: %s\n", pid, httpresp.Status)
+		} else {
+			return nil, fmt.Errorf("Error adding ingress for namespace %s: %s\n", pid, httpresp.Status)
+		}
+	}
+	return nil, nil
+}
+
+//http://kubernetes.io/docs/api-reference/extensions/v1beta1/operations/
+func (k *KubeHelper) DeleteIngress(pid string, name string) (*extensions.Ingress, error) {
+
+	url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses/" + name + "-ingress"
+	glog.V(4).Infoln(url)
+	request, _ := http.NewRequest("DELETE", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", k.getAuthHeader())
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusOK {
+			glog.V(2).Infof("Deleted ingress %s\n", pid)
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			ingress := extensions.Ingress{}
+			json.Unmarshal(data, &ingress)
+			return &ingress, nil
+		} else {
+			return nil, fmt.Errorf("Error deleting ingress for project %s: %s\n", pid, httpresp.Status)
+		}
+	}
+	return nil, nil
 }

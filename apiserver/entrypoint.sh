@@ -24,6 +24,10 @@ if [ "$1" = 'apiserver' ]; then
 		TIMEOUT="30"
 	fi
 
+	if [ -z "$INGRESS" ]; then 
+		INGRESS="NodePort"
+	fi
+
 cat << EOF > /apiserver.conf
 [Server]
 Port=30001
@@ -33,6 +37,8 @@ VolumeSource=local
 SpecsDir=/specs
 Timeout=$TIMEOUT
 Prefix=$PREFIX
+Ingress=$INGRESS
+Domain=$DOMAIN
 
 [Etcd]
 Address=$ETCD_ADDR

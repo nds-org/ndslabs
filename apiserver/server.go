@@ -34,6 +34,10 @@ type Server struct {
 	hostname  string
 	jwt       *jwt.JWTMiddleware
 	prefix    string
+	ingress   IngressType
+	domain    string
+	sslCert   string
+	sslKey    string
 }
 
 type Config struct {
@@ -47,6 +51,8 @@ type Config struct {
 		SSLCert      string
 		Timeout      int
 		Prefix       string
+		Domain       string
+		Ingress      IngressType // NodePort or LoadBalancer
 	}
 	Etcd struct {
 		Address string
@@ -58,6 +64,13 @@ type Config struct {
 		Password  string
 	}
 }
+
+type IngressType string
+
+const (
+	IngressTypeLoadBalancer IngressType = "LoadBalancer"
+	IngressTypeNodePort     IngressType = "NodePort"
+)
 
 func main() {
 
@@ -105,9 +118,22 @@ func main() {
 
 	server := Server{}
 	server.hostname = hostname
+	if cfg.Server.Ingress == IngressTypeLoadBalancer {
+		if len(cfg.Server.Domain) > 0 {
+			server.domain = cfg.Server.Domain
+		} else {
+			glog.Fatal("Domain must be specified for ingress type LoadBalancer")
+		}
+	}
 	server.etcd = etcd
 	server.kube = kube
 	server.volDir = cfg.Server.VolDir
+
+	server.ingress = IngressTypeNodePort
+	if cfg.Server.Ingress != "" {
+		server.ingress = cfg.Server.Ingress
+	}
+
 	server.prefix = "/api/"
 	if cfg.Server.Prefix != "" {
 		server.prefix = cfg.Server.Prefix
@@ -151,6 +177,8 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		timeout = time.Minute * time.Duration(cfg.Server.Timeout)
 	}
 	glog.Infof("session timeout %s", timeout)
+	glog.Infof("domain %s", cfg.Server.Domain)
+	glog.Infof("ingress %s", cfg.Server.Ingress)
 
 	jwt := &jwt.JWTMiddleware{
 		Key:        []byte(s.hostname),
@@ -261,12 +289,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 	http.Handle(s.prefix, api.MakeHandler())
 
 	glog.Infof("Listening on %s", cfg.Server.Port)
-	if len(cfg.Server.SSLCert) > 0 {
-		glog.Fatal(http.ListenAndServeTLS(":"+cfg.Server.Port,
-			cfg.Server.SSLCert, cfg.Server.SSLKey, nil))
-	} else {
-		glog.Fatal(http.ListenAndServe(":"+cfg.Server.Port, nil))
-	}
+	glog.Fatal(http.ListenAndServe(":"+cfg.Server.Port, nil))
 }
 
 func (s *Server) CheckConsole(w rest.ResponseWriter, r *rest.Request) {
@@ -885,6 +908,8 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 		if !found {
 			// Service has been removed, detach the associated volume
 			s.detachVolume(pid, ss1.Id)
+
+			// Delete ingress
 		}
 	}
 
@@ -1169,6 +1194,18 @@ func (s *Server) startStack(pid string, stack *api.Stack) (*api.Stack, error) {
 					glog.Errorf("Error starting service %s\n", name)
 					return nil, err
 				}
+
+				if s.ingress == IngressTypeLoadBalancer {
+					host := fmt.Sprintf("%s.%s", svc.Name, s.domain)
+					secret := fmt.Sprintf("%s-secret", pid)
+					_, err := s.kube.CreateIngress(pid, host, svc.Name,
+						int(svc.Spec.Ports[0].Port), secret)
+					if err != nil {
+						glog.Errorf("Error creating ingress %s\n", name)
+						return nil, err
+					}
+					glog.V(4).Infof("Started ingress %s for service %s\n", host, svc.Name)
+				}
 			}
 			if svc == nil {
 				glog.V(4).Infof("Failed to start service service %s\n", name)
@@ -1306,12 +1343,15 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 	for _, k8service := range k8services {
 		label := k8service.Labels["service"]
 		glog.V(4).Infof("Service : %s %s (%s)\n", k8service.Name, k8service.Spec.Type, label)
+
 		endpoint := api.Endpoint{}
 		endpoint.InternalIP = k8service.Spec.ClusterIP
 		endpoint.Port = k8service.Spec.Ports[0].Port
 		endpoint.Protocol = strings.ToLower(string(k8service.Spec.Ports[0].Protocol))
 		endpoint.NodePort = k8service.Spec.Ports[0].NodePort
+		endpoint.Host = fmt.Sprintf("%s-%s.%s", pid, k8service.Name, s.domain)
 		endpoints[label] = endpoint
+
 	}
 
 	for i := range stack.Services {
@@ -1420,6 +1460,10 @@ func (s *Server) stopStack(pid string, sid string) (*api.Stack, error) {
 					if err != nil {
 						glog.Error(err)
 					}
+				}
+				if s.ingress == IngressTypeLoadBalancer {
+					s.kube.DeleteIngress(pid, stackService.Id)
+					glog.V(4).Infof("Stopped ingress for service %s\n", stackService.Id)
 				}
 
 				glog.V(4).Infof("Stopping controller %s\n", name)
