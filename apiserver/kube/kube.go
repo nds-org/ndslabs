@@ -636,7 +636,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 		},
 	}
 
-	if spec.Access == "external" {
+	if spec.Access == ndsapi.AccessExternal {
 		k8svc.Spec.Type = api.ServiceTypeNodePort
 	}
 

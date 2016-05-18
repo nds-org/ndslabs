@@ -17,9 +17,16 @@ type ServiceSpec struct {
 	Args           []string            `json:"args"`
 	Command        []string            `json:"command"`
 	Dependencies   []ServiceDependency `json:"depends"`
-	Access         string              `json:"access"`
+	Access         AccessType          `json:"access"`
 	Display        string              `json:"display"`
 }
+
+type AccessType string
+
+const (
+	AccessExternal AccessType = "external"
+	AccessInternal AccessType = "internal"
+)
 
 type Config struct {
 	Name        string `json:"name"`

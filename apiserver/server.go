@@ -1195,7 +1195,9 @@ func (s *Server) startStack(pid string, stack *api.Stack) (*api.Stack, error) {
 					return nil, err
 				}
 
-				if s.ingress == IngressTypeLoadBalancer {
+				if s.ingress == IngressTypeLoadBalancer &&
+					spec.Access == api.AccessExternal {
+
 					host := fmt.Sprintf("%s.%s", svc.Name, s.domain)
 					secret := fmt.Sprintf("%s-secret", pid)
 					_, err := s.kube.CreateIngress(pid, host, svc.Name,
@@ -1349,7 +1351,6 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 		endpoint.Port = k8service.Spec.Ports[0].Port
 		endpoint.Protocol = strings.ToLower(string(k8service.Spec.Ports[0].Protocol))
 		endpoint.NodePort = k8service.Spec.Ports[0].NodePort
-		endpoint.Host = fmt.Sprintf("%s-%s.%s", pid, k8service.Name, s.domain)
 		endpoints[label] = endpoint
 
 	}
@@ -1372,6 +1373,10 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 				if port.Port == endpoint.Port {
 					endpoint.Protocol = port.Protocol
 				}
+			}
+
+			if s.ingress == IngressTypeLoadBalancer && svc.Access == api.AccessExternal {
+				endpoint.Host = fmt.Sprintf("%s.%s", stackService.Id, s.domain)
 			}
 
 			stackService.Endpoints = append(stackService.Endpoints, endpoint)
