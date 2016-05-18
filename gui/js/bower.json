@@ -25,7 +25,8 @@
     "angular-gage": "^0.1.0",
     "angular-messages": "^1.5.0",
     "angular-bootstrap-pwgen": "^0.1.1",
-    "term.js": "https://github.com/chjj/term.js.git#^0.0.7"
+    "term.js": "https://github.com/chjj/term.js.git#^0.0.7",
+	"angular-chart.js": "^0.10.2"
   },
   "resolutions": {
     "angular": ">=1.5.0"
