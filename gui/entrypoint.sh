@@ -4,6 +4,7 @@
 /bin/sed -i -e "s#^\.constant('ApiHost', '.*')#.constant('ApiHost', '${APISERVER_HOST}')#" "/home/js/app/app.js"
 /bin/sed -i -e "s#^\.constant('ApiPort', '.*')#.constant('ApiPort', '${APISERVER_PORT}')#" "/home/js/app/app.js"
 /bin/sed -i -e "s#^\.constant('ApiPath', '.*')#.constant('ApiPath', '${APISERVER_PATH}')#" "/home/js/app/app.js"
+/bin/sed -i -e "s#^\.constant('ApiSecure', '.*')#.constant('ApiSecure', '${APISERVER_SECURE}')#" "/home/js/app/app.js"
 
 # Move contents to the appropriate base path
 # TODO: Is this necessary?
