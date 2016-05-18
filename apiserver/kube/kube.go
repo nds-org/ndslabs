@@ -899,14 +899,12 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 			Namespace: pid,
 		},
 		Spec: extensions.IngressSpec{
-			/*
-				TLS: []extensions.IngressTLS{
-					extensions.IngressTLS{
-						Hosts: []string{host},
-						SecretName: secretName,
-					},
+			TLS: []extensions.IngressTLS{
+				extensions.IngressTLS{
+					Hosts:      []string{host},
+					SecretName: secretName,
 				},
-			*/
+			},
 			Rules: []extensions.IngressRule{
 				extensions.IngressRule{
 					Host: host,
@@ -986,6 +984,108 @@ func (k *KubeHelper) DeleteIngress(pid string, name string) (*extensions.Ingress
 			return &ingress, nil
 		} else {
 			return nil, fmt.Errorf("Error deleting ingress for project %s: %s\n", pid, httpresp.Status)
+		}
+	}
+	return nil, nil
+}
+
+func (k *KubeHelper) CreateTLSSecret(pid string, secretName string, tlsCert []byte, tlsKey []byte) (*api.Secret, error) {
+
+	secret := api.Secret{
+		ObjectMeta: api.ObjectMeta{
+			Name:      secretName,
+			Namespace: pid,
+		},
+		Data: map[string][]byte{
+			"tls.crt": tlsCert,
+			"tls.key": tlsKey,
+		},
+	}
+
+	data, err := json.Marshal(secret)
+	if err != nil {
+		return nil, err
+	}
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/secrets"
+	glog.V(4).Infoln(url)
+	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", k.getAuthHeader())
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusCreated {
+			glog.V(2).Infof("Added secret %s %s\n", pid, secretName)
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			json.Unmarshal(data, &secret)
+			return &secret, nil
+		} else if httpresp.StatusCode == http.StatusConflict {
+			return nil, fmt.Errorf("Secret %s exists for project %s: %s\n", secretName, pid, httpresp.Status)
+		} else {
+			return nil, fmt.Errorf("Error adding secret %s for project %s: %s\n", secretName, pid, httpresp.Status)
+		}
+	}
+	return nil, nil
+}
+
+func (k *KubeHelper) DeleteSecret(pid string, name string) (*api.Secret, error) {
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/secrets/" + name
+	glog.V(4).Infoln(url)
+	request, _ := http.NewRequest("DELETE", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", k.getAuthHeader())
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusOK {
+			glog.V(2).Infof("Deleted secret %s %s\n", pid, name)
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			secret := api.Secret{}
+			json.Unmarshal(data, &secret)
+			return &secret, nil
+		} else {
+			return nil, fmt.Errorf("Error deleting secret %s for project %s: %s\n", name, pid, httpresp.Status)
+		}
+	}
+	return nil, nil
+}
+
+func (k *KubeHelper) GetSecret(pid string, secretName string) (*api.Secret, error) {
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/secrets/" + secretName
+	glog.V(4).Infoln(url)
+	request, _ := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", k.getAuthHeader())
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusOK {
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			secret := api.Secret{}
+			json.Unmarshal(data, &secret)
+			return &secret, nil
+		} else {
+			return nil, fmt.Errorf("Error getting secret %s for project %s: %s\n", secretName, pid, httpresp.Status)
 		}
 	}
 	return nil, nil

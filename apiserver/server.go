@@ -36,8 +36,6 @@ type Server struct {
 	prefix    string
 	ingress   IngressType
 	domain    string
-	sslCert   string
-	sslKey    string
 }
 
 type Config struct {
@@ -47,12 +45,10 @@ type Config struct {
 		VolDir       string
 		SpecsDir     string
 		VolumeSource string
-		SSLKey       string
-		SSLCert      string
 		Timeout      int
 		Prefix       string
 		Domain       string
-		Ingress      IngressType // NodePort or LoadBalancer
+		Ingress      IngressType
 	}
 	Etcd struct {
 		Address string
@@ -457,6 +453,16 @@ func (s *Server) PostProject(w rest.ResponseWriter, r *rest.Request) {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	secret, err := s.kube.GetSecret("default", "ndslabs-tls-secret")
+	if secret != nil {
+		secretName := fmt.Sprintf("%s-tls-secret", project.Namespace)
+		_, err := s.kube.CreateTLSSecret(project.Namespace, secretName, secret.Data["tls.crt"], secret.Data["tls.key"])
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	}
 
 	err = s.etcd.PutProject(project.Namespace, &project)
@@ -1198,10 +1204,11 @@ func (s *Server) startStack(pid string, stack *api.Stack) (*api.Stack, error) {
 				if s.ingress == IngressTypeLoadBalancer &&
 					spec.Access == api.AccessExternal {
 
+					secretName := fmt.Sprintf("%s-tls-secret", pid)
+
 					host := fmt.Sprintf("%s.%s", svc.Name, s.domain)
-					secret := fmt.Sprintf("%s-secret", pid)
 					_, err := s.kube.CreateIngress(pid, host, svc.Name,
-						int(svc.Spec.Ports[0].Port), secret)
+						int(svc.Spec.Ports[0].Port), secretName)
 					if err != nil {
 						glog.Errorf("Error creating ingress %s\n", name)
 						return nil, err
@@ -1467,8 +1474,9 @@ func (s *Server) stopStack(pid string, sid string) (*api.Stack, error) {
 					}
 				}
 				if s.ingress == IngressTypeLoadBalancer {
+
 					s.kube.DeleteIngress(pid, stackService.Id)
-					glog.V(4).Infof("Stopped ingress for service %s\n", stackService.Id)
+					glog.V(4).Infof("Deleted ingress for service %s\n", stackService.Id)
 				}
 
 				glog.V(4).Infof("Stopping controller %s\n", name)
