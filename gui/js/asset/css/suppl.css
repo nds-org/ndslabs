@@ -24,7 +24,7 @@
   float: left;
   border: #000 solid 5px;
   font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;
-  font-size: 20px;
+  font-size: 14px;
   color: #f0f0f0;
   background: #000;
 }
@@ -114,8 +114,8 @@
 }
 
 #consolePanel {
-  margin: 10% auto;
-  max-width:1000px;
+  margin: 2% auto;
+  max-width:900px;
 }
 
 #footer {
