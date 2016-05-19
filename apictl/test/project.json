@@ -1,0 +1,14 @@
+{ 
+    "id": "test",
+    "name": "test project",
+    "description": "test project description",
+    "namespace": "test" ,
+    "password": "123456",
+	"resourceLimits": {
+		"cpuMax": "2000m",
+		"cpuDefault": "1000m",
+		"memMax": "8Gi",
+		"memDefault": "1Gi"
+	}
+}
+

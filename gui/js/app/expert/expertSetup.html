@@ -265,7 +265,7 @@
                       </button>
                   
                       <!-- Stop Stack Button -->
-                      <button class="btn btn-sm btn-danger" ng-disabled="stack.status !== 'started' || stopping[stack.id]" 
+                      <button class="btn btn-sm btn-danger" ng-disabled="(stack.status !== 'started' && stack.status !== 'error') || stopping[stack.id]" 
                            ng-click="stopStack(stack)" ng-if="stack.status.indexOf('stop') === -1" uib-tooltip="Stop all services in this stack"
                           tooltip-placement="left">
                         <i class="fa fa-fw fa-stop"></i>

@@ -2,6 +2,7 @@
 package kube
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/tls"
 	"encoding/base64"
@@ -15,9 +16,11 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"github.com/ndslabs/apiserver/events"
 	ndsapi "github.com/ndslabs/apiserver/types"
 	"golang.org/x/net/websocket"
 	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/resource"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/restclient"
@@ -25,6 +28,7 @@ import (
 	remotecommandserver "k8s.io/kubernetes/pkg/kubelet/server/remotecommand"
 	intstr "k8s.io/kubernetes/pkg/util/intstr"
 	utilrand "k8s.io/kubernetes/pkg/util/rand"
+	watch "k8s.io/kubernetes/pkg/watch/json"
 )
 
 var apiBase = "/api/v1"
@@ -39,10 +43,10 @@ type ServiceAddrPort struct {
 
 type KubeHelper struct {
 	kubeBase string
+	client   *http.Client
 	username string
 	password string
 	token    string
-	client   *http.Client
 }
 
 func NewKubeHelper(kubeBase string, username string, password string, tokenPath string) (*KubeHelper, error) {
@@ -128,6 +132,114 @@ func (k *KubeHelper) CreateNamespace(pid string) (*api.Namespace, error) {
 			return nil, fmt.Errorf("Namespace exists for project %s: %s\n", pid, httpresp.Status)
 		} else {
 			return nil, fmt.Errorf("Error adding namespace for project %s: %s\n", pid, httpresp.Status)
+		}
+	}
+	return nil, nil
+}
+
+func (k *KubeHelper) CreateResourceQuota(pid string, cpu string, mem string) (*api.ResourceQuota, error) {
+
+	glog.V(4).Infof("Creating resource quota for %s: %s, %s\n", pid, cpu, mem)
+	rq := api.ResourceQuota{
+		TypeMeta: unversioned.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "ResourceQuota",
+		},
+		ObjectMeta: api.ObjectMeta{Name: "quota"},
+		Spec: api.ResourceQuotaSpec{
+			Hard: api.ResourceList{
+				api.ResourceCPU:    resource.MustParse(cpu),
+				api.ResourceMemory: resource.MustParse(mem),
+			},
+		},
+	}
+
+	data, err := json.MarshalIndent(rq, "", "    ")
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(string(data))
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/resourcequotas"
+	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", k.getAuthHeader())
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusCreated {
+			glog.V(2).Infof("Added quota %s\n", pid)
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			json.Unmarshal(data, &rq)
+			return &rq, nil
+		} else if httpresp.StatusCode == http.StatusConflict {
+			return nil, fmt.Errorf("Quota exists for project %s: %s\n", pid, httpresp.Status)
+		} else {
+			return nil, fmt.Errorf("Error adding quota for project %s: %s\n", pid, httpresp.Status)
+		}
+	}
+	return nil, nil
+}
+
+func (k *KubeHelper) CreateLimitRange(pid string, cpu string, mem string) (*api.LimitRange, error) {
+
+	lr := &api.LimitRange{
+		TypeMeta: unversioned.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "LimitRange",
+		},
+		ObjectMeta: api.ObjectMeta{
+			Name: "limits",
+		},
+		Spec: api.LimitRangeSpec{
+			Limits: []api.LimitRangeItem{
+				{
+					Type: api.LimitTypeContainer,
+					Default: api.ResourceList{
+						api.ResourceCPU:    resource.MustParse(cpu),
+						api.ResourceMemory: resource.MustParse(mem),
+					},
+				},
+			},
+		},
+	}
+
+	data, err := json.MarshalIndent(lr, "", "    ")
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println(string(data))
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/limitranges"
+	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", k.getAuthHeader())
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusCreated {
+			glog.V(2).Infof("Added limit range %s\n", pid)
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			json.Unmarshal(data, &lr)
+			return lr, nil
+		} else if httpresp.StatusCode == http.StatusConflict {
+			return nil, fmt.Errorf("Quota exists for project %s: %s\n", pid, httpresp.Status)
+		} else {
+			return nil, fmt.Errorf("Error adding limit range for project %s: %s\n", pid, httpresp.Status)
 		}
 	}
 	return nil, nil
@@ -231,40 +343,6 @@ func (k *KubeHelper) StartController(pid string, spec *api.ReplicationController
 	// Give Kubernetes time to create the pods for the RC
 	time.Sleep(time.Second * 5)
 
-	// Wait for pods in ready state
-	ready := 0
-	pods, _ := k.GetPods(pid, "rc", name)
-	glog.V(4).Infof("Waiting for %d pod to be ready %s\n", len(pods), name)
-	for ready < len(pods) {
-		for _, pod := range pods {
-			if len(pod.Status.Conditions) > 0 {
-				condition := pod.Status.Conditions[0]
-				phase := pod.Status.Phase
-				containerState := ""
-				if len(pod.Status.ContainerStatuses) > 0 {
-					state := pod.Status.ContainerStatuses[0].State
-					switch {
-					case state.Running != nil:
-						containerState = "running"
-					case state.Waiting != nil:
-						containerState = "waiting"
-					case state.Terminated != nil:
-						containerState = "terminated"
-					}
-				}
-
-				glog.V(4).Infof("Waiting for pod %s (%s=%s) [%s, %#v]\n", pod.Name, condition.Type, condition.Status, phase, containerState)
-
-				if condition.Type == "Ready" && condition.Status == "True" {
-					ready++
-				} else {
-					pods, _ = k.GetPods(pid, "rc", name)
-					time.Sleep(time.Second * 2)
-				}
-			}
-		}
-	}
-
 	return true, nil
 }
 
@@ -344,7 +422,8 @@ func (k *KubeHelper) GetService(pid string, name string) (*api.Service, error) {
 			json.Unmarshal(data, &service)
 			return &service, nil
 		} else {
-			glog.Warningf("Failed to get Kubernetes service: %s %d", resp.Status, resp.StatusCode)
+			glog.Warningf("Failed to get Kubernetes service %s:%s: %s %d", pid, name,
+				resp.Status, resp.StatusCode)
 		}
 	}
 	return nil, nil
@@ -734,6 +813,20 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 		}
 	}
 
+	k8rq := api.ResourceRequirements{}
+	if len(spec.ResourceLimits.CPUMax) > 0 && len(spec.ResourceLimits.MemoryMax) > 0 {
+		k8rq.Limits = api.ResourceList{
+			api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUMax),
+			api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryMax),
+		}
+		k8rq.Requests = api.ResourceList{
+			api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUDefault),
+			api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryDefault),
+		}
+	} else {
+		glog.Warningf("No resource requirements specified for service %s\n", spec.Label)
+	}
+
 	k8template := api.PodTemplateSpec{
 		ObjectMeta: api.ObjectMeta{
 			Labels: map[string]string{
@@ -752,6 +845,7 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 					Ports:        k8cps,
 					Args:         spec.Args,
 					Command:      spec.Command,
+					Resources:    k8rq,
 				},
 			},
 			NodeSelector: map[string]string{
@@ -802,6 +896,158 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 
 func (k *KubeHelper) GenerateName(randomLength int) string {
 	return fmt.Sprintf("s%s", utilrand.String(randomLength))
+}
+
+func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
+	glog.V(4).Infoln("WatchEvents started")
+
+	for {
+		startTime := time.Now()
+		url := k.kubeBase + apiBase + "/watch/events"
+		request, _ := http.NewRequest("GET", url, nil)
+		request.Header.Set("Content-Type", "application/json")
+		request.Header.Set("Authorization", k.getAuthHeader())
+		httpresp, httperr := k.client.Do(request)
+		if httperr != nil {
+			glog.Error(httperr)
+			return
+		} else {
+			if httpresp.StatusCode == http.StatusOK {
+				reader := bufio.NewReader(httpresp.Body)
+				for {
+					data, err := reader.ReadBytes('\n')
+					if err != nil {
+						glog.Error(err)
+						break
+					}
+
+					wevent := watch.WatchEvent{}
+					json.Unmarshal(data, &wevent)
+
+					event := api.Event{}
+
+					json.Unmarshal([]byte(wevent.Object.Raw), &event)
+
+					created := event.LastTimestamp
+					if created.After(startTime) {
+
+						if event.InvolvedObject.Kind == "Pod" {
+							pod, err := k.GetPod(event.InvolvedObject.Namespace, event.InvolvedObject.Name)
+							if err != nil {
+								glog.Error(err)
+							}
+							if pod != nil {
+								handler.HandlePodEvent(wevent.Type, &event, pod)
+							}
+						} else if event.InvolvedObject.Kind == "ReplicationController" {
+							rc, err := k.GetReplicationController(event.InvolvedObject.Namespace,
+								event.InvolvedObject.Name)
+							if err != nil {
+								glog.Error(err)
+							}
+							if rc != nil {
+								handler.HandleReplicationControllerEvent(wevent.Type, &event, rc)
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+func (k *KubeHelper) WatchPods(handler events.EventHandler) {
+	glog.V(4).Infoln("WatchPods started")
+	url := k.kubeBase + apiBase + "/watch/pods"
+
+	for {
+		request, _ := http.NewRequest("GET", url, nil)
+		request.Header.Set("Content-Type", "application/json")
+		request.Header.Set("Authorization", k.getAuthHeader())
+		httpresp, httperr := k.client.Do(request)
+		if httperr != nil {
+			glog.Error(httperr)
+			return
+		} else {
+			if httpresp.StatusCode == http.StatusOK {
+				reader := bufio.NewReader(httpresp.Body)
+				for {
+					data, err := reader.ReadBytes('\n')
+					if err != nil {
+						glog.Error(err)
+						break
+					}
+
+					wevent := watch.WatchEvent{}
+					json.Unmarshal(data, &wevent)
+
+					pod := api.Pod{}
+
+					json.Unmarshal([]byte(wevent.Object.Raw), &pod)
+
+					handler.HandlePodEvent(wevent.Type, nil, &pod)
+				}
+			}
+		}
+	}
+}
+
+func (k *KubeHelper) GetPod(pid string, name string) (*api.Pod, error) {
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + name
+	request, _ := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", k.getAuthHeader())
+	resp, err := k.client.Do(request)
+
+	if err != nil {
+		glog.Error(err)
+		return nil, err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				glog.Error(err)
+				return nil, err
+			}
+
+			pod := api.Pod{}
+			json.Unmarshal(data, &pod)
+			return &pod, nil
+		} else {
+			glog.Warningf("Get pod failed (%s): %s %d", name, resp.Status, resp.StatusCode)
+		}
+	}
+	return nil, nil
+}
+
+func (k *KubeHelper) GetReplicationController(pid string, name string) (*api.ReplicationController, error) {
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers/" + name
+	request, _ := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", k.getAuthHeader())
+	resp, err := k.client.Do(request)
+
+	if err != nil {
+		glog.Error(err)
+		return nil, err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				glog.Error(err)
+				return nil, err
+			}
+
+			rc := api.ReplicationController{}
+			json.Unmarshal(data, &rc)
+			return &rc, nil
+		} else {
+			glog.Warningf("Get replicationcontroller failed (%s): %s %d", name, resp.Status, resp.StatusCode)
+		}
+	}
+	return nil, nil
 }
 
 func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHelper) *websocket.Handler {

@@ -19,6 +19,7 @@ type ServiceSpec struct {
 	Dependencies   []ServiceDependency `json:"depends"`
 	Access         AccessType          `json:"access"`
 	Display        string              `json:"display"`
+	ResourceLimits ResourceLimits      `json:"resourceLimits"`
 }
 
 type AccessType string
@@ -58,13 +59,22 @@ type ProjectList struct {
 }
 
 type Project struct {
-	Id           string `json:"id"`
-	Name         string `json:"name"`
-	Description  string `json:"description"`
-	Namespace    string `json:"namespace"`
-	StorageQuota int    `json:"storageQuota"`
-	EmailAddress string `json:"email"`
-	Password     string `json:"password"`
+	Id             string         `json:"id"`
+	Name           string         `json:"name"`
+	Description    string         `json:"description"`
+	Namespace      string         `json:"namespace"`
+	StorageQuota   int            `json:"storageQuota"`
+	EmailAddress   string         `json:"email"`
+	Password       string         `json:"password"`
+	ResourceLimits ResourceLimits `json:"resourceLimits"`
+}
+
+type ResourceLimits struct {
+	CPUMax        string `json:"cpuMax"`
+	CPUDefault    string `json:"cpuDefault"`
+	MemoryMax     string `json:"memMax"`
+	MemoryDefault string `json:"memDefault"`
+	StorageQuota  string `json:"storageQuota"`
 }
 
 type ServiceList struct {
@@ -104,14 +114,15 @@ type Stack struct {
 }
 
 type StackService struct {
-	Id          string            `json:"id"`
-	Stack       string            `json:"stack"`
-	Service     string            `json:"service"`
-	Status      string            `json:"status"`
-	Endpoints   []Endpoint        `json:"endpoints,omitempty"`
-	CreatedTime int               `json:"createdTime"`
-	UpdatedTime int               `json:"updateTime"`
-	Config      map[string]string `json:"config"`
+	Id             string            `json:"id"`
+	Stack          string            `json:"stack"`
+	Service        string            `json:"service"`
+	Status         string            `json:"status"`
+	StatusMessages []string          `json:"statusMessages"`
+	Endpoints      []Endpoint        `json:"endpoints,omitempty"`
+	CreatedTime    int               `json:"createdTime"`
+	UpdatedTime    int               `json:"updateTime"`
+	Config         map[string]string `json:"config"`
 }
 
 type Endpoint struct {
