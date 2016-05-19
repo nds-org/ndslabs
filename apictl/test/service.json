@@ -1,0 +1,38 @@
+{
+    "kind": "Service",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "smgnd7-icat",
+        "creationTimestamp": null,
+        "labels": {
+            "name": "smgnd7-icat",
+            "service": "icat",
+            "stack": "smgnd7"
+        }
+    },
+    "spec": {
+        "type": "NodePort",
+        "ports": [
+            {
+                "name": "1247",
+                "protocol": "TCP",
+                "port": 1247,
+                "targetPort": 0,
+                "nodePort": 0
+            },
+            {
+                "name": "8080",
+                "protocol": "TCP",
+                "port": 8080,
+                "targetPort": 0,
+                "nodePort": 0
+            }
+        ],
+        "selector": {
+            "name": "smgnd7-icat"
+        }
+    },
+    "status": {
+        "loadBalancer": {}
+    }
+}
