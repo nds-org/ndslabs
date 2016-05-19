@@ -9,7 +9,7 @@ TAG=develop
 
 
 # If -c specified, clean old image
-if [ "${@/-c/ }" == "$@" ]; then
+if [[ "${@/-c/ }" != "$@" ]]; then
 	echo "Removing image: $REPO/$IMAGE:$TAG"
 	docker rmi -f $REPO/$IMAGE:$TAG
 fi
@@ -20,7 +20,7 @@ fi
 docker build -t $REPO/$IMAGE:$TAG -f Dockerfile.$IMAGE .
 
 # If -p specified, push to repo
-if [ "${@/-p/ }" == "$@" ]; then
+if [[ "${@/-p/ }" != "$@" ]]; then
 	echo "Pushing image: $REPO/$IMAGE:$TAG"
 	docker push $REPO/$IMAGE:$TAG
 fi
