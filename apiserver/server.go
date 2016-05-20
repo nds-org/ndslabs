@@ -1683,8 +1683,17 @@ func (s *Server) GetLogs(w rest.ResponseWriter, r *rest.Request) {
 
 	tailLines, err := strconv.Atoi(lines)
 
+	logs := fmt.Sprintf("KUBERNETES LOG\n=====================\n")
+	stackService := s.getStackService(pid, ssid)
+	for _, message := range stackService.StatusMessages {
+		logs += message + "\n"
+	}
+
+	logs += fmt.Sprintf("\nSERVICE LOG\n=====================\n")
 	sid := ssid[0:strings.LastIndex(ssid, "-")]
-	logs, err := s.getLogs(pid, sid, ssid, tailLines)
+	serviceLogs, err := s.getLogs(pid, sid, ssid, tailLines)
+	logs += serviceLogs
+
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
