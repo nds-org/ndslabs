@@ -849,7 +849,7 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 				},
 			},
 			NodeSelector: map[string]string{
-				"ndslabs-role": "compute",
+				"ndslabs-node-role": "compute",
 			},
 		},
 	}
