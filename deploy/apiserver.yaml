@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ndslabs-apiserver
+  labels:
+    component: ndslabs-apiserver
+spec:
+  selector:
+    component: ndslabs-apiserver
+  ports:
+    - port: 30001
+      protocol: TCP
+      nodePort: 30001
+  type: NodePort
+----
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: ndslabs-apiserver
+spec:
+  replicas: 1
+  selector:
+    component: ndslabs-apiserver
+  template:
+    metadata:
+      labels:
+        component: ndslabs-apiserver
+    spec:
+      containers:
+      - name: ndslabs-apiserver
+        image: ndslabs/apiserver:NDS-260
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 30001
+          protocol: TCP
+        volumeMounts:
+          - name: volumes
+            mountPath: /volumes
+        env:
+          - name: ETCD_ADDR
+            value: "{{ IP_ADDR_MACHINE }}:4001"
+          - name: KUBERNETES_ADDR
+            value: "https://{{ IP_ADDR_MACHINE }}:6443"
+          - name: CORS_ORIGIN_ADDR
+            value: "{{ CORS_ORIGIN_ADDR }}"
+          - name: SPEC_GIT_REPO
+            value: "https://github.com/nds-org/ndslabs-specs.git"
+          - name: SPEC_GIT_BRANCH
+            value: "master"
+          - name: INGRESS
+            value: "{{ INGRESS }}"
+          - name: DOMAIN
+            value: "{{ DOMAIN }}"
+      volumes:
+       - hostPath:
+            path: /volumes
+         name: volumes
