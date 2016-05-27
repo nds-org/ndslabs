@@ -37,7 +37,7 @@ RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion'
     /bin/sed -i -e "s#^\.constant('ApiHost', '.*')#.constant('ApiHost', '${APISERVER_HOST}')#" "/home/js/app/app.js" && \
     /bin/sed -i -e "s#^\.constant('ApiPort', '.*')#.constant('ApiPort', '${APISERVER_PORT}')#" "/home/js/app/app.js" && \
     /bin/sed -i -e "s#^\.constant('ApiPath', '.*')#.constant('ApiPath', '${APISERVER_PATH}')#" "/home/js/app/app.js" && \
-    /bin/sed -i -e "s#^\.constant('ApiSecure', '.*')#.constant('ApiSecure', '${APISERVER_SECURE}')#" "/home/js/app/app.js"
+    /bin/sed -i -e "s#^\.constant('ApiSecure', .*)#.constant('ApiSecure', ${APISERVER_SECURE})#" "/home/js/app/app.js"
 
 # Set in what directory commands will run
 WORKDIR /home
