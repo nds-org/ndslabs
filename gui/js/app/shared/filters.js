@@ -32,9 +32,13 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
   return function(endpt) {
     // TODO: How do we know if this can be navigated to?
     var protocol = endpt.protocol;
-    
-    // Hard-coding HTTP for now, since specs specify TCP instead of HTTP
-    return protocol + '://' + ApiHost + (endpt.nodePort ? ':' + endpt.nodePort : '');
+
+	// NDS-260
+    if (endpt.host) {
+        return protocol + '://' + endpt.host;
+    } else {
+       return protocol + '://' + ApiHost + (endpt.nodePort ? ':' + endpt.nodePort : '');
+    }
   };
 }])
 
