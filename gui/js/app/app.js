@@ -54,7 +54,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 .constant('ApiHost', '192.168.99.100')
 .constant('ApiPort', '30001')
 .constant('ApiPath', '')
-.constant('ApiSecure', 'false') 
+.constant('ApiSecure', false) 
 
 .constant('WebsocketPath', '/console')
 
@@ -74,7 +74,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   // XXX: Caching may not be possible due to the unique token sent with every request
   
   // Start with the protocol
-  if (ApiSecure === 'true') {
+  if (ApiSecure) {
     ApiUri.api = 'https://' + ApiHost
     ApiUri.ws = 'wss://' + ApiHost
   } else {
