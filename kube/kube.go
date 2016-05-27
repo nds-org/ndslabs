@@ -22,6 +22,7 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/resource"
 	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/client/unversioned/remotecommand"
 	remotecommandserver "k8s.io/kubernetes/pkg/kubelet/server/remotecommand"
@@ -31,6 +32,7 @@ import (
 )
 
 var apiBase = "/api/v1"
+var extBase = "/apis/extensions/v1beta1"
 
 type ServiceAddrPort struct {
 	Name     string
@@ -341,43 +343,6 @@ func (k *KubeHelper) StartController(pid string, spec *api.ReplicationController
 	// Give Kubernetes time to create the pods for the RC
 	time.Sleep(time.Second * 5)
 
-	// Wait for pods in ready state
-	/*
-		ready := 0
-		pods, _ := k.GetPods(pid, "rc", name)
-
-		glog.V(4).Infof("Waiting for %d pod to be ready %s\n", len(pods), name)
-		for ready < len(pods) {
-			for _, pod := range pods {
-				if len(pod.Status.Conditions) > 0 {
-					condition := pod.Status.Conditions[0]
-					phase := pod.Status.Phase
-					containerState := ""
-					if len(pod.Status.ContainerStatuses) > 0 {
-						state := pod.Status.ContainerStatuses[0].State
-						switch {
-						case state.Running != nil:
-							containerState = "running"
-						case state.Waiting != nil:
-							containerState = "waiting"
-						case state.Terminated != nil:
-							containerState = "terminated"
-						}
-					}
-
-					glog.V(4).Infof("Waiting for pod %s (%s=%s) [%s, %#v]\n", pod.Name, condition.Type, condition.Status, phase, containerState)
-
-					if condition.Type == "Ready" && condition.Status == "True" {
-						ready++
-					} else {
-						pods, _ = k.GetPods(pid, "rc", name)
-						time.Sleep(time.Second * 2)
-					}
-				}
-			}
-		}
-		glog.V(4).Infof("Pods ready for %s %s\n", pid, name)
-	*/
 	return true, nil
 }
 
@@ -424,6 +389,7 @@ func (k *KubeHelper) StartService(pid string, spec *api.Service) (*api.Service, 
 			}
 		}
 	}
+
 	return nil, nil
 }
 
@@ -749,7 +715,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 		},
 	}
 
-	if spec.Access == "external" {
+	if spec.Access == ndsapi.AccessExternal {
 		k8svc.Spec.Type = api.ServiceTypeNodePort
 	}
 
@@ -783,10 +749,10 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 
 	env := []api.EnvVar{}
 	env = append(env, api.EnvVar{Name: "NAMESPACE", Value: ns})
-	env = append(env, api.EnvVar{Name: "TERM", Value: "vt100"})
-	//env = append(env, api.EnvVar{Name: "TERM", Value: "linux"})
-	//env = append(env, api.EnvVar{Name: "COLUMNS", Value: "100"})
-	//env = append(env, api.EnvVar{Name: "LINES", Value: "50"})
+	//env = append(env, api.EnvVar{Name: "TERM", Value: "vt100"})
+	env = append(env, api.EnvVar{Name: "TERM", Value: "linux"})
+	env = append(env, api.EnvVar{Name: "COLUMNS", Value: "100"})
+	env = append(env, api.EnvVar{Name: "LINES", Value: "30"})
 
 	for name, addrPort := range *links {
 
@@ -881,6 +847,9 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 					Command:      spec.Command,
 					Resources:    k8rq,
 				},
+			},
+			NodeSelector: map[string]string{
+				"ndslabs-node-role": "compute",
 			},
 		},
 	}
@@ -1169,4 +1138,204 @@ func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHe
 	})
 
 	return &wsHandler
+}
+
+func (k *KubeHelper) CreateIngress(pid string, host string, service string, port int, secretName string) (*extensions.Ingress, error) {
+
+	ingress := extensions.Ingress{
+		ObjectMeta: api.ObjectMeta{
+			Name:      service + "-ingress",
+			Namespace: pid,
+		},
+		Spec: extensions.IngressSpec{
+			TLS: []extensions.IngressTLS{
+				extensions.IngressTLS{
+					Hosts:      []string{host},
+					SecretName: secretName,
+				},
+			},
+			Rules: []extensions.IngressRule{
+				extensions.IngressRule{
+					Host: host,
+					IngressRuleValue: extensions.IngressRuleValue{
+						HTTP: &extensions.HTTPIngressRuleValue{
+							Paths: []extensions.HTTPIngressPath{
+								extensions.HTTPIngressPath{
+									Path: "/",
+									Backend: extensions.IngressBackend{
+										ServiceName: service,
+										ServicePort: intstr.FromInt(port),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	data, err := json.Marshal(ingress)
+	if err != nil {
+		return nil, err
+	}
+
+	url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses/"
+	glog.V(4).Infoln(url)
+	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", k.getAuthHeader())
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusCreated {
+			glog.V(2).Infof("Added ingress %s-%s\n", pid, service)
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			json.Unmarshal(data, &ingress)
+			return &ingress, nil
+		} else if httpresp.StatusCode == http.StatusConflict {
+			return nil, fmt.Errorf("Ingress exists for namespace %s: %s\n", pid, httpresp.Status)
+		} else {
+			return nil, fmt.Errorf("Error adding ingress for namespace %s: %s\n", pid, httpresp.Status)
+		}
+	}
+	return nil, nil
+}
+
+//http://kubernetes.io/docs/api-reference/extensions/v1beta1/operations/
+func (k *KubeHelper) DeleteIngress(pid string, name string) (*extensions.Ingress, error) {
+
+	url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses/" + name + "-ingress"
+	glog.V(4).Infoln(url)
+	request, _ := http.NewRequest("DELETE", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", k.getAuthHeader())
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusOK {
+			glog.V(2).Infof("Deleted ingress %s\n", pid)
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			ingress := extensions.Ingress{}
+			json.Unmarshal(data, &ingress)
+			return &ingress, nil
+		} else {
+			return nil, fmt.Errorf("Error deleting ingress for project %s: %s\n", pid, httpresp.Status)
+		}
+	}
+	return nil, nil
+}
+
+func (k *KubeHelper) CreateTLSSecret(pid string, secretName string, tlsCert []byte, tlsKey []byte) (*api.Secret, error) {
+
+	secret := api.Secret{
+		ObjectMeta: api.ObjectMeta{
+			Name:      secretName,
+			Namespace: pid,
+		},
+		Data: map[string][]byte{
+			"tls.crt": tlsCert,
+			"tls.key": tlsKey,
+		},
+	}
+
+	data, err := json.Marshal(secret)
+	if err != nil {
+		return nil, err
+	}
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/secrets"
+	glog.V(4).Infoln(url)
+	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", k.getAuthHeader())
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusCreated {
+			glog.V(2).Infof("Added secret %s %s\n", pid, secretName)
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			json.Unmarshal(data, &secret)
+			return &secret, nil
+		} else if httpresp.StatusCode == http.StatusConflict {
+			return nil, fmt.Errorf("Secret %s exists for project %s: %s\n", secretName, pid, httpresp.Status)
+		} else {
+			return nil, fmt.Errorf("Error adding secret %s for project %s: %s\n", secretName, pid, httpresp.Status)
+		}
+	}
+	return nil, nil
+}
+
+func (k *KubeHelper) DeleteSecret(pid string, name string) (*api.Secret, error) {
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/secrets/" + name
+	glog.V(4).Infoln(url)
+	request, _ := http.NewRequest("DELETE", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", k.getAuthHeader())
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusOK {
+			glog.V(2).Infof("Deleted secret %s %s\n", pid, name)
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			secret := api.Secret{}
+			json.Unmarshal(data, &secret)
+			return &secret, nil
+		} else {
+			return nil, fmt.Errorf("Error deleting secret %s for project %s: %s\n", name, pid, httpresp.Status)
+		}
+	}
+	return nil, nil
+}
+
+func (k *KubeHelper) GetSecret(pid string, secretName string) (*api.Secret, error) {
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/secrets/" + secretName
+	glog.V(4).Infoln(url)
+	request, _ := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", k.getAuthHeader())
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusOK {
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			secret := api.Secret{}
+			json.Unmarshal(data, &secret)
+			return &secret, nil
+		} else {
+			return nil, fmt.Errorf("Error getting secret %s for project %s: %s\n", secretName, pid, httpresp.Status)
+		}
+	}
+	return nil, nil
 }
