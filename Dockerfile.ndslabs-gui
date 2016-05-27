@@ -10,10 +10,11 @@ FROM node:latest
 
 # Set build information here before building
 ENV BUILD_VERSION="1.0-alpha" \
-    BUILD_DATE="Mon May 16 03:35:18 UTC 2016" \
+    BUILD_DATE="Wed May 18 15:13:11 CDT 2016" \
     APISERVER_HOST="192.168.99.100" \
     APISERVER_PORT="30001" \
     APISERVER_PATH="" \
+    APISERVER_SECURE="false" \
     UI_BASE_PATH="ui"
 
 # Copy in the source
@@ -35,7 +36,8 @@ RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion'
     /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('${BUILD_DATE}'))#" "/home/js/app/app.js" && \
     /bin/sed -i -e "s#^\.constant('ApiHost', '.*')#.constant('ApiHost', '${APISERVER_HOST}')#" "/home/js/app/app.js" && \
     /bin/sed -i -e "s#^\.constant('ApiPort', '.*')#.constant('ApiPort', '${APISERVER_PORT}')#" "/home/js/app/app.js" && \
-    /bin/sed -i -e "s#^\.constant('ApiPath', '.*')#.constant('ApiPath', '${APISERVER_PATH}')#" "/home/js/app/app.js"
+    /bin/sed -i -e "s#^\.constant('ApiPath', '.*')#.constant('ApiPath', '${APISERVER_PATH}')#" "/home/js/app/app.js" && \
+    /bin/sed -i -e "s#^\.constant('ApiSecure', '.*')#.constant('ApiSecure', '${APISERVER_SECURE}')#" "/home/js/app/app.js"
 
 # Set in what directory commands will run
 WORKDIR /home

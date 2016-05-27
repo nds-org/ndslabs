@@ -17,8 +17,8 @@ angular.module('ndslabs-directives', [])
             }
             
             var term = new Terminal({
-                cols: 80,
-                rows: 24,
+                cols: 100,
+                rows: 30,
                 screenKeys: true
             });
             
