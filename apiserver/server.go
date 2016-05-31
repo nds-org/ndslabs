@@ -1741,6 +1741,7 @@ func (s *Server) GetLogs(w rest.ResponseWriter, r *rest.Request) {
 
 	sid := ssid[0:strings.LastIndex(ssid, "-")]
 	logs, err := s.getLogs(pid, sid, ssid, tailLines)
+
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -1790,10 +1791,12 @@ func (s *Server) getLogs(pid string, sid string, ssid string, tailLines int) (st
 	for _, ss := range stack.Services {
 		if ss.Id == ssid {
 
+			log += fmt.Sprintf("KUBERNETES LOG\n=====================\n")
 			for _, msg := range ss.StatusMessages {
 				log += msg + "\n"
 			}
-			// Find the pod for this service
+
+			log += fmt.Sprintf("\nSERVICE LOG\n=====================\n")
 			for _, pod := range pods {
 				if pod.Labels["name"] == ssid {
 					podLog, err := s.kube.GetLog(pid, pod.Name, tailLines)
