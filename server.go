@@ -16,6 +16,7 @@ import (
 
 	etcd "github.com/ndslabs/apiserver/etcd"
 	kube "github.com/ndslabs/apiserver/kube"
+	mw "github.com/ndslabs/apiserver/middleware"
 	api "github.com/ndslabs/apiserver/types"
 	gcfg "gopkg.in/gcfg.v1"
 	k8api "k8s.io/kubernetes/pkg/api"
@@ -150,7 +151,8 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 	os.MkdirAll(cfg.Server.VolDir, 0700)
 
 	api := rest.NewApi()
-	api.Use(rest.DefaultDevStack...)
+	api.Use(rest.DefaultProdStack...)
+	api.Use(&mw.NoCacheMiddleware{})
 
 	glog.Infof("prefix %s", s.prefix)
 
