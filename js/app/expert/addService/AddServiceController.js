@@ -29,18 +29,6 @@ angular
   /** "Removes" a config override (i.e. use its default value) */
   $scope.useDefaultValue = function(cfg) { $scope.optional.splice($scope.optional.indexOf(cfg), 1); };
   
-  // Rewrite data when size changes
-  $scope.$watch('volume.size', function(newVal, oldVal) {
-    $scope.data = [ $scope.usedSpace, $scope.availableSpace - newVal, newVal ];
-  });
-  
-  $scope.$watch('volume.id', function(newVal, oldVal) {
-    if (newVal) {
-      $scope.data = [ $scope.usedSpace, $scope.availableSpace, 0 ];
-    } else {
-      $scope.data = [ $scope.usedSpace, $scope.availableSpace - $scope.volume.size, $scope.volume.size ];
-    }
-  });
       
   // Populate its Volume requirements and options
   $scope.volume = ServiceDiscovery.discoverRequiredSingle(stack, service.key);
@@ -53,9 +41,24 @@ angular
   $scope.availableSpace = $scope.storageQuota - $scope.usedSpace;
       
   $scope.labels = [ "Used Space", "Free Space", "New Volume" ];
-  $scope.data = [ $scope.usedSpace, $scope.availableSpace - $scope.volume.size, $scope.volume.size ];// [300, 500, 100];
   
+  // If we must configure a volume, add some watchers for dynimcally updating the usage graph
   if ($scope.volume) {
+    $scope.data = [ $scope.usedSpace, $scope.availableSpace - $scope.volume.size, $scope.volume.size ];// [300, 500, 100];
+      
+    // Rewrite 'data' when size changes
+    $scope.$watch('volume.size', function(newVal, oldVal) {
+        $scope.data = [ $scope.usedSpace, $scope.availableSpace - newVal, newVal ];
+    });
+      
+    $scope.$watch('volume.id', function(newVal, oldVal) {
+        if (newVal) {
+          $scope.data = [ $scope.usedSpace, $scope.availableSpace, 0 ];
+        } else {
+          $scope.data = [ $scope.usedSpace, $scope.availableSpace - $scope.volume.size, $scope.volume.size ];
+        }
+    });
+      
     $scope.newStackVolumeRequirements = [ $scope.volume ];
   }
   
