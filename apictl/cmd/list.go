@@ -61,13 +61,24 @@ var listStacksCmd = &cobra.Command{
 		}
 		w := new(tabwriter.Writer)
 		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
-		fmt.Fprintln(w, "STACK\tSERVICE\tSTATUS\tSID")
+		fmt.Fprintln(w, "STACK\tSERVICE\tSTATUS\tSID\tENDPOINT\tMESSAGE")
 		for _, stack := range *stacks {
 
 			fmt.Fprintf(w, "%s\t\t%s\t%s\n", stack.Name, stack.Status, stack.Id)
 			for _, service := range stack.Services {
-				//spec, _ := client.GetService(service.Service)
-				fmt.Fprintf(w, "\t%s\t%s\t%s\n", service.Service, service.Status, service.Id)
+				endpoint := ""
+				if len(service.Endpoints) > 0 {
+					ep := service.Endpoints[0]
+					if len(ep.Host) > 0 {
+						endpoint = ep.Host
+					}
+				}
+
+				message := ""
+				if len(service.StatusMessages) > 0 {
+					message = service.StatusMessages[len(service.StatusMessages)-1]
+				}
+				fmt.Fprintf(w, "\t%s\t%s\t%s\t%s\n", service.Service, service.Status, service.Id, endpoint, message)
 			}
 		}
 		w.Flush()
@@ -123,9 +134,15 @@ var listProjectsCmd = &cobra.Command{
 
 		w := new(tabwriter.Writer)
 		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
-		fmt.Fprintln(w, "NAMESPACE\tQUOTA\tDESCRIPTION")
+		fmt.Fprintln(w, "NAMESPACE\tSTORAGE\tCPU (Max)\tCPU (Default)\tMEMORY (Max)\tMEMORY (Default)\tDESCRIPTION")
 		for _, project := range *projects {
-			fmt.Fprintf(w, "%s\t%d\t%s\n", project.Namespace, project.StorageQuota, project.Description)
+			fmt.Fprintf(w, "%s\t%d\t%s\t%s\t%s\t%s\t%s\n", project.Namespace,
+				project.ResourceLimits.StorageQuota,
+				project.ResourceLimits.CPUMax,
+				project.ResourceLimits.CPUDefault,
+				project.ResourceLimits.MemoryMax,
+				project.ResourceLimits.MemoryDefault,
+				project.Description)
 		}
 		w.Flush()
 

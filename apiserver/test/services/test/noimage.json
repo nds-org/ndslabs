@@ -1,0 +1,19 @@
+{
+    "key": "noimagetest",
+    "label": "Test -  No such image",
+    "image": "xyzzy",
+    "display": "stack",
+    "description": "A test container for missing image",
+    "ports": [
+        {
+            "port": 8080,
+            "protocol": "http"
+        }
+    ],
+    "resourceLimits": {
+        "cpuMax": "1",
+        "cpuDefault": "1m",
+        "memMax": "10Mi",
+        "memDefault": "1Mi"
+    }
+}

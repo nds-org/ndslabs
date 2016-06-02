@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ndslabs-gui
+  labels:
+    component: ndslabs-gui
+spec:
+  selector:
+    component: ndslabs-gui
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      nodePort: 30000
+  type: NodePort
+----
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: ndslabs-gui
+spec:
+  replicas: 1
+  selector:
+    component: ndslabs-gui
+  template:
+    metadata:
+      labels:
+        component: ndslabs-gui
+    spec:
+      containers:
+      - name: ndslabs-gui
+        image: ndslabs/ndslabs-gui:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        env:
+          - name: APISERVER_HOST
+            value: {{ APISERVER_HOST }}
+          - name: APISERVER_PORT
+            value: "{{ APISERVER_PORT }}"
+          - name: APISERVER_PATH
+            value: "/api"
+          - name: APISERVER_SECURE
+            value: "{{ APISERVER_SECURE }}"
+          - name: UI_BASE_PATH
+            value: "/ui"
+        readinessProbe:
+          httpGet:
+            path: /ui/asset/png/favicon-2-32x32.png
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          timeoutSeconds: 120
