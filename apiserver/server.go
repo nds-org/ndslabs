@@ -445,9 +445,12 @@ func (s *Server) GetProject(w rest.ResponseWriter, r *rest.Request) {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 		} else {
+			fmt.Printf("Usage: %d %d \n", quota.Items[0].Status.Used.Memory().Value(), quota.Items[0].Status.Hard.Memory().Value())
 			project.ResourceUsage = api.ResourceUsage{
-				CPU:    quota.Items[0].Status.Used.Cpu().String(),
-				Memory: quota.Items[0].Status.Used.Memory().String(),
+				CPU:       quota.Items[0].Status.Used.Cpu().String(),
+				Memory:    quota.Items[0].Status.Used.Memory().String(),
+				CPUPct:    fmt.Sprintf("%f", float64(quota.Items[0].Status.Used.Cpu().Value())/float64(quota.Items[0].Status.Hard.Cpu().Value())),
+				MemoryPct: fmt.Sprintf("%f", float64(quota.Items[0].Status.Used.Memory().Value())/float64(quota.Items[0].Status.Hard.Memory().Value())),
 			}
 		}
 		w.WriteJson(project)

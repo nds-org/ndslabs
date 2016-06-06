@@ -79,9 +79,11 @@ type ResourceLimits struct {
 }
 
 type ResourceUsage struct {
-	CPU     string `json:"cpu"`
-	Memory  string `json:"memory"`
-	Storage string `json:"storage"`
+	CPU       string `json:"cpu"`
+	Memory    string `json:"memory"`
+	Storage   string `json:"storage"`
+	CPUPct    string `json:"cpuPct"`
+	MemoryPct string `json:"memPct"`
 }
 
 type ServiceList struct {
