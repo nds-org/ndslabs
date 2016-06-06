@@ -240,17 +240,17 @@ func addStack(project string, serviceKey string, name string, opt string) {
 		}
 	}
 
-	err := client.AddStack(project, &stack)
+	stackp, err := client.AddStack(project, &stack)
 	if err != nil {
 		fmt.Printf("Error adding stack: %s\n", err)
 		return
 	} else {
-		fmt.Println("Added stack " + serviceKey)
+		fmt.Println("Added stack " + stackp.Id)
 
 		w := new(tabwriter.Writer)
 		w.Init(os.Stdout, 20, 30, 0, '\t', 0)
 		fmt.Fprintln(w, "SERVICE\tSID")
-		for _, stackService := range stack.Services {
+		for _, stackService := range stackp.Services {
 			fmt.Fprintf(w, "%s\t%s\n", stackService.Service, stackService.Id)
 		}
 		w.Flush()
