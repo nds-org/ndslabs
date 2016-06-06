@@ -820,9 +820,38 @@
                 "namespace": {
                     "type": "string"
                 },
-                "quotas": {
+                "storageQuota": {
+                    "type": "string"
+                },
+                "resourceLimits": {
                     "type": "object",
                     "properties": {
+                        "cpuMax": {
+                            "type": "string"
+                        },
+                        "cpuDefault": {
+                            "type": "string"
+                        },
+                        "memMax": {
+                            "type": "string"
+                        },
+                        "memDefault": {
+                            "type": "string"
+                        },
+                        "storageQuota": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "resourceUsage": {
+                    "type": "object",
+                    "properties": {
+                        "cpu": {
+                            "type": "string"
+                        },
+                        "memory": {
+                            "type": "string"
+                        },
                         "storage": {
                             "type": "string"
                         }
