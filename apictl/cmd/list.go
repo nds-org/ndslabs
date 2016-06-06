@@ -78,7 +78,7 @@ var listStacksCmd = &cobra.Command{
 				if len(service.StatusMessages) > 0 {
 					message = service.StatusMessages[len(service.StatusMessages)-1]
 				}
-				fmt.Fprintf(w, "\t%s\t%s\t%s\t%s\n", service.Service, service.Status, service.Id, endpoint, message)
+				fmt.Fprintf(w, "\t%s\t%s\t%s\t%s\t%s\n", service.Service, service.Status, service.Id, endpoint, message)
 			}
 		}
 		w.Flush()
