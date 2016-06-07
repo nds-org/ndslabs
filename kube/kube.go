@@ -248,7 +248,7 @@ func (k *KubeHelper) CreateLimitRange(pid string, cpu string, mem string) (*api.
 func (k *KubeHelper) GetNamespace(pid string) (*api.Namespace, error) {
 
 	url := k.kubeBase + apiBase + "/namespaces/" + pid
-	glog.V(4).Infoln(url)
+	//glog.V(4).Infoln(url)
 	request, _ := http.NewRequest("GET", url, nil)
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Authorization", k.getAuthHeader())
@@ -1335,6 +1335,34 @@ func (k *KubeHelper) GetSecret(pid string, secretName string) (*api.Secret, erro
 			return &secret, nil
 		} else {
 			return nil, fmt.Errorf("Error getting secret %s for project %s: %s\n", secretName, pid, httpresp.Status)
+		}
+	}
+	return nil, nil
+}
+
+func (k *KubeHelper) GetResourceQuota(pid string) (*api.ResourceQuotaList, error) {
+
+	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/resourcequotas/"
+	glog.V(4).Infoln(url)
+	request, _ := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", k.getAuthHeader())
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusOK {
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			quota := api.ResourceQuotaList{}
+			json.Unmarshal(data, &quota)
+			return &quota, nil
+		} else {
+			return nil, fmt.Errorf("Error getting quota for project %s: %s\n", pid, httpresp.Status)
 		}
 	}
 	return nil, nil

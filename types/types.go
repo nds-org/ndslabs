@@ -67,6 +67,7 @@ type Project struct {
 	EmailAddress   string         `json:"email"`
 	Password       string         `json:"password"`
 	ResourceLimits ResourceLimits `json:"resourceLimits"`
+	ResourceUsage  ResourceUsage  `json:"resourceUsage"`
 }
 
 type ResourceLimits struct {
@@ -75,6 +76,14 @@ type ResourceLimits struct {
 	MemoryMax     string `json:"memMax"`
 	MemoryDefault string `json:"memDefault"`
 	StorageQuota  string `json:"storageQuota"`
+}
+
+type ResourceUsage struct {
+	CPU       string `json:"cpu"`
+	Memory    string `json:"memory"`
+	Storage   string `json:"storage"`
+	CPUPct    string `json:"cpuPct"`
+	MemoryPct string `json:"memPct"`
 }
 
 type ServiceList struct {
