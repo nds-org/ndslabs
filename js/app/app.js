@@ -53,7 +53,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  */ 
 .constant('ApiHost', '192.168.99.100')
 .constant('ApiPort', '30001')
-.constant('ApiPath', '')
+.constant('ApiPath', '/api')
 .constant('ApiSecure', false) 
 
 .constant('WebsocketPath', '/console')
