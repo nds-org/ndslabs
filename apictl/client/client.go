@@ -175,7 +175,7 @@ func (c *Client) ListStacks(pid string) (*[]api.Stack, error) {
 	}
 }
 
-func (c *Client) AddStack(project string, stack *api.Stack) error {
+func (c *Client) AddStack(project string, stack *api.Stack) (*api.Stack, error) {
 
 	url := c.BasePath + "projects/" + project + "/stacks"
 
@@ -185,23 +185,24 @@ func (c *Client) AddStack(project string, stack *api.Stack) error {
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	resp, err := c.HttpClient.Do(request)
 	if err != nil {
-		return err
+		return nil, err
 	} else {
 		if resp.StatusCode == http.StatusOK {
 			defer resp.Body.Close()
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			stack := api.Stack{}
 			json.Unmarshal([]byte(body), &stack)
-			return nil
+			return &stack, nil
 
 		} else {
-			return errors.New(resp.Status)
+			return nil, errors.New(resp.Status)
 		}
 	}
+	return nil, nil
 }
 
 func (c *Client) UpdateStack(project string, stack *api.Stack) error {

@@ -151,7 +151,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 	os.MkdirAll(cfg.Server.VolDir, 0700)
 
 	api := rest.NewApi()
-	api.Use(rest.DefaultProdStack...)
+	api.Use(rest.DefaultDevStack...)
 	api.Use(&mw.NoCacheMiddleware{})
 
 	glog.Infof("prefix %s", s.prefix)
@@ -434,11 +434,25 @@ func (s *Server) GetProject(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
+	glog.V(4).Infof("Getting project %s\n", pid)
 	project, err := s.etcd.GetProject(pid)
 	if err != nil {
 		rest.NotFound(w, r)
 	} else {
-		//project.Password = ""
+		glog.V(4).Infof("Getting quotas for %s\n", pid)
+		quota, err := s.kube.GetResourceQuota(pid)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+		} else {
+			fmt.Printf("Usage: %d %d \n", quota.Items[0].Status.Used.Memory().Value(), quota.Items[0].Status.Hard.Memory().Value())
+			project.ResourceUsage = api.ResourceUsage{
+				CPU:       quota.Items[0].Status.Used.Cpu().String(),
+				Memory:    quota.Items[0].Status.Used.Memory().String(),
+				CPUPct:    fmt.Sprintf("%f", float64(quota.Items[0].Status.Used.Cpu().Value())/float64(quota.Items[0].Status.Hard.Cpu().Value())),
+				MemoryPct: fmt.Sprintf("%f", float64(quota.Items[0].Status.Used.Memory().Value())/float64(quota.Items[0].Status.Hard.Memory().Value())),
+			}
+		}
 		w.WriteJson(project)
 	}
 }
@@ -601,6 +615,8 @@ func (s *Server) GetService(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	} else {
+		s, _ := json.Marshal(spec)
+		fmt.Println(string(s))
 		w.WriteJson(&spec)
 	}
 }
