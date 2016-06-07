@@ -103,14 +103,14 @@
                         (stack.status === 'stopped' ? 'panel-danger' : 'panel-warning')  }}">
                     
                     <uib-accordion-heading>
-                      <!--- ng-class="{ 'panel-success': stack.status === 'started', 'panel-danger': stack.status === 'stopped', 'panel-warning':stack.status !== 'started' && stack.status !== 'stopped' }" -->
                       <!-- Stack Status Indicator -->
                       <div class="row">
                         <div class="col-xs-3 col-md-1 pull-left">
                           <i class="fa fa-fw fa-2x" 
                             ng-class="{ 'fa-check-circle-o text-success': stack.status === 'started', 
                                 'fa-times-circle-o text-danger': stack.status === 'stopped',
-                                'fa-spinner fa-spin fa-pulse text-primary': stack.status !== 'started' && stack.status !== 'stopped' }"></i>
+                                'fa-warning text-danger animated faa-flash faa-fast': stack.status === 'error',
+                                'fa-spinner fa-spin fa-pulse text-primary': stack.status !== 'error' && stack.status !== 'started' && stack.status !== 'stopped' }"></i>
                         </div>
                         <div class="col-xs-6 col-md-10">
                           <h4><strong>{{ stack.name | capitalize }}</strong></h4>
@@ -148,15 +148,14 @@
                                   <i class="fa fa-fw" ng-class="{ 
                                     'text-success fa-check': svc.status === 'ready',
                                     'text-info    fa-gear': svc.status === 'waiting',
-                                    'text-danger  fa-power-off': svc.status === '',
                                     'text-info    fa-gear     animated   faa-spin    faa-slow': svc.status === 'starting',
-                                    'text-warning fa-gear     animated   faa-spin    faa-fast': svc.status === 'stopping',
-                                    'text-danger  fa-warning  animated   faa-flash   faa-fast': svc.status === 'error'
+                                    'text-warning fa-gear     animated   faa-spin    faa-slow': svc.status === 'stopping',
+                                    'text-danger  fa-warning  animated   faa-flash   faa-fast': svc.status === 'error',
+                                    'text-danger  fa-power-off': svc.status !== 'ready' && svc.status !== 'waiting' && svc.status !== 'starting' && svc.status !== 'stopping' && svc.status !== 'error'
                                   }"></i>
                                   {{  (svc.status | capitalize) || 'Stopped' }}
                                 </td>
                                 
-                                <!--ng-class="{ 'danger':svc.status === '', 'success':svc.status === 'Running', 'warning': svc.status === 'Pending' }">-->
                                 <!-- Volume details for this service -->
                                 <td class="text-center">
                                   <button class="btn btn-link btn-xs" tooltip-placement="left" 
