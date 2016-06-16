@@ -28,11 +28,15 @@ if [ "$1" = 'apiserver' ]; then
 		INGRESS="NodePort"
 	fi
 
+	if [ -z "$VOLUME_PATH" ]; then 
+		VOLUME_PATH="/volumes"
+	fi
+
 cat << EOF > /apiserver.conf
 [Server]
 Port=30001
 Origin=$CORS_ORIGIN_ADDR
-VolDir=/volumes
+VolDir=$VOLUME_PATH
 VolumeSource=local
 SpecsDir=/specs
 Timeout=$TIMEOUT
