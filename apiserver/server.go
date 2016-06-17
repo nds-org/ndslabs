@@ -28,16 +28,21 @@ import (
 )
 
 type Server struct {
-	etcd      *etcd.EtcdHelper
-	kube      *kube.KubeHelper
-	Namespace string
-	local     bool
-	volDir    string
-	hostname  string
-	jwt       *jwt.JWTMiddleware
-	prefix    string
-	ingress   IngressType
-	domain    string
+	etcd           *etcd.EtcdHelper
+	kube           *kube.KubeHelper
+	Namespace      string
+	local          bool
+	volDir         string
+	hostname       string
+	jwt            *jwt.JWTMiddleware
+	prefix         string
+	ingress        IngressType
+	domain         string
+	cpuMax         string
+	cpuDefault     string
+	memMax         string
+	memDefault     string
+	storageDefault int
 }
 
 type Config struct {
@@ -51,6 +56,13 @@ type Config struct {
 		Prefix       string
 		Domain       string
 		Ingress      IngressType
+	}
+	DefaultLimits struct {
+		CpuMax         string
+		CpuDefault     string
+		MemMax         string
+		MemDefault     string
+		StorageDefault int
 	}
 	Etcd struct {
 		Address string
@@ -95,6 +107,21 @@ func main() {
 	if cfg.Kubernetes.TokenPath == "" {
 		cfg.Kubernetes.TokenPath = "/run/secrets/kubernetes.io/serviceaccount/token"
 	}
+	if cfg.DefaultLimits.MemMax == "" {
+		cfg.DefaultLimits.MemMax = "8Gi"
+	}
+	if cfg.DefaultLimits.MemDefault == "" {
+		cfg.DefaultLimits.MemDefault = "100Mi"
+	}
+	if cfg.DefaultLimits.CpuMax == "" {
+		cfg.DefaultLimits.CpuMax = "2"
+	}
+	if cfg.DefaultLimits.CpuDefault == "" {
+		cfg.DefaultLimits.CpuDefault = "1"
+	}
+	if cfg.DefaultLimits.StorageDefault <= 0 {
+		cfg.DefaultLimits.StorageDefault = 10
+	}
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -126,6 +153,11 @@ func main() {
 	server.etcd = etcd
 	server.kube = kube
 	server.volDir = cfg.Server.VolDir
+	server.cpuMax = cfg.DefaultLimits.CpuMax
+	server.cpuDefault = cfg.DefaultLimits.CpuDefault
+	server.memMax = cfg.DefaultLimits.MemMax
+	server.memDefault = cfg.DefaultLimits.MemDefault
+	server.storageDefault = cfg.DefaultLimits.StorageDefault
 
 	server.ingress = IngressTypeNodePort
 	if cfg.Server.Ingress != "" {
@@ -485,25 +517,34 @@ func (s *Server) PostProject(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if len(project.ResourceLimits.CPUMax) > 0 &&
-		len(project.ResourceLimits.MemoryMax) > 0 {
-		_, err = s.kube.CreateResourceQuota(project.Namespace,
-			project.ResourceLimits.CPUMax,
-			project.ResourceLimits.MemoryMax)
-		if err != nil {
-			glog.Error(err)
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
 
-		_, err = s.kube.CreateLimitRange(project.Namespace,
-			project.ResourceLimits.CPUDefault,
-			project.ResourceLimits.MemoryDefault)
-		if err != nil {
-			glog.Error(err)
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+	if project.ResourceLimits == (api.ResourceLimits{}) {
+		glog.Warningf("No resource limits specified for project %s, using defaults\n", project.Name)
+		project.ResourceLimits = api.ResourceLimits{
+			CPUMax:        s.cpuMax,
+			CPUDefault:    s.cpuDefault,
+			MemoryMax:     s.memMax,
+			MemoryDefault: s.memDefault,
+			StorageQuota:  fmt.Sprintf("%d", s.storageDefault),
 		}
+		project.StorageQuota = s.storageDefault
+	}
+	_, err = s.kube.CreateResourceQuota(project.Namespace,
+		project.ResourceLimits.CPUMax,
+		project.ResourceLimits.MemoryMax)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_, err = s.kube.CreateLimitRange(project.Namespace,
+		project.ResourceLimits.CPUDefault,
+		project.ResourceLimits.MemoryDefault)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	secret, err := s.kube.GetSecret("default", "ndslabs-tls-secret")
