@@ -2,7 +2,7 @@
 
 BUILD_DATE=`date +%Y-%m-%d\ %H:%M`
 VERSIONFILE="version.go"
-VERSION="1.0.1"
+VERSION="1.0.1-alpha"
 APP="apiserver"
 
 if [ "$1" = "build" ] || [ -z $1 ]; then
