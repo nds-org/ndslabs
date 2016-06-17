@@ -2,7 +2,7 @@
 
 BUILD_DATE=`date +%Y-%m-%d\ %H:%M`
 VERSIONFILE="cmd/clientVersion.go"
-VERSION="1.0-alpha"
+VERSION="1.0.1-alpha"
 APP="ndslabsctl"
 
 if [ "$1" = "build" ] || [ -z $1 ]; then
