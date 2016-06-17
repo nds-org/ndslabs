@@ -44,6 +44,14 @@ Prefix=$PREFIX
 Ingress=$INGRESS
 Domain=$DOMAIN
 
+
+[DefaultLimits]
+CpuMax=2
+CpuDefault=1
+MemMax=8Gi
+MemDefault=100Mi
+StorageDefault=10
+
 [Etcd]
 Address=$ETCD_ADDR
 
