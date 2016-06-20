@@ -36,7 +36,6 @@ angular
   
   // Storage quota accounting
   $scope.storageQuota = Project.project.resourceLimits.storageQuota;
-  debugger
   $scope.configuredVolumes = Volumes.all;
   $scope.usedSpace = $filter('usedStorage')($scope.configuredVolumes);
   $scope.availableSpace = $scope.storageQuota - $scope.usedSpace;
