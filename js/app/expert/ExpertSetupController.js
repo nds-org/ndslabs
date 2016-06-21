@@ -218,6 +218,7 @@ angular
       'stackId': stack.id
     }).then(function(data, xhr) {
       $log.debug('successfully removed service ' + svc.service + ' from stack ' + stack.name);
+      Volumes.populate(projectId);
     }, function(headers) {
       $log.error('failed to remove service ' + svc.service + ' from stack ' + stack.name);
       
