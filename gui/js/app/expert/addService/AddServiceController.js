@@ -66,7 +66,7 @@ angular
   var adminEmail = 'site-admin';
   var subject = $filter('urlEncode')('Increasing My Storage Quota');
   var body = $filter('urlEncode')('Hello, Admin! I appear to have reach my storage limit of '
-              + $scope.resourceLimits.storageQuota + ' GB on ' + Project.project.namespace 
+              + $scope.storageQuota + ' GB on ' + Project.project.namespace 
               + '. Could we please discuss options for increasing the ' 
               + 'storage quota of this project? Thank you! --' + Project.project.namespace);
   $scope.mailToLink = 'mailto:' + adminEmail 
