@@ -35,7 +35,7 @@ angular
   $scope.newStackOrphanedVolumes = ServiceDiscovery.discoverOrphansSingle(service.key);
   
   // Storage quota accounting
-  $scope.storageQuota = Project.project.storageQuota;
+  $scope.storageQuota = Project.project.resourceLimits.storageQuota;
   $scope.configuredVolumes = Volumes.all;
   $scope.usedSpace = $filter('usedStorage')($scope.configuredVolumes);
   $scope.availableSpace = $scope.storageQuota - $scope.usedSpace;

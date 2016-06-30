@@ -6,10 +6,5 @@
 /bin/sed -i -e "s#^\.constant('ApiPath', '.*')#.constant('ApiPath', '${APISERVER_PATH}')#" "/home/js/app/app.js"
 /bin/sed -i -e "s#^\.constant('ApiSecure', .*)#.constant('ApiSecure', ${APISERVER_SECURE})#" "/home/js/app/app.js"
 
-# Move contents to the appropriate base path
-# TODO: Is this necessary?
-mkdir -p /home/$UI_BASE_PATH
-mv js/* /home/$UI_BASE_PATH
-
 # Start our HTTP Server
-http-server /home/
+http-server /home/js/
