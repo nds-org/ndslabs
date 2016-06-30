@@ -64,7 +64,7 @@
         <div class="col-sm-3">
           <!-- TODO: Refreshing data through nested AJAX does not seem to work well here... -->
           <!--<justgage width="150" height="150" title="Used Storage" min="0" donut="true"
-          value="{{ configuredVolumes | usedStorage }}" max="{{ project.storageQuota }}" label="GB"></justgage>-->
+          value="{{ configuredVolumes | usedStorage }}" max="{{ project.resourceLimits.storageQuota }}" label="GB"></justgage>-->
         </div>
         <div class="col-sm-9">
           <!--<justgage width="150" height="150" title="Stacks Running" donut="true"
@@ -325,7 +325,7 @@
                       <tr>
                         <td></td>
                         <td><strong>Total</strong></td>
-                        <td class="text-center"><strong>{{ (configuredVolumes | usedStorage) }} / {{ project.storageQuota }} GB</strong></td>
+                        <td class="text-center"><strong>{{ (configuredVolumes | usedStorage) }} / {{ project.resourceLimits.storageQuota }} GB</strong></td>
                         <td></td>
                         <td></td>
                       </tr>

@@ -8,8 +8,7 @@ angular
     description: '',
     namespace: '',
     password: '',
-    passwordConfirmation: '',
-    storageQuota: 10
+    passwordConfirmation: ''
   };
   
   // Check username availability when user changes input?
