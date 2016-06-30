@@ -12,7 +12,7 @@ angular
     'StackService', 'Grid', 'Wizard', 'WizardPage', 'template', 'Specs', 'configuredStacks', 'configuredVolumes', 'ServiceDiscovery',
     function($scope, $filter, $log, $uibModalInstance, _, NdsLabsApi, Project, Stack, Volume, StackService, Grid, Wizard, WizardPage, template, 
     Specs, configuredStacks, configuredVolumes, ServiceDiscovery) {
-  $scope.storageQuota = Project.project.storageQuota;
+  $scope.storageQuota = Project.project.resourceLimits.storageQuota;
   $scope.newStackVolumeRequirements = [];
   $scope.newStackOrphanedVolumes = [];
   $scope.extraConfig = {};

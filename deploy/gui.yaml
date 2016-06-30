@@ -36,7 +36,7 @@ spec:
           protocol: TCP
         env:
           - name: APISERVER_HOST
-            value: {{ APISERVER_HOST }}
+            value: "{{ APISERVER_HOST }}"
           - name: APISERVER_PORT
             value: "{{ APISERVER_PORT }}"
           - name: APISERVER_PATH
