@@ -41,7 +41,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * The version/revision of this GUI
  */
-.constant('BuildVersion', '1.0-devel')
+.constant('BuildVersion', '1.0.1-devel')
 .constant('BuildDate', '')
 
 /**
