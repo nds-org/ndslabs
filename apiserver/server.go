@@ -1142,8 +1142,17 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 	name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
 	template := s.kube.CreateControllerTemplate(pid, name, stack.Id, stackService, spec, addrPortMap, &sharedEnv)
 
+	// Mount the home directory
+	k8vols := make([]k8api.Volume, 0)
+
+	k8homeVol := k8api.Volume{}
+	k8homeVol.Name = "home"
+	k8homeHostPath := k8api.HostPathVolumeSource{}
+	k8homeHostPath.Path = s.volDir + "/" + pid
+	k8homeVol.HostPath = &k8homeHostPath
+	k8vols = append(k8vols, k8homeVol)
+
 	if len(spec.VolumeMounts) > 0 {
-		k8vols := make([]k8api.Volume, 0)
 		for _, mount := range spec.VolumeMounts {
 			if mount.Name == "docker" {
 				// Create a docker socket mount
@@ -1169,11 +1178,11 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 
 				if volume.Format == "hostPath" {
 					k8hostPath := k8api.HostPathVolumeSource{}
-					k8hostPath.Path = s.volDir + "/" + pid + "/" + volume.Id
+					k8hostPath.Path = s.volDir + "/" + pid + "/AppData/" + volume.Id
 					k8vol.HostPath = &k8hostPath
 					k8vols = append(k8vols, k8vol)
 
-					glog.V(4).Infof("Attaching %s\n", s.volDir+"/"+pid+"/"+volume.Id)
+					glog.V(4).Infof("Attaching %s\n", s.volDir+"/"+pid+"/AppData/"+volume.Id)
 				} else {
 					glog.Warning("Invalid volume format\n")
 				}
@@ -1185,8 +1194,8 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 			k8vol.EmptyDir = &k8empty
 			k8vols = append(k8vols, k8vol)
 		}
-		template.Spec.Template.Spec.Volumes = k8vols
 	}
+	template.Spec.Template.Spec.Volumes = k8vols
 
 	fmt.Printf("Starting controller %s\n", name)
 	_, err := s.kube.StartController(pid, template)
@@ -1647,7 +1656,7 @@ func (s *Server) PostVolume(w rest.ResponseWriter, r *rest.Request) {
 	}
 	vol.Id = uid
 
-	err = os.MkdirAll(s.volDir+"/"+pid+"/"+uid, 0755)
+	err = os.MkdirAll(s.volDir+"/"+pid+"/AppData/"+uid, 0755)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1755,7 +1764,7 @@ func (s *Server) DeleteVolume(w rest.ResponseWriter, r *rest.Request) {
 
 	glog.V(4).Infof("Format %s\n", volume.Format)
 	if volume.Format == "hostPath" {
-		err = os.RemoveAll(s.volDir + "/" + pid + "/" + volume.Id)
+		err = os.RemoveAll(s.volDir + "/" + pid + "/AppData/" + volume.Id)
 		if err != nil {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
