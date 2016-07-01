@@ -15,6 +15,7 @@ if [ "$1" = "build" ] || [ -z $1 ]; then
 	echo ")" >> $VERSIONFILE
 	rm -f build/bin/$APP-linux-amd64 build/$APP-darwin-amd64
 	mkdir -p build/bin build/bin build/pkg
+	go get
 	echo Building Darwin
 	GOOS=darwin GOARCH=amd64 go build -o build/bin/$APP-darwin-amd64
 	echo Building Linux
