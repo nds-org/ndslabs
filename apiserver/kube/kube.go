@@ -797,6 +797,10 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	}
 
 	k8volMounts := []api.VolumeMount{}
+	// Mount the home directory
+	k8homeVol := api.VolumeMount{Name: "home", MountPath: "/home/" + ns}
+	k8volMounts = append(k8volMounts, k8homeVol)
+
 	if len(spec.VolumeMounts) > 0 {
 		for _, vol := range spec.VolumeMounts {
 			k8vol := api.VolumeMount{Name: vol.Name, MountPath: vol.MountPath}
