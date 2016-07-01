@@ -82,11 +82,6 @@
 			"Rev": "740c764bc6149d3f1806231418adb9f52c11bcbf"
 		},
 		{
-			"ImportPath": "github.com/ndslabs/apiserver/types",
-			"Comment": "testing_NDS-269-39-ga11223e",
-			"Rev": "a11223e40a41838a23a61197fa9ea0f66d355635"
-		},
-		{
 			"ImportPath": "github.com/spf13/cast",
 			"Rev": "ee7b3e0353166ab1f3a605294ac8cd2b77953778"
 		},
