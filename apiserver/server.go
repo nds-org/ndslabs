@@ -1647,7 +1647,6 @@ func (s *Server) PostVolume(w rest.ResponseWriter, r *rest.Request) {
 		vol.Status = "available"
 	}
 
-	glog.V(4).Infoln("Creating local volume")
 	uid, err := newUUID()
 	if err != nil {
 		glog.Error(err)
@@ -1656,6 +1655,7 @@ func (s *Server) PostVolume(w rest.ResponseWriter, r *rest.Request) {
 	}
 	vol.Id = uid
 
+	glog.V(4).Infof("Creating local volume %s", s.volDir+"/"+pid+"/AppData/"+uid)
 	err = os.MkdirAll(s.volDir+"/"+pid+"/AppData/"+uid, 0755)
 	if err != nil {
 		glog.Error(err)
@@ -1764,6 +1764,7 @@ func (s *Server) DeleteVolume(w rest.ResponseWriter, r *rest.Request) {
 
 	glog.V(4).Infof("Format %s\n", volume.Format)
 	if volume.Format == "hostPath" {
+		glog.V(4).Infof("Removing volume %s\n", s.volDir+"/"+pid+"/AppData/"+volume.Id)
 		err = os.RemoveAll(s.volDir + "/" + pid + "/AppData/" + volume.Id)
 		if err != nil {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
