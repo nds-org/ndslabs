@@ -52,8 +52,7 @@
 		},
 		{
 			"ImportPath": "github.com/dgrijalva/jwt-go",
-			"Comment": "v2.4.0-11-gf219341",
-			"Rev": "f2193411bd642f7db03249fd79d5292c9b34916a"
+			"Rev": "f164e17f59b82642a3895ba065c385db6c547344"
 		},
 		{
 			"ImportPath": "github.com/docker/distribution/digest",
