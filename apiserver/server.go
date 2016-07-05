@@ -640,7 +640,7 @@ func (s *Server) GetAllServices(w rest.ResponseWriter, r *rest.Request) {
 	userId := s.getUser(r)
 	catalog := r.Request.FormValue("catalog")
 
-	if catalog == "global" {
+	if catalog == "system" {
 		services, err := s.etcd.GetGlobalServices()
 		if err != nil {
 			glog.Error(err)
@@ -674,7 +674,7 @@ func (s *Server) GetService(w rest.ResponseWriter, r *rest.Request) {
 
 	glog.V(4).Infof("GetService %s\n", key)
 
-	if catalog == "global" {
+	if catalog == "system" {
 		if !s.serviceExists(userId, key) {
 			rest.NotFound(w, r)
 			return
@@ -717,7 +717,7 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	if catalog == "global" {
+	if catalog == "system" {
 		if !s.IsAdmin(r) {
 			rest.Error(w, "", http.StatusUnauthorized)
 			return
@@ -729,7 +729,7 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		glog.V(1).Infof("Added global service %s\n", service.Key)
+		glog.V(1).Infof("Added system service %s\n", service.Key)
 	} else {
 		userId := s.getUser(r)
 		err = s.etcd.PutService(userId, service.Key, &service)
@@ -756,7 +756,7 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	if catalog == "global" {
+	if catalog == "system" {
 		if !s.IsAdmin(r) {
 			rest.Error(w, "", http.StatusUnauthorized)
 			return
@@ -769,7 +769,7 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 			return
 		}
 
-		glog.V(1).Infof("Updated global service %s\n", key)
+		glog.V(1).Infof("Updated system service %s\n", key)
 	} else {
 		userId := s.getUser(r)
 		err = s.etcd.PutService(userId, key, &service)
@@ -789,7 +789,7 @@ func (s *Server) DeleteService(w rest.ResponseWriter, r *rest.Request) {
 	catalog := r.Request.FormValue("catalog")
 	userId := s.getUser(r)
 
-	if catalog == "global" {
+	if catalog == "system" {
 		if !s.IsAdmin(r) {
 			rest.Error(w, "", http.StatusUnauthorized)
 			return
@@ -801,13 +801,13 @@ func (s *Server) DeleteService(w rest.ResponseWriter, r *rest.Request) {
 		}
 
 		if s.serviceIsDependencyGlobal(key) > 0 {
-			glog.Warningf("Cannot delete global service spec %s because it is required by one or more services\n", key)
+			glog.Warningf("Cannot delete system service spec %s because it is required by one or more services\n", key)
 			rest.Error(w, "Required by another service", http.StatusConflict)
 			return
 		}
 
 		if s.serviceInUse(key) > 0 {
-			glog.Warningf("Cannot delete global service spec %s because it is in use by one or more accounts\n", key)
+			glog.Warningf("Cannot delete system service spec %s because it is in use by one or more accounts\n", key)
 			rest.Error(w, "Service is in use", http.StatusConflict)
 			return
 		}
@@ -819,7 +819,7 @@ func (s *Server) DeleteService(w rest.ResponseWriter, r *rest.Request) {
 			return
 		}
 
-		glog.V(1).Infof("Deleted global service %s\n", key)
+		glog.V(1).Infof("Deleted system service %s\n", key)
 	} else {
 		if !s.serviceExists(userId, key) {
 			rest.Error(w, "No such service", http.StatusNotFound)
