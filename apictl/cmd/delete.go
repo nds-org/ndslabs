@@ -12,7 +12,7 @@ func init() {
 	RootCmd.AddCommand(deleteCmd)
 	deleteCmd.AddCommand(deleteStackCmd)
 	deleteCmd.AddCommand(deleteVolumeCmd)
-	deleteCmd.AddCommand(deleteProjectCmd)
+	deleteCmd.AddCommand(deleteAccountCmd)
 	deleteCmd.AddCommand(deleteServiceCmd)
 }
 
@@ -49,9 +49,9 @@ var deleteVolumeCmd = &cobra.Command{
 	},
 }
 
-var deleteProjectCmd = &cobra.Command{
-	Use:    "project [projectId]",
-	Short:  "Remove a project (admin users only)",
+var deleteAccountCmd = &cobra.Command{
+	Use:    "account [accountId]",
+	Short:  "Remove a account (admin users only)",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
@@ -59,7 +59,7 @@ var deleteProjectCmd = &cobra.Command{
 			os.Exit(-1)
 		}
 
-		deleteProject(args[0])
+		deleteAccount(args[0])
 	},
 }
 
@@ -93,25 +93,25 @@ func deleteService(service string) {
 	}
 }
 
-func deleteProject(project string) {
+func deleteAccount(account string) {
 
 	password := credentials("Admin password: ")
 	token, err := client.Login("admin", password)
 	if err != nil {
-		fmt.Printf("Unable to delete project %s: %s \n", project, err)
+		fmt.Printf("Unable to delete account %s: %s \n", account, err)
 		return
 	}
 
-	err = client.DeleteProject(project, token)
+	err = client.DeleteAccount(account, token)
 	if err != nil {
-		fmt.Printf("Unable to delete project %s: %s \n", project, err)
+		fmt.Printf("Unable to delete account %s: %s \n", account, err)
 	} else {
-		fmt.Printf("Project %s deleted\n", project)
+		fmt.Printf("Account %s deleted\n", account)
 	}
 }
 
-func deleteVolume(project string, id string) {
-	err := client.DeleteVolume(project, id)
+func deleteVolume(account string, id string) {
+	err := client.DeleteVolume(account, id)
 	if err != nil {
 		fmt.Printf("Unable to delete volume %s: %s \n", id, err)
 	} else {
@@ -119,8 +119,8 @@ func deleteVolume(project string, id string) {
 	}
 }
 
-func deleteStack(project string, stack string) {
-	err := client.DeleteStack(project, stack)
+func deleteStack(account string, stack string) {
+	err := client.DeleteStack(account, stack)
 	if err != nil {
 		fmt.Printf("Unable to delete stack %s: %s \n", stack, err)
 	} else {

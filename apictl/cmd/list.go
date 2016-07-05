@@ -113,20 +113,20 @@ var listVolumesCmd = &cobra.Command{
 	PostRun: RefreshToken,
 }
 
-var listProjectsCmd = &cobra.Command{
-	Use:    "projects",
-	Short:  "List existing projects (admin users only)",
+var listAccountsCmd = &cobra.Command{
+	Use:    "accounts",
+	Short:  "List existing accounts (admin users only)",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		password := credentials("Admin password: ")
 		token, err := client.Login("admin", password)
 		if err != nil {
-			fmt.Printf("Unable to list projects: %s \n", err)
+			fmt.Printf("Unable to list accounts: %s \n", err)
 			return
 		}
 
-		projects, err := client.ListProjects(token)
+		accounts, err := client.ListAccounts(token)
 		if err != nil {
 			fmt.Printf("List failed: %s\n", err)
 			os.Exit(-1)
@@ -135,14 +135,14 @@ var listProjectsCmd = &cobra.Command{
 		w := new(tabwriter.Writer)
 		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
 		fmt.Fprintln(w, "NAMESPACE\tSTORAGE\tCPU (Max)\tCPU (Default)\tMEMORY (Max)\tMEMORY (Default)\tDESCRIPTION")
-		for _, project := range *projects {
-			fmt.Fprintf(w, "%s\t%d\t%s\t%s\t%s\t%s\t%s\n", project.Namespace,
-				project.ResourceLimits.StorageQuota,
-				project.ResourceLimits.CPUMax,
-				project.ResourceLimits.CPUDefault,
-				project.ResourceLimits.MemoryMax,
-				project.ResourceLimits.MemoryDefault,
-				project.Description)
+		for _, account := range *accounts {
+			fmt.Fprintf(w, "%s\t%d\t%s\t%s\t%s\t%s\t%s\n", account.Namespace,
+				account.ResourceLimits.StorageQuota,
+				account.ResourceLimits.CPUMax,
+				account.ResourceLimits.CPUDefault,
+				account.ResourceLimits.MemoryMax,
+				account.ResourceLimits.MemoryDefault,
+				account.Description)
 		}
 		w.Flush()
 
@@ -183,6 +183,6 @@ func init() {
 	listCmd.AddCommand(listServicesCmd)
 	listCmd.AddCommand(listStacksCmd)
 	listCmd.AddCommand(listVolumesCmd)
-	listCmd.AddCommand(listProjectsCmd)
+	listCmd.AddCommand(listAccountsCmd)
 	listCmd.AddCommand(listConfigsCmd)
 }

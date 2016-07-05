@@ -22,10 +22,10 @@
             "type": "string",
             "required": true
         },
-        "project-id": {
-            "name": "project-id",
+        "account-id": {
+            "name": "account-id",
             "in": "path",
-            "description": "The unique project identifier",
+            "description": "The unique account identifier",
             "type": "string",
             "required": true
         },
@@ -233,9 +233,9 @@
                 }
             }
         },
-        "/projects": {
+        "/accounts": {
             "get": {
-                "description": "Retrieves a site-wide list of NDSLabs projects.\n",
+                "description": "Retrieves a site-wide list of NDSLabs accounts.\n",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -245,7 +245,7 @@
                                 "data": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/definitions/Project"
+                                        "$ref": "#/definitions/Account"
                                     }
                                 }
                             }
@@ -257,14 +257,14 @@
                 }
             },
             "post": {
-                "description": "Adds a new project\n",
+                "description": "Adds a new accounts\n",
                 "parameters": [
                     {
-                        "name": "project",
+                        "name": "accounts",
                         "in": "body",
-                        "description": "Project definition",
+                        "description": "Account definition",
                         "schema": {
-                            "$ref": "#/definitions/Project"
+                            "$ref": "#/definitions/Account"
                         },
                         "required": true
                     }
@@ -276,14 +276,14 @@
                 }
             }
         },
-        "/projects/{project-id}": {
+        "/accounts/{account-id}": {
             "parameters": [
                 {
-                    "$ref": "#/parameters/project-id"
+                    "$ref": "#/parameters/account-id"
                 }
             ],
             "get": {
-                "description": "Retrieves basic information about a project.\n",
+                "description": "Retrieves basic information about a account.\n",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -291,7 +291,7 @@
                             "type": "object",
                             "properties": {
                                 "data": {
-                                    "$ref": "#/definitions/Project"
+                                    "$ref": "#/definitions/Account"
                                 }
                             }
                         }
@@ -299,14 +299,14 @@
                 }
             },
             "put": {
-                "description": "Updates project information\n",
+                "description": "Updates account information\n",
                 "parameters": [
                     {
-                        "name": "project",
+                        "name": "account",
                         "in": "body",
-                        "description": "Project definition",
+                        "description": "Account definition",
                         "schema": {
-                            "$ref": "#/definitions/Project"
+                            "$ref": "#/definitions/Account"
                         },
                         "required": true
                     }
@@ -318,7 +318,7 @@
                 }
             },
             "delete": {
-                "description": "Delete a project\n",
+                "description": "Delete a account\n",
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -326,14 +326,14 @@
                 }
             }
         },
-        "/projects/{project-id}/stacks": {
+        "/accounts/{account-id}/stacks": {
             "parameters": [
                 {
-                    "$ref": "#/parameters/project-id"
+                    "$ref": "#/parameters/account-id"
                 }
             ],
             "get": {
-                "description": "Retrieves a list of stacks for this project.\n",
+                "description": "Retrieves a list of stacks for this account.\n",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -355,7 +355,7 @@
                 }
             },
             "post": {
-                "description": "Adds a new stack to this project\n",
+                "description": "Adds a new stack to this account\n",
                 "parameters": [
                     {
                         "name": "stack",
@@ -374,10 +374,10 @@
                 }
             }
         },
-        "/projects/{project-id}/stacks/{stack-id}": {
+        "/accounts/{account-id}/stacks/{stack-id}": {
             "parameters": [
                 {
-                    "$ref": "#/parameters/project-id"
+                    "$ref": "#/parameters/account-id"
                 },
                 {
                     "$ref": "#/parameters/stack-id"
@@ -427,14 +427,14 @@
                 }
             }
         },
-        "/projects/{project-id}/volumes": {
+        "/accounts/{account-id}/volumes": {
             "parameters": [
                 {
-                    "$ref": "#/parameters/project-id"
+                    "$ref": "#/parameters/account-id"
                 }
             ],
             "get": {
-                "description": "Retrieves a list of volumes for this project.\n",
+                "description": "Retrieves a list of volumes for this account.\n",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -456,7 +456,7 @@
                 }
             },
             "post": {
-                "description": "Adds a new volume to this project\n",
+                "description": "Adds a new volume to this account\n",
                 "parameters": [
                     {
                         "name": "volume",
@@ -475,10 +475,10 @@
                 }
             }
         },
-        "/projects/{project-id}/volumes/{volume-id}": {
+        "/accounts/{account-id}/volumes/{volume-id}": {
             "parameters": [
                 {
-                    "$ref": "#/parameters/project-id"
+                    "$ref": "#/parameters/account-id"
                 },
                 {
                     "$ref": "#/parameters/volume-id"
@@ -528,10 +528,10 @@
                 }
             }
         },
-        "/projects/{project-id}/logs/{stack-service-id}": {
+        "/accounts/{account-id}/logs/{stack-service-id}": {
             "parameters": [
                 {
-                    "$ref": "#/parameters/project-id"
+                    "$ref": "#/parameters/account-id"
                 },
                 {
                     "$ref": "#/parameters/stack-service-id"
@@ -554,10 +554,10 @@
                 }
             }
         },
-        "/projects/{project-id}/start/{stack-id}": {
+        "/accounts/{account-id}/start/{stack-id}": {
             "parameters": [
                 {
-                    "$ref": "#/parameters/project-id"
+                    "$ref": "#/parameters/account-id"
                 },
                 {
                     "$ref": "#/parameters/stack-id"
@@ -572,10 +572,10 @@
                 }
             }
         },
-        "/projects/{project-id}/stop/{stack-id}": {
+        "/accounts/{account-id}/stop/{stack-id}": {
             "parameters": [
                 {
-                    "$ref": "#/parameters/project-id"
+                    "$ref": "#/parameters/account-id"
                 },
                 {
                     "$ref": "#/parameters/stack-id"
@@ -647,11 +647,11 @@
                 "description": "Register\n",
                 "parameters": [
                     {
-                        "name": "project",
+                        "name": "account",
                         "in": "body",
-                        "description": "Project definition",
+                        "description": "Account definition",
                         "schema": {
-                            "$ref": "#/definitions/Project"
+                            "$ref": "#/definitions/Account"
                         },
                         "required": true
                     }
@@ -805,7 +805,7 @@
                 }
             }
         },
-        "Project": {
+        "Account": {
             "type": "object",
             "properties": {
                 "id": {

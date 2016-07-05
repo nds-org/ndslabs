@@ -221,12 +221,12 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 			if userId == "admin" && password == adminPasswd {
 				return true
 			} else {
-				project, err := s.etcd.GetProject(userId)
+				account, err := s.etcd.GetAccount(userId)
 				if err != nil {
 					glog.Error(err)
 					return false
 				} else {
-					return project.Namespace == userId && project.Password == password
+					return account.Namespace == userId && account.Password == password
 				}
 			}
 		},
@@ -253,7 +253,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 
 	api.Use(&rest.IfMiddleware{
 		Condition: func(request *rest.Request) bool {
-			return strings.HasPrefix(request.URL.Path, s.prefix+"projects") ||
+			return strings.HasPrefix(request.URL.Path, s.prefix+"accounts") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"services") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"configs") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"check_token") ||
@@ -272,31 +272,31 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Delete(s.prefix+"authenticate", s.Logout),
 		rest.Get(s.prefix+"check_token", s.CheckToken),
 		rest.Get(s.prefix+"refresh_token", jwt.RefreshHandler),
-		rest.Get(s.prefix+"projects", s.GetAllProjects),
-		rest.Post(s.prefix+"projects/", s.PostProject),
-		rest.Post(s.prefix+"register", s.PostProject),
-		rest.Put(s.prefix+"projects/:pid", s.PutProject),
-		rest.Get(s.prefix+"projects/:pid", s.GetProject),
-		rest.Delete(s.prefix+"projects/:pid", s.DeleteProject),
+		rest.Get(s.prefix+"accounts", s.GetAllAccounts),
+		rest.Post(s.prefix+"accounts/", s.PostAccount),
+		rest.Post(s.prefix+"register", s.PostAccount),
+		rest.Put(s.prefix+"accounts/:userId", s.PutAccount),
+		rest.Get(s.prefix+"accounts/:userId", s.GetAccount),
+		rest.Delete(s.prefix+"accounts/:userId", s.DeleteAccount),
 		rest.Get(s.prefix+"services", s.GetAllServices),
 		rest.Post(s.prefix+"services", s.PostService),
 		rest.Put(s.prefix+"services/:key", s.PutService),
 		rest.Get(s.prefix+"services/:key", s.GetService),
 		rest.Delete(s.prefix+"services/:key", s.DeleteService),
 		rest.Get(s.prefix+"configs", s.GetConfigs),
-		rest.Get(s.prefix+"projects/:pid/stacks", s.GetAllStacks),
-		rest.Post(s.prefix+"projects/:pid/stacks", s.PostStack),
-		rest.Put(s.prefix+"projects/:pid/stacks/:sid", s.PutStack),
-		rest.Get(s.prefix+"projects/:pid/stacks/:sid", s.GetStack),
-		rest.Delete(s.prefix+"projects/:pid/stacks/:sid", s.DeleteStack),
-		rest.Get(s.prefix+"projects/:pid/volumes", s.GetAllVolumes),
-		rest.Post(s.prefix+"projects/:pid/volumes", s.PostVolume),
-		rest.Put(s.prefix+"projects/:pid/volumes/:vid", s.PutVolume),
-		rest.Get(s.prefix+"projects/:pid/volumes/:vid", s.GetVolume),
-		rest.Delete(s.prefix+"projects/:pid/volumes/:vid", s.DeleteVolume),
-		rest.Get(s.prefix+"projects/:pid/start/:sid", s.StartStack),
-		rest.Get(s.prefix+"projects/:pid/stop/:sid", s.StopStack),
-		rest.Get(s.prefix+"projects/:pid/logs/:ssid", s.GetLogs),
+		rest.Get(s.prefix+"accounts/:userId/stacks", s.GetAllStacks),
+		rest.Post(s.prefix+"accounts/:userId/stacks", s.PostStack),
+		rest.Put(s.prefix+"accounts/:userId/stacks/:sid", s.PutStack),
+		rest.Get(s.prefix+"accounts/:userId/stacks/:sid", s.GetStack),
+		rest.Delete(s.prefix+"accounts/:userId/stacks/:sid", s.DeleteStack),
+		rest.Get(s.prefix+"accounts/:userId/volumes", s.GetAllVolumes),
+		rest.Post(s.prefix+"accounts/:userId/volumes", s.PostVolume),
+		rest.Put(s.prefix+"accounts/:userId/volumes/:vid", s.PutVolume),
+		rest.Get(s.prefix+"accounts/:userId/volumes/:vid", s.GetVolume),
+		rest.Delete(s.prefix+"accounts/:userId/volumes/:vid", s.DeleteVolume),
+		rest.Get(s.prefix+"accounts/:userId/start/:sid", s.StartStack),
+		rest.Get(s.prefix+"accounts/:userId/stop/:sid", s.StopStack),
+		rest.Get(s.prefix+"accounts/:userId/logs/:ssid", s.GetLogs),
 		rest.Get(s.prefix+"console", s.GetConsole),
 		rest.Get(s.prefix+"check_console", s.CheckConsole),
 	)
@@ -316,7 +316,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		}
 	}
 
-	go s.initExistingProjects()
+	go s.initExistingAccounts()
 
 	go s.kube.WatchEvents(s)
 	go s.kube.WatchPods(s)
@@ -328,10 +328,10 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 }
 
 func (s *Server) CheckConsole(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.Request.FormValue("namespace")
+	userId := r.Request.FormValue("namespace")
 	ssid := r.Request.FormValue("ssid")
 
-	if !s.kube.NamespaceExists(pid) || !s.stackServiceExists(pid, ssid) {
+	if !s.kube.NamespaceExists(userId) || !s.stackServiceExists(userId, ssid) {
 		rest.NotFound(w, r)
 		return
 	} else {
@@ -341,59 +341,59 @@ func (s *Server) CheckConsole(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) GetConsole(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.Request.FormValue("namespace")
+	userId := r.Request.FormValue("namespace")
 	ssid := r.Request.FormValue("ssid")
 
-	if !s.kube.NamespaceExists(pid) || !s.stackServiceExists(pid, ssid) {
+	if !s.kube.NamespaceExists(userId) || !s.stackServiceExists(userId, ssid) {
 		rest.NotFound(w, r)
 		return
 	}
 
-	pods, _ := s.kube.GetPods(pid, "name", ssid)
+	pods, _ := s.kube.GetPods(userId, "name", ssid)
 	pod := pods[0].Name
 	container := pods[0].Spec.Containers[0].Name
-	glog.V(4).Infof("exec called for %s %s %s\n", pid, ssid, pod)
-	s.kube.Exec(pid, pod, container, s.kube).ServeHTTP(w.(http.ResponseWriter), r.Request)
+	glog.V(4).Infof("exec called for %s %s %s\n", userId, ssid, pod)
+	s.kube.Exec(userId, pod, container, s.kube).ServeHTTP(w.(http.ResponseWriter), r.Request)
 }
 
-func (s *Server) initExistingProjects() {
-	projects, err := s.etcd.GetProjects()
+func (s *Server) initExistingAccounts() {
+	accounts, err := s.etcd.GetAccounts()
 	if err != nil {
 		glog.Error(err)
 		return
 	}
 
-	for _, project := range *projects {
-		if !s.kube.NamespaceExists(project.Namespace) {
-			s.kube.CreateNamespace(project.Namespace)
+	for _, account := range *accounts {
+		if !s.kube.NamespaceExists(account.Namespace) {
+			s.kube.CreateNamespace(account.Namespace)
 
-			if len(project.ResourceLimits.CPUMax) > 0 &&
-				len(project.ResourceLimits.MemoryMax) > 0 {
-				s.kube.CreateResourceQuota(project.Namespace,
-					project.ResourceLimits.CPUMax,
-					project.ResourceLimits.MemoryMax)
-				s.kube.CreateLimitRange(project.Namespace,
-					project.ResourceLimits.CPUDefault,
-					project.ResourceLimits.MemoryDefault)
+			if len(account.ResourceLimits.CPUMax) > 0 &&
+				len(account.ResourceLimits.MemoryMax) > 0 {
+				s.kube.CreateResourceQuota(account.Namespace,
+					account.ResourceLimits.CPUMax,
+					account.ResourceLimits.MemoryMax)
+				s.kube.CreateLimitRange(account.Namespace,
+					account.ResourceLimits.CPUDefault,
+					account.ResourceLimits.MemoryDefault)
 			}
 		}
 
-		stacks, err := s.etcd.GetStacks(project.Namespace)
+		stacks, err := s.etcd.GetStacks(account.Namespace)
 		if err != nil {
 			glog.Error(err)
 		}
 		for _, stack := range *stacks {
 
 			if stack.Status == "starting" || stack.Status == "started" {
-				_, err = s.startStack(project.Namespace, &stack)
+				_, err = s.startStack(account.Namespace, &stack)
 				if err != nil {
-					glog.Errorf("Error starting stack %s %s\n", project.Namespace, stack.Id)
+					glog.Errorf("Error starting stack %s %s\n", account.Namespace, stack.Id)
 					glog.Error(err)
 				}
 			} else if stack.Status == "stopping" {
-				_, err = s.stopStack(project.Namespace, stack.Id)
+				_, err = s.stopStack(account.Namespace, stack.Id)
 				if err != nil {
-					glog.Errorf("Error stopping stack %s %s\n", project.Namespace, stack.Id)
+					glog.Errorf("Error stopping stack %s %s\n", account.Namespace, stack.Id)
 					glog.Error(err)
 				}
 			}
@@ -406,7 +406,7 @@ func (s *Server) GetPaths(w rest.ResponseWriter, r *rest.Request) {
 	paths = append(paths, s.prefix+"authenticate")
 	paths = append(paths, s.prefix+"configs")
 	paths = append(paths, s.prefix+"console")
-	paths = append(paths, s.prefix+"projects")
+	paths = append(paths, s.prefix+"accounts")
 	paths = append(paths, s.prefix+"register")
 	paths = append(paths, s.prefix+"services")
 	paths = append(paths, s.prefix+"version")
@@ -426,26 +426,30 @@ func (s *Server) Logout(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *Server) GetAllProjects(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) GetAllAccounts(w rest.ResponseWriter, r *rest.Request) {
 
 	if !s.IsAdmin(r) {
 		rest.Error(w, "", http.StatusUnauthorized)
 		return
 	}
 
-	projects, err := s.etcd.GetProjects()
+	accounts, err := s.etcd.GetAccounts()
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		w.WriteJson(&err)
 	} else {
-		w.WriteJson(&projects)
+		w.WriteJson(&accounts)
 	}
 }
 
 func (s *Server) getUser(r *rest.Request) string {
 	payload := r.Env["JWT_PAYLOAD"].(map[string]interface{})
-	return payload["user"].(string)
+	if payload["admin"] == true {
+		return ""
+	} else {
+		return payload["user"].(string)
+	}
 }
 
 func (s *Server) IsAdmin(r *rest.Request) bool {
@@ -457,39 +461,39 @@ func (s *Server) IsAdmin(r *rest.Request) bool {
 	}
 }
 
-func (s *Server) GetProject(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.PathParam("pid")
+func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
+	userId := r.PathParam("userId")
 
-	// Check IsAdmin or pid = current user
-	if !(s.IsAdmin(r) || s.getUser(r) == pid) {
+	// Check IsAdmin or userId = current user
+	if !(s.IsAdmin(r) || s.getUser(r) == userId) {
 		rest.Error(w, "", http.StatusUnauthorized)
 		return
 	}
 
-	glog.V(4).Infof("Getting project %s\n", pid)
-	project, err := s.etcd.GetProject(pid)
+	glog.V(4).Infof("Getting account %s\n", userId)
+	account, err := s.etcd.GetAccount(userId)
 	if err != nil {
 		rest.NotFound(w, r)
 	} else {
-		glog.V(4).Infof("Getting quotas for %s\n", pid)
-		quota, err := s.kube.GetResourceQuota(pid)
+		glog.V(4).Infof("Getting quotas for %s\n", userId)
+		quota, err := s.kube.GetResourceQuota(userId)
 		if err != nil {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 		} else {
 			fmt.Printf("Usage: %d %d \n", quota.Items[0].Status.Used.Memory().Value(), quota.Items[0].Status.Hard.Memory().Value())
-			project.ResourceUsage = api.ResourceUsage{
+			account.ResourceUsage = api.ResourceUsage{
 				CPU:       quota.Items[0].Status.Used.Cpu().String(),
 				Memory:    quota.Items[0].Status.Used.Memory().String(),
 				CPUPct:    fmt.Sprintf("%f", float64(quota.Items[0].Status.Used.Cpu().Value())/float64(quota.Items[0].Status.Hard.Cpu().Value())),
 				MemoryPct: fmt.Sprintf("%f", float64(quota.Items[0].Status.Used.Memory().Value())/float64(quota.Items[0].Status.Hard.Memory().Value())),
 			}
 		}
-		w.WriteJson(project)
+		w.WriteJson(account)
 	}
 }
 
-func (s *Server) PostProject(w rest.ResponseWriter, r *rest.Request) {
+func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 
 	/*
 		if !s.IsAdmin(r) {
@@ -498,49 +502,49 @@ func (s *Server) PostProject(w rest.ResponseWriter, r *rest.Request) {
 		}
 	*/
 
-	project := api.Project{}
-	err := r.DecodeJsonPayload(&project)
+	account := api.Account{}
+	err := r.DecodeJsonPayload(&account)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if s.projectExists(project.Namespace) {
+	if s.accountExists(account.Namespace) {
 		w.WriteHeader(http.StatusConflict)
 		return
 	}
 
-	_, err = s.kube.CreateNamespace(project.Namespace)
+	_, err = s.kube.CreateNamespace(account.Namespace)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if project.ResourceLimits == (api.ResourceLimits{}) {
-		glog.Warningf("No resource limits specified for project %s, using defaults\n", project.Name)
-		project.ResourceLimits = api.ResourceLimits{
+	if account.ResourceLimits == (api.ResourceLimits{}) {
+		glog.Warningf("No resource limits specified for account %s, using defaults\n", account.Name)
+		account.ResourceLimits = api.ResourceLimits{
 			CPUMax:        s.cpuMax,
 			CPUDefault:    s.cpuDefault,
 			MemoryMax:     s.memMax,
 			MemoryDefault: s.memDefault,
 			StorageQuota:  fmt.Sprintf("%d", s.storageDefault),
 		}
-		project.StorageQuota = s.storageDefault
+		account.StorageQuota = s.storageDefault
 	}
-	_, err = s.kube.CreateResourceQuota(project.Namespace,
-		project.ResourceLimits.CPUMax,
-		project.ResourceLimits.MemoryMax)
+	_, err = s.kube.CreateResourceQuota(account.Namespace,
+		account.ResourceLimits.CPUMax,
+		account.ResourceLimits.MemoryMax)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	_, err = s.kube.CreateLimitRange(project.Namespace,
-		project.ResourceLimits.CPUDefault,
-		project.ResourceLimits.MemoryDefault)
+	_, err = s.kube.CreateLimitRange(account.Namespace,
+		account.ResourceLimits.CPUDefault,
+		account.ResourceLimits.MemoryDefault)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -549,81 +553,81 @@ func (s *Server) PostProject(w rest.ResponseWriter, r *rest.Request) {
 
 	secret, err := s.kube.GetSecret("default", "ndslabs-tls-secret")
 	if secret != nil {
-		secretName := fmt.Sprintf("%s-tls-secret", project.Namespace)
-		_, err := s.kube.CreateTLSSecret(project.Namespace, secretName, secret.Data["tls.crt"], secret.Data["tls.key"])
+		secretName := fmt.Sprintf("%s-tls-secret", account.Namespace)
+		_, err := s.kube.CreateTLSSecret(account.Namespace, secretName, secret.Data["tls.crt"], secret.Data["tls.key"])
 		if err != nil {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}
 
-	err = s.etcd.PutProject(project.Namespace, &project)
+	err = s.etcd.PutAccount(account.Namespace, &account)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteJson(&project)
+	w.WriteJson(&account)
 }
 
-func (s *Server) PutProject(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.PathParam("pid")
+func (s *Server) PutAccount(w rest.ResponseWriter, r *rest.Request) {
+	userId := r.PathParam("userId")
 
-	// Check IsAdmin or pid = current user
-	if !(s.IsAdmin(r) || s.getUser(r) == pid) {
+	// Check IsAdmin or userId = current user
+	if !(s.IsAdmin(r) || s.getUser(r) == userId) {
 		rest.Error(w, "", http.StatusUnauthorized)
 		return
 	}
 
-	project := api.Project{}
-	err := r.DecodeJsonPayload(&project)
+	account := api.Account{}
+	err := r.DecodeJsonPayload(&account)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = s.etcd.PutProject(pid, &project)
+	err = s.etcd.PutAccount(userId, &account)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteJson(&project)
+	w.WriteJson(&account)
 }
 
-func (s *Server) DeleteProject(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.PathParam("pid")
+func (s *Server) DeleteAccount(w rest.ResponseWriter, r *rest.Request) {
+	userId := r.PathParam("userId")
 
-	glog.V(4).Infof("DeleteProject %s", pid)
+	glog.V(4).Infof("DeleteAccount %s", userId)
 
 	if !s.IsAdmin(r) {
 		rest.Error(w, "", http.StatusUnauthorized)
 		return
 	}
 
-	if !s.projectExists(pid) {
+	if !s.accountExists(userId) {
 		rest.NotFound(w, r)
 		return
 	}
 
-	_, err := s.kube.DeleteNamespace(pid)
+	_, err := s.kube.DeleteNamespace(userId)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = s.etcd.DeleteProject(pid)
+	err = s.etcd.DeleteAccount(userId)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = os.RemoveAll(s.volDir + "/" + pid)
+	err = os.RemoveAll(s.volDir + "/" + userId)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -633,8 +637,9 @@ func (s *Server) DeleteProject(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) GetAllServices(w rest.ResponseWriter, r *rest.Request) {
+	userId := s.getUser(r)
 
-	services, err := s.etcd.GetServices()
+	services, err := s.etcd.GetServices(userId)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -717,6 +722,7 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) DeleteService(w rest.ResponseWriter, r *rest.Request) {
 	key := r.PathParam("key")
+	userId := s.getUser(r)
 
 	if !s.IsAdmin(r) {
 		rest.Error(w, "", http.StatusUnauthorized)
@@ -728,14 +734,14 @@ func (s *Server) DeleteService(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	if s.serviceIsDependency(key) > 0 {
+	if s.serviceIsDependency(key, userId) > 0 {
 		glog.Warningf("Cannot delete service spec %s because it is required by one or more services\n", key)
 		rest.Error(w, "Required by another service", http.StatusConflict)
 		return
 	}
 
 	if s.serviceInUse(key) > 0 {
-		glog.Warningf("Cannot delete service spec %s because it is in use by one or more projects\n", key)
+		glog.Warningf("Cannot delete service spec %s because it is in use by one or more accounts\n", key)
 		rest.Error(w, "Service is in use", http.StatusConflict)
 		return
 	}
@@ -753,9 +759,9 @@ func (s *Server) DeleteService(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) serviceInUse(sid string) int {
 	inUse := 0
-	projects, _ := s.etcd.GetProjects()
-	for _, project := range *projects {
-		stacks, _ := s.etcd.GetStacks(project.Namespace)
+	accounts, _ := s.etcd.GetAccounts()
+	for _, account := range *accounts {
+		stacks, _ := s.etcd.GetStacks(account.Namespace)
 		for _, stack := range *stacks {
 			for _, service := range stack.Services {
 				if service.Service == sid {
@@ -768,9 +774,9 @@ func (s *Server) serviceInUse(sid string) int {
 }
 
 func (s *Server) GetAllStacks(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.PathParam("pid")
+	userId := r.PathParam("userId")
 
-	stacks, err := s.getStacks(pid)
+	stacks, err := s.getStacks(userId)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -780,22 +786,22 @@ func (s *Server) GetAllStacks(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-func (s *Server) getStacks(pid string) (*[]api.Stack, error) {
+func (s *Server) getStacks(userId string) (*[]api.Stack, error) {
 
 	stacks := []api.Stack{}
-	stks, err := s.etcd.GetStacks(pid)
+	stks, err := s.etcd.GetStacks(userId)
 	if err == nil {
 		for _, stack := range *stks {
-			stack, _ := s.getStackWithStatus(pid, stack.Id)
+			stack, _ := s.getStackWithStatus(userId, stack.Id)
 			stacks = append(stacks, *stack)
 		}
 	}
 	return &stacks, nil
 }
 
-func (s *Server) isStackStopped(pid string, ssid string) bool {
+func (s *Server) isStackStopped(userId string, ssid string) bool {
 	sid := ssid[0:strings.LastIndex(ssid, "-")]
-	stack, _ := s.etcd.GetStack(pid, sid)
+	stack, _ := s.etcd.GetStack(userId, sid)
 
 	if stack != nil && stack.Status == stackStatus[Stopped] {
 		return true
@@ -804,12 +810,12 @@ func (s *Server) isStackStopped(pid string, ssid string) bool {
 	}
 }
 
-func (s *Server) getStackService(pid string, ssid string) *api.StackService {
+func (s *Server) getStackService(userId string, ssid string) *api.StackService {
 	if strings.Index(ssid, "-") < 0 {
 		return nil
 	}
 	sid := ssid[0:strings.LastIndex(ssid, "-")]
-	stack, _ := s.etcd.GetStack(pid, sid)
+	stack, _ := s.etcd.GetStack(userId, sid)
 	if stack == nil {
 		return nil
 	}
@@ -822,8 +828,8 @@ func (s *Server) getStackService(pid string, ssid string) *api.StackService {
 	return nil
 }
 
-func (s *Server) attachmentExists(pid string, ssid string) bool {
-	volumes, _ := s.etcd.GetVolumes(pid)
+func (s *Server) attachmentExists(userId string, ssid string) bool {
+	volumes, _ := s.etcd.GetVolumes(userId)
 	if volumes == nil {
 		return false
 	}
@@ -838,8 +844,8 @@ func (s *Server) attachmentExists(pid string, ssid string) bool {
 	return exists
 }
 
-func (s *Server) volumeExists(pid string, name string) bool {
-	volumes, _ := s.etcd.GetVolumes(pid)
+func (s *Server) volumeExists(userId string, name string) bool {
+	volumes, _ := s.etcd.GetVolumes(userId)
 	if volumes == nil {
 		return false
 	}
@@ -854,15 +860,15 @@ func (s *Server) volumeExists(pid string, name string) bool {
 	return exists
 }
 
-func (s *Server) projectExists(pid string) bool {
-	projects, _ := s.etcd.GetProjects()
-	if projects == nil {
+func (s *Server) accountExists(userId string) bool {
+	accounts, _ := s.etcd.GetAccounts()
+	if accounts == nil {
 		return false
 	}
 
 	exists := false
-	for _, project := range *projects {
-		if project.Namespace == pid {
+	for _, account := range *accounts {
+		if account.Namespace == userId {
 			exists = true
 			break
 		}
@@ -870,8 +876,8 @@ func (s *Server) projectExists(pid string) bool {
 	return exists
 }
 
-func (s *Server) stackServiceExists(pid string, id string) bool {
-	stacks, _ := s.getStacks(pid)
+func (s *Server) stackServiceExists(userId string, id string) bool {
+	stacks, _ := s.getStacks(userId)
 	if stacks == nil {
 		return false
 	}
@@ -888,8 +894,8 @@ func (s *Server) stackServiceExists(pid string, id string) bool {
 	return exists
 }
 
-func (s *Server) stackExists(pid string, name string) bool {
-	stacks, _ := s.getStacks(pid)
+func (s *Server) stackExists(userId string, name string) bool {
+	stacks, _ := s.getStacks(userId)
 	if stacks == nil {
 		return false
 	}
@@ -904,8 +910,8 @@ func (s *Server) stackExists(pid string, name string) bool {
 	return exists
 }
 
-func (s *Server) serviceIsDependency(sid string) int {
-	services, _ := s.etcd.GetServices()
+func (s *Server) serviceIsDependency(sid string, userId string) int {
+	services, _ := s.etcd.GetServices(userId)
 	dependencies := 0
 	for _, service := range *services {
 		for _, dependency := range service.Dependencies {
@@ -927,10 +933,10 @@ func (s *Server) serviceExists(sid string) bool {
 }
 
 func (s *Server) GetStack(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.PathParam("pid")
+	userId := r.PathParam("userId")
 	sid := r.PathParam("sid")
 
-	stack, err := s.getStackWithStatus(pid, sid)
+	stack, err := s.getStackWithStatus(userId, sid)
 	if stack == nil {
 		rest.NotFound(w, r)
 		return
@@ -946,7 +952,7 @@ func (s *Server) GetStack(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.PathParam("pid")
+	userId := r.PathParam("userId")
 
 	stack := api.Stack{}
 	err := r.DecodeJsonPayload(&stack)
@@ -973,7 +979,7 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 		stackService.Id = fmt.Sprintf("%s-%s", sid, stackService.Service)
 	}
 
-	err = s.etcd.PutStack(pid, stack.Id, &stack)
+	err = s.etcd.PutStack(userId, stack.Id, &stack)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -983,7 +989,7 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.PathParam("pid")
+	userId := r.PathParam("userId")
 	sid := r.PathParam("sid")
 
 	stack := api.Stack{}
@@ -996,7 +1002,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	// Get the existing stack
-	existingStack, err := s.etcd.GetStack(pid, sid)
+	existingStack, err := s.etcd.GetStack(userId, sid)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1014,7 +1020,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 
 		if !found {
 			// Service has been removed, detach the associated volume
-			s.detachVolume(pid, ss1.Id)
+			s.detachVolume(userId, ss1.Id)
 
 			// Delete ingress
 		}
@@ -1026,7 +1032,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	stack.Status = stackStatus[Stopped]
-	err = s.etcd.PutStack(pid, sid, &stack)
+	err = s.etcd.PutStack(userId, sid, &stack)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1038,10 +1044,10 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 
-	pid := r.PathParam("pid")
+	userId := r.PathParam("userId")
 	sid := r.PathParam("sid")
 
-	stack, err := s.etcd.GetStack(pid, sid)
+	stack, err := s.etcd.GetStack(userId, sid)
 	if stack == nil {
 		rest.NotFound(w, r)
 		return
@@ -1051,24 +1057,24 @@ func (s *Server) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 		stack.Status == stackStatus[Starting] {
 		// Can't stop a running stack
 		w.WriteHeader(http.StatusConflict)
-		//	s.stopStack(pid, sid)
+		//	s.stopStack(userId, sid)
 		return
 	}
 
-	err = s.etcd.DeleteStack(pid, sid)
+	err = s.etcd.DeleteStack(userId, sid)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	volumes, err := s.etcd.GetVolumes(pid)
+	volumes, err := s.etcd.GetVolumes(userId)
 	for _, volume := range *volumes {
 		for _, ss := range stack.Services {
 			if volume.Attached == ss.Id {
 				glog.V(4).Infof("Detaching volume %s\n", volume.Id)
 				volume.Attached = ""
 				volume.Status = "available"
-				s.etcd.PutVolume(pid, volume.Id, volume)
+				s.etcd.PutVolume(userId, volume.Id, volume)
 				// detach the volume
 			}
 		}
@@ -1077,20 +1083,20 @@ func (s *Server) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *Server) startStackService(serviceKey string, pid string, stack *api.Stack, addrPortMap *map[string]kube.ServiceAddrPort) {
+func (s *Server) startStackService(serviceKey string, userId string, stack *api.Stack, addrPortMap *map[string]kube.ServiceAddrPort) {
 
 	service, _ := s.etcd.GetServiceSpec(serviceKey)
 	for _, dep := range service.Dependencies {
 		if dep.Required {
 			glog.V(4).Infof("Starting required dependency %s\n", dep.DependencyKey)
-			s.startController(pid, dep.DependencyKey, stack, addrPortMap)
+			s.startController(userId, dep.DependencyKey, stack, addrPortMap)
 		} else {
-			s.startStackService(dep.DependencyKey, pid, stack, addrPortMap)
+			s.startStackService(dep.DependencyKey, userId, stack, addrPortMap)
 		}
 	}
 }
 
-func (s *Server) startController(pid string, serviceKey string, stack *api.Stack, addrPortMap *map[string]kube.ServiceAddrPort) (bool, error) {
+func (s *Server) startController(userId string, serviceKey string, stack *api.Stack, addrPortMap *map[string]kube.ServiceAddrPort) (bool, error) {
 
 	var stackService *api.StackService
 	found := false
@@ -1105,7 +1111,7 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 		return false, nil
 	}
 
-	pods, _ := s.kube.GetPods(pid, "name", fmt.Sprintf("%s-%s", stack.Id, serviceKey))
+	pods, _ := s.kube.GetPods(userId, "name", fmt.Sprintf("%s-%s", stack.Id, serviceKey))
 	running := false
 	for _, pod := range pods {
 		if pod.Status.Phase == "Running" {
@@ -1140,7 +1146,7 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 	}
 
 	name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
-	template := s.kube.CreateControllerTemplate(pid, name, stack.Id, stackService, spec, addrPortMap, &sharedEnv)
+	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, stackService, spec, addrPortMap, &sharedEnv)
 
 	if len(spec.VolumeMounts) > 0 {
 		k8vols := make([]k8api.Volume, 0)
@@ -1160,7 +1166,7 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 		k8vol.Name = stackService.Service
 		glog.V(4).Infof("Need volume for %s \n", stackService.Service)
 
-		volumes, _ := s.etcd.GetVolumes(pid)
+		volumes, _ := s.etcd.GetVolumes(userId)
 		found := false
 		for _, volume := range *volumes {
 			if volume.Attached == stackService.Id {
@@ -1169,11 +1175,11 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 
 				if volume.Format == "hostPath" {
 					k8hostPath := k8api.HostPathVolumeSource{}
-					k8hostPath.Path = s.volDir + "/" + pid + "/" + volume.Id
+					k8hostPath.Path = s.volDir + "/" + userId + "/" + volume.Id
 					k8vol.HostPath = &k8hostPath
 					k8vols = append(k8vols, k8vol)
 
-					glog.V(4).Infof("Attaching %s\n", s.volDir+"/"+pid+"/"+volume.Id)
+					glog.V(4).Infof("Attaching %s\n", s.volDir+"/"+userId+"/"+volume.Id)
 				} else {
 					glog.Warning("Invalid volume format\n")
 				}
@@ -1189,7 +1195,7 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 	}
 
 	fmt.Printf("Starting controller %s\n", name)
-	_, err := s.kube.StartController(pid, template)
+	_, err := s.kube.StartController(userId, template)
 	if err != nil {
 		stackService.Status = "error"
 		stackService.StatusMessages = append(stackService.StatusMessages,
@@ -1205,7 +1211,7 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 	failed := 0
 
 	for (ready + failed) < len(stack.Services) {
-		stack, _ := s.etcd.GetStack(pid, stack.Id)
+		stack, _ := s.etcd.GetStack(userId, stack.Id)
 		for _, stackService := range stack.Services {
 			glog.V(4).Infof("Stack service %s: status=%s\n", stackService.Id, stackService.Status)
 			if stackService.Status == "ready" {
@@ -1225,10 +1231,10 @@ func (s *Server) startController(pid string, serviceKey string, stack *api.Stack
 }
 
 func (s *Server) StartStack(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.PathParam("pid")
+	userId := r.PathParam("userId")
 	sid := r.PathParam("sid")
 
-	stack, _ := s.etcd.GetStack(pid, sid)
+	stack, _ := s.etcd.GetStack(userId, sid)
 	if stack == nil {
 		rest.NotFound(w, r)
 		return
@@ -1243,7 +1249,7 @@ func (s *Server) StartStack(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	stack, err := s.startStack(pid, stack)
+	stack, err := s.startStack(userId, stack)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -1251,11 +1257,11 @@ func (s *Server) StartStack(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&stack)
 }
 
-func (s *Server) startStack(pid string, stack *api.Stack) (*api.Stack, error) {
+func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error) {
 
 	sid := stack.Id
 	stack.Status = stackStatus[Starting]
-	s.etcd.PutStack(pid, sid, stack)
+	s.etcd.PutStack(userId, sid, stack)
 
 	stackServices := stack.Services
 
@@ -1268,10 +1274,10 @@ func (s *Server) startStack(pid string, stack *api.Stack) (*api.Stack, error) {
 			name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
 			template := s.kube.CreateServiceTemplate(name, stack.Id, spec)
 
-			svc, err := s.kube.GetService(pid, name)
+			svc, err := s.kube.GetService(userId, name)
 			if svc == nil {
 				glog.V(4).Infof("Starting Kubernetes service %s\n", name)
-				svc, err = s.kube.StartService(pid, template)
+				svc, err = s.kube.StartService(userId, template)
 				if err != nil {
 					glog.Errorf("Error starting service %s\n", name)
 					return nil, err
@@ -1280,10 +1286,10 @@ func (s *Server) startStack(pid string, stack *api.Stack) (*api.Stack, error) {
 				if s.ingress == IngressTypeLoadBalancer &&
 					spec.Access == api.AccessExternal {
 
-					secretName := fmt.Sprintf("%s-tls-secret", pid)
+					secretName := fmt.Sprintf("%s-tls-secret", userId)
 
 					host := fmt.Sprintf("%s.%s", svc.Name, s.domain)
-					_, err := s.kube.CreateIngress(pid, host, svc.Name,
+					_, err := s.kube.CreateIngress(userId, host, svc.Name,
 						int(svc.Spec.Ports[0].Port), secretName)
 					if err != nil {
 						glog.Errorf("Error creating ingress %s\n", name)
@@ -1311,7 +1317,7 @@ func (s *Server) startStack(pid string, stack *api.Stack) (*api.Stack, error) {
 	// start service. Otherwise wait
 	started := map[string]int{}
 	errors := map[string]int{}
-	glog.V(4).Infof("Starting services for %s %s\n", pid, sid)
+	glog.V(4).Infof("Starting services for %s %s\n", userId, sid)
 	for len(started) < len(stackServices) {
 		if len(errors) > 0 {
 			// Dependent service is in error, abort
@@ -1319,7 +1325,7 @@ func (s *Server) startStack(pid string, stack *api.Stack) (*api.Stack, error) {
 			break
 		}
 
-		stack, _ = s.getStackWithStatus(pid, sid)
+		stack, _ = s.getStackWithStatus(userId, sid)
 		for _, stackService := range stack.Services {
 			if stackService.Status == "error" {
 				errors[stackService.Service] = 1
@@ -1344,7 +1350,7 @@ func (s *Server) startStack(pid string, stack *api.Stack) (*api.Stack, error) {
 				}
 			}
 			if numDeps == 0 || startedDeps == numDeps {
-				go s.startController(pid, stackService.Service, stack, &addrPortMap)
+				go s.startController(userId, stackService.Service, stack, &addrPortMap)
 				started[stackService.Service] = 1
 			}
 		}
@@ -1353,7 +1359,7 @@ func (s *Server) startStack(pid string, stack *api.Stack) (*api.Stack, error) {
 
 	ready := map[string]int{}
 	for len(ready) < len(started) && len(errors) == 0 {
-		stack, _ = s.getStackWithStatus(pid, sid)
+		stack, _ = s.getStackWithStatus(userId, sid)
 		for _, stackService := range stack.Services {
 			if stackService.Status == "ready" {
 				ready[stackService.Service] = 1
@@ -1365,7 +1371,7 @@ func (s *Server) startStack(pid string, stack *api.Stack) (*api.Stack, error) {
 		time.Sleep(time.Second * 3)
 	}
 
-	stack, _ = s.getStackWithStatus(pid, sid)
+	stack, _ = s.getStackWithStatus(userId, sid)
 	stack.Status = "started"
 	for _, stackService := range stack.Services {
 		if stackService.Status == "error" {
@@ -1373,15 +1379,15 @@ func (s *Server) startStack(pid string, stack *api.Stack) (*api.Stack, error) {
 		}
 	}
 
-	s.etcd.PutStack(pid, sid, stack)
+	s.etcd.PutStack(userId, sid, stack)
 	glog.V(4).Infof("Stack %s started\n", sid)
 
 	return stack, nil
 }
 
-func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) {
+func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, error) {
 
-	stack, _ := s.etcd.GetStack(pid, sid)
+	stack, _ := s.etcd.GetStack(userId, sid)
 	if stack == nil {
 		return nil, nil
 	}
@@ -1390,7 +1396,7 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 		// Get the pods for this stack
 		podStatus := make(map[string]string)
 
-		pods, _ := s.kube.GetPods(pid, "stack", sid)
+		pods, _ := s.kube.GetPods(userId, "stack", sid)
 		for _, pod := range pods {
 			label := pod.Labels["service"]
 			if len(pod.Status.Conditions) > 0 {
@@ -1437,7 +1443,7 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 		}
 	*/
 
-	k8services, _ := s.kube.GetServices(pid, sid)
+	k8services, _ := s.kube.GetServices(userId, sid)
 	endpoints := make(map[string]api.Endpoint)
 	for _, k8service := range k8services {
 		label := k8service.Labels["service"]
@@ -1484,10 +1490,10 @@ func (s *Server) getStackWithStatus(pid string, sid string) (*api.Stack, error) 
 }
 
 func (s *Server) StopStack(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.PathParam("pid")
+	userId := r.PathParam("userId")
 	sid := r.PathParam("sid")
 
-	stack, err := s.etcd.GetStack(pid, sid)
+	stack, err := s.etcd.GetStack(userId, sid)
 	if stack == nil {
 		rest.NotFound(w, r)
 		return
@@ -1498,7 +1504,7 @@ func (s *Server) StopStack(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	stack, err = s.stopStack(pid, sid)
+	stack, err = s.stopStack(userId, sid)
 	if err == nil {
 		glog.V(4).Infof("Stack %s stopped \n", sid)
 		w.WriteJson(&stack)
@@ -1509,12 +1515,12 @@ func (s *Server) StopStack(w rest.ResponseWriter, r *rest.Request) {
 
 }
 
-func (s *Server) stopStack(pid string, sid string) (*api.Stack, error) {
+func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 
-	path := "/projects/" + pid + "/stacks/" + sid
+	path := "/accounts/" + userId + "/stacks/" + sid
 	glog.V(4).Infof("Stopping stack %s\n", path)
 
-	stack, _ := s.etcd.GetStack(pid, sid)
+	stack, _ := s.etcd.GetStack(userId, sid)
 
 	glog.V(4).Infof("Stack status %s\n", stack.Status)
 	if stack.Status == stackStatus[Stopped] {
@@ -1524,13 +1530,13 @@ func (s *Server) stopStack(pid string, sid string) (*api.Stack, error) {
 	}
 
 	stack.Status = stackStatus[Stopping]
-	s.etcd.PutStack(pid, sid, stack)
+	s.etcd.PutStack(userId, sid, stack)
 
 	// For each stack service, stop dependent services first.
 	stopped := map[string]int{}
 
 	for len(stopped) < len(stack.Services) {
-		stack, _ = s.getStackWithStatus(pid, sid)
+		stack, _ = s.getStackWithStatus(userId, sid)
 		for _, stackService := range stack.Services {
 			if stopped[stackService.Service] == 1 {
 				continue
@@ -1557,7 +1563,7 @@ func (s *Server) stopStack(pid string, sid string) (*api.Stack, error) {
 
 				spec, _ := s.etcd.GetServiceSpec(stackService.Service)
 				if len(spec.Ports) > 0 {
-					err := s.kube.StopService(pid, name)
+					err := s.kube.StopService(userId, name)
 					// Log and continue
 					if err != nil {
 						glog.Error(err)
@@ -1565,12 +1571,12 @@ func (s *Server) stopStack(pid string, sid string) (*api.Stack, error) {
 				}
 				if s.ingress == IngressTypeLoadBalancer {
 
-					s.kube.DeleteIngress(pid, stackService.Id)
+					s.kube.DeleteIngress(userId, stackService.Id)
 					glog.V(4).Infof("Deleted ingress for service %s\n", stackService.Id)
 				}
 
 				glog.V(4).Infof("Stopping controller %s\n", name)
-				err := s.kube.StopController(pid, name)
+				err := s.kube.StopController(userId, name)
 				if err != nil {
 					glog.Error(err)
 				}
@@ -1580,7 +1586,7 @@ func (s *Server) stopStack(pid string, sid string) (*api.Stack, error) {
 	}
 
 	podStatus := make(map[string]string)
-	pods, _ := s.kube.GetPods(pid, "stack", stack.Id)
+	pods, _ := s.kube.GetPods(userId, "stack", stack.Id)
 	for _, pod := range pods {
 		label := pod.Labels["service"]
 		glog.V(4).Infof("Pod %s %d\n", label, len(pod.Status.Conditions))
@@ -1596,15 +1602,15 @@ func (s *Server) stopStack(pid string, sid string) (*api.Stack, error) {
 	}
 
 	stack.Status = stackStatus[Stopped]
-	s.etcd.PutStack(pid, sid, stack)
+	s.etcd.PutStack(userId, sid, stack)
 
-	stack, _ = s.getStackWithStatus(pid, sid)
+	stack, _ = s.getStackWithStatus(userId, sid)
 	return stack, nil
 }
 
 func (s *Server) GetAllVolumes(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.PathParam("pid")
-	volumes, err := s.etcd.GetVolumes(pid)
+	userId := r.PathParam("userId")
+	volumes, err := s.etcd.GetVolumes(userId)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1614,7 +1620,7 @@ func (s *Server) GetAllVolumes(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) PostVolume(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.PathParam("pid")
+	userId := r.PathParam("userId")
 
 	vol := api.Volume{}
 	err := r.DecodeJsonPayload(&vol)
@@ -1625,10 +1631,10 @@ func (s *Server) PostVolume(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	if vol.Attached != "" {
-		if s.getStackService(pid, vol.Attached) == nil {
+		if s.getStackService(userId, vol.Attached) == nil {
 			rest.NotFound(w, r)
 			return
-		} else if s.attachmentExists(pid, vol.Attached) {
+		} else if s.attachmentExists(userId, vol.Attached) {
 			w.WriteHeader(http.StatusConflict)
 			return
 		} else {
@@ -1647,7 +1653,7 @@ func (s *Server) PostVolume(w rest.ResponseWriter, r *rest.Request) {
 	}
 	vol.Id = uid
 
-	err = os.MkdirAll(s.volDir+"/"+pid+"/"+uid, 0755)
+	err = os.MkdirAll(s.volDir+"/"+userId+"/"+uid, 0755)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1655,7 +1661,7 @@ func (s *Server) PostVolume(w rest.ResponseWriter, r *rest.Request) {
 	}
 	vol.Format = "hostPath"
 
-	err = s.etcd.PutVolume(pid, vol.Id, vol)
+	err = s.etcd.PutVolume(userId, vol.Id, vol)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -1665,7 +1671,7 @@ func (s *Server) PostVolume(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) PutVolume(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.PathParam("pid")
+	userId := r.PathParam("userId")
 	vid := r.PathParam("vid")
 
 	vol := api.Volume{}
@@ -1677,13 +1683,13 @@ func (s *Server) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 
 	if vol.Attached != "" {
 		// Don't allow attaching to a service with an existing volume
-		if s.getStackService(pid, vol.Attached) == nil {
+		if s.getStackService(userId, vol.Attached) == nil {
 			rest.NotFound(w, r)
 			return
-		} else if s.attachmentExists(pid, vol.Attached) {
+		} else if s.attachmentExists(userId, vol.Attached) {
 			w.WriteHeader(http.StatusConflict)
 			return
-		} else if !s.isStackStopped(pid, vol.Attached) {
+		} else if !s.isStackStopped(userId, vol.Attached) {
 			glog.V(4).Infof("Can't attach to a running stack\n")
 			w.WriteHeader(http.StatusConflict)
 			return
@@ -1691,13 +1697,13 @@ func (s *Server) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 			vol.Status = "attached"
 		}
 	} else {
-		existingVol, err := s.etcd.GetVolume(pid, vid)
+		existingVol, err := s.etcd.GetVolume(userId, vid)
 		if err != nil {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		if existingVol != nil && existingVol.Attached != "" {
-			if !s.isStackStopped(pid, existingVol.Attached) {
+			if !s.isStackStopped(userId, existingVol.Attached) {
 				glog.V(4).Infof("Can't detach from a running stack\n")
 				w.WriteHeader(http.StatusConflict)
 				return
@@ -1710,7 +1716,7 @@ func (s *Server) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 		}
 	}
 
-	err = s.etcd.PutVolume(pid, vid, vol)
+	err = s.etcd.PutVolume(userId, vid, vol)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -1720,10 +1726,10 @@ func (s *Server) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) GetVolume(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.PathParam("pid")
+	userId := r.PathParam("userId")
 	vid := r.PathParam("vid")
 
-	volume, err := s.etcd.GetVolume(pid, vid)
+	volume, err := s.etcd.GetVolume(userId, vid)
 	if volume == nil {
 		rest.NotFound(w, r)
 	} else if err != nil {
@@ -1734,11 +1740,11 @@ func (s *Server) GetVolume(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) DeleteVolume(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.PathParam("pid")
+	userId := r.PathParam("userId")
 	vid := r.PathParam("vid")
 
 	glog.V(4).Infof("Deleting volume %s\n", vid)
-	volume, err := s.etcd.GetVolume(pid, vid)
+	volume, err := s.etcd.GetVolume(userId, vid)
 
 	if volume == nil {
 		glog.V(4).Infoln("No such volume")
@@ -1747,7 +1753,7 @@ func (s *Server) DeleteVolume(w rest.ResponseWriter, r *rest.Request) {
 		}
 		rest.NotFound(w, r)
 		return
-	} else if volume.Attached != "" && !s.isStackStopped(pid, volume.Attached) {
+	} else if volume.Attached != "" && !s.isStackStopped(userId, volume.Attached) {
 		glog.V(4).Infof("Can't attach to a running stack\n")
 		w.WriteHeader(http.StatusConflict)
 		return
@@ -1755,14 +1761,14 @@ func (s *Server) DeleteVolume(w rest.ResponseWriter, r *rest.Request) {
 
 	glog.V(4).Infof("Format %s\n", volume.Format)
 	if volume.Format == "hostPath" {
-		err = os.RemoveAll(s.volDir + "/" + pid + "/" + volume.Id)
+		err = os.RemoveAll(s.volDir + "/" + userId + "/" + volume.Id)
 		if err != nil {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
 
-	err = s.etcd.DeleteVolume(pid, vid)
+	err = s.etcd.DeleteVolume(userId, vid)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1787,11 +1793,11 @@ func newUUID() (string, error) {
 }
 
 func (s *Server) GetLogs(w rest.ResponseWriter, r *rest.Request) {
-	pid := r.PathParam("pid")
+	userId := r.PathParam("userId")
 	ssid := r.PathParam("ssid")
 	lines := r.Request.FormValue("lines")
 
-	if !s.stackServiceExists(pid, ssid) {
+	if !s.stackServiceExists(userId, ssid) {
 		rest.Error(w, "No such service", http.StatusNotFound)
 		return
 	}
@@ -1799,7 +1805,7 @@ func (s *Server) GetLogs(w rest.ResponseWriter, r *rest.Request) {
 	tailLines, err := strconv.Atoi(lines)
 
 	sid := ssid[0:strings.LastIndex(ssid, "-")]
-	logs, err := s.getLogs(pid, sid, ssid, tailLines)
+	logs, err := s.getLogs(userId, sid, ssid, tailLines)
 
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1832,16 +1838,16 @@ func (s *Server) GetConfigs(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&configs)
 }
 
-func (s *Server) getLogs(pid string, sid string, ssid string, tailLines int) (string, error) {
+func (s *Server) getLogs(userId string, sid string, ssid string, tailLines int) (string, error) {
 
 	glog.V(4).Infof("Getting logs for %s %s %d", sid, ssid, tailLines)
 
-	stack, err := s.etcd.GetStack(pid, sid)
+	stack, err := s.etcd.GetStack(userId, sid)
 	if err != nil {
 		return "", err
 	}
 
-	pods, err := s.kube.GetPods(pid, "stack", stack.Id)
+	pods, err := s.kube.GetPods(userId, "stack", stack.Id)
 	if err != nil {
 		return "", err
 	}
@@ -1858,7 +1864,7 @@ func (s *Server) getLogs(pid string, sid string, ssid string, tailLines int) (st
 			log += fmt.Sprintf("\nSERVICE LOG\n=====================\n")
 			for _, pod := range pods {
 				if pod.Labels["name"] == ssid {
-					podLog, err := s.kube.GetLog(pid, pod.Name, tailLines)
+					podLog, err := s.kube.GetLog(userId, pod.Name, tailLines)
 					if err != nil {
 						return "", err
 					} else {
@@ -1916,13 +1922,13 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 		glog.V(4).Infof("HandlePodEvent %s", eventType)
 
 		//name := pod.Name
-		pid := pod.Namespace
+		userId := pod.Namespace
 		sid := pod.ObjectMeta.Labels["stack"]
 		ssid := pod.ObjectMeta.Labels["name"]
 		//phase := pod.Status.Phase
 
 		// Get stack service from Pod name
-		stack, err := s.etcd.GetStack(pid, sid)
+		stack, err := s.etcd.GetStack(userId, sid)
 		if err != nil {
 			glog.Errorf("Error getting stack: %s\n", err)
 			return
@@ -1988,9 +1994,9 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 		if len(stackService.StatusMessages) > 0 {
 			message = stackService.StatusMessages[len(stackService.StatusMessages)-1]
 		}
-		glog.V(4).Infof("Namespace: %s, Pod: %s, Status: %s, StatusMessage: %s\n", pid, pod.Name,
+		glog.V(4).Infof("Namespace: %s, Pod: %s, Status: %s, StatusMessage: %s\n", userId, pod.Name,
 			stackService.Status, message)
-		s.etcd.PutStack(pid, sid, stack)
+		s.etcd.PutStack(userId, sid, stack)
 	}
 }
 
@@ -2000,12 +2006,12 @@ func (s *Server) HandleReplicationControllerEvent(eventType watch.EventType, eve
 	if rc.Namespace != "default" && rc.Namespace != "kube-system" {
 		glog.V(4).Infof("HandleReplicationControllerEvent %s", eventType)
 
-		pid := rc.Namespace
+		userId := rc.Namespace
 		sid := rc.ObjectMeta.Labels["stack"]
 		ssid := rc.ObjectMeta.Labels["name"]
 
 		// Get stack service from Pod name
-		stack, err := s.etcd.GetStack(pid, sid)
+		stack, err := s.etcd.GetStack(userId, sid)
 		if err != nil {
 			glog.Errorf("Error getting stack: %s\n", err)
 			return
@@ -2027,21 +2033,21 @@ func (s *Server) HandleReplicationControllerEvent(eventType watch.EventType, eve
 			stackService.StatusMessages = append(stackService.StatusMessages,
 				fmt.Sprintf("Reason=%s, Message=%s", event.Reason, event.Message))
 
-			glog.V(4).Infof("Namespace: %s, ReplicationController: %s, Status: %s, StatusMessage: %s\n", pid, rc.Name,
+			glog.V(4).Infof("Namespace: %s, ReplicationController: %s, Status: %s, StatusMessage: %s\n", userId, rc.Name,
 				stackService.Status, stackService.StatusMessages[len(stackService.StatusMessages)-1])
 		}
-		s.etcd.PutStack(pid, sid, stack)
+		s.etcd.PutStack(userId, sid, stack)
 	}
 }
-func (s *Server) detachVolume(pid string, ssid string) bool {
-	volumes, _ := s.etcd.GetVolumes(pid)
+func (s *Server) detachVolume(userId string, ssid string) bool {
+	volumes, _ := s.etcd.GetVolumes(userId)
 
 	for _, volume := range *volumes {
 		if volume.Attached == ssid {
 			glog.V(4).Infof("Detaching volume %s\n", volume.Id)
 			volume.Attached = ""
 			volume.Status = "available"
-			s.etcd.PutVolume(pid, volume.Id, volume)
+			s.etcd.PutVolume(userId, volume.Id, volume)
 			return true
 		}
 	}

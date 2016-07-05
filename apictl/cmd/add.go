@@ -23,14 +23,14 @@ var (
 func init() {
 	RootCmd.AddCommand(addCmd)
 	addCmd.AddCommand(addStackCmd)
-	addCmd.AddCommand(addProjectCmd)
+	addCmd.AddCommand(addAccountCmd)
 	addCmd.AddCommand(addServiceCmd)
 	addCmd.AddCommand(addVolumeCmd)
 
 	// add stack flags
 	addStackCmd.Flags().StringVar(&opts, "opt", "", "Comma-delimited list of optional services")
 
-	addProjectCmd.Flags().StringVarP(&file, "file", "f", "", "Path to project definition (json)")
+	addAccountCmd.Flags().StringVarP(&file, "file", "f", "", "Path to account definition (json)")
 
 	addServiceCmd.Flags().StringVarP(&file, "file", "f", "", "Path to service definition (json)")
 	addServiceCmd.Flags().StringVar(&dir, "dir", "", "Path to service definition (json)")
@@ -41,33 +41,33 @@ var addCmd = &cobra.Command{
 	Short: "Add a resource",
 }
 
-var addProjectCmd = &cobra.Command{
-	Use:    "project [name] [password]",
-	Short:  "Add the specified project (admin users only)",
+var addAccountCmd = &cobra.Command{
+	Use:    "account [name] [password]",
+	Short:  "Add the specified account (admin users only)",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		project := api.Project{}
+		account := api.Account{}
 		if len(file) > 0 {
 			data, err := ioutil.ReadFile(file)
 			if err != nil {
-				fmt.Printf("Error reading project file: %s\n", err.Error())
+				fmt.Printf("Error reading account file: %s\n", err.Error())
 				os.Exit(-1)
 			}
-			json.Unmarshal(data, &project)
+			json.Unmarshal(data, &account)
 		} else if len(args) == 2 {
-			project.Id = args[0]
-			project.Name = args[0]
-			project.Namespace = args[0]
-			project.Password = args[1]
-			//project.StorageQuota =
-			//project.Description =
-			//project.EmailAddress =
+			account.Id = args[0]
+			account.Name = args[0]
+			account.Namespace = args[0]
+			account.Password = args[1]
+			//account.StorageQuota =
+			//account.Description =
+			//account.EmailAddress =
 		} else {
 			cmd.Usage()
 			os.Exit(-1)
 		}
-		addProject(project)
+		addAccount(account)
 	},
 }
 
@@ -127,7 +127,7 @@ func addServiceDir(path string) error {
 
 var addStackCmd = &cobra.Command{
 	Use:    "stack [serviceKey] [name]",
-	Short:  "Add the specified stack to your project",
+	Short:  "Add the specified stack to your account",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
@@ -215,7 +215,7 @@ func containsService(list []api.StackService, service api.StackService) bool {
 	return exists
 }
 
-func addStack(project string, serviceKey string, name string, opt string) {
+func addStack(account string, serviceKey string, name string, opt string) {
 
 	service, _ := client.GetService(serviceKey)
 	optional := strings.Split(opt, ",")
@@ -240,7 +240,7 @@ func addStack(project string, serviceKey string, name string, opt string) {
 		}
 	}
 
-	stackp, err := client.AddStack(project, &stack)
+	stackp, err := client.AddStack(account, &stack)
 	if err != nil {
 		fmt.Printf("Error adding stack: %s\n", err)
 		return
@@ -257,20 +257,20 @@ func addStack(project string, serviceKey string, name string, opt string) {
 	}
 }
 
-func addProject(project api.Project) {
+func addAccount(account api.Account) {
 
 	password := credentials("Admin password: ")
 	token, err := client.Login("admin", password)
 	if err != nil {
-		fmt.Printf("Unable to add project %s: %s \n", project.Id, err)
+		fmt.Printf("Unable to add account %s: %s \n", account.Id, err)
 		return
 	}
 
-	err = client.AddProject(&project, token)
+	err = client.AddAccount(&account, token)
 	if err != nil {
-		fmt.Printf("Unable to add project %s: %s \n", project.Id, err)
+		fmt.Printf("Unable to add account %s: %s \n", account.Id, err)
 	} else {
-		fmt.Println("Added project " + project.Id)
+		fmt.Println("Added account " + account.Id)
 	}
 }
 

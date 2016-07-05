@@ -1,7 +1,7 @@
 { 
     "id": "demo",
-    "name": "demo project",
-    "description": "demo project description",
+    "name": "demo account",
+    "description": "demo account description",
     "namespace": "demo",
     "password": "12345",
 	"storageQuota": "10",

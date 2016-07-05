@@ -54,11 +54,11 @@ type ReadyProbe struct {
 	Timeout      int32  `json:"timeout"`
 }
 
-type ProjectList struct {
-	Items []Project `json:"items"`
+type AccountList struct {
+	Items []Account `json:"items"`
 }
 
-type Project struct {
+type Account struct {
 	Id             string         `json:"id"`
 	Name           string         `json:"name"`
 	Description    string         `json:"description"`
