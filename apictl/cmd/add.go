@@ -280,7 +280,7 @@ func addAccount(account api.Account) {
 func addService(service api.ServiceSpec, catalog string) {
 
 	token := client.Token
-	if catalog == "global" {
+	if catalog == "system" {
 		password := credentials("Admin password: ")
 		t, err := client.Login("admin", password)
 		if err != nil {

@@ -80,7 +80,7 @@ var deleteServiceCmd = &cobra.Command{
 
 func deleteService(service string, catalog string) {
 	token := client.Token
-	if catalog == "global" {
+	if catalog == "system" {
 		password := credentials("Admin password: ")
 		t, err := client.Login("admin", password)
 		if err != nil {
