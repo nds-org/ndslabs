@@ -273,7 +273,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Get(s.prefix+"check_token", s.CheckToken),
 		rest.Get(s.prefix+"refresh_token", jwt.RefreshHandler),
 		rest.Get(s.prefix+"accounts", s.GetAllAccounts),
-		rest.Post(s.prefix+"accounts/", s.PostAccount),
+		rest.Post(s.prefix+"accounts", s.PostAccount),
 		rest.Post(s.prefix+"register", s.PostAccount),
 		rest.Put(s.prefix+"accounts/:userId", s.PutAccount),
 		rest.Get(s.prefix+"accounts/:userId", s.GetAccount),
@@ -284,19 +284,19 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Get(s.prefix+"services/:key", s.GetService),
 		rest.Delete(s.prefix+"services/:key", s.DeleteService),
 		rest.Get(s.prefix+"configs", s.GetConfigs),
-		rest.Get(s.prefix+"/stacks", s.GetAllStacks),
-		rest.Post(s.prefix+"/stacks", s.PostStack),
-		rest.Put(s.prefix+"/stacks/:sid", s.PutStack),
-		rest.Get(s.prefix+"/stacks/:sid", s.GetStack),
-		rest.Delete(s.prefix+"/stacks/:sid", s.DeleteStack),
-		rest.Get(s.prefix+"/volumes", s.GetAllVolumes),
-		rest.Post(s.prefix+"/volumes", s.PostVolume),
-		rest.Put(s.prefix+"/volumes/:vid", s.PutVolume),
-		rest.Get(s.prefix+"/volumes/:vid", s.GetVolume),
-		rest.Delete(s.prefix+"/volumes/:vid", s.DeleteVolume),
-		rest.Get(s.prefix+"/start/:sid", s.StartStack),
-		rest.Get(s.prefix+"/stop/:sid", s.StopStack),
-		rest.Get(s.prefix+"/logs/:ssid", s.GetLogs),
+		rest.Get(s.prefix+"stacks", s.GetAllStacks),
+		rest.Post(s.prefix+"stacks", s.PostStack),
+		rest.Put(s.prefix+"stacks/:sid", s.PutStack),
+		rest.Get(s.prefix+"stacks/:sid", s.GetStack),
+		rest.Delete(s.prefix+"stacks/:sid", s.DeleteStack),
+		rest.Get(s.prefix+"volumes", s.GetAllVolumes),
+		rest.Post(s.prefix+"volumes", s.PostVolume),
+		rest.Put(s.prefix+"volumes/:vid", s.PutVolume),
+		rest.Get(s.prefix+"volumes/:vid", s.GetVolume),
+		rest.Delete(s.prefix+"volumes/:vid", s.DeleteVolume),
+		rest.Get(s.prefix+"start/:sid", s.StartStack),
+		rest.Get(s.prefix+"stop/:sid", s.StopStack),
+		rest.Get(s.prefix+"logs/:ssid", s.GetLogs),
 		rest.Get(s.prefix+"console", s.GetConsole),
 		rest.Get(s.prefix+"check_console", s.CheckConsole),
 	)
@@ -1072,6 +1072,8 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 
 	_, err = s.etcd.GetServiceSpec(userId, stack.Key)
 	if err != nil {
+		glog.V(4).Infof("Service %s not found for user %s\n", stack.Key, userId)
+
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
