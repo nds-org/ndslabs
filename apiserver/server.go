@@ -821,7 +821,8 @@ func (s *Server) DeleteService(w rest.ResponseWriter, r *rest.Request) {
 
 		glog.V(1).Infof("Deleted system service %s\n", key)
 	} else {
-		if !s.serviceExists(userId, key) {
+		service, _ := s.etcd.GetServiceSpec(userId, key)
+		if service == nil || service.Catalog != "user" {
 			rest.Error(w, "No such service", http.StatusNotFound)
 			return
 		}
@@ -1030,10 +1031,10 @@ func (s *Server) serviceIsDependency(sid string, userId string) int {
 
 func (s *Server) serviceExists(uid string, sid string) bool {
 	service, _ := s.etcd.GetServiceSpec(uid, sid)
-	if service == nil {
-		return false
-	} else {
+	if service != nil {
 		return true
+	} else {
+		return false
 	}
 }
 

@@ -10,7 +10,7 @@
 		"cpuDefault": "1",
 		"memMax": "8Gi",
 		"memDefault": "100Mi",
-		"storageQuota": "10Gb"
+		"storageQuota": "10"
 	}
 }
 

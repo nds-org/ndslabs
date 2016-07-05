@@ -80,7 +80,7 @@ func (s *EtcdHelper) GetServices(uid string) (*[]api.ServiceSpec, error) {
 	// Get user services
 	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/"+uid+"/services", nil)
 	if err != nil {
-		if !s.isKeyNotFound(err) {
+		if !client.IsKeyNotFound(err) {
 			return nil, err
 		}
 	} else {
@@ -113,7 +113,7 @@ func (s *EtcdHelper) GetAllServices(uid string) (*[]api.ServiceSpec, error) {
 
 	resp, err = s.etcd.Get(context.Background(), etcdBasePath+"/"+uid+"/services", nil)
 	if err != nil {
-		if !s.isKeyNotFound(err) {
+		if !client.IsKeyNotFound(err) {
 			return nil, err
 		}
 	} else {
@@ -186,8 +186,10 @@ func (s *EtcdHelper) GetServiceSpec(uid string, key string) (*api.ServiceSpec, e
 
 	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/services/"+key, nil)
 	if err != nil {
-		glog.Error(err)
-		return nil, err
+		if !client.IsKeyNotFound(err) {
+			glog.Error(err)
+			return nil, err
+		}
 	} else {
 		service := api.ServiceSpec{}
 		node := resp.Node
@@ -198,8 +200,10 @@ func (s *EtcdHelper) GetServiceSpec(uid string, key string) (*api.ServiceSpec, e
 
 	resp, err = s.etcd.Get(context.Background(), etcdBasePath+"/"+uid+"/services/"+key, nil)
 	if err != nil {
-		glog.Error(err)
-		return nil, err
+		if !client.IsKeyNotFound(err) {
+			glog.Error(err)
+			return nil, err
+		}
 	} else {
 		service := api.ServiceSpec{}
 		node := resp.Node
@@ -207,6 +211,7 @@ func (s *EtcdHelper) GetServiceSpec(uid string, key string) (*api.ServiceSpec, e
 		service.Catalog = "user"
 		return &service, nil
 	}
+	return nil, nil
 }
 
 func (s *EtcdHelper) GetAccounts() (*[]api.Account, error) {
@@ -383,11 +388,4 @@ func (s *EtcdHelper) GetStacks(uid string) (*[]api.Stack, error) {
 		}
 	}
 	return &stacks, nil
-}
-
-func (s *EtcdHelper) isKeyNotFound(err error) bool {
-	if cErr, ok := err.(client.Error); ok {
-		return cErr.Code == client.ErrorCodeKeyNotFound
-	}
-	return false
 }
