@@ -638,41 +638,76 @@ func (s *Server) DeleteAccount(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) GetAllServices(w rest.ResponseWriter, r *rest.Request) {
 	userId := s.getUser(r)
+	catalog := r.Request.FormValue("catalog")
 
-	services, err := s.etcd.GetServices(userId)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if catalog == "global" {
+		services, err := s.etcd.GetGlobalServices()
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteJson(&services)
+	} else if catalog == "all" {
+		services, err := s.etcd.GetAllServices(userId)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteJson(&services)
+	} else {
+		services, err := s.etcd.GetServices(userId)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteJson(&services)
 	}
-	w.WriteJson(&services)
 }
 
 func (s *Server) GetService(w rest.ResponseWriter, r *rest.Request) {
 	key := r.PathParam("key")
+	catalog := r.Request.FormValue("catalog")
+	userId := s.getUser(r)
+
 	glog.V(4).Infof("GetService %s\n", key)
 
-	if !s.serviceExists(key) {
-		rest.NotFound(w, r)
-		return
-	}
-	spec, err := s.etcd.GetServiceSpec(key)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if catalog == "global" {
+		if !s.serviceExists(userId, key) {
+			rest.NotFound(w, r)
+			return
+		}
+		spec, err := s.etcd.GetServiceSpec(userId, key)
+		if err != nil {
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		} else {
+			s, _ := json.Marshal(spec)
+			fmt.Println(string(s))
+			w.WriteJson(&spec)
+		}
 	} else {
-		s, _ := json.Marshal(spec)
-		fmt.Println(string(s))
-		w.WriteJson(&spec)
+
+		if !s.serviceExists(userId, key) {
+			rest.NotFound(w, r)
+			return
+		}
+		spec, err := s.etcd.GetServiceSpec(userId, key)
+		if err != nil {
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		} else {
+			s, _ := json.Marshal(spec)
+			fmt.Println(string(s))
+			w.WriteJson(&spec)
+		}
 	}
 }
 
 func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
-
-	if !s.IsAdmin(r) {
-		rest.Error(w, "", http.StatusUnauthorized)
-		return
-	}
+	catalog := r.Request.FormValue("catalog")
 
 	service := api.ServiceSpec{}
 	err := r.DecodeJsonPayload(&service)
@@ -682,24 +717,36 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	err = s.etcd.PutService(service.Key, &service)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if catalog == "global" {
+		if !s.IsAdmin(r) {
+			rest.Error(w, "", http.StatusUnauthorized)
+			return
+		}
+
+		err = s.etcd.PutGlobalService(service.Key, &service)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		glog.V(1).Infof("Added global service %s\n", service.Key)
+	} else {
+		userId := s.getUser(r)
+		err = s.etcd.PutService(userId, service.Key, &service)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		glog.V(1).Infof("Added user %s service %s\n", userId, service.Key)
 	}
 
-	glog.V(1).Infof("Added service %s\n", service.Key)
 	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 	key := r.PathParam("key")
-
-	if !s.IsAdmin(r) {
-		rest.Error(w, "", http.StatusUnauthorized)
-		return
-	}
+	catalog := r.Request.FormValue("catalog")
 
 	service := api.ServiceSpec{}
 	err := r.DecodeJsonPayload(&service)
@@ -709,51 +756,96 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	err = s.etcd.PutService(key, &service)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	if catalog == "global" {
+		if !s.IsAdmin(r) {
+			rest.Error(w, "", http.StatusUnauthorized)
+			return
+		}
 
-	glog.V(1).Infof("Updated service %s\n", key)
+		err = s.etcd.PutGlobalService(key, &service)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		glog.V(1).Infof("Updated global service %s\n", key)
+	} else {
+		userId := s.getUser(r)
+		err = s.etcd.PutService(userId, key, &service)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		glog.V(1).Infof("Updated user %s service %s\n", userId, key)
+	}
 	w.WriteJson(&service)
 }
 
 func (s *Server) DeleteService(w rest.ResponseWriter, r *rest.Request) {
 	key := r.PathParam("key")
+	catalog := r.Request.FormValue("catalog")
 	userId := s.getUser(r)
 
-	if !s.IsAdmin(r) {
-		rest.Error(w, "", http.StatusUnauthorized)
-		return
-	}
+	if catalog == "global" {
+		if !s.IsAdmin(r) {
+			rest.Error(w, "", http.StatusUnauthorized)
+			return
+		}
 
-	if !s.serviceExists(key) {
-		rest.Error(w, "No such service", http.StatusNotFound)
-		return
-	}
+		if !s.serviceExists(userId, key) {
+			rest.Error(w, "No such service", http.StatusNotFound)
+			return
+		}
 
-	if s.serviceIsDependency(key, userId) > 0 {
-		glog.Warningf("Cannot delete service spec %s because it is required by one or more services\n", key)
-		rest.Error(w, "Required by another service", http.StatusConflict)
-		return
-	}
+		if s.serviceIsDependencyGlobal(key) > 0 {
+			glog.Warningf("Cannot delete global service spec %s because it is required by one or more services\n", key)
+			rest.Error(w, "Required by another service", http.StatusConflict)
+			return
+		}
 
-	if s.serviceInUse(key) > 0 {
-		glog.Warningf("Cannot delete service spec %s because it is in use by one or more accounts\n", key)
-		rest.Error(w, "Service is in use", http.StatusConflict)
-		return
-	}
+		if s.serviceInUse(key) > 0 {
+			glog.Warningf("Cannot delete global service spec %s because it is in use by one or more accounts\n", key)
+			rest.Error(w, "Service is in use", http.StatusConflict)
+			return
+		}
 
-	err := s.etcd.DeleteService(key)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+		err := s.etcd.DeleteGlobalService(key)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	glog.V(1).Infof("Deleted service %s\n", key)
+		glog.V(1).Infof("Deleted global service %s\n", key)
+	} else {
+		if !s.serviceExists(userId, key) {
+			rest.Error(w, "No such service", http.StatusNotFound)
+			return
+		}
+
+		if s.serviceIsDependency(userId, key) > 0 {
+			glog.Warningf("Cannot delete user service spec %s because it is required by one or more services\n", key)
+			rest.Error(w, "Required by another service", http.StatusConflict)
+			return
+		}
+
+		if s.serviceInUse(key) > 0 {
+			glog.Warningf("Cannot delete user service spec %s because it is in use by one or more accounts\n", key)
+			rest.Error(w, "Service is in use", http.StatusConflict)
+			return
+		}
+
+		err := s.etcd.DeleteService(userId, key)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+	}
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -910,6 +1002,19 @@ func (s *Server) stackExists(userId string, name string) bool {
 	return exists
 }
 
+func (s *Server) serviceIsDependencyGlobal(sid string) int {
+	services, _ := s.etcd.GetGlobalServices()
+	dependencies := 0
+	for _, service := range *services {
+		for _, dependency := range service.Dependencies {
+			if dependency.DependencyKey == sid {
+				dependencies++
+			}
+		}
+	}
+	return dependencies
+}
+
 func (s *Server) serviceIsDependency(sid string, userId string) int {
 	services, _ := s.etcd.GetServices(userId)
 	dependencies := 0
@@ -923,8 +1028,8 @@ func (s *Server) serviceIsDependency(sid string, userId string) int {
 	return dependencies
 }
 
-func (s *Server) serviceExists(sid string) bool {
-	service, _ := s.etcd.GetServiceSpec(sid)
+func (s *Server) serviceExists(uid string, sid string) bool {
+	service, _ := s.etcd.GetServiceSpec(uid, sid)
 	if service == nil {
 		return false
 	} else {
@@ -964,7 +1069,7 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 
 	glog.V(4).Infof("Adding stack %s %s\n", stack.Key, stack.Name)
 
-	_, err = s.etcd.GetServiceSpec(stack.Key)
+	_, err = s.etcd.GetServiceSpec(userId, stack.Key)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -1085,7 +1190,7 @@ func (s *Server) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) startStackService(serviceKey string, userId string, stack *api.Stack, addrPortMap *map[string]kube.ServiceAddrPort) {
 
-	service, _ := s.etcd.GetServiceSpec(serviceKey)
+	service, _ := s.etcd.GetServiceSpec(userId, serviceKey)
 	for _, dep := range service.Dependencies {
 		if dep.Required {
 			glog.V(4).Infof("Starting required dependency %s\n", dep.DependencyKey)
@@ -1125,7 +1230,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	}
 
 	glog.V(4).Infof("Starting controller for %s\n", serviceKey)
-	spec, _ := s.etcd.GetServiceSpec(serviceKey)
+	spec, _ := s.etcd.GetServiceSpec(userId, serviceKey)
 
 	sharedEnv := make(map[string]string)
 	// Hack to allow for sharing configuration information between dependent services
@@ -1268,7 +1373,7 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 	// Start all Kubernetes services
 	addrPortMap := make(map[string]kube.ServiceAddrPort)
 	for _, stackService := range stackServices {
-		spec, _ := s.etcd.GetServiceSpec(stackService.Service)
+		spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
 
 		if len(spec.Ports) > 0 {
 			name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
@@ -1335,7 +1440,7 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 			if started[stackService.Service] == 1 {
 				continue
 			}
-			svc, _ := s.etcd.GetServiceSpec(stackService.Service)
+			svc, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
 
 			numDeps := 0
 			startedDeps := 0
@@ -1468,7 +1573,7 @@ func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, erro
 		endpoint, ok := endpoints[stackService.Service]
 		if ok {
 			// Get the port protocol for the service endpoint
-			svc, err := s.etcd.GetServiceSpec(stackService.Service)
+			svc, err := s.etcd.GetServiceSpec(userId, stackService.Service)
 			if err != nil {
 				glog.Error(err)
 			}
@@ -1546,7 +1651,7 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 			numDeps := 0
 			stoppedDeps := 0
 			for _, ss := range stack.Services {
-				svc, _ := s.etcd.GetServiceSpec(ss.Service)
+				svc, _ := s.etcd.GetServiceSpec(userId, ss.Service)
 				for _, dep := range svc.Dependencies {
 					if dep.DependencyKey == stackService.Service {
 						numDeps++
@@ -1561,7 +1666,7 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 				name := fmt.Sprintf("%s-%s", stack.Id, stackService.Service)
 				glog.V(4).Infof("Stopping service %s\n", name)
 
-				spec, _ := s.etcd.GetServiceSpec(stackService.Service)
+				spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
 				if len(spec.Ports) > 0 {
 					err := s.kube.StopService(userId, name)
 					// Log and continue
@@ -1816,17 +1921,18 @@ func (s *Server) GetLogs(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) GetConfigs(w rest.ResponseWriter, r *rest.Request) {
+	userId := s.getUser(r)
 	services := r.Request.FormValue("services")
 
 	sids := strings.Split(services, ",")
 
 	configs := make(map[string][]api.Config)
 	for _, sid := range sids {
-		if !s.serviceExists(sid) {
+		if !s.serviceExists(userId, sid) {
 			rest.Error(w, "No such service", http.StatusNotFound)
 			return
 		}
-		spec, err := s.etcd.GetServiceSpec(sid)
+		spec, err := s.etcd.GetServiceSpec(userId, sid)
 		if err != nil {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1894,7 +2000,7 @@ func (s *Server) addServiceFile(path string) error {
 		fmt.Println(err)
 		return err
 	}
-	s.etcd.PutService(service.Key, &service)
+	s.etcd.PutGlobalService(service.Key, &service)
 	return nil
 }
 

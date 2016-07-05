@@ -15,9 +15,10 @@ import (
 )
 
 var (
-	opts string
-	file string
-	dir  string
+	opts    string
+	file    string
+	dir     string
+	catalog string
 )
 
 func init() {
@@ -33,7 +34,9 @@ func init() {
 	addAccountCmd.Flags().StringVarP(&file, "file", "f", "", "Path to account definition (json)")
 
 	addServiceCmd.Flags().StringVarP(&file, "file", "f", "", "Path to service definition (json)")
-	addServiceCmd.Flags().StringVar(&dir, "dir", "", "Path to service definition (json)")
+	addServiceCmd.Flags().StringVar(&dir, "dir", "", "Path to directory of service definitions (json)")
+	addServiceCmd.Flags().StringVarP(&catalog, "catalog", "c", "user", "Catalog to use")
+
 }
 
 var addCmd = &cobra.Command{
@@ -78,9 +81,9 @@ var addServiceCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if len(file) > 0 {
-			addServiceFile(file)
+			addServiceFile(file, catalog)
 		} else if len(dir) > 0 {
-			addServiceDir(dir)
+			addServiceDir(dir, catalog)
 		} else {
 			cmd.Usage()
 			os.Exit(-1)
@@ -88,7 +91,7 @@ var addServiceCmd = &cobra.Command{
 	},
 }
 
-func addServiceFile(path string) error {
+func addServiceFile(path string, catalog string) error {
 	service := api.ServiceSpec{}
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -105,11 +108,11 @@ func addServiceFile(path string) error {
 		fmt.Println(err)
 		return err
 	}
-	addService(service)
+	addService(service, catalog)
 	return nil
 }
 
-func addServiceDir(path string) error {
+func addServiceDir(path string, catalog string) error {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		return err
@@ -117,9 +120,9 @@ func addServiceDir(path string) error {
 
 	for _, file := range files {
 		if file.IsDir() {
-			addServiceDir(fmt.Sprintf("%s/%s", path, file.Name()))
+			addServiceDir(fmt.Sprintf("%s/%s", path, file.Name()), catalog)
 		} else {
-			addServiceFile(fmt.Sprintf("%s/%s", path, file.Name()))
+			addServiceFile(fmt.Sprintf("%s/%s", path, file.Name()), catalog)
 		}
 	}
 	return nil
@@ -274,16 +277,20 @@ func addAccount(account api.Account) {
 	}
 }
 
-func addService(service api.ServiceSpec) {
+func addService(service api.ServiceSpec, catalog string) {
 
-	password := credentials("Admin password: ")
-	token, err := client.Login("admin", password)
-	if err != nil {
-		fmt.Printf("Unable to add service %s: %s \n", service.Label, err)
-		return
+	token := client.Token
+	if catalog == "global" {
+		password := credentials("Admin password: ")
+		t, err := client.Login("admin", password)
+		if err != nil {
+			fmt.Printf("Unable to add service %s: %s \n", service.Label, err)
+			return
+		}
+		token = t
 	}
 
-	_, err = client.AddService(&service, token)
+	_, err := client.AddService(&service, token, catalog)
 	if err != nil {
 		fmt.Printf("Unable to add service %s: %s \n", service.Label, err)
 	} else {

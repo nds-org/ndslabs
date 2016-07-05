@@ -22,23 +22,23 @@ var listServicesCmd = &cobra.Command{
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		services, err := client.ListServices()
+		services, err := client.ListServices(catalog)
 		if err != nil {
 			fmt.Printf("Error listing services: %s\n", err)
 			return
 		}
 
 		w := new(tabwriter.Writer)
-		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
-		fmt.Fprintln(w, "SERVICE\tDEPENDENCY\tREQUIRED")
+		w.Init(os.Stdout, 15, 4, 3, ' ', 0)
+		fmt.Fprintln(w, "SERVICE\tDEPENDENCY\tREQUIRED\tCATALOG")
 		for _, service := range *services {
 			if service.Display != "" {
-				fmt.Fprintf(w, "%s\n", service.Key)
+				fmt.Fprintf(w, "%s\t\t\t%s\n", service.Key, service.Catalog)
 				for _, dependency := range service.Dependencies {
 					if dependency.Required {
-						fmt.Fprintf(w, "\t%s\t(required)\n", dependency.DependencyKey)
+						fmt.Fprintf(w, "\t%s\tYes\n", dependency.DependencyKey)
 					} else {
-						fmt.Fprintf(w, "\t%s\t(optional)\n", dependency.DependencyKey)
+						fmt.Fprintf(w, "\t%s\tNo\n", dependency.DependencyKey)
 					}
 				}
 			}
@@ -180,6 +180,9 @@ var listConfigsCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(listCmd)
+
+	listServicesCmd.Flags().StringVarP(&catalog, "catalog", "c", "user", "Catalog to use")
+
 	listCmd.AddCommand(listServicesCmd)
 	listCmd.AddCommand(listStacksCmd)
 	listCmd.AddCommand(listVolumesCmd)

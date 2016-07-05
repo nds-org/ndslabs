@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"sort"
 	"strings"
 	"sync"
 	"syscall"
@@ -62,9 +63,12 @@ func (c *Client) Login(username string, password string) (string, error) {
 	}
 }
 
-func (c *Client) ListServices() (*[]api.ServiceSpec, error) {
+func (c *Client) ListServices(catalog string) (*[]api.ServiceSpec, error) {
 
 	url := c.BasePath + "services"
+	if catalog != "" {
+		url += "?catalog=" + catalog
+	}
 	request, err := http.NewRequest("GET", url, nil)
 
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
@@ -83,6 +87,7 @@ func (c *Client) ListServices() (*[]api.ServiceSpec, error) {
 
 		services := make([]api.ServiceSpec, 0)
 		json.Unmarshal([]byte(body), &services)
+		sort.Sort(api.ServiceSorter(services))
 		return &services, nil
 	} else {
 		err := errors.New(resp.Status)
@@ -320,9 +325,13 @@ func (c *Client) UpdateAccount(account *api.Account) error {
 	}
 }
 
-func (c *Client) AddService(service *api.ServiceSpec, token string) (*api.ServiceSpec, error) {
+func (c *Client) AddService(service *api.ServiceSpec, token string, catalog string) (*api.ServiceSpec, error) {
 
 	url := c.BasePath + "services"
+
+	if catalog != "" {
+		url += "?catalog=" + catalog
+	}
 
 	data, err := json.Marshal(service)
 	if err != nil {
@@ -472,9 +481,13 @@ func (c *Client) AddVolume(volume *api.Volume) (*api.Volume, error) {
 	}
 }
 
-func (c *Client) DeleteService(service string, token string) error {
+func (c *Client) DeleteService(service string, token string, catalog string) error {
 
 	url := c.BasePath + "services/" + service
+
+	if catalog != "" {
+		url += "?catalog=" + catalog
+	}
 
 	request, err := http.NewRequest("DELETE", url, nil)
 	request.Header.Set("Content-Type", "application/json")

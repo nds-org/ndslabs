@@ -9,6 +9,7 @@ import (
 )
 
 func init() {
+	deleteServiceCmd.Flags().StringVarP(&catalog, "catalog", "c", "user", "Catalog to use")
 	RootCmd.AddCommand(deleteCmd)
 	deleteCmd.AddCommand(deleteStackCmd)
 	deleteCmd.AddCommand(deleteVolumeCmd)
@@ -73,19 +74,23 @@ var deleteServiceCmd = &cobra.Command{
 			os.Exit(-1)
 		}
 
-		deleteService(args[0])
+		deleteService(args[0], catalog)
 	},
 }
 
-func deleteService(service string) {
-	password := credentials("Admin password: ")
-	token, err := client.Login("admin", password)
-	if err != nil {
-		fmt.Printf("Unable to delete service %s: %s \n", service, err)
-		return
+func deleteService(service string, catalog string) {
+	token := client.Token
+	if catalog == "global" {
+		password := credentials("Admin password: ")
+		t, err := client.Login("admin", password)
+		if err != nil {
+			fmt.Printf("Unable to delete service %s: %s \n", service, err)
+			return
+		}
+		token = t
 	}
 
-	err = client.DeleteService(service, token)
+	err := client.DeleteService(service, token, catalog)
 	if err != nil {
 		fmt.Printf("Unable to delete service %s: %s \n", service, err)
 	} else {
