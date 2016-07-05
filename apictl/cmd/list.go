@@ -54,7 +54,7 @@ var listStacksCmd = &cobra.Command{
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		stacks, err := client.ListStacks(apiUser.username)
+		stacks, err := client.ListStacks()
 		if err != nil {
 			fmt.Printf("List failed: %s\n", err)
 			os.Exit(-1)
@@ -96,7 +96,7 @@ var listVolumesCmd = &cobra.Command{
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		volumes, err := client.ListVolumes(apiUser.username)
+		volumes, err := client.ListVolumes()
 		if err != nil {
 			fmt.Printf("List failed: %s\n", err)
 			os.Exit(-1)

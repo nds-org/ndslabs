@@ -148,9 +148,9 @@ func (c *Client) GetService(name string) (*api.ServiceSpec, error) {
 	return nil, nil
 }
 
-func (c *Client) ListStacks(pid string) (*[]api.Stack, error) {
+func (c *Client) ListStacks() (*[]api.Stack, error) {
 
-	url := c.BasePath + "accounts/" + pid + "/stacks"
+	url := c.BasePath + "/stacks"
 
 	request, err := http.NewRequest("GET", url, nil)
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
@@ -175,9 +175,9 @@ func (c *Client) ListStacks(pid string) (*[]api.Stack, error) {
 	}
 }
 
-func (c *Client) AddStack(account string, stack *api.Stack) (*api.Stack, error) {
+func (c *Client) AddStack(stack *api.Stack) (*api.Stack, error) {
 
-	url := c.BasePath + "accounts/" + account + "/stacks"
+	url := c.BasePath + "/stacks"
 
 	data, err := json.Marshal(stack)
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
@@ -205,9 +205,9 @@ func (c *Client) AddStack(account string, stack *api.Stack) (*api.Stack, error) 
 	return nil, nil
 }
 
-func (c *Client) UpdateStack(account string, stack *api.Stack) error {
+func (c *Client) UpdateStack(stack *api.Stack) error {
 
-	url := c.BasePath + "accounts/" + account + "/stacks/" + stack.Id
+	url := c.BasePath + "/stacks/" + stack.Id
 
 	data, err := json.Marshal(stack)
 	request, err := http.NewRequest("PUT", url, bytes.NewBuffer(data))
@@ -352,9 +352,9 @@ func (c *Client) AddService(service *api.ServiceSpec, token string) (*api.Servic
 	}
 }
 
-func (c *Client) ListVolumes(pid string) (*[]api.Volume, error) {
+func (c *Client) ListVolumes() (*[]api.Volume, error) {
 
-	url := c.BasePath + "accounts/" + pid + "/volumes"
+	url := c.BasePath + "/volumes"
 
 	request, err := http.NewRequest("GET", url, nil)
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
@@ -380,9 +380,9 @@ func (c *Client) ListVolumes(pid string) (*[]api.Volume, error) {
 	}
 }
 
-func (c *Client) UpdateVolume(pid string, volume *api.Volume) (*api.Volume, error) {
+func (c *Client) UpdateVolume(volume *api.Volume) (*api.Volume, error) {
 
-	url := c.BasePath + "accounts/" + pid + "/volumes/" + volume.Id
+	url := c.BasePath + "/volumes/" + volume.Id
 
 	data, err := json.Marshal(volume)
 	if err != nil {
@@ -412,9 +412,9 @@ func (c *Client) UpdateVolume(pid string, volume *api.Volume) (*api.Volume, erro
 	}
 }
 
-func (c *Client) GetVolume(pid string, id string) (*api.Volume, error) {
+func (c *Client) GetVolume(id string) (*api.Volume, error) {
 
-	url := c.BasePath + "accounts/" + pid + "/volumes/" + id
+	url := c.BasePath + "/volumes/" + id
 
 	request, err := http.NewRequest("GET", url, nil)
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
@@ -440,14 +440,14 @@ func (c *Client) GetVolume(pid string, id string) (*api.Volume, error) {
 	}
 }
 
-func (c *Client) AddVolume(pid string, volume *api.Volume) (*api.Volume, error) {
+func (c *Client) AddVolume(volume *api.Volume) (*api.Volume, error) {
 
 	data, err := json.Marshal(&volume)
 	if err != nil {
 		return nil, err
 	}
 
-	url := c.BasePath + "accounts/" + pid + "/volumes"
+	url := c.BasePath + "/volumes"
 
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	request.Header.Set("Content-Type", "application/json")
@@ -522,34 +522,9 @@ func (c *Client) DeleteAccount(account string, token string) error {
 	return nil
 }
 
-func (c *Client) DeleteVolume(account string, volumeId string) error {
+func (c *Client) DeleteVolume(volumeId string) error {
 
-	url := c.BasePath + "accounts/" + account + "/volumes/" + volumeId
-
-	request, err := http.NewRequest("DELETE", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
-	resp, err := c.HttpClient.Do(request)
-	if err != nil {
-		return err
-	} else {
-		if resp.StatusCode == http.StatusOK {
-			defer resp.Body.Close()
-			_, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return err
-			}
-
-		} else {
-			return errors.New(resp.Status)
-		}
-	}
-	return nil
-}
-
-func (c *Client) DeleteStack(account string, stackKey string) error {
-
-	url := c.BasePath + "accounts/" + account + "/stacks/" + stackKey
+	url := c.BasePath + "/volumes/" + volumeId
 
 	request, err := http.NewRequest("DELETE", url, nil)
 	request.Header.Set("Content-Type", "application/json")
@@ -572,8 +547,33 @@ func (c *Client) DeleteStack(account string, stackKey string) error {
 	return nil
 }
 
-func (c *Client) GetStack(pid string, sid string) (*api.Stack, error) {
-	url := fmt.Sprintf("%saccounts/%s/stacks/%s", c.BasePath, pid, sid)
+func (c *Client) DeleteStack(stackKey string) error {
+
+	url := c.BasePath + "/stacks/" + stackKey
+
+	request, err := http.NewRequest("DELETE", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			defer resp.Body.Close()
+			_, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return err
+			}
+
+		} else {
+			return errors.New(resp.Status)
+		}
+	}
+	return nil
+}
+
+func (c *Client) GetStack(sid string) (*api.Stack, error) {
+	url := fmt.Sprintf("%s/stacks/%s", c.BasePath, sid)
 
 	request, err := http.NewRequest("GET", url, nil)
 
@@ -603,9 +603,9 @@ func (c *Client) GetStack(pid string, sid string) (*api.Stack, error) {
 	}
 }
 
-func (c *Client) GetLogs(pid string, sid string, lines int) (string, error) {
+func (c *Client) GetLogs(sid string, lines int) (string, error) {
 
-	url := c.BasePath + "accounts/" + pid + "/logs/" + sid
+	url := c.BasePath + "/logs/" + sid
 	if lines > 0 {
 		url += fmt.Sprintf("?lines=%d", lines)
 	}
@@ -632,9 +632,9 @@ func (c *Client) GetLogs(pid string, sid string, lines int) (string, error) {
 	}
 }
 
-func (c *Client) StartStack(pid string, stack string) (*api.Stack, error) {
+func (c *Client) StartStack(stack string) (*api.Stack, error) {
 
-	url := c.BasePath + "accounts/" + pid + "/start/" + stack
+	url := c.BasePath + "/start/" + stack
 
 	request, err := http.NewRequest("GET", url, nil)
 	request.Header.Set("Content-Type", "application/json")
@@ -663,8 +663,8 @@ func (c *Client) StartStack(pid string, stack string) (*api.Stack, error) {
 	}
 }
 
-func (c *Client) StopStack(pid string, stack string) (*api.Stack, error) {
-	url := c.BasePath + "accounts/" + pid + "/stop/" + stack
+func (c *Client) StopStack(stack string) (*api.Stack, error) {
+	url := c.BasePath + "/stop/" + stack
 
 	request, err := http.NewRequest("GET", url, nil)
 	request.Header.Set("Content-Type", "application/json")
@@ -693,16 +693,16 @@ func (c *Client) StopStack(pid string, stack string) (*api.Stack, error) {
 	}
 }
 
-func (c *Client) GetAccount(pid string) (*api.Account, error) {
-	return c.getAccount(pid, c.Token)
+func (c *Client) GetAccount(accountId string) (*api.Account, error) {
+	return c.getAccount(accountId, c.Token)
 }
 
-func (c *Client) GetAccountAdmin(pid string, token string) (*api.Account, error) {
-	return c.getAccount(pid, token)
+func (c *Client) GetAccountAdmin(accountId string, token string) (*api.Account, error) {
+	return c.getAccount(accountId, token)
 }
 
-func (c *Client) getAccount(pid string, token string) (*api.Account, error) {
-	url := fmt.Sprintf("%saccounts/%s", c.BasePath, pid)
+func (c *Client) getAccount(accountId string, token string) (*api.Account, error) {
+	url := fmt.Sprintf("%saccounts/%s", c.BasePath, accountId)
 
 	request, err := http.NewRequest("GET", url, nil)
 
@@ -790,7 +790,7 @@ func (c *Client) Version() (string, error) {
 	}
 }
 
-func (c *Client) Console(pid string, ssid string) error {
+func (c *Client) Console(ssid string) error {
 
 	var wsServer string
 	if c.BasePath[:5] == "https" {
@@ -799,7 +799,7 @@ func (c *Client) Console(pid string, ssid string) error {
 		wsServer = strings.Replace(c.BasePath, "http", "ws", 1)
 	}
 
-	wsUrl := wsServer + "console?namespace=" + pid + "&ssid=" + ssid
+	wsUrl := wsServer + "console?ssid=" + ssid
 	config := websocket.Config{}
 	config.Version = 13
 	config.Location, _ = url.Parse(wsUrl)
@@ -862,9 +862,9 @@ func (c *Client) Console(pid string, ssid string) error {
 	return nil
 }
 
-func (c *Client) CheckConsole(pid string, ssid string) error {
+func (c *Client) CheckConsole(ssid string) error {
 
-	url := c.BasePath + "check_console?namespace=" + pid + "&ssid=" + ssid
+	url := c.BasePath + "check_console?ssid=" + ssid
 
 	request, err := http.NewRequest("GET", url, nil)
 	request.Header.Set("Content-Type", "application/json")

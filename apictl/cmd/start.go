@@ -22,7 +22,7 @@ var startCmd = &cobra.Command{
 
 		stackId := args[0]
 
-		stack, err := client.GetStack(apiUser.username, stackId)
+		stack, err := client.GetStack(stackId)
 		if err != nil {
 			fmt.Printf("Start failed: %s\n", err.Error())
 			return
@@ -33,7 +33,7 @@ var startCmd = &cobra.Command{
 			return
 		}
 
-		stack, err = client.StartStack(apiUser.username, stackId)
+		stack, err = client.StartStack(stackId)
 		if err != nil {
 			fmt.Printf("Error starting %s: %s\n", stackId, err)
 		} else {

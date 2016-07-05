@@ -284,19 +284,19 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Get(s.prefix+"services/:key", s.GetService),
 		rest.Delete(s.prefix+"services/:key", s.DeleteService),
 		rest.Get(s.prefix+"configs", s.GetConfigs),
-		rest.Get(s.prefix+"accounts/:userId/stacks", s.GetAllStacks),
-		rest.Post(s.prefix+"accounts/:userId/stacks", s.PostStack),
-		rest.Put(s.prefix+"accounts/:userId/stacks/:sid", s.PutStack),
-		rest.Get(s.prefix+"accounts/:userId/stacks/:sid", s.GetStack),
-		rest.Delete(s.prefix+"accounts/:userId/stacks/:sid", s.DeleteStack),
-		rest.Get(s.prefix+"accounts/:userId/volumes", s.GetAllVolumes),
-		rest.Post(s.prefix+"accounts/:userId/volumes", s.PostVolume),
-		rest.Put(s.prefix+"accounts/:userId/volumes/:vid", s.PutVolume),
-		rest.Get(s.prefix+"accounts/:userId/volumes/:vid", s.GetVolume),
-		rest.Delete(s.prefix+"accounts/:userId/volumes/:vid", s.DeleteVolume),
-		rest.Get(s.prefix+"accounts/:userId/start/:sid", s.StartStack),
-		rest.Get(s.prefix+"accounts/:userId/stop/:sid", s.StopStack),
-		rest.Get(s.prefix+"accounts/:userId/logs/:ssid", s.GetLogs),
+		rest.Get(s.prefix+"/stacks", s.GetAllStacks),
+		rest.Post(s.prefix+"/stacks", s.PostStack),
+		rest.Put(s.prefix+"/stacks/:sid", s.PutStack),
+		rest.Get(s.prefix+"/stacks/:sid", s.GetStack),
+		rest.Delete(s.prefix+"/stacks/:sid", s.DeleteStack),
+		rest.Get(s.prefix+"/volumes", s.GetAllVolumes),
+		rest.Post(s.prefix+"/volumes", s.PostVolume),
+		rest.Put(s.prefix+"/volumes/:vid", s.PutVolume),
+		rest.Get(s.prefix+"/volumes/:vid", s.GetVolume),
+		rest.Delete(s.prefix+"/volumes/:vid", s.DeleteVolume),
+		rest.Get(s.prefix+"/start/:sid", s.StartStack),
+		rest.Get(s.prefix+"/stop/:sid", s.StopStack),
+		rest.Get(s.prefix+"/logs/:ssid", s.GetLogs),
 		rest.Get(s.prefix+"console", s.GetConsole),
 		rest.Get(s.prefix+"check_console", s.CheckConsole),
 	)
@@ -328,7 +328,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 }
 
 func (s *Server) CheckConsole(w rest.ResponseWriter, r *rest.Request) {
-	userId := r.Request.FormValue("namespace")
+	userId := s.getUser(r)
 	ssid := r.Request.FormValue("ssid")
 
 	if !s.kube.NamespaceExists(userId) || !s.stackServiceExists(userId, ssid) {
@@ -341,7 +341,7 @@ func (s *Server) CheckConsole(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) GetConsole(w rest.ResponseWriter, r *rest.Request) {
-	userId := r.Request.FormValue("namespace")
+	userId := s.getUser(r)
 	ssid := r.Request.FormValue("ssid")
 
 	if !s.kube.NamespaceExists(userId) || !s.stackServiceExists(userId, ssid) {

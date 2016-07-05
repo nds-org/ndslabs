@@ -29,7 +29,7 @@ var setCmd = &cobra.Command{
 		}
 
 		sid := ssid[0:strings.Index(ssid, "-")]
-		stack, err := client.GetStack(apiUser.username, sid)
+		stack, err := client.GetStack(sid)
 		if err != nil {
 			fmt.Printf("Get stack failed: %s\n", err)
 			return
@@ -68,7 +68,7 @@ var setCmd = &cobra.Command{
 		if !ssidFound {
 			fmt.Printf("No such stack service id %s\n", ssid)
 		}
-		err = client.UpdateStack(apiUser.username, stack)
+		err = client.UpdateStack(stack)
 		if err != nil {
 			fmt.Printf("Error updating stack: %s\n", err)
 			return

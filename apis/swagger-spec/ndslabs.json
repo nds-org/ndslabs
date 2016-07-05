@@ -326,12 +326,7 @@
                 }
             }
         },
-        "/accounts/{account-id}/stacks": {
-            "parameters": [
-                {
-                    "$ref": "#/parameters/account-id"
-                }
-            ],
+        "/stacks": {
             "get": {
                 "description": "Retrieves a list of stacks for this account.\n",
                 "responses": {
@@ -374,11 +369,8 @@
                 }
             }
         },
-        "/accounts/{account-id}/stacks/{stack-id}": {
+        "/stacks/{stack-id}": {
             "parameters": [
-                {
-                    "$ref": "#/parameters/account-id"
-                },
                 {
                     "$ref": "#/parameters/stack-id"
                 }
@@ -427,12 +419,7 @@
                 }
             }
         },
-        "/accounts/{account-id}/volumes": {
-            "parameters": [
-                {
-                    "$ref": "#/parameters/account-id"
-                }
-            ],
+        "/volumes": {
             "get": {
                 "description": "Retrieves a list of volumes for this account.\n",
                 "responses": {
@@ -475,11 +462,8 @@
                 }
             }
         },
-        "/accounts/{account-id}/volumes/{volume-id}": {
+        "/volumes/{volume-id}": {
             "parameters": [
-                {
-                    "$ref": "#/parameters/account-id"
-                },
                 {
                     "$ref": "#/parameters/volume-id"
                 }
@@ -528,11 +512,8 @@
                 }
             }
         },
-        "/accounts/{account-id}/logs/{stack-service-id}": {
+        "/logs/{stack-service-id}": {
             "parameters": [
-                {
-                    "$ref": "#/parameters/account-id"
-                },
                 {
                     "$ref": "#/parameters/stack-service-id"
                 }
@@ -554,11 +535,8 @@
                 }
             }
         },
-        "/accounts/{account-id}/start/{stack-id}": {
+        "/start/{stack-id}": {
             "parameters": [
-                {
-                    "$ref": "#/parameters/account-id"
-                },
                 {
                     "$ref": "#/parameters/stack-id"
                 }
@@ -572,11 +550,8 @@
                 }
             }
         },
-        "/accounts/{account-id}/stop/{stack-id}": {
+        "/stop/{stack-id}": {
             "parameters": [
-                {
-                    "$ref": "#/parameters/account-id"
-                },
                 {
                     "$ref": "#/parameters/stack-id"
                 }

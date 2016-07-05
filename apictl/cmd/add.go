@@ -134,7 +134,7 @@ var addStackCmd = &cobra.Command{
 			cmd.Usage()
 			os.Exit(-1)
 		}
-		addStack(apiUser.username, args[0], args[1], opts)
+		addStack(args[0], args[1], opts)
 	},
 }
 
@@ -168,7 +168,7 @@ var addVolumeCmd = &cobra.Command{
 			volume.Attached = ssid
 		}
 
-		vol, err := client.AddVolume(apiUser.username, &volume)
+		vol, err := client.AddVolume(&volume)
 		if err != nil {
 			fmt.Printf("Error creating volume: %s\n", err.Error())
 			return
@@ -215,7 +215,7 @@ func containsService(list []api.StackService, service api.StackService) bool {
 	return exists
 }
 
-func addStack(account string, serviceKey string, name string, opt string) {
+func addStack(serviceKey string, name string, opt string) {
 
 	service, _ := client.GetService(serviceKey)
 	optional := strings.Split(opt, ",")
@@ -240,7 +240,7 @@ func addStack(account string, serviceKey string, name string, opt string) {
 		}
 	}
 
-	stackp, err := client.AddStack(account, &stack)
+	stackp, err := client.AddStack(&stack)
 	if err != nil {
 		fmt.Printf("Error adding stack: %s\n", err)
 		return

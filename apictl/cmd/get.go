@@ -58,7 +58,7 @@ var getStackCmd = &cobra.Command{
 			return
 		}
 
-		stack, err := client.GetStack(apiUser.username, sid)
+		stack, err := client.GetStack(sid)
 		if err != nil {
 			fmt.Printf("Get stack failed: %s\n", err)
 			return
@@ -123,9 +123,9 @@ var getAccountCmd = &cobra.Command{
 			}
 			fmt.Println(string(data))
 		} else {
-			pid := apiUser.username
+			username := apiUser.username
 
-			account, err := client.GetAccount(pid)
+			account, err := client.GetAccount(username)
 			if err != nil {
 				fmt.Printf("Get account failed: %s\n", err)
 				return

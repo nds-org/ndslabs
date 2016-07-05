@@ -35,7 +35,7 @@ var createCmd = &cobra.Command{
 			volume.Attached = args[2]
 		}
 
-		vol, err := client.AddVolume(apiUser.username, &volume)
+		vol, err := client.AddVolume(&volume)
 		if err != nil {
 			fmt.Printf("Error creating volume: %s\n", err.Error())
 			return

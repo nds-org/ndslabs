@@ -26,7 +26,7 @@ var logsCmd = &cobra.Command{
 
 		serviceId := args[0]
 
-		logs, err := client.GetLogs(apiUser.username, serviceId, lines)
+		logs, err := client.GetLogs(serviceId, lines)
 		if err != nil {
 			fmt.Printf("Error getting logs %s: %s\n", serviceId, err)
 		} else {

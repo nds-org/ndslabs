@@ -31,7 +31,7 @@ var deleteStackCmd = &cobra.Command{
 			os.Exit(-1)
 		}
 
-		deleteStack(apiUser.username, args[0])
+		deleteStack(args[0])
 	},
 }
 
@@ -45,7 +45,7 @@ var deleteVolumeCmd = &cobra.Command{
 			os.Exit(-1)
 		}
 
-		deleteVolume(apiUser.username, args[0])
+		deleteVolume(args[0])
 	},
 }
 
@@ -110,8 +110,8 @@ func deleteAccount(account string) {
 	}
 }
 
-func deleteVolume(account string, id string) {
-	err := client.DeleteVolume(account, id)
+func deleteVolume(id string) {
+	err := client.DeleteVolume(id)
 	if err != nil {
 		fmt.Printf("Unable to delete volume %s: %s \n", id, err)
 	} else {
@@ -119,8 +119,8 @@ func deleteVolume(account string, id string) {
 	}
 }
 
-func deleteStack(account string, stack string) {
-	err := client.DeleteStack(account, stack)
+func deleteStack(stack string) {
+	err := client.DeleteStack(stack)
 	if err != nil {
 		fmt.Printf("Unable to delete stack %s: %s \n", stack, err)
 	} else {
