@@ -2,7 +2,7 @@
     "swagger": "2.0",
     "info": {
         "title": "ndslabs",
-        "version": "0.1"
+        "version": "1.0.1-alpha"
     },
     "basePath": "/v1",
     "schemes": [
