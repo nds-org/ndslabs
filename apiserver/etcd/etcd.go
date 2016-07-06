@@ -78,7 +78,7 @@ func (s *EtcdHelper) GetGlobalServices() (*[]api.ServiceSpec, error) {
 func (s *EtcdHelper) GetServices(uid string) (*[]api.ServiceSpec, error) {
 	services := []api.ServiceSpec{}
 	// Get user services
-	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/"+uid+"/services", nil)
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/accounts/"+uid+"/services", nil)
 	if err != nil {
 		if !client.IsKeyNotFound(err) {
 			return nil, err
@@ -111,7 +111,7 @@ func (s *EtcdHelper) GetAllServices(uid string) (*[]api.ServiceSpec, error) {
 		}
 	}
 
-	resp, err = s.etcd.Get(context.Background(), etcdBasePath+"/"+uid+"/services", nil)
+	resp, err = s.etcd.Get(context.Background(), etcdBasePath+"/accounts/"+uid+"/services", nil)
 	if err != nil {
 		if !client.IsKeyNotFound(err) {
 			return nil, err
@@ -148,7 +148,7 @@ func (s *EtcdHelper) PutService(uid string, key string, service *api.ServiceSpec
 		glog.Error(err)
 		return err
 	}
-	_, err = s.etcd.Set(context.Background(), etcdBasePath+"/"+uid+"/services/"+key, string(data), nil)
+	_, err = s.etcd.Set(context.Background(), etcdBasePath+"/accounts/"+uid+"/services/"+key, string(data), nil)
 	if err != nil {
 		glog.Error(err)
 		return err
@@ -184,21 +184,8 @@ func GetEtcdClient(etcdAddress string) (client.KeysAPI, error) {
 
 func (s *EtcdHelper) GetServiceSpec(uid string, key string) (*api.ServiceSpec, error) {
 
-	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/services/"+key, nil)
-	if err != nil {
-		if !client.IsKeyNotFound(err) {
-			glog.Error(err)
-			return nil, err
-		}
-	} else {
-		service := api.ServiceSpec{}
-		node := resp.Node
-		json.Unmarshal([]byte(node.Value), &service)
-		service.Catalog = "global"
-		return &service, nil
-	}
-
-	resp, err = s.etcd.Get(context.Background(), etcdBasePath+"/"+uid+"/services/"+key, nil)
+	// Default to user catalog
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/accounts/"+uid+"/services/"+key, nil)
 	if err != nil {
 		if !client.IsKeyNotFound(err) {
 			glog.Error(err)
@@ -211,11 +198,27 @@ func (s *EtcdHelper) GetServiceSpec(uid string, key string) (*api.ServiceSpec, e
 		service.Catalog = "user"
 		return &service, nil
 	}
+
+	// If not in user catalog, try global catalog
+	resp, err = s.etcd.Get(context.Background(), etcdBasePath+"/services/"+key, nil)
+	if err != nil {
+		if !client.IsKeyNotFound(err) {
+			glog.Error(err)
+			return nil, err
+		}
+	} else {
+		service := api.ServiceSpec{}
+		node := resp.Node
+		json.Unmarshal([]byte(node.Value), &service)
+		service.Catalog = "global"
+		return &service, nil
+	}
 	return nil, nil
 }
 
 func (s *EtcdHelper) GetAccounts() (*[]api.Account, error) {
 
+	glog.V(4).Infoln("GetAccounts()")
 	accounts := []api.Account{}
 
 	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/accounts", nil)
@@ -224,13 +227,16 @@ func (s *EtcdHelper) GetAccounts() (*[]api.Account, error) {
 		nodes := resp.Node.Nodes
 		for _, node := range nodes {
 
+			glog.V(4).Infof("node.Key %s\n", node.Key)
 			resp, err = s.etcd.Get(context.Background(), node.Key+"/account", nil)
 			if err != nil {
+				glog.Error(err)
 				return nil, err
 			}
 			account := api.Account{}
 			err := json.Unmarshal([]byte(resp.Node.Value), &account)
 			if err != nil {
+				glog.Error(err)
 				return nil, err
 			}
 			accounts = append(accounts, account)
@@ -345,7 +351,7 @@ func (s *EtcdHelper) DeleteGlobalService(key string) error {
 }
 
 func (s *EtcdHelper) DeleteService(uid string, key string) error {
-	_, err := s.etcd.Delete(context.Background(), etcdBasePath+"/"+uid+"/services/"+key, nil)
+	_, err := s.etcd.Delete(context.Background(), etcdBasePath+"/accounts/"+uid+"/services/"+key, nil)
 	if err != nil {
 		return err
 	}
