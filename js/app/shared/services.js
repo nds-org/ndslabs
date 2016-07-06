@@ -196,17 +196,28 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  * @constructor
  * @param {} spec - The service spec from which to create the stack
  */
-.service('Stack', [ 'Stacks', '_', function(Stacks, _) {
+.service('Stack', [ '$log', 'Specs', 'StackService', '_', function($log, Specs, StackService, _) {
   return function(spec) {
     var key = spec.key;
-    
+            
     var stack = {
       id: "",
       name: key,
       key: key,
-      status: "Suspended",
-      services: []
+      status: "stopped",
+      services: [],
     };
+    
+    // Add our base service to the stack
+    var base = _.find(Specs.all, [ 'key', key ]);
+    stack.services.push(new StackService(stack, base));
+    
+    // Add required services to this stack
+    var requirements = _.filter(spec.depends, [ 'required', true ]);
+    angular.forEach(requirements, function(req) {
+      var svc = _.find(Specs.all, [ 'key', req.key ]);
+      stack.services.push(new StackService(stack, svc));
+    });
     
     return stack;
   };

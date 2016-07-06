@@ -40,7 +40,6 @@ angular
   };
 
   // Accounting stuff
-  $scope.svcQuery = '';
   $scope.autoRefresh = AutoRefresh;
   
   // Watch for transitioning stacks (their status will end with "ing")
@@ -237,11 +236,10 @@ angular
       animation: true,
       templateUrl: 'app/expert/configWizard/configurationWizard.html',
       controller: 'ConfigurationWizardCtrl',
-      size: 'md',
+      size: 'lg',
       backdrop: 'static',
       keyboard: false,
       resolve: {
-        template: function() { return spec; },
         configuredVolumes: function() { return $scope.configuredVolumes; },
         configuredStacks: function() { return $scope.configuredStacks; }
       }
