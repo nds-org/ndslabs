@@ -255,7 +255,13 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		Condition: func(request *rest.Request) bool {
 			return strings.HasPrefix(request.URL.Path, s.prefix+"accounts") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"services") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"stacks") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"start") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"stop") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"logs") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"volumes") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"configs") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"console") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"check_token") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"refresh_token") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"check_console")
@@ -444,6 +450,7 @@ func (s *Server) GetAllAccounts(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) getUser(r *rest.Request) string {
+	glog.V(4).Infof("JWT_PAYLOAD: ", r.Env["JWT_PAYLOAD"])
 	payload := r.Env["JWT_PAYLOAD"].(map[string]interface{})
 	if payload["admin"] == true {
 		return ""
@@ -789,6 +796,8 @@ func (s *Server) DeleteService(w rest.ResponseWriter, r *rest.Request) {
 	catalog := r.Request.FormValue("catalog")
 	userId := s.getUser(r)
 
+	glog.V(4).Infof("DeleteService %s %s %s\n", key, catalog, userId)
+
 	if catalog == "system" {
 		if !s.IsAdmin(r) {
 			rest.Error(w, "", http.StatusUnauthorized)
@@ -867,7 +876,8 @@ func (s *Server) serviceInUse(sid string) int {
 }
 
 func (s *Server) GetAllStacks(w rest.ResponseWriter, r *rest.Request) {
-	userId := r.PathParam("userId")
+	userId := s.getUser(r)
+	glog.V(4).Infoln("GetAllStacks %s", userId)
 
 	stacks, err := s.getStacks(userId)
 	if err != nil {
@@ -1039,7 +1049,7 @@ func (s *Server) serviceExists(uid string, sid string) bool {
 }
 
 func (s *Server) GetStack(w rest.ResponseWriter, r *rest.Request) {
-	userId := r.PathParam("userId")
+	userId := s.getUser(r)
 	sid := r.PathParam("sid")
 
 	stack, err := s.getStackWithStatus(userId, sid)
@@ -1058,7 +1068,7 @@ func (s *Server) GetStack(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
-	userId := r.PathParam("userId")
+	userId := s.getUser(r)
 
 	stack := api.Stack{}
 	err := r.DecodeJsonPayload(&stack)
@@ -1097,7 +1107,7 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
-	userId := r.PathParam("userId")
+	userId := s.getUser(r)
 	sid := r.PathParam("sid")
 
 	stack := api.Stack{}
@@ -1152,7 +1162,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 
-	userId := r.PathParam("userId")
+	userId := s.getUser(r)
 	sid := r.PathParam("sid")
 
 	stack, err := s.etcd.GetStack(userId, sid)
@@ -1339,7 +1349,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 }
 
 func (s *Server) StartStack(w rest.ResponseWriter, r *rest.Request) {
-	userId := r.PathParam("userId")
+	userId := s.getUser(r)
 	sid := r.PathParam("sid")
 
 	stack, _ := s.etcd.GetStack(userId, sid)
@@ -1598,7 +1608,7 @@ func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, erro
 }
 
 func (s *Server) StopStack(w rest.ResponseWriter, r *rest.Request) {
-	userId := r.PathParam("userId")
+	userId := s.getUser(r)
 	sid := r.PathParam("sid")
 
 	stack, err := s.etcd.GetStack(userId, sid)
@@ -1717,7 +1727,7 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 }
 
 func (s *Server) GetAllVolumes(w rest.ResponseWriter, r *rest.Request) {
-	userId := r.PathParam("userId")
+	userId := s.getUser(r)
 	volumes, err := s.etcd.GetVolumes(userId)
 	if err != nil {
 		glog.Error(err)
@@ -1728,7 +1738,7 @@ func (s *Server) GetAllVolumes(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) PostVolume(w rest.ResponseWriter, r *rest.Request) {
-	userId := r.PathParam("userId")
+	userId := s.getUser(r)
 
 	vol := api.Volume{}
 	err := r.DecodeJsonPayload(&vol)
@@ -1779,8 +1789,8 @@ func (s *Server) PostVolume(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) PutVolume(w rest.ResponseWriter, r *rest.Request) {
-	userId := r.PathParam("userId")
 	vid := r.PathParam("vid")
+	userId := s.getUser(r)
 
 	vol := api.Volume{}
 	err := r.DecodeJsonPayload(&vol)
@@ -1834,7 +1844,7 @@ func (s *Server) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) GetVolume(w rest.ResponseWriter, r *rest.Request) {
-	userId := r.PathParam("userId")
+	userId := s.getUser(r)
 	vid := r.PathParam("vid")
 
 	volume, err := s.etcd.GetVolume(userId, vid)
@@ -1848,7 +1858,7 @@ func (s *Server) GetVolume(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) DeleteVolume(w rest.ResponseWriter, r *rest.Request) {
-	userId := r.PathParam("userId")
+	userId := s.getUser(r)
 	vid := r.PathParam("vid")
 
 	glog.V(4).Infof("Deleting volume %s\n", vid)
@@ -1901,7 +1911,7 @@ func newUUID() (string, error) {
 }
 
 func (s *Server) GetLogs(w rest.ResponseWriter, r *rest.Request) {
-	userId := r.PathParam("userId")
+	userId := s.getUser(r)
 	ssid := r.PathParam("ssid")
 	lines := r.Request.FormValue("lines")
 
