@@ -9,13 +9,32 @@ angular
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
 .controller('ConfigurationWizardCtrl', [ '$scope', '$filter', '$log', '$uibModalInstance', '_', 'NdsLabsApi', 'Project', 'Stack', 'Volume', 
-    'StackService', 'Grid', 'Wizard', 'WizardPage', 'template', 'Specs', 'configuredStacks', 'configuredVolumes', 'ServiceDiscovery',
-    function($scope, $filter, $log, $uibModalInstance, _, NdsLabsApi, Project, Stack, Volume, StackService, Grid, Wizard, WizardPage, template, 
-    Specs, configuredStacks, configuredVolumes, ServiceDiscovery) {
+    'StackService', 'Grid', 'Wizard', 'WizardPage', 'Specs', 'Volumes', 'ServiceDiscovery',
+    function($scope, $filter, $log, $uibModalInstance, _, NdsLabsApi, Project, Stack, Volume, StackService, Grid, Wizard, WizardPage,
+    Specs, Volumes, ServiceDiscovery) {
+      
+  $scope.svcQuery = '';
+  $scope.showStandalones = false;
+  $scope.specs = Specs;
   $scope.storageQuota = Project.project.resourceLimits.storageQuota;
   $scope.newStackVolumeRequirements = [];
   $scope.newStackOrphanedVolumes = [];
   $scope.extraConfig = {};
+  
+  $scope.configs = {
+    list: [
+      { key: 'key1', value: 'value1', def: 'defaultvalue1' },
+      { key: 'key2', value: 'value2', def: 'defaultvalue2' },
+      { key: 'key3', value: 'value3', def: 'defaultvalue3' },
+      { key: 'key4', value: 'value4', def: 'defaultvalue4' }
+    ],
+    grid: new Grid(100, function() { return $scope.configs.list; })
+  };
+  
+  $scope.optionalLinksGrid = new Grid(100, function() { return $scope.newStackOptions; });
+  
+  $scope.project = Project.project;
+  $scope.volumes = Volumes.all;
   
   $scope.forms = {};
   ($scope.onPageChange = function() {
@@ -52,7 +71,7 @@ angular
       }
 
       // Check if this service is already present on our proposed stack
-      var exists = _.find($scope.newStack.services, function(svc) { return svc.service === key });
+      var exists = _.find(targetArray, function(svc) { return svc.service === key });
       if (!exists) {
         // Add the service if it has not already been added
         targetArray.push(stackSvc);
@@ -63,18 +82,25 @@ angular
     });
   };
   
-  // The delay (in seconds) before allowing the user to click "Next"
-  var initDelay = 0;
-
-  // Define a big pile of logic for our wizard pages
-  var configPages = [
+  $scope.$watch('selectedSpec', function(newValue, oldValue) {
+    if (newValue) {
+      $scope.newStack = new Stack(newValue);
+      $scope.newStackOptions = [];
+    }
+    
+    // Add required dependencies to the stack
+    //$scope.collectDependencies($scope.selectedSpec);
+  });
+  
+  // Create a new Wizard to display
+  $scope.wizard = new Wizard([
     
     // Required Services
-    new WizardPage("require", "Required Services", {
+    new WizardPage("require", "Select an Application", {
         prev: null,
         canPrev: false,
         canNext: function() {
-          return $scope.forms['stackNameForm'].$valid;
+          return $scope.selectedSpec && $scope.forms['stackNameForm'].$valid;
         },
         next: function() { 
           if ($scope.newStackOptions.length > 0) {
@@ -89,6 +115,19 @@ angular
         },
         onNext: function() {
           $scope.rediscover($scope.newStack);
+          
+          // Gather requirements of optional components
+          $scope.newStackOptionalDeps = {};
+          angular.forEach($scope.newStackOptions, function(opt) {
+            var spec = _.find(Specs.deps, function(service) { return service.key === opt.service });
+            var required = [];
+            angular.forEach(spec.depends, function(dep) {
+              if (dep.required === true) {
+                required.push(dep.key);
+              }
+            });
+            $scope.newStackOptionalDeps[opt.service] = required;
+          });
         }
      }, true),
      
@@ -195,7 +234,7 @@ angular
         },
         canPrev: true,
         canNext: function() {
-          var used = $filter('usedStorage')(_.concat(configuredVolumes, $scope.newStackVolumeRequirements));
+          var used = $filter('usedStorage')(_.concat(Volumes.all, $scope.newStackVolumeRequirements));
           if (used > $scope.storageQuota) {
             // No room for any new volumes
             return false;
@@ -233,66 +272,7 @@ angular
         canNext: false,
         next: null
      }, true)
-  ];
-  
-  // Create a new Wizard to display
-  $scope.wizard = new Wizard(configPages, initDelay);
-  
-  $scope.spec = template;
-  $scope.newStack = new Stack(template);
-  $scope.newStackLabel = template.label;
-  $scope.newStackOptions = [];
-  var pageSize = 100;
-  $scope.optionalLinksGrid = new Grid(pageSize, function() { return $scope.newStackOptions; });
-
-  // Add our base service to the stack
-  var base = _.find(Specs.all, function(svc) { return svc.key === template.key });
-  $scope.newStack.services.push(new StackService($scope.newStack, base));
-
-  // Add required dependencies to the stack
-  $scope.collectDependencies(template);
-  $scope.newStackRequirements = $scope.newStack.services;
-  
-  // Gather requirements of optional components
-  $scope.newStackOptionalDeps = {};
-  angular.forEach($scope.newStackOptions, function(opt) {
-    var spec = _.find(Specs.deps, function(service) { return service.key === opt.service });
-    var required = [];
-    angular.forEach(spec.depends, function(dep) {
-      if (dep.required === true) {
-        required.push(dep.key);
-      }
-    });
-    $scope.newStackOptionalDeps[opt.service] = required;
-  });
-  
-  // Pager for multiple volume requirements
-  $scope.currentPage = 0;
-  $scope.getPageRange = function() {
-    return [ $scope.currentPage-2, $scope.currentPage-1, $scope.currentPage, $scope.currentPage+1, $scope.currentPage+2 ];
-  };
-  $scope.setCurrentPage = function(newPage) {
-    $scope.currentPage = newPage;
-    $scope.volume = $scope.newStackVolumeRequirements[newPage];
-  };
-  
-  $scope.project = Project.project;
-  $scope.configuredVolumes = configuredVolumes;
-  
-  // TODO: Where is this email address going to live?
-  var adminEmail = 'site-admin';
-  var subject = $filter('urlEncode')('Increasing My Storage Quota');
-  var body = $filter('urlEncode')('Hello, Admin! I appear to have reach my storage limit of '
-              + $scope.storageQuota + ' GB on ' + Project.project.namespace 
-              + '. Could we please discuss options for increasing the ' 
-              + 'storage quota of this project? Thank you! --' + Project.project.namespace);
-  $scope.mailToLink = 'mailto:' + adminEmail 
-                    + '?subject=' + subject
-                    + '&body=' + body;
-    
-  // Assumptions: quota is in GB and GB is lowest storage denomination
-  $scope.usedSpace = $filter('usedStorage')($scope.configuredVolumes);
-  $scope.availableSpace = $scope.storageQuota - $scope.usedSpace;
+  ]);
   
   $scope.ok = function () {
     $log.debug("Closing modal with success!");

@@ -13,7 +13,7 @@
   </div>
     
   <!-- Left Half (Selector Pane) -->
-  <div class="row">
+  <!--<div class="row">
     <div class="col-sm-3">
       <div class="panel panel-default" >
         <div class="panel-body">
@@ -45,10 +45,10 @@
           </tbody>
         </table>
       </div>
-    </div>
+    </div>-->
    
     <!-- Right Half (Content Pane) -->
-    <div class="col-sm-9 fill-height">
+    <div class="col-sm-10 col-sm-offset-1 fill-height">
       <div class="row">
         <div class="col-sm-12">
           <button class="btn btn-default btn-sm pull-right" ng-click="autoRefresh.toggle()"
@@ -274,6 +274,12 @@
                   </uib-accordion-group>
                 </uib-accordion>
               </div>
+              
+               <!-- Launch New Stack Button -->
+              <button class="btn btn-sm btn-success" ng-click="openWizard(stack)">
+                <i class="fa fa-plus"></i>
+                Launch New Stack
+              </button>
             </uib-tab>
             
             <!-- Configured Volumes -->
