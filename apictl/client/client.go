@@ -586,7 +586,7 @@ func (c *Client) DeleteStack(stackKey string) error {
 }
 
 func (c *Client) GetStack(sid string) (*api.Stack, error) {
-	url := fmt.Sprintf("%s/stacks/%s", c.BasePath, sid)
+	url := c.BasePath + "stacks/" + sid
 
 	request, err := http.NewRequest("GET", url, nil)
 
