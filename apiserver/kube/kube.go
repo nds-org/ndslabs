@@ -839,7 +839,7 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 			Containers: []api.Container{
 				api.Container{
 					Name:         spec.Key,
-					Image:        spec.Image,
+					Image:        spec.Image.Name + ":" + stackService.ImageTag,
 					Env:          env,
 					VolumeMounts: k8volMounts,
 					Ports:        k8cps,

@@ -1268,7 +1268,12 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 
 	if len(spec.VolumeMounts) > 0 {
 		k8vols := make([]k8api.Volume, 0)
+
 		for _, mount := range spec.VolumeMounts {
+			k8vol := k8api.Volume{}
+			k8vol.Name = mount.Name
+
+			glog.V(4).Infof("Need volume for %s \n", stackService.Service)
 			if mount.Name == "docker" {
 				// Create a docker socket mount
 				k8vol := k8api.Volume{}
@@ -1277,37 +1282,33 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 				k8hostPath.Path = "/var/run/docker.sock"
 				k8vol.HostPath = &k8hostPath
 				k8vols = append(k8vols, k8vol)
-			}
-		}
+			} else {
+				volumes, _ := s.etcd.GetVolumes(userId)
+				found := false
+				for _, volume := range *volumes {
+					if volume.Attached == stackService.Id {
+						glog.V(4).Infof("Found volume %s\n", volume.Attached)
+						found = true
 
-		k8vol := k8api.Volume{}
-		k8vol.Name = stackService.Service
-		glog.V(4).Infof("Need volume for %s \n", stackService.Service)
+						if volume.Format == "hostPath" {
+							k8hostPath := k8api.HostPathVolumeSource{}
+							k8hostPath.Path = s.volDir + "/" + userId + "/" + volume.Id
+							k8vol.HostPath = &k8hostPath
+							k8vols = append(k8vols, k8vol)
 
-		volumes, _ := s.etcd.GetVolumes(userId)
-		found := false
-		for _, volume := range *volumes {
-			if volume.Attached == stackService.Id {
-				glog.V(4).Infof("Found volume %s\n", volume.Attached)
-				found = true
-
-				if volume.Format == "hostPath" {
-					k8hostPath := k8api.HostPathVolumeSource{}
-					k8hostPath.Path = s.volDir + "/" + userId + "/" + volume.Id
-					k8vol.HostPath = &k8hostPath
+							glog.V(4).Infof("Attaching %s\n", s.volDir+"/"+userId+"/"+volume.Id)
+						} else {
+							glog.Warning("Invalid volume format\n")
+						}
+					}
+				}
+				if !found {
+					glog.Warningf("Required volume not found, using emptyDir\n")
+					k8empty := k8api.EmptyDirVolumeSource{}
+					k8vol.EmptyDir = &k8empty
 					k8vols = append(k8vols, k8vol)
-
-					glog.V(4).Infof("Attaching %s\n", s.volDir+"/"+userId+"/"+volume.Id)
-				} else {
-					glog.Warning("Invalid volume format\n")
 				}
 			}
-		}
-		if !found {
-			glog.Warningf("Required volume not found, using emptyDir\n")
-			k8empty := k8api.EmptyDirVolumeSource{}
-			k8vol.EmptyDir = &k8empty
-			k8vols = append(k8vols, k8vol)
 		}
 		template.Spec.Template.Spec.Volumes = k8vols
 	}

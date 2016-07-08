@@ -2,25 +2,41 @@
 package types
 
 type ServiceSpec struct {
-	Key            string              `json:"key"`
-	Label          string              `json:"label"`
-	Description    string              `json:"description"`
-	Maintainer     string              `json:"maintainer"`
-	RequiresVolume bool                `json:"requiresVolume"`
-	Config         []Config            `json:"config"`
-	Image          string              `json:"image"`
-	Ports          []Port              `json:"ports"`
-	CreatedTime    int                 `json:"createdTime"`
-	UpdatedTime    int                 `json:"updateTime"`
-	ReadyProbe     ReadyProbe          `json:"readinessProbe"`
-	VolumeMounts   []VolumeMount       `json:"volumeMounts"`
-	Args           []string            `json:"args"`
-	Command        []string            `json:"command"`
-	Dependencies   []ServiceDependency `json:"depends"`
-	Access         AccessType          `json:"access"`
-	Display        string              `json:"display"`
-	ResourceLimits ResourceLimits      `json:"resourceLimits"`
-	Catalog        string              `json:"catalog"`
+	Id                   string              `json:"id"`
+	Key                  string              `json:"key"`
+	Label                string              `json:"label"`
+	Description          string              `json:"description"`
+	Logo                 string              `json:"logo"`
+	Maintainer           string              `json:"maintainer"`
+	RequiresVolume       bool                `json:"requiresVolume"`
+	Image                ServiceImage        `json:"image"`
+	Display              string              `json:"display"`
+	Access               AccessType          `json:"access"`
+	Dependencies         []ServiceDependency `json:"depends"`
+	Config               []Config            `json:"config"`
+	Command              []string            `json:"command"`
+	Args                 []string            `json:"args"`
+	Ports                []Port              `json:"ports"`
+	Repositories         []Repository        `json:"repository"`
+	CreatedTime          int                 `json:"createdTime"`
+	UpdatedTime          int                 `json:"updateTime"`
+	ReadyProbe           ReadyProbe          `json:"readinessProbe"`
+	VolumeMounts         []VolumeMount       `json:"volumeMounts"`
+	ResourceLimits       ResourceLimits      `json:"resourceLimits"`
+	Catalog              string              `json:"catalog"`
+	DeveloperEnvironment string              `json:"developerEnvironment"`
+	Tags                 []string            `json:"tags"`
+}
+
+type ServiceImage struct {
+	Registry string   `json:"registry"`
+	Name     string   `json:"name"`
+	Tags     []string `json:"tags"`
+}
+
+type Repository struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
 }
 
 type ServiceSorter []ServiceSpec
@@ -53,6 +69,7 @@ type VolumeMount struct {
 	MountPath string `json:"mountPath"`
 	Name      string `json:"name"`
 }
+
 type ReadyProbe struct {
 	Type         string `json:"type"`
 	Path         string `json:"path"`
@@ -133,6 +150,7 @@ type StackService struct {
 	Id             string            `json:"id"`
 	Stack          string            `json:"stack"`
 	Service        string            `json:"service"`
+	ImageTag       string            `json:"imageTag"`
 	Status         string            `json:"status"`
 	StatusMessages []string          `json:"statusMessages"`
 	Endpoints      []Endpoint        `json:"endpoints,omitempty"`
