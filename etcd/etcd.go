@@ -27,28 +27,28 @@ func NewEtcdHelper(address string) (*EtcdHelper, error) {
 	}, err
 }
 
-func (s *EtcdHelper) GetProject(pid string) (*api.Project, error) {
-	path := etcdBasePath + "/projects/" + pid + "/project"
+func (s *EtcdHelper) GetAccount(uid string) (*api.Account, error) {
+	path := etcdBasePath + "/accounts/" + uid + "/account"
 
-	glog.Infof("GetProject %s\n", path)
+	glog.Infof("GetAccount %s\n", path)
 
 	resp, err := s.etcd.Get(context.Background(), path, nil)
 
 	if err != nil {
 		return nil, err
 	} else {
-		project := api.Project{}
-		json.Unmarshal([]byte(resp.Node.Value), &project)
-		return &project, nil
+		account := api.Account{}
+		json.Unmarshal([]byte(resp.Node.Value), &account)
+		return &account, nil
 	}
 }
 
-func (s *EtcdHelper) PutProject(pid string, project *api.Project) error {
+func (s *EtcdHelper) PutAccount(uid string, account *api.Account) error {
 
-	data, _ := json.Marshal(project)
+	data, _ := json.Marshal(account)
 	opts := client.SetOptions{Dir: true}
-	s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid, "", &opts)
-	_, err := s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid+"/project", string(data), nil)
+	s.etcd.Set(context.Background(), etcdBasePath+"/accounts/"+uid, "", &opts)
+	_, err := s.etcd.Set(context.Background(), etcdBasePath+"/accounts/"+uid+"/account", string(data), nil)
 	if err != nil {
 		glog.Error(err)
 		return err
@@ -57,30 +57,98 @@ func (s *EtcdHelper) PutProject(pid string, project *api.Project) error {
 	return nil
 }
 
-func (s *EtcdHelper) GetServices() (*[]api.ServiceSpec, error) {
+func (s *EtcdHelper) GetGlobalServices() (*[]api.ServiceSpec, error) {
 
+	services := []api.ServiceSpec{}
 	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/services", nil)
 	if err != nil {
 		return nil, err
 	} else {
-		services := []api.ServiceSpec{}
 		nodes := resp.Node.Nodes
 		for _, node := range nodes {
 			service := api.ServiceSpec{}
 			json.Unmarshal([]byte(node.Value), &service)
+			service.Catalog = "global"
 			services = append(services, service)
 		}
-		return &services, nil
 	}
+	return &services, nil
 }
 
-func (s *EtcdHelper) PutService(key string, service *api.ServiceSpec) error {
+func (s *EtcdHelper) GetServices(uid string) (*[]api.ServiceSpec, error) {
+	services := []api.ServiceSpec{}
+	// Get user services
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/accounts/"+uid+"/services", nil)
+	if err != nil {
+		if !client.IsKeyNotFound(err) {
+			return nil, err
+		}
+	} else {
+		nodes := resp.Node.Nodes
+		for _, node := range nodes {
+			service := api.ServiceSpec{}
+			json.Unmarshal([]byte(node.Value), &service)
+			service.Catalog = "user"
+			services = append(services, service)
+		}
+	}
+	return &services, nil
+}
+
+func (s *EtcdHelper) GetAllServices(uid string) (*[]api.ServiceSpec, error) {
+
+	services := []api.ServiceSpec{}
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/services", nil)
+	if err != nil {
+		return nil, err
+	} else {
+		nodes := resp.Node.Nodes
+		for _, node := range nodes {
+			service := api.ServiceSpec{}
+			json.Unmarshal([]byte(node.Value), &service)
+			service.Catalog = "global"
+			services = append(services, service)
+		}
+	}
+
+	resp, err = s.etcd.Get(context.Background(), etcdBasePath+"/accounts/"+uid+"/services", nil)
+	if err != nil {
+		if !client.IsKeyNotFound(err) {
+			return nil, err
+		}
+	} else {
+		nodes := resp.Node.Nodes
+		for _, node := range nodes {
+			service := api.ServiceSpec{}
+			json.Unmarshal([]byte(node.Value), &service)
+			service.Catalog = "user"
+			services = append(services, service)
+		}
+	}
+	return &services, nil
+}
+
+func (s *EtcdHelper) PutGlobalService(key string, service *api.ServiceSpec) error {
 	data, err := json.Marshal(service)
 	if err != nil {
 		glog.Error(err)
 		return err
 	}
 	_, err = s.etcd.Set(context.Background(), etcdBasePath+"/services/"+key, string(data), nil)
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+	return nil
+}
+
+func (s *EtcdHelper) PutService(uid string, key string, service *api.ServiceSpec) error {
+	data, err := json.Marshal(service)
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+	_, err = s.etcd.Set(context.Background(), etcdBasePath+"/accounts/"+uid+"/services/"+key, string(data), nil)
 	if err != nil {
 		glog.Error(err)
 		return err
@@ -114,48 +182,72 @@ func GetEtcdClient(etcdAddress string) (client.KeysAPI, error) {
 	return kapi, nil
 }
 
-func (s *EtcdHelper) GetServiceSpec(key string) (*api.ServiceSpec, error) {
+func (s *EtcdHelper) GetServiceSpec(uid string, key string) (*api.ServiceSpec, error) {
 
-	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/services/"+key, nil)
+	// Default to user catalog
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/accounts/"+uid+"/services/"+key, nil)
 	if err != nil {
-		glog.Error(err)
-		return nil, err
+		if !client.IsKeyNotFound(err) {
+			glog.Error(err)
+			return nil, err
+		}
 	} else {
 		service := api.ServiceSpec{}
 		node := resp.Node
 		json.Unmarshal([]byte(node.Value), &service)
+		service.Catalog = "user"
 		return &service, nil
 	}
+
+	// If not in user catalog, try global catalog
+	resp, err = s.etcd.Get(context.Background(), etcdBasePath+"/services/"+key, nil)
+	if err != nil {
+		if !client.IsKeyNotFound(err) {
+			glog.Error(err)
+			return nil, err
+		}
+	} else {
+		service := api.ServiceSpec{}
+		node := resp.Node
+		json.Unmarshal([]byte(node.Value), &service)
+		service.Catalog = "global"
+		return &service, nil
+	}
+	return nil, nil
 }
 
-func (s *EtcdHelper) GetProjects() (*[]api.Project, error) {
+func (s *EtcdHelper) GetAccounts() (*[]api.Account, error) {
 
-	projects := []api.Project{}
+	glog.V(4).Infoln("GetAccounts()")
+	accounts := []api.Account{}
 
-	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/projects", nil)
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/accounts", nil)
 
 	if err == nil {
 		nodes := resp.Node.Nodes
 		for _, node := range nodes {
 
-			resp, err = s.etcd.Get(context.Background(), node.Key+"/project", nil)
+			glog.V(4).Infof("node.Key %s\n", node.Key)
+			resp, err = s.etcd.Get(context.Background(), node.Key+"/account", nil)
 			if err != nil {
+				glog.Error(err)
 				return nil, err
 			}
-			project := api.Project{}
-			err := json.Unmarshal([]byte(resp.Node.Value), &project)
+			account := api.Account{}
+			err := json.Unmarshal([]byte(resp.Node.Value), &account)
 			if err != nil {
+				glog.Error(err)
 				return nil, err
 			}
-			projects = append(projects, project)
+			accounts = append(accounts, account)
 		}
 	}
-	return &projects, nil
+	return &accounts, nil
 }
 
-func (s *EtcdHelper) GetStack(pid string, sid string) (*api.Stack, error) {
+func (s *EtcdHelper) GetStack(uid string, sid string) (*api.Stack, error) {
 
-	path := "/projects/" + pid + "/stacks/" + sid
+	path := "/accounts/" + uid + "/stacks/" + sid
 	resp, err := s.etcd.Get(context.Background(), etcdBasePath+path, nil)
 
 	if err != nil {
@@ -167,12 +259,12 @@ func (s *EtcdHelper) GetStack(pid string, sid string) (*api.Stack, error) {
 	}
 }
 
-func (s *EtcdHelper) PutStack(pid string, sid string, stack *api.Stack) error {
+func (s *EtcdHelper) PutStack(uid string, sid string, stack *api.Stack) error {
 	opts := client.SetOptions{Dir: true}
-	s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid, "/stacks", &opts)
+	s.etcd.Set(context.Background(), etcdBasePath+"/accounts/"+uid, "/stacks", &opts)
 
 	data, _ := json.Marshal(stack)
-	path := etcdBasePath + "/projects/" + pid + "/stacks/" + sid
+	path := etcdBasePath + "/accounts/" + uid + "/stacks/" + sid
 	//glog.V(4).Infof("stack %s\n", data)
 	_, err := s.etcd.Set(context.Background(), path, string(data), nil)
 	if err != nil {
@@ -183,23 +275,23 @@ func (s *EtcdHelper) PutStack(pid string, sid string, stack *api.Stack) error {
 	}
 }
 
-func (s *EtcdHelper) GetVolumes(pid string) (*[]api.Volume, error) {
+func (s *EtcdHelper) GetVolumes(uid string) (*[]api.Volume, error) {
 
 	volumes := make([]api.Volume, 0)
 
-	volumePath := etcdBasePath + "/projects/" + pid + "/volumes"
+	volumePath := etcdBasePath + "/accounts/" + uid + "/volumes"
 	resp, err := s.etcd.Get(context.Background(), volumePath, nil)
 	if err != nil {
 		if client.IsKeyNotFound(err) {
-			glog.V(4).Infof("Creating volumes key for %s\n", pid)
+			glog.V(4).Infof("Creating volumes key for %s\n", uid)
 			opts := client.SetOptions{Dir: true}
 			_, err = s.etcd.Set(context.Background(), volumePath, "", &opts)
 			if err != nil {
-				glog.V(4).Infof("Error creating volumes key for %s: %s\n", pid, err)
+				glog.V(4).Infof("Error creating volumes key for %s: %s\n", uid, err)
 			}
 			return &volumes, nil
 		} else {
-			glog.V(4).Infof("Error creating volumes key for %s\n", pid)
+			glog.V(4).Infof("Error creating volumes key for %s\n", uid)
 			return &volumes, err
 		}
 	} else {
@@ -215,12 +307,12 @@ func (s *EtcdHelper) GetVolumes(pid string) (*[]api.Volume, error) {
 	return &volumes, nil
 }
 
-func (s *EtcdHelper) PutVolume(pid string, vid string, volume api.Volume) error {
+func (s *EtcdHelper) PutVolume(uid string, vid string, volume api.Volume) error {
 	opts := client.SetOptions{Dir: true}
-	s.etcd.Set(context.Background(), etcdBasePath+"/projects/"+pid, "/volumes", &opts)
+	s.etcd.Set(context.Background(), etcdBasePath+"/accounts/"+uid, "/volumes", &opts)
 
 	data, _ := json.Marshal(volume)
-	path := etcdBasePath + "/projects/" + pid + "/volumes/" + vid
+	path := etcdBasePath + "/accounts/" + uid + "/volumes/" + vid
 	_, err := s.etcd.Set(context.Background(), path, string(data), nil)
 	if err != nil {
 		return err
@@ -229,8 +321,8 @@ func (s *EtcdHelper) PutVolume(pid string, vid string, volume api.Volume) error 
 	}
 }
 
-func (s *EtcdHelper) GetVolume(pid string, vid string) (*api.Volume, error) {
-	path := etcdBasePath + "/projects/" + pid + "/volumes/" + vid
+func (s *EtcdHelper) GetVolume(uid string, vid string) (*api.Volume, error) {
+	path := etcdBasePath + "/accounts/" + uid + "/volumes/" + vid
 	resp, err := s.etcd.Get(context.Background(), path, nil)
 
 	if err != nil {
@@ -242,15 +334,15 @@ func (s *EtcdHelper) GetVolume(pid string, vid string) (*api.Volume, error) {
 	}
 }
 
-func (s *EtcdHelper) DeleteProject(pid string) error {
-	_, err := s.etcd.Delete(context.Background(), etcdBasePath+"/projects/"+pid, &client.DeleteOptions{Recursive: true})
+func (s *EtcdHelper) DeleteAccount(uid string) error {
+	_, err := s.etcd.Delete(context.Background(), etcdBasePath+"/accounts/"+uid, &client.DeleteOptions{Recursive: true})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *EtcdHelper) DeleteService(key string) error {
+func (s *EtcdHelper) DeleteGlobalService(key string) error {
 	_, err := s.etcd.Delete(context.Background(), etcdBasePath+"/services/"+key, nil)
 	if err != nil {
 		return err
@@ -258,8 +350,16 @@ func (s *EtcdHelper) DeleteService(key string) error {
 	return nil
 }
 
-func (s *EtcdHelper) DeleteStack(pid string, sid string) error {
-	path := etcdBasePath + "/projects/" + pid + "/stacks/" + sid
+func (s *EtcdHelper) DeleteService(uid string, key string) error {
+	_, err := s.etcd.Delete(context.Background(), etcdBasePath+"/accounts/"+uid+"/services/"+key, nil)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *EtcdHelper) DeleteStack(uid string, sid string) error {
+	path := etcdBasePath + "/accounts/" + uid + "/stacks/" + sid
 	_, err := s.etcd.Delete(context.Background(), path, nil)
 	if err != nil {
 		return err
@@ -267,8 +367,8 @@ func (s *EtcdHelper) DeleteStack(pid string, sid string) error {
 	return nil
 }
 
-func (s *EtcdHelper) DeleteVolume(pid string, vid string) error {
-	path := etcdBasePath + "/projects/" + pid + "/volumes/" + vid
+func (s *EtcdHelper) DeleteVolume(uid string, vid string) error {
+	path := etcdBasePath + "/accounts/" + uid + "/volumes/" + vid
 	_, err := s.etcd.Delete(context.Background(), path, nil)
 	if err != nil {
 		return err
@@ -276,11 +376,11 @@ func (s *EtcdHelper) DeleteVolume(pid string, vid string) error {
 	return nil
 }
 
-func (s *EtcdHelper) GetStacks(pid string) (*[]api.Stack, error) {
+func (s *EtcdHelper) GetStacks(uid string) (*[]api.Stack, error) {
 
 	stacks := []api.Stack{}
 
-	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/projects/"+pid+"/stacks", nil)
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/accounts/"+uid+"/stacks", nil)
 
 	if err == nil {
 		nodes := resp.Node.Nodes

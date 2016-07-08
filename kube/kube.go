@@ -129,9 +129,9 @@ func (k *KubeHelper) CreateNamespace(pid string) (*api.Namespace, error) {
 			json.Unmarshal(data, &ns)
 			return &ns, nil
 		} else if httpresp.StatusCode == http.StatusConflict {
-			return nil, fmt.Errorf("Namespace exists for project %s: %s\n", pid, httpresp.Status)
+			return nil, fmt.Errorf("Namespace exists for account %s: %s\n", pid, httpresp.Status)
 		} else {
-			return nil, fmt.Errorf("Error adding namespace for project %s: %s\n", pid, httpresp.Status)
+			return nil, fmt.Errorf("Error adding namespace for account %s: %s\n", pid, httpresp.Status)
 		}
 	}
 	return nil, nil
@@ -180,9 +180,9 @@ func (k *KubeHelper) CreateResourceQuota(pid string, cpu string, mem string) (*a
 			json.Unmarshal(data, &rq)
 			return &rq, nil
 		} else if httpresp.StatusCode == http.StatusConflict {
-			return nil, fmt.Errorf("Quota exists for project %s: %s\n", pid, httpresp.Status)
+			return nil, fmt.Errorf("Quota exists for account %s: %s\n", pid, httpresp.Status)
 		} else {
-			return nil, fmt.Errorf("Error adding quota for project %s: %s\n", pid, httpresp.Status)
+			return nil, fmt.Errorf("Error adding quota for account %s: %s\n", pid, httpresp.Status)
 		}
 	}
 	return nil, nil
@@ -237,9 +237,9 @@ func (k *KubeHelper) CreateLimitRange(pid string, cpu string, mem string) (*api.
 			json.Unmarshal(data, &lr)
 			return lr, nil
 		} else if httpresp.StatusCode == http.StatusConflict {
-			return nil, fmt.Errorf("Quota exists for project %s: %s\n", pid, httpresp.Status)
+			return nil, fmt.Errorf("Quota exists for account %s: %s\n", pid, httpresp.Status)
 		} else {
-			return nil, fmt.Errorf("Error adding limit range for project %s: %s\n", pid, httpresp.Status)
+			return nil, fmt.Errorf("Error adding limit range for account %s: %s\n", pid, httpresp.Status)
 		}
 	}
 	return nil, nil
@@ -267,7 +267,7 @@ func (k *KubeHelper) GetNamespace(pid string) (*api.Namespace, error) {
 			json.Unmarshal(data, &ns)
 			return &ns, nil
 		} else {
-			return nil, fmt.Errorf("Error getting namespace for project %s: %s\n", pid, httpresp.Status)
+			return nil, fmt.Errorf("Error getting namespace for account %s: %s\n", pid, httpresp.Status)
 		}
 	}
 	return nil, nil
@@ -305,7 +305,7 @@ func (k *KubeHelper) DeleteNamespace(pid string) (*api.Namespace, error) {
 			json.Unmarshal(data, &ns)
 			return &ns, nil
 		} else {
-			return nil, fmt.Errorf("Error deleting namespace for project %s: %s\n", pid, httpresp.Status)
+			return nil, fmt.Errorf("Error deleting namespace for account %s: %s\n", pid, httpresp.Status)
 		}
 	}
 	return nil, nil
@@ -1232,7 +1232,7 @@ func (k *KubeHelper) DeleteIngress(pid string, name string) (*extensions.Ingress
 			json.Unmarshal(data, &ingress)
 			return &ingress, nil
 		} else {
-			return nil, fmt.Errorf("Error deleting ingress for project %s: %s\n", pid, httpresp.Status)
+			return nil, fmt.Errorf("Error deleting ingress for account %s: %s\n", pid, httpresp.Status)
 		}
 	}
 	return nil, nil
@@ -1275,9 +1275,9 @@ func (k *KubeHelper) CreateTLSSecret(pid string, secretName string, tlsCert []by
 			json.Unmarshal(data, &secret)
 			return &secret, nil
 		} else if httpresp.StatusCode == http.StatusConflict {
-			return nil, fmt.Errorf("Secret %s exists for project %s: %s\n", secretName, pid, httpresp.Status)
+			return nil, fmt.Errorf("Secret %s exists for account %s: %s\n", secretName, pid, httpresp.Status)
 		} else {
-			return nil, fmt.Errorf("Error adding secret %s for project %s: %s\n", secretName, pid, httpresp.Status)
+			return nil, fmt.Errorf("Error adding secret %s for account %s: %s\n", secretName, pid, httpresp.Status)
 		}
 	}
 	return nil, nil
@@ -1306,7 +1306,7 @@ func (k *KubeHelper) DeleteSecret(pid string, name string) (*api.Secret, error) 
 			json.Unmarshal(data, &secret)
 			return &secret, nil
 		} else {
-			return nil, fmt.Errorf("Error deleting secret %s for project %s: %s\n", name, pid, httpresp.Status)
+			return nil, fmt.Errorf("Error deleting secret %s for account %s: %s\n", name, pid, httpresp.Status)
 		}
 	}
 	return nil, nil
@@ -1334,7 +1334,7 @@ func (k *KubeHelper) GetSecret(pid string, secretName string) (*api.Secret, erro
 			json.Unmarshal(data, &secret)
 			return &secret, nil
 		} else {
-			return nil, fmt.Errorf("Error getting secret %s for project %s: %s\n", secretName, pid, httpresp.Status)
+			return nil, fmt.Errorf("Error getting secret %s for account %s: %s\n", secretName, pid, httpresp.Status)
 		}
 	}
 	return nil, nil
@@ -1362,7 +1362,7 @@ func (k *KubeHelper) GetResourceQuota(pid string) (*api.ResourceQuotaList, error
 			json.Unmarshal(data, &quota)
 			return &quota, nil
 		} else {
-			return nil, fmt.Errorf("Error getting quota for project %s: %s\n", pid, httpresp.Status)
+			return nil, fmt.Errorf("Error getting quota for account %s: %s\n", pid, httpresp.Status)
 		}
 	}
 	return nil, nil
