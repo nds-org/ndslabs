@@ -68,7 +68,7 @@ func (s *EtcdHelper) GetGlobalServices() (*[]api.ServiceSpec, error) {
 		for _, node := range nodes {
 			service := api.ServiceSpec{}
 			json.Unmarshal([]byte(node.Value), &service)
-			service.Catalog = "global"
+			service.Catalog = "system"
 			services = append(services, service)
 		}
 	}
@@ -106,7 +106,7 @@ func (s *EtcdHelper) GetAllServices(uid string) (*[]api.ServiceSpec, error) {
 		for _, node := range nodes {
 			service := api.ServiceSpec{}
 			json.Unmarshal([]byte(node.Value), &service)
-			service.Catalog = "global"
+			service.Catalog = "system"
 			services = append(services, service)
 		}
 	}
@@ -199,7 +199,7 @@ func (s *EtcdHelper) GetServiceSpec(uid string, key string) (*api.ServiceSpec, e
 		return &service, nil
 	}
 
-	// If not in user catalog, try global catalog
+	// If not in user catalog, try system catalog
 	resp, err = s.etcd.Get(context.Background(), etcdBasePath+"/services/"+key, nil)
 	if err != nil {
 		if !client.IsKeyNotFound(err) {
@@ -210,7 +210,7 @@ func (s *EtcdHelper) GetServiceSpec(uid string, key string) (*api.ServiceSpec, e
 		service := api.ServiceSpec{}
 		node := resp.Node
 		json.Unmarshal([]byte(node.Value), &service)
-		service.Catalog = "global"
+		service.Catalog = "system"
 		return &service, nil
 	}
 	return nil, nil
