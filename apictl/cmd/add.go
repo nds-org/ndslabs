@@ -15,25 +15,28 @@ import (
 )
 
 var (
-	opts string
-	file string
-	dir  string
+	opts    string
+	file    string
+	dir     string
+	catalog string
 )
 
 func init() {
 	RootCmd.AddCommand(addCmd)
 	addCmd.AddCommand(addStackCmd)
-	addCmd.AddCommand(addProjectCmd)
+	addCmd.AddCommand(addAccountCmd)
 	addCmd.AddCommand(addServiceCmd)
 	addCmd.AddCommand(addVolumeCmd)
 
 	// add stack flags
 	addStackCmd.Flags().StringVar(&opts, "opt", "", "Comma-delimited list of optional services")
 
-	addProjectCmd.Flags().StringVarP(&file, "file", "f", "", "Path to project definition (json)")
+	addAccountCmd.Flags().StringVarP(&file, "file", "f", "", "Path to account definition (json)")
 
 	addServiceCmd.Flags().StringVarP(&file, "file", "f", "", "Path to service definition (json)")
-	addServiceCmd.Flags().StringVar(&dir, "dir", "", "Path to service definition (json)")
+	addServiceCmd.Flags().StringVar(&dir, "dir", "", "Path to directory of service definitions (json)")
+	addServiceCmd.Flags().StringVarP(&catalog, "catalog", "c", "user", "Catalog to use")
+
 }
 
 var addCmd = &cobra.Command{
@@ -41,33 +44,33 @@ var addCmd = &cobra.Command{
 	Short: "Add a resource",
 }
 
-var addProjectCmd = &cobra.Command{
-	Use:    "project [name] [password]",
-	Short:  "Add the specified project (admin users only)",
+var addAccountCmd = &cobra.Command{
+	Use:    "account [name] [password]",
+	Short:  "Add the specified account (admin users only)",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		project := api.Project{}
+		account := api.Account{}
 		if len(file) > 0 {
 			data, err := ioutil.ReadFile(file)
 			if err != nil {
-				fmt.Printf("Error reading project file: %s\n", err.Error())
+				fmt.Printf("Error reading account file: %s\n", err.Error())
 				os.Exit(-1)
 			}
-			json.Unmarshal(data, &project)
+			json.Unmarshal(data, &account)
 		} else if len(args) == 2 {
-			project.Id = args[0]
-			project.Name = args[0]
-			project.Namespace = args[0]
-			project.Password = args[1]
-			//project.StorageQuota =
-			//project.Description =
-			//project.EmailAddress =
+			account.Id = args[0]
+			account.Name = args[0]
+			account.Namespace = args[0]
+			account.Password = args[1]
+			//account.StorageQuota =
+			//account.Description =
+			//account.EmailAddress =
 		} else {
 			cmd.Usage()
 			os.Exit(-1)
 		}
-		addProject(project)
+		addAccount(account)
 	},
 }
 
@@ -78,9 +81,9 @@ var addServiceCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if len(file) > 0 {
-			addServiceFile(file)
+			addServiceFile(file, catalog)
 		} else if len(dir) > 0 {
-			addServiceDir(dir)
+			addServiceDir(dir, catalog)
 		} else {
 			cmd.Usage()
 			os.Exit(-1)
@@ -88,7 +91,7 @@ var addServiceCmd = &cobra.Command{
 	},
 }
 
-func addServiceFile(path string) error {
+func addServiceFile(path string, catalog string) error {
 	service := api.ServiceSpec{}
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -105,11 +108,11 @@ func addServiceFile(path string) error {
 		fmt.Println(err)
 		return err
 	}
-	addService(service)
+	addService(service, catalog)
 	return nil
 }
 
-func addServiceDir(path string) error {
+func addServiceDir(path string, catalog string) error {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		return err
@@ -117,9 +120,9 @@ func addServiceDir(path string) error {
 
 	for _, file := range files {
 		if file.IsDir() {
-			addServiceDir(fmt.Sprintf("%s/%s", path, file.Name()))
+			addServiceDir(fmt.Sprintf("%s/%s", path, file.Name()), catalog)
 		} else {
-			addServiceFile(fmt.Sprintf("%s/%s", path, file.Name()))
+			addServiceFile(fmt.Sprintf("%s/%s", path, file.Name()), catalog)
 		}
 	}
 	return nil
@@ -127,14 +130,14 @@ func addServiceDir(path string) error {
 
 var addStackCmd = &cobra.Command{
 	Use:    "stack [serviceKey] [name]",
-	Short:  "Add the specified stack to your project",
+	Short:  "Add the specified stack to your account",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
 			cmd.Usage()
 			os.Exit(-1)
 		}
-		addStack(apiUser.username, args[0], args[1], opts)
+		addStack(args[0], args[1], opts)
 	},
 }
 
@@ -168,7 +171,7 @@ var addVolumeCmd = &cobra.Command{
 			volume.Attached = ssid
 		}
 
-		vol, err := client.AddVolume(apiUser.username, &volume)
+		vol, err := client.AddVolume(&volume)
 		if err != nil {
 			fmt.Printf("Error creating volume: %s\n", err.Error())
 			return
@@ -215,7 +218,7 @@ func containsService(list []api.StackService, service api.StackService) bool {
 	return exists
 }
 
-func addStack(project string, serviceKey string, name string, opt string) {
+func addStack(serviceKey string, name string, opt string) {
 
 	service, _ := client.GetService(serviceKey)
 	optional := strings.Split(opt, ",")
@@ -240,7 +243,7 @@ func addStack(project string, serviceKey string, name string, opt string) {
 		}
 	}
 
-	stackp, err := client.AddStack(project, &stack)
+	stackp, err := client.AddStack(&stack)
 	if err != nil {
 		fmt.Printf("Error adding stack: %s\n", err)
 		return
@@ -257,33 +260,37 @@ func addStack(project string, serviceKey string, name string, opt string) {
 	}
 }
 
-func addProject(project api.Project) {
+func addAccount(account api.Account) {
 
 	password := credentials("Admin password: ")
 	token, err := client.Login("admin", password)
 	if err != nil {
-		fmt.Printf("Unable to add project %s: %s \n", project.Id, err)
+		fmt.Printf("Unable to add account %s: %s \n", account.Id, err)
 		return
 	}
 
-	err = client.AddProject(&project, token)
+	err = client.AddAccount(&account, token)
 	if err != nil {
-		fmt.Printf("Unable to add project %s: %s \n", project.Id, err)
+		fmt.Printf("Unable to add account %s: %s \n", account.Id, err)
 	} else {
-		fmt.Println("Added project " + project.Id)
+		fmt.Println("Added account " + account.Id)
 	}
 }
 
-func addService(service api.ServiceSpec) {
+func addService(service api.ServiceSpec, catalog string) {
 
-	password := credentials("Admin password: ")
-	token, err := client.Login("admin", password)
-	if err != nil {
-		fmt.Printf("Unable to add service %s: %s \n", service.Label, err)
-		return
+	token := client.Token
+	if catalog == "system" {
+		password := credentials("Admin password: ")
+		t, err := client.Login("admin", password)
+		if err != nil {
+			fmt.Printf("Unable to add service %s: %s \n", service.Label, err)
+			return
+		}
+		token = t
 	}
 
-	_, err = client.AddService(&service, token)
+	_, err := client.AddService(&service, token, catalog)
 	if err != nil {
 		fmt.Printf("Unable to add service %s: %s \n", service.Label, err)
 	} else {

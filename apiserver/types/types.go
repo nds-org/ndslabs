@@ -20,7 +20,14 @@ type ServiceSpec struct {
 	Access         AccessType          `json:"access"`
 	Display        string              `json:"display"`
 	ResourceLimits ResourceLimits      `json:"resourceLimits"`
+	Catalog        string              `json:"catalog"`
 }
+
+type ServiceSorter []ServiceSpec
+
+func (s ServiceSorter) Len() int           { return len(s) }
+func (s ServiceSorter) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s ServiceSorter) Less(i, j int) bool { return s[i].Key < s[j].Key }
 
 type AccessType string
 
@@ -54,11 +61,11 @@ type ReadyProbe struct {
 	Timeout      int32  `json:"timeout"`
 }
 
-type ProjectList struct {
-	Items []Project `json:"items"`
+type AccountList struct {
+	Items []Account `json:"items"`
 }
 
-type Project struct {
+type Account struct {
 	Id             string         `json:"id"`
 	Name           string         `json:"name"`
 	Description    string         `json:"description"`
