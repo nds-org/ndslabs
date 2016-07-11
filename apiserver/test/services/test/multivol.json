@@ -3,7 +3,7 @@
     "label": "Test - Multiple volumes",
     "image": { 
 	    "name": "nginx",
-	    "tags": ["latest"]
+	    "tags": ["latest", "1.11", "1.11"]
 	},
     "display": "stack",
     "access": "external",
@@ -16,11 +16,9 @@
     ],
 	"volumeMounts": [ 
 		{
-			"name": "log",
 			"mountPath": "/var/log/nginx"
 		},
 		{ 
-			"name": "html",
 			"mountPath": "/usr/share/nginx/html"
         }
 	],
