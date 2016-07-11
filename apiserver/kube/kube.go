@@ -692,6 +692,10 @@ func (k *KubeHelper) generateStackName(stack string, service string, randomLengt
 	return fmt.Sprintf("%s-%s-%s", stack, service, utilrand.String(randomLength))
 }
 
+func (k *KubeHelper) RandomString(randomLength int) string {
+	return utilrand.String(randomLength)
+}
+
 func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsapi.ServiceSpec) *api.Service {
 
 	// Create the Kubernetes service definition
@@ -827,6 +831,10 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 		glog.Warningf("No resource requirements specified for service %s\n", spec.Label)
 	}
 
+	tag := "latest"
+	if stackService.ImageTag != "" {
+		tag = stackService.ImageTag
+	}
 	k8template := api.PodTemplateSpec{
 		ObjectMeta: api.ObjectMeta{
 			Labels: map[string]string{
@@ -839,7 +847,7 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 			Containers: []api.Container{
 				api.Container{
 					Name:         spec.Key,
-					Image:        spec.Image.Name + ":" + stackService.ImageTag,
+					Image:        spec.Image.Name + ":" + tag,
 					Env:          env,
 					VolumeMounts: k8volMounts,
 					Ports:        k8cps,

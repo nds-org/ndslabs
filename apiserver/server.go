@@ -2,11 +2,9 @@
 package main
 
 import (
-	"crypto/rand"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -931,7 +929,7 @@ func (s *Server) getStackService(userId string, ssid string) *api.StackService {
 	return nil
 }
 
-func (s *Server) attachmentExists(userId string, ssid string) bool {
+func (s *Server) attachmentExists(userId string, attachment string) bool {
 	volumes, _ := s.etcd.GetVolumes(userId)
 	if volumes == nil {
 		return false
@@ -939,7 +937,7 @@ func (s *Server) attachmentExists(userId string, ssid string) bool {
 
 	exists := false
 	for _, volume := range *volumes {
-		if volume.Attached == ssid {
+		if volume.Attached == attachment {
 			exists = true
 			break
 		}
@@ -1188,7 +1186,8 @@ func (s *Server) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 	volumes, err := s.etcd.GetVolumes(userId)
 	for _, volume := range *volumes {
 		for _, ss := range stack.Services {
-			if volume.Attached == ss.Id {
+			vssid := strings.Split(volume.Attached, ":")[0]
+			if vssid == ss.Id {
 				glog.V(4).Infof("Detaching volume %s\n", volume.Id)
 				volume.Attached = ""
 				volume.Status = "available"
@@ -1275,7 +1274,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 
 			glog.V(4).Infof("Need volume for %s \n", stackService.Service)
 			if mount.Name == "docker" {
-				// Create a docker socket mount
+				// TODO: Need to prevent non-NDS services from mounting the Docker socket
 				k8vol := k8api.Volume{}
 				k8vol.Name = "docker"
 				k8hostPath := k8api.HostPathVolumeSource{}
@@ -1286,7 +1285,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 				volumes, _ := s.etcd.GetVolumes(userId)
 				found := false
 				for _, volume := range *volumes {
-					if volume.Attached == stackService.Id {
+					if volume.Attached == stackService.Id+":"+mount.Name {
 						glog.V(4).Infof("Found volume %s\n", volume.Attached)
 						found = true
 
@@ -1750,7 +1749,8 @@ func (s *Server) PostVolume(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	if vol.Attached != "" {
-		if s.getStackService(userId, vol.Attached) == nil {
+		ssid := strings.Split(vol.Attached, ":")[0]
+		if s.getStackService(userId, ssid) == nil {
 			rest.NotFound(w, r)
 			return
 		} else if s.attachmentExists(userId, vol.Attached) {
@@ -1764,15 +1764,9 @@ func (s *Server) PostVolume(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	glog.V(4).Infoln("Creating local volume")
-	uid, err := newUUID()
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	vol.Id = uid
+	vol.Id = s.kube.RandomString(5)
 
-	err = os.MkdirAll(s.volDir+"/"+userId+"/"+uid, 0755)
+	err = os.MkdirAll(s.volDir+"/"+userId+"/"+vol.Id, 0755)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1801,14 +1795,15 @@ func (s *Server) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	if vol.Attached != "" {
+		ssid := strings.Split(vol.Attached, ":")[0]
 		// Don't allow attaching to a service with an existing volume
-		if s.getStackService(userId, vol.Attached) == nil {
+		if s.getStackService(userId, ssid) == nil {
 			rest.NotFound(w, r)
 			return
 		} else if s.attachmentExists(userId, vol.Attached) {
 			w.WriteHeader(http.StatusConflict)
 			return
-		} else if !s.isStackStopped(userId, vol.Attached) {
+		} else if !s.isStackStopped(userId, ssid) {
 			glog.V(4).Infof("Can't attach to a running stack\n")
 			w.WriteHeader(http.StatusConflict)
 			return
@@ -1821,8 +1816,9 @@ func (s *Server) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		ssid := strings.Split(existingVol.Attached, ":")[0]
 		if existingVol != nil && existingVol.Attached != "" {
-			if !s.isStackStopped(userId, existingVol.Attached) {
+			if !s.isStackStopped(userId, ssid) {
 				glog.V(4).Infof("Can't detach from a running stack\n")
 				w.WriteHeader(http.StatusConflict)
 				return
@@ -1872,10 +1868,13 @@ func (s *Server) DeleteVolume(w rest.ResponseWriter, r *rest.Request) {
 		}
 		rest.NotFound(w, r)
 		return
-	} else if volume.Attached != "" && !s.isStackStopped(userId, volume.Attached) {
-		glog.V(4).Infof("Can't attach to a running stack\n")
-		w.WriteHeader(http.StatusConflict)
-		return
+	} else if volume.Attached != "" {
+		ssid := strings.Split(volume.Attached, ":")[0]
+		if !s.isStackStopped(userId, ssid) {
+			glog.V(4).Infof("Can't attach to a running stack\n")
+			w.WriteHeader(http.StatusConflict)
+			return
+		}
 	}
 
 	glog.V(4).Infof("Format %s\n", volume.Format)
@@ -1895,20 +1894,6 @@ func (s *Server) DeleteVolume(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-}
-
-// newUUID generates a random UUID according to RFC 4122
-func newUUID() (string, error) {
-	uuid := make([]byte, 16)
-	n, err := io.ReadFull(rand.Reader, uuid)
-	if n != len(uuid) || err != nil {
-		return "", err
-	}
-	// variant bits; see section 4.1.1
-	uuid[8] = uuid[8]&^0xc0 | 0x80
-	// version 4 (pseudo-random); see section 4.1.3
-	uuid[6] = uuid[6]&^0xf0 | 0x40
-	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
 }
 
 func (s *Server) GetLogs(w rest.ResponseWriter, r *rest.Request) {
@@ -2163,7 +2148,8 @@ func (s *Server) detachVolume(userId string, ssid string) bool {
 	volumes, _ := s.etcd.GetVolumes(userId)
 
 	for _, volume := range *volumes {
-		if volume.Attached == ssid {
+		vssid := strings.Split(volume.Attached, ":")[0]
+		if vssid == ssid {
 			glog.V(4).Infof("Detaching volume %s\n", volume.Id)
 			volume.Attached = ""
 			volume.Status = "available"
