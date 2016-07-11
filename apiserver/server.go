@@ -961,6 +961,21 @@ func (s *Server) volumeExists(userId string, name string) bool {
 	return exists
 }
 
+func (s *Server) volumeMountExists(userId string, sid string, volName string) bool {
+	service, _ := s.etcd.GetServiceSpec(userId, sid)
+	if service == nil {
+		return false
+	}
+	exists := false
+	for _, volume := range service.VolumeMounts {
+		if volume.Name == volName {
+			exists = true
+			break
+		}
+	}
+	return exists
+}
+
 func (s *Server) accountExists(userId string) bool {
 	accounts, _ := s.etcd.GetAccounts()
 	if accounts == nil {
@@ -1749,15 +1764,23 @@ func (s *Server) PostVolume(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	if vol.Attached != "" {
-		ssid := strings.Split(vol.Attached, ":")[0]
-		if s.getStackService(userId, ssid) == nil {
+		ids := strings.Split(vol.Attached, ":")
+		ssid := ids[0]
+		volName := ids[1]
+		ss := s.getStackService(userId, ssid)
+		if ss == nil {
 			rest.NotFound(w, r)
 			return
-		} else if s.attachmentExists(userId, vol.Attached) {
-			w.WriteHeader(http.StatusConflict)
-			return
 		} else {
-			vol.Status = "attached"
+			if !s.volumeMountExists(userId, ss.Service, volName) {
+				rest.NotFound(w, r)
+				return
+			} else if s.attachmentExists(userId, vol.Attached) {
+				w.WriteHeader(http.StatusConflict)
+				return
+			} else {
+				vol.Status = "attached"
+			}
 		}
 	} else {
 		vol.Status = "available"
@@ -1795,20 +1818,29 @@ func (s *Server) PutVolume(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	if vol.Attached != "" {
-		ssid := strings.Split(vol.Attached, ":")[0]
-		// Don't allow attaching to a service with an existing volume
-		if s.getStackService(userId, ssid) == nil {
+		ids := strings.Split(vol.Attached, ":")
+		ssid := ids[0]
+		volName := ids[1]
+
+		ss := s.getStackService(userId, ssid)
+
+		if ss == nil {
 			rest.NotFound(w, r)
 			return
-		} else if s.attachmentExists(userId, vol.Attached) {
-			w.WriteHeader(http.StatusConflict)
-			return
-		} else if !s.isStackStopped(userId, ssid) {
-			glog.V(4).Infof("Can't attach to a running stack\n")
-			w.WriteHeader(http.StatusConflict)
-			return
 		} else {
-			vol.Status = "attached"
+			if !s.volumeMountExists(userId, ss.Service, volName) {
+				rest.NotFound(w, r)
+				return
+			} else if s.attachmentExists(userId, vol.Attached) {
+				w.WriteHeader(http.StatusConflict)
+				return
+			} else if !s.isStackStopped(userId, ssid) {
+				glog.V(4).Infof("Can't attach to a running stack\n")
+				w.WriteHeader(http.StatusConflict)
+				return
+			} else {
+				vol.Status = "attached"
+			}
 		}
 	} else {
 		existingVol, err := s.etcd.GetVolume(userId, vid)
