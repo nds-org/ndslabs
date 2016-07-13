@@ -753,7 +753,6 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 
 	env := []api.EnvVar{}
 	env = append(env, api.EnvVar{Name: "NAMESPACE", Value: ns})
-	//env = append(env, api.EnvVar{Name: "TERM", Value: "vt100"})
 	env = append(env, api.EnvVar{Name: "TERM", Value: "linux"})
 	env = append(env, api.EnvVar{Name: "COLUMNS", Value: "100"})
 	env = append(env, api.EnvVar{Name: "LINES", Value: "30"})
@@ -785,14 +784,7 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 			})
 	}
 
-	for _, config := range spec.Config {
-		name := config.Name
-		value := config.Value
-		if config.CanOverride {
-			if val, ok := stackService.Config[name]; ok {
-				value = val
-			}
-		}
+	for name, value := range stackService.Config {
 		env = append(env, api.EnvVar{Name: name, Value: value})
 	}
 

@@ -22,7 +22,7 @@ func init() {
 }
 
 var setEnvCmd = &cobra.Command{
-	Use:    "set env [stack service id] [var name] [var value]",
+	Use:    "env [stack service id] [var name] [var value]",
 	Short:  "Set stack service environment values",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -53,16 +53,15 @@ var setEnvCmd = &cobra.Command{
 				if err != nil {
 					fmt.Printf("Error getting service spec %s\n", err.Error)
 				}
+				if stackService.Config == nil {
+					stackService.Config = make(map[string]string)
+				}
 				found := false
 				for _, config := range spec.Config {
 					if config.Name == varName {
-						if stackService.Config == nil {
-							stackService.Config = make(map[string]string)
-						}
 						if config.CanOverride {
 							fmt.Printf("%s %s %t\n", varName, varValue, config.CanOverride)
 							stackService.Config[varName] = varValue
-							stack.Services[i] = stackService
 							found = true
 						} else {
 							fmt.Printf("Cannot override variable %s\n", varName)
@@ -71,8 +70,10 @@ var setEnvCmd = &cobra.Command{
 					}
 				}
 				if !found {
-					fmt.Printf("No such variable %s\n", varName)
+					// Custom variable
+					stackService.Config[varName] = varValue
 				}
+				stack.Services[i] = stackService
 				ssidFound = true
 			}
 		}
