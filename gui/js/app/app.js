@@ -6,12 +6,14 @@
  * use the single-argument notation for angular.module()
  */
 angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-filters', 'ndslabs-directives',  'ndslabs-api', 'ngWizard', 'ngGrid', 'ngAlert', 
-    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ngMessages', 'ui.bootstrap', 'ui.pwgen', 'frapontillo.gage', 'chart.js' ])
+    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ngMessages', 'ui.bootstrap', 'ngPasswordStrength', 'ui.pwgen', 'frapontillo.gage', 'chart.js' ])
 
 /**
  * If true, display verbose debug data as JSON
  */ 
-.constant('DEBUG', false)
+.constant('DEBUG', true)
+
+.value('InitialRedirect', true)
 
 /**
  *TODO: Whether or not to use mock data (false if talking to live etcd)
@@ -37,6 +39,12 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  * The route to the stack service console view
  */ 
 .constant('ConsoleRoute', '/:ssid/console')
+
+/**
+ * The route to the "Configure New Stack" view
+ */
+.constant('AppStoreRoute', '/store')
+
 
 /**
  * The version/revision of this GUI
@@ -122,8 +130,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'ExpertRoute', 'ConsoleRoute',
-    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, ExpertRoute, ConsoleRoute) {
+.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'ExpertRoute', 'ConsoleRoute',
+    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, ExpertRoute, ConsoleRoute) {
   // Squelch debug-level log messages
   $logProvider.debugEnabled(DEBUG);
       
@@ -210,16 +218,24 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     controller: 'ConsoleController',
     templateUrl: 'app/expert/consoleViewer/console.html'
   })
+  .when(AppStoreRoute, {
+    title: 'Browse Applications',
+    controller: 'ConfigurationWizardController',
+    templateUrl: 'app/config/configWizard.html'
+  })
+  .when('/configure/:ssid', {
+    title: 'Configure Service',
+    controller: 'ConfigureServiceController',
+    templateUrl: 'app/configure/configSvc.html'
+  })
   .otherwise({ redirectTo: LoginRoute });
 }])
 
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '$uibModalStack', '_', 'AuthInfo', 'LoginRoute', 'ExpertRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData',
-    function($rootScope, $window, $location, $log, $interval, $cookies, $uibModalStack, _, authInfo, LoginRoute, ExpertRoute, NdsLabsApi, AutoRefresh, ServerData) {
-      
-  var HomeRoute = ExpertRoute;
+.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', 'InitialRedirect', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'ExpertRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData',
+    function($rootScope, $window, $location, $log, $interval, $cookies, $uibModalStack, Stacks, InitialRedirect, _, authInfo, LoginRoute, AppStoreRoute, ExpertRoute, NdsLabsApi, AutoRefresh, ServerData) {
   
   // Grab saved auth data from cookies and attempt to use the leftover session
   var token = $cookies.get('token');
@@ -236,7 +252,11 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   
   // Change the tab/window title when we change routes
   $rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
-    $window.document.title = current.$$route.title;
+    if (current.$$route) {
+      $window.document.title = current.$$route.title;
+    } else {
+      $log.error('Encountered undefined route...');
+    }
   });
   
   // When user changes routes, check that they are still authed
@@ -288,11 +308,13 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
         $log.debug('Token refreshed: ' + authInfo.get().token);
         
         // Populate all displayed data here from etcd
-        ServerData.populateAll(authInfo.get().namespace).then(function () {
-          // Reroute to /home if necessary
-          if (!_.includes(next.templateUrl, 'app/expert/')) {
-            $location.path(HomeRoute);
-          }
+        ServerData.populateAll(authInfo.get().namespace).finally(function() {
+          /*if (InitialRedirect) {
+            InitialRedirect = false;
+            var dest = Stacks.all.length > 0 ? ExpertRoute : AppStoreRoute;
+            debugger;
+            $location.path(dest);
+          }*/
         });
         
         // Restart our token check interval

@@ -149,6 +149,24 @@ angular
       if (config) {
         newService.config = config;
       }
+      
+      
+      // Randomly generate any required passwords
+      angular.forEach(stack.services, function(svc) {
+        var configMap = {};
+        angular.forEach(svc.config, function(cfg) {
+          if (cfg.isPassword) {
+            // TODO: Generate random secure passwords here!
+            cfg.value = 'GENERATED_PASSWORD';
+          }
+          
+          configMap[cfg.name] = cfg.value;
+        });
+        
+        svc.config = configMap;
+      });
+    
+      
       stack.services.push(newService);
       
       // Then update the entire stack in etcd
@@ -166,7 +184,7 @@ angular
         Stacks.populate(projectId);
       });
     }
-    
+    debugger;
     var spec = _.find(Specs.all, [ 'key', svc.key ]);
     var mounts = _.filter(spec.volumeMounts, function(mnt) { return mnt.name != 'docker'; });
     var config = spec.config;

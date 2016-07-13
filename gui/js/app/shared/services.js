@@ -205,18 +205,19 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       name: key,
       key: key,
       status: "stopped",
-      services: [],
+      services: []
     };
     
     // Add our base service to the stack
     var base = _.find(Specs.all, [ 'key', key ]);
-    stack.services.push(new StackService(stack, base));
+    stack.services.push(new StackService(stack, base, true));
     
     // Add required services to this stack
-    var requirements = _.filter(spec.depends, [ 'required', true ]);
-    angular.forEach(requirements, function(req) {
-      var svc = _.find(Specs.all, [ 'key', req.key ]);
-      stack.services.push(new StackService(stack, svc));
+    angular.forEach(spec.depends, function(dep) {
+      if (dep.required) {
+        var svc = _.find(Specs.all, [ 'key', dep.key ]);
+        stack.services.push(new StackService(stack, svc, dep.required));
+      }
     });
     
     return stack;
@@ -257,13 +258,26 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  * @param {} spec - The service spec off of which to base this service
  */
 .service('StackService', [ function() {
-  return function(stack, spec) {
+  return function(stack, spec, required) {
     var svc = {
       id: "",
       stack: stack.key,
       service: spec.key,
-      status: ""
+      status: "",
+      depends: angular.copy(spec.depends),
+      config: angular.copy(spec.config),
+      volumes: angular.copy(spec.volumeMounts),
+      ports: angular.copy(spec.ports),
+      required: required,
+      selected: required ? true : false
     };
+    
+    // Assign default values (for "Use Default" option)
+    angular.forEach(svc.config, function(cfg) {
+      if (cfg.isPassword) {
+        cfg.value = 'GENERATED_PASSWORD';
+      }
+    });
     
     return svc;
   };
