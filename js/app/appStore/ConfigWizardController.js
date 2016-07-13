@@ -20,6 +20,10 @@ angular
   $scope.svcQuery = '';
   $scope.showStandalones = false;
   
+  $scope.installs = {
+    
+  };
+  
   var refilter = function(specs) {
     $scope.filteredSpecs = $filter('isStack')(specs, $scope.showStandalones);
     $scope.filteredSpecs = $filter('orderBy')($scope.filteredSpecs, 'label');
@@ -29,37 +33,16 @@ angular
 
   /* TODO: This is FAR too many manual watchers... */
   $scope.$watch(function () { return Specs.all; }, function(newValue, oldValue) { refilter($scope.specs = newValue); });
+  $scope.$watch(function () { return Stacks.all; }, function(newValue, oldValue) {
+    $scope.installs = {};
+    angular.forEach(Specs.all, function(spec) {
+      var cnt =  _.filter(Stacks.all, [ 'key', spec.key ]).length;
+      $scope.installs[spec.key] = { count: cnt, progress: 0 };
+    });
+  });
   $scope.$watch(function () { return Project.project; }, function(newValue, oldValue) { projectId = newValue.namespace; });
   $scope.$watch('svcQuery', function() { refilter($scope.specs); });
   $scope.$watch('showStandalones', function() { refilter($scope.specs); });
-  /*
-  $scope.$watch('selectedSpec', function(newValue, oldValue) {
-    if (newValue) {
-      $scope.newStack = new Stack(newValue);
-      
-      $scope.configs = [];
-      angular.forEach($scope.selectedSpec.config, function(cfg) {
-        $scope.configs.push({ 'key': cfg.label || cfg.name, 'value': cfg.value, 'def': cfg.value, 'service': $scope.selectedSpec.key, 'isPassword':cfg.isPassword });
-      });
-      
-      $scope.volumes = [];
-      angular.forEach($scope.selectedSpec.volumeMounts, function(vol) {
-        $scope.volumes.push({ 'from': 'default/path', 'to': vol.mountPath });
-      });
-    }
-  });
-  
-  $scope.$watch('newStack.services', function() {
-      $scope.configs = [];
-      angular.forEach($scope.selectedSpec.config, function(cfg) {
-        $scope.configs.push({ 'key': cfg.label || cfg.name, 'value': cfg.value, 'def': cfg.value });
-      });
-      
-      $scope.volumes = [];
-      angular.forEach($scope.selectedSpec.volumeMounts, function(vol) {
-        $scope.volumes.push({ 'from': 'default/path', 'to': vol.mountPath });
-      });
-  });*/
   
   $scope.configs = [
     { key: 'property1', value: 'value1', def: 'defaultvalue1', isPassword: false },
@@ -74,33 +57,9 @@ angular
     { from: 'project1/config', to: '/mongo/config', },
   ];
   
-  $scope.mode = 'table';
+  $scope.mode = 'cards';
   
   $scope.forms = {};
-  
- /* $scope.isValid = function(spec, stack) {
-    if (!$scope.selectedSpec || $scope.newStack.name === '') {
-      return false;
-    }
-    
-    var isValid = true;
-    
-    // Passwords are required
-    angular.forEach($scope.configs, function(cfg) {
-      if (cfg.isPassword && cfg.value === '') {
-        isValid = false;
-      }
-    });
-    
-    // Default volume maps are required
-    angular.forEach($scope.volumes, function(vol) {
-      if (vol.from === '' || vol.to === '') {
-        isValid = false;
-      }
-    });
-    
-    return isValid;
-  };*/
   
   $scope.goto = function(path) {
     return $location.path(path);
@@ -109,15 +68,20 @@ angular
   $scope.install = function(spec) {
     spec.installProgress = 1;
     spec.installCount = spec.installCount || 0;
+    
+    var specDetails = $scope.installs[spec.key] || ($scope.installs[spec.key] = { count: 0, progress: 0 });
+    specDetails.progress = 1;
+    
     console.log('Installing ' + spec.label + '...');
     
     var increment = 20;
     
   	spec.installInterval = $interval(function() {
-				if (spec.installProgress < $scope.installMax) {
-				  spec.installProgress += increment;
+				if ($scope.installs[spec.key].progress < $scope.installMax) {
+				  $scope.installs[spec.key].progress += increment;
 				} else {
-          spec.installCount += 1;
+          $scope.installs[spec.key].count += 1;
+				  $scope.installs[spec.key].progress = 0;
 				  $interval.cancel(spec.installInterval);
 				}
 			}, 500);
@@ -153,10 +117,5 @@ angular
     }, function(headers) {
       $log.error("error posting to /projects/" + projectId + "/stacks!");
     });
-  };
-  
-  
-  $scope.test = function(spec) {
-    spec.installProgress = 50;
   };
 }]);
