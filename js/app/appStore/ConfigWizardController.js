@@ -19,10 +19,9 @@ angular
       
   $scope.svcQuery = '';
   $scope.showStandalones = false;
+  $scope.mode = 'cards';
   
-  $scope.installs = {
-    
-  };
+  $scope.installs = {};
   
   var refilter = function(specs) {
     $scope.filteredSpecs = $filter('isStack')(specs, $scope.showStandalones);
@@ -43,27 +42,6 @@ angular
   $scope.$watch(function () { return Project.project; }, function(newValue, oldValue) { projectId = newValue.namespace; });
   $scope.$watch('svcQuery', function() { refilter($scope.specs); });
   $scope.$watch('showStandalones', function() { refilter($scope.specs); });
-  
-  $scope.configs = [
-    { key: 'property1', value: 'value1', def: 'defaultvalue1', isPassword: false },
-    { key: 'password1', value: '', def: '', isPassword: true },
-    { key: 'property2', value: 'value3', def: 'defaultvalue3', isPassword: false },
-    { key: 'password2', value: '', def: '', isPassword: true }
-  ];
-  
-  /* XXX: Are these relative paths? I figure they should be... */
-  $scope.volumes = [
-    { from: 'project1/db', to: '/mongo/db', },
-    { from: 'project1/config', to: '/mongo/config', },
-  ];
-  
-  $scope.mode = 'cards';
-  
-  $scope.forms = {};
-  
-  $scope.goto = function(path) {
-    return $location.path(path);
-  };
   
   $scope.install = function(spec) {
     spec.installProgress = 1;

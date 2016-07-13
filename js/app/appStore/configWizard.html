@@ -77,9 +77,9 @@
               </div>
             </td>
             <td width="5%">
-              <button class="btn btn-xs btn-default pull-right" ng-click="goto('/home')" ng-if="installs[spec.key].count > 0">
+              <a type="button" class="btn btn-xs btn-default pull-right" href="#/home" ng-if="installs[spec.key].count > 0">
                 <i class="fa fa-fw fa-eye"></i> View
-              </button>
+              </a>
             </td>
           </tr>
         </tbody>
@@ -120,9 +120,9 @@
                   </div>
                 </div>
                 <div class="col-sm-5">
-                  <button class="btn btn-xs btn-default" ng-click="goto('/home')" ng-if="installs[spec.key].count > 0" style="margin:0 10px 11px 10px;">
+                  <a type="button" class="btn btn-xs btn-default" href="#/home" ng-if="installs[spec.key].count > 0" style="margin:0 10px 11px 10px;">
                     <i class="fa fa-fw fa-eye"></i> View
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
