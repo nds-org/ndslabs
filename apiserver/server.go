@@ -1509,53 +1509,39 @@ func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, erro
 		return nil, nil
 	}
 
-	k8services, _ := s.kube.GetServices(userId, sid)
-	endpoints := make(map[string]api.Endpoint)
-	for _, k8service := range k8services {
-		label := k8service.Labels["service"]
-		glog.V(4).Infof("Service : %s %s (%s)\n", k8service.Name, k8service.Spec.Type, label)
-
-		endpoint := api.Endpoint{}
-		endpoint.InternalIP = k8service.Spec.ClusterIP
-		endpoint.Ports = []api.EndpointPort{}
-
-		for _, k8port := range k8service.Spec.Ports {
-			port := api.EndpointPort{
-				Port:     k8port.Port,
-				Protocol: strings.ToLower(string(k8port.Protocol)),
-				NodePort: k8port.NodePort,
-			}
-			endpoint.Ports = append(endpoint.Ports, port)
-		}
-		endpoints[label] = endpoint
-	}
-
 	for i := range stack.Services {
 		stackService := &stack.Services[i]
 		stackService.Endpoints = []api.Endpoint{}
 
+		k8service, _ := s.kube.GetService(userId, stackService.Id)
+		if k8service == nil {
+			continue
+		}
+
 		glog.V(4).Infof("Stack service %s: status=%s\n", stackService.Id, stackService.Status)
 
-		endpoint, ok := endpoints[stackService.Service]
-		if ok {
-			// Get the port protocol for the service endpoint
-			svc, err := s.etcd.GetServiceSpec(userId, stackService.Service)
-			if err != nil {
-				glog.Error(err)
-			}
-			for _, svcPort := range svc.Ports {
-				for i := range endpoint.Ports {
-					if svcPort.Port == endpoint.Ports[i].Port {
-						endpoint.Ports[i].Protocol = svcPort.Protocol
+		// Get the port protocol for the service endpoint
+		spec, err := s.etcd.GetServiceSpec(userId, stackService.Service)
+		if err != nil {
+			glog.Error(err)
+		}
+
+		stackService.InternalIP = k8service.Spec.ClusterIP
+		for _, specPort := range spec.Ports {
+			for _, k8port := range k8service.Spec.Ports {
+				if specPort.Port == k8port.Port {
+					endpoint := api.Endpoint{}
+					endpoint.Port = specPort.Port
+					endpoint.Protocol = specPort.Protocol
+					endpoint.NodePort = k8port.NodePort
+					if s.ingress == IngressTypeLoadBalancer && spec.Access == api.AccessExternal {
+						endpoint.Host = fmt.Sprintf("%s.%s", stackService.Id, s.domain)
 					}
+
+					stackService.Endpoints = append(stackService.Endpoints, endpoint)
 				}
 			}
 
-			if s.ingress == IngressTypeLoadBalancer && svc.Access == api.AccessExternal {
-				endpoint.Host = fmt.Sprintf("%s.%s", stackService.Id, s.domain)
-			}
-
-			stackService.Endpoints = append(stackService.Endpoints, endpoint)
 		}
 	}
 

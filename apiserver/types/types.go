@@ -166,15 +166,11 @@ type StackService struct {
 	UpdatedTime    int               `json:"updateTime"`
 	Config         map[string]string `json:"config"`
 	VolumeMounts   map[string]string `json:"volumeMounts"`
+	InternalIP     string            `json:"internalIP"`
 }
 
 type Endpoint struct {
-	InternalIP string         `json:"internalIP"`
-	Ports      []EndpointPort `json:"ports"`
-	Host       string         `json:"host"`
-}
-
-type EndpointPort struct {
+	Host     string `json:"host"`
 	Port     int32  `json:"port"`
 	NodePort int32  `json:"nodePort"`
 	Protocol string `json:"protocol"`
