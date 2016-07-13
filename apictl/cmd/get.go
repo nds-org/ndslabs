@@ -143,9 +143,32 @@ var getAccountCmd = &cobra.Command{
 	PostRun: RefreshToken,
 }
 
+var getTagsCmd = &cobra.Command{
+	Use:    "tags",
+	Short:  "Get tags",
+	PreRun: Connect,
+	Run: func(cmd *cobra.Command, args []string) {
+
+		vocab, err := client.GetVocabulary("tags")
+		if err != nil {
+			fmt.Printf("Get vocabulary failed: %s\n", err)
+			return
+		}
+
+		data, err := json.MarshalIndent(vocab, "", "   ")
+		if err != nil {
+			fmt.Printf("Error marshalling vocab spec %s\n", err.Error)
+			return
+		}
+		fmt.Println(string(data))
+	},
+	PostRun: RefreshToken,
+}
+
 func init() {
 	RootCmd.AddCommand(getCmd)
 	getCmd.AddCommand(getServiceCmd)
 	getCmd.AddCommand(getStackCmd)
 	getCmd.AddCommand(getAccountCmd)
+	getCmd.AddCommand(getTagsCmd)
 }
