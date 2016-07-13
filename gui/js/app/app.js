@@ -45,6 +45,10 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  */
 .constant('AppStoreRoute', '/store')
 
+.constant('CatalogRoute', '/catalog')
+
+.constant('ConfigSvcRoute', '/configure/:ssid')
+
 
 /**
  * The version/revision of this GUI
@@ -130,8 +134,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'ExpertRoute', 'ConsoleRoute',
-    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, ExpertRoute, ConsoleRoute) {
+.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'ExpertRoute', 'ConsoleRoute', 'ConfigSvcRoute', 'CatalogRoute',
+    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, ExpertRoute, ConsoleRoute, ConfigSvcRoute, CatalogRoute) {
   // Squelch debug-level log messages
   $logProvider.debugEnabled(DEBUG);
       
@@ -223,10 +227,15 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     controller: 'ConfigurationWizardController',
     templateUrl: 'app/appStore/configWizard.html'
   })
-  .when('/configure/:ssid', {
+  .when(ConfigSvcRoute, {
     title: 'Configure Service',
     controller: 'ConfigureServiceController',
     templateUrl: 'app/configureService/configSvc.html'
+  })
+  .when(CatalogRoute, {
+    title: 'Catalog',
+    controller: 'CatalogController',
+    templateUrl: 'app/catalog/catalog.html'
   })
   .otherwise({ redirectTo: LoginRoute });
 }])
