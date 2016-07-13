@@ -221,12 +221,12 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   .when(AppStoreRoute, {
     title: 'Browse Applications',
     controller: 'ConfigurationWizardController',
-    templateUrl: 'app/config/configWizard.html'
+    templateUrl: 'app/appStore/configWizard.html'
   })
   .when('/configure/:ssid', {
     title: 'Configure Service',
     controller: 'ConfigureServiceController',
-    templateUrl: 'app/configure/configSvc.html'
+    templateUrl: 'app/configureService/configSvc.html'
   })
   .otherwise({ redirectTo: LoginRoute });
 }])

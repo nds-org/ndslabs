@@ -8,7 +8,7 @@
   <div class="row">
     <div class="col-sm-10 col-sm-offset-1">
       <ol class="breadcrumb">
-        <li><a href="#/home">NDS Labs</a></li>
+        <li><a href="http://labsportal.nationaldataservice.org/">NDS Labs</a></li>
         <li class="active">Dashboard</li>
       </ol>
     </div>
@@ -170,9 +170,14 @@
                                 <td class="text-center">
                                   <!-- ng-click="showConfig(svc)" -->
                                   <a type="button" class="btn btn-default btn-xs" ng-href="#/configure/{{ svc.id }}"
-                                      ng-disabled="_.isEmpty(svc.config) && svc.endpoints.length === 0">
+                                      ng-if="stack.status === 'stopped'">
                                     <i class="fa fa-wrench"></i>
                                   </a>
+                                  
+                                  <button type="button" class="btn btn-default btn-xs" ng-click="showConfig(svc)"
+                                      ng-if="stack.status !== 'stopped' && (!_.isEmpty(svc.config) || svc.endpoints.length > 0)">
+                                    <i class="fa fa-puzzle-piece"></i>
+                                  </button>
                                 </td>
                                 
                                 <!-- View Logs of Running Service, or Remove Stopped Service -->
@@ -263,13 +268,12 @@
                 <!-- Helper text to display if the user has no yet configured any volumes -->
                 <div ng-if="configuredVolumes.length === 0" class="helper-text">
                   <h2>It looks like you haven't configured any volumes</h3>
-                  <h4>Once you add a stack, its volumes will appear here</h4>
+                  <h4>Once you add an application, its volumes will appear here</h4>
                 </div>
                 
                 <!-- Slide-Out Panel Contents -->
                 <div class="table-responsive">
-                  <table class="table table-hover" ng-if="configuredVolumes.length > 0" 
-                      style="">
+                  <table class="table table-hover" ng-if="configuredVolumes.length > 0">
                     <thead>
                       <tr>
                         <td width="20%"><strong>Name</strong></td>
