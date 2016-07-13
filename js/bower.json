@@ -20,6 +20,7 @@
     "angular-wizard": "https://github.com/bodom0015/angular-wizard.git",
     "angular-grid": "https://github.com/bodom0015/angular-grid.git",
     "angular-alert": "https://github.com/bodom0015/angular-alert.git",
+    "ng-password-strength": "https://github.com/subarroca/ng-password-strength.git",
     "lodash": "^4.5.1",
     "font-awesome-animation": "^0.0.8",
     "angular-gage": "^0.1.0",
