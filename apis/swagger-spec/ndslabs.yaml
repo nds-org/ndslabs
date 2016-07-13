@@ -34,12 +34,6 @@ parameters:
     description: The unique stack service identifier
     type: string
     required: true
-  volume-id:
-    name: volume-id
-    in: path
-    description: The unique volume identifier
-    type: string
-    required: true
 paths:
   /authenticate:
     post:
@@ -283,68 +277,6 @@ paths:
     delete:
       description: |
         Delete a stack
-      responses:
-        '200':
-          description: OK
-  /volumes:
-    get:
-      description: |
-        Retrieves a list of volumes for this account.
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: object
-            properties:
-              data:
-                type: array
-                items:
-                  $ref: '#/definitions/Volume'
-        '404':
-          description: Not found
-    post:
-      description: |
-        Adds a new volume to this account
-      parameters:
-        - name: volume
-          in: body
-          description: Volume definition
-          schema:
-            $ref: '#/definitions/Volume'
-          required: true
-      responses:
-        '201':
-          description: Created
-  '/volumes/{volume-id}':
-    parameters:
-      - $ref: '#/parameters/volume-id'
-    get:
-      description: |
-        Retrieves the volume definition.
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: object
-            properties:
-              data:
-                $ref: '#/definitions/Volume'
-    put:
-      description: |
-        Updates volume information
-      parameters:
-        - name: volume
-          in: body
-          description: Volume definition
-          schema:
-            $ref: '#/definitions/Volume'
-          required: true
-      responses:
-        '201':
-          description: Updated
-    delete:
-      description: |
-        Delete a volume
       responses:
         '200':
           description: OK
