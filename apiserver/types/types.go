@@ -35,8 +35,8 @@ type ServiceImage struct {
 }
 
 type Repository struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name string         `json:"name"`
+	Type RepositoryType `json:"type"`
 }
 
 type ServiceSorter []ServiceSpec
@@ -50,6 +50,14 @@ type AccessType string
 const (
 	AccessExternal AccessType = "external"
 	AccessInternal AccessType = "internal"
+)
+
+type RepositoryType string
+
+const (
+	RepositoryGit RepositoryType = "git"
+	RepositorySVN RepositoryType = "svn"
+	RepositoryHG  RepositoryType = "hg"
 )
 
 type Config struct {
