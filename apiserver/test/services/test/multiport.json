@@ -1,28 +1,28 @@
 {
-    "key": "multivol",
-    "label": "Test - Multiple volumes",
+    "key": "multiport",
+    "label": "Test - Multiple ports",
     "image": { 
 	    "name": "nginx",
-	    "tags": ["latest", "1.11", "1.11"]
+	    "tags": ["latest", "3.3", "3.1"]
 	},
     "display": "stack",
     "access": "external",
-    "description": "A test container for multiple volumes",
+    "description": "A test container for multiple ports",
     "ports": [
         {
-            "port": 8080,
+            "port": 27017,
+            "protocol": "tcp"
+        },
+        {
+            "port": 28017,
             "protocol": "http"
         }
     ],
 	"volumeMounts": [ 
 		{
-			"name": "logs",
-			"mountPath": "/var/log/nginx"
-		},
-		{ 
-			"name": "html",
-			"mountPath": "/usr/share/nginx/html"
-        }
+			"name": "data",
+			"mountPath": "/data"
+		}
 	],
     "resourceLimits": {
         "cpuMax": "1",
