@@ -588,32 +588,35 @@
                 "maintainer": {
                     "type": "string"
                 },
-                "requiresVolume": {
-                    "type": "boolean"
+                "logo": {
+                    "type": "string"
                 },
-                "isStack": {
-                    "type": "boolean"
+                "display": {
+                    "type": "string"
                 },
-                "isService": {
-                    "type": "boolean"
+                "access": {
+                    "type": "string"
                 },
-                "isPublic": {
-                    "type": "boolean"
+                "developerEnvironment": {
+                    "type": "string"
                 },
-                "isStandalone": {
-                    "type": "boolean"
+                "config": {
+                    "$ref": "#/definitions/Config"
                 },
                 "readinessProbe": {
                     "$ref": "#/definitions/ReadyProbe"
+                },
+                "image": {
+                    "$ref": "#/definitions/ServiceImage"
+                },
+                "resourceLimits": {
+                    "$ref": "#/definitions/ResourceLimits"
                 },
                 "depends": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/ServiceDependency"
                     }
-                },
-                "image": {
-                    "type": "string"
                 },
                 "ports": {
                     "type": "array",
@@ -627,7 +630,25 @@
                         "$ref": "#/definitions/VolumeMount"
                     }
                 },
+                "repositories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Repository"
+                    }
+                },
+                "command": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "args": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tags": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -665,6 +686,17 @@
                     "type": "integer"
                 },
                 "protocol": {
+                    "type": "string"
+                }
+            }
+        },
+        "Repository": {
+            "type": "object",
+            "properties": {
+                "port": {
+                    "type": "string"
+                },
+                "url": {
                     "type": "string"
                 }
             }
@@ -781,54 +813,45 @@
                 "status": {
                     "type": "string"
                 },
+                "imageTag": {
+                    "type": "string"
+                },
+                "statusMessage": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "endpoints": {
                     "type": "array",
                     "items": {
                         "type": "object",
                         "properties": {
-                            "url": {
+                            "internalIP": {
                                 "type": "string"
+                            },
+                            "host": {
+                                "type": "string"
+                            },
+                            "ports": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object"
+                                },
+                                "properties": {
+                                    "port": {
+                                        "type": "integer"
+                                    },
+                                    "nodePort": {
+                                        "type": "integer"
+                                    },
+                                    "protocol": {
+                                        "type": "string"
+                                    }
+                                }
                             }
                         }
                     }
-                }
-            }
-        },
-        "Volume": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "size": {
-                    "type": "integer"
-                },
-                "sizeUnit": {
-                    "type": "string"
-                },
-                "format": {
-                    "type": "string"
-                },
-                "attached": {
-                    "type": "string"
-                },
-                "service": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "formatted": {
-                    "type": "boolean"
-                },
-                "createTime": {
-                    "type": "integer"
-                },
-                "updateTime": {
-                    "type": "integer"
                 }
             }
         },
@@ -857,6 +880,37 @@
                 },
                 "isPassword": {
                     "type": "boolean"
+                }
+            }
+        },
+        "ServiceImage": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "ResourceLimits": {
+            "type": "object",
+            "properties": {
+                "cpuMax": {
+                    "type": "string"
+                },
+                "cpuDefault": {
+                    "type": "string"
+                },
+                "memMax": {
+                    "type": "string"
+                },
+                "memDefault": {
+                    "type": "string"
                 }
             }
         }
