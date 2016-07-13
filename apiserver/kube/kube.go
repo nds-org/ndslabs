@@ -823,7 +823,7 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 		glog.Warningf("No resource requirements specified for service %s\n", spec.Label)
 	}
 
-	tag := "latest"
+	tag := spec.Image.Tags[0]
 	if stackService.ImageTag != "" {
 		tag = stackService.ImageTag
 	}
