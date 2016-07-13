@@ -161,9 +161,13 @@ type StackService struct {
 }
 
 type Endpoint struct {
-	InternalIP string `json:"internalIP"`
-	Port       int32  `json:"port"`
-	NodePort   int32  `json:"nodePort"`
-	Protocol   string `json:"protocol"`
-	Host       string `json:"host"`
+	InternalIP string         `json:"internalIP"`
+	Ports      []EndpointPort `json:"ports"`
+	Host       string         `json:"host"`
+}
+
+type EndpointPort struct {
+	Port     int32  `json:"port"`
+	NodePort int32  `json:"nodePort"`
+	Protocol string `json:"protocol"`
 }

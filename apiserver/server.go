@@ -1509,57 +1509,6 @@ func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, erro
 		return nil, nil
 	}
 
-	/*
-		// Get the pods for this stack
-		podStatus := make(map[string]string)
-
-		pods, _ := s.kube.GetPods(userId, "stack", sid)
-		for _, pod := range pods {
-			label := pod.Labels["service"]
-			if len(pod.Status.Conditions) > 0 {
-				// Node Condition describes the condition of a running node. Only condition it "Ready"
-				condition := pod.Status.Conditions[0]
-				phase := pod.Status.Phase
-				containerState := ""
-				if len(pod.Status.ContainerStatuses) > 0 {
-
-					state := pod.Status.ContainerStatuses[0].LastTerminationState
-					switch {
-					case state.Running != nil:
-						containerState = "running"
-					case state.Waiting != nil:
-						containerState = "waiting"
-					case state.Terminated != nil:
-						containerState = "terminated"
-					}
-				}
-
-				status := ""
-				if phase == "Running" {
-					if condition.Type == "Ready" && condition.Status == "True" {
-						status = "ready"
-					} else if containerState == "running" || containerState == "waiting" {
-						status = "starting"
-					} else if containerState == "terminated" {
-						status = "error"
-					} else if containerState == "" {
-						status = stack.Status
-					}
-				} else if phase == "Pending" {
-					status = "waiting"
-				} else if phase == "Terminated" {
-					status = "stopped"
-				} else if phase == "Failed" {
-					status = "failed"
-				}
-
-				glog.V(4).Infof("Pod Status: label=%s phase=%s containerState=%s status=%s\n", label, phase, containerState, status)
-				// Final status
-				podStatus[label] = status
-			}
-		}
-	*/
-
 	k8services, _ := s.kube.GetServices(userId, sid)
 	endpoints := make(map[string]api.Endpoint)
 	for _, k8service := range k8services {
@@ -1568,11 +1517,17 @@ func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, erro
 
 		endpoint := api.Endpoint{}
 		endpoint.InternalIP = k8service.Spec.ClusterIP
-		endpoint.Port = k8service.Spec.Ports[0].Port
-		endpoint.Protocol = strings.ToLower(string(k8service.Spec.Ports[0].Protocol))
-		endpoint.NodePort = k8service.Spec.Ports[0].NodePort
-		endpoints[label] = endpoint
+		endpoint.Ports = []api.EndpointPort{}
 
+		for _, k8port := range k8service.Spec.Ports {
+			port := api.EndpointPort{
+				Port:     k8port.Port,
+				Protocol: strings.ToLower(string(k8port.Protocol)),
+				NodePort: k8port.NodePort,
+			}
+			endpoint.Ports = append(endpoint.Ports, port)
+		}
+		endpoints[label] = endpoint
 	}
 
 	for i := range stack.Services {
@@ -1581,7 +1536,6 @@ func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, erro
 
 		glog.V(4).Infof("Stack service %s: status=%s\n", stackService.Id, stackService.Status)
 
-		//stackService.Status = podStatus[stackService.Service]
 		endpoint, ok := endpoints[stackService.Service]
 		if ok {
 			// Get the port protocol for the service endpoint
@@ -1589,9 +1543,11 @@ func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, erro
 			if err != nil {
 				glog.Error(err)
 			}
-			for _, port := range svc.Ports {
-				if port.Port == endpoint.Port {
-					endpoint.Protocol = port.Protocol
+			for _, svcPort := range svc.Ports {
+				for i := range endpoint.Ports {
+					if svcPort.Port == endpoint.Ports[i].Port {
+						endpoint.Ports[i].Protocol = svcPort.Protocol
+					}
 				}
 			}
 
