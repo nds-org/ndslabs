@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"os"
-	"strconv"
 	"strings"
 	"text/tabwriter"
 )
@@ -26,7 +25,8 @@ func init() {
 	addCmd.AddCommand(addStackCmd)
 	addCmd.AddCommand(addAccountCmd)
 	addCmd.AddCommand(addServiceCmd)
-	addCmd.AddCommand(addVolumeCmd)
+	addCmd.AddCommand(addMountCmd)
+	addCmd.AddCommand(addTagCmd)
 
 	// add stack flags
 	addStackCmd.Flags().StringVar(&opts, "opt", "", "Comma-delimited list of optional services")
@@ -141,44 +141,107 @@ var addStackCmd = &cobra.Command{
 	},
 }
 
-var addVolumeCmd = &cobra.Command{
-	Use:    "volume [name] [size] [stack service Id]",
-	Short:  "Create a volume",
+var addMountCmd = &cobra.Command{
+	Use:    "mount [stack service id] [from path] [to path]",
+	Short:  "Add stack service mount points",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 2 {
+		if len(args) < 3 {
 			cmd.Usage()
 			os.Exit(-1)
 		}
+		ssid := args[0]
+		fromPath := args[1]
+		toPath := args[2]
 
-		name := args[0]
-		size, err := strconv.Atoi(args[1])
-		if err != nil {
-			fmt.Printf("Error creating volume: %s\n", err.Error())
+		if strings.Index(ssid, "-") <= 0 {
+			fmt.Printf("Invalid stack service id (looks like a stack Id?): %s\n", ssid)
 			return
 		}
 
-		volume := api.Volume{}
-		volume.Name = name
-		volume.Size = size
-		volume.SizeUnit = "GB"
-		if len(args) == 3 {
-			ssid := args[2]
-			if strings.Index(ssid, "-") <= 0 {
-				fmt.Printf("Invalid stack service id (looks like a stack Id?): %s\n", ssid)
+		sid := ssid[0:strings.Index(ssid, "-")]
+		stack, err := client.GetStack(sid)
+		if err != nil {
+			fmt.Printf("Get stack failed: %s\n", err)
+			return
+		}
+
+		ssidFound := false
+		for _, stackService := range stack.Services {
+			if stackService.Id == ssid {
+				for existingFromPath, existingToPath := range stackService.VolumeMounts {
+					if existingToPath == toPath {
+						delete(stackService.VolumeMounts, existingFromPath)
+					}
+				}
+				if len(fromPath) > 0 {
+					stackService.VolumeMounts[fromPath] = toPath
+				}
+				ssidFound = true
+			}
+		}
+		if !ssidFound {
+			fmt.Printf("No such stack service id %s\n", ssid)
+		}
+		err = client.UpdateStack(stack)
+		if err != nil {
+			fmt.Printf("Error updating stack: %s\n", err)
+			return
+		}
+		if Verbose {
+			data, err := json.MarshalIndent(stack, "", "   ")
+			if err != nil {
+				fmt.Printf("Error marshalling stack %s\n", err.Error)
 				return
 			}
-			volume.Attached = ssid
+
+			fmt.Println(string(data))
 		}
 
-		vol, err := client.AddVolume(&volume)
-		if err != nil {
-			fmt.Printf("Error creating volume: %s\n", err.Error())
-			return
-		} else {
-			fmt.Printf("Created volume %s\n", vol.Name)
-		}
 	},
+	PostRun: RefreshToken,
+}
+
+var addTagCmd = &cobra.Command{
+	Use:    "tag [service id] [tag]",
+	Short:  "Add service tag",
+	PreRun: Connect,
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) < 3 {
+			cmd.Usage()
+			os.Exit(-1)
+		}
+		sid := args[0]
+		tagId := args[1]
+
+		spec, err := client.GetService(sid)
+		if err != nil {
+			fmt.Printf("Get service spec failed: %s\n", err)
+			return
+		}
+
+		if len(spec.Tags) == 0 {
+			spec.Tags = []string{}
+		}
+		spec.Tags = append(spec.Tags, tagId)
+
+		_, err = client.AddService(spec, client.Token, catalog)
+		if err != nil {
+			fmt.Printf("Error updating stack: %s\n", err)
+			return
+		}
+		if Verbose {
+			data, err := json.MarshalIndent(spec, "", "   ")
+			if err != nil {
+				fmt.Printf("Error marshalling spec %s\n", err.Error)
+				return
+			}
+
+			fmt.Println(string(data))
+		}
+
+	},
+	PostRun: RefreshToken,
 }
 
 func contains(s []string, e string) bool {
@@ -296,4 +359,18 @@ func addService(service api.ServiceSpec, catalog string) {
 	} else {
 		fmt.Println("Added service " + service.Label)
 	}
+}
+
+func stringToMap(str string) map[string]string {
+	nvMap := make(map[string]string)
+	if len(str) > 0 {
+		nvpairs := strings.Split(str, ",")
+		fmt.Println("%s\n", nvpairs)
+		for _, nvpair := range nvpairs {
+			nv := strings.Split(nvpair, "=")
+			fmt.Println("%s=%s\n", nv[0], nv[1])
+			nvMap[nv[0]] = nv[1]
+		}
+	}
+	return nvMap
 }

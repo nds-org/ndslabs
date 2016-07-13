@@ -293,11 +293,6 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Put(s.prefix+"stacks/:sid", s.PutStack),
 		rest.Get(s.prefix+"stacks/:sid", s.GetStack),
 		rest.Delete(s.prefix+"stacks/:sid", s.DeleteStack),
-		rest.Get(s.prefix+"volumes", s.GetAllVolumes),
-		rest.Post(s.prefix+"volumes", s.PostVolume),
-		rest.Put(s.prefix+"volumes/:vid", s.PutVolume),
-		rest.Get(s.prefix+"volumes/:vid", s.GetVolume),
-		rest.Delete(s.prefix+"volumes/:vid", s.DeleteVolume),
 		rest.Get(s.prefix+"start/:sid", s.StartStack),
 		rest.Get(s.prefix+"stop/:sid", s.StopStack),
 		rest.Get(s.prefix+"logs/:ssid", s.GetLogs),
@@ -929,53 +924,6 @@ func (s *Server) getStackService(userId string, ssid string) *api.StackService {
 	return nil
 }
 
-func (s *Server) attachmentExists(userId string, attachment string) bool {
-	volumes, _ := s.etcd.GetVolumes(userId)
-	if volumes == nil {
-		return false
-	}
-
-	exists := false
-	for _, volume := range *volumes {
-		if volume.Attached == attachment {
-			exists = true
-			break
-		}
-	}
-	return exists
-}
-
-func (s *Server) volumeExists(userId string, name string) bool {
-	volumes, _ := s.etcd.GetVolumes(userId)
-	if volumes == nil {
-		return false
-	}
-
-	exists := false
-	for _, volume := range *volumes {
-		if volume.Name == name {
-			exists = true
-			break
-		}
-	}
-	return exists
-}
-
-func (s *Server) volumeMountExists(userId string, sid string, volName string) bool {
-	service, _ := s.etcd.GetServiceSpec(userId, sid)
-	if service == nil {
-		return false
-	}
-	exists := false
-	for _, volume := range service.VolumeMounts {
-		if volume.Name == volName {
-			exists = true
-			break
-		}
-	}
-	return exists
-}
-
 func (s *Server) accountExists(userId string) bool {
 	accounts, _ := s.etcd.GetAccounts()
 	if accounts == nil {
@@ -1108,6 +1056,28 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 	for i := range stack.Services {
 		stackService := &stack.Services[i]
 		stackService.Id = fmt.Sprintf("%s-%s", sid, stackService.Service)
+		spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
+		if spec != nil {
+			for _, mount := range spec.VolumeMounts {
+				glog.V(4).Infof("Looking for mount %s\n", mount.MountPath)
+				found := false
+				for _, toPath := range stackService.VolumeMounts {
+					if toPath == mount.MountPath && len(toPath) > 0 {
+						found = true
+					}
+				}
+
+				if !found {
+					glog.V(4).Infof("Didn't find mount %s, creating temporary folder\n", mount.MountPath)
+					// Create a new temporary folder
+					if stackService.VolumeMounts == nil {
+						stackService.VolumeMounts = map[string]string{}
+					}
+					volPath := fmt.Sprintf("AppData/%s", s.kube.RandomString(5))
+					stackService.VolumeMounts[volPath] = mount.MountPath
+				}
+			}
+		}
 	}
 
 	err = s.etcd.PutStack(userId, stack.Id, &stack)
@@ -1132,34 +1102,40 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	// Get the existing stack
-	existingStack, err := s.etcd.GetStack(userId, sid)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Find any services that have been added or removed
-	for _, ss1 := range existingStack.Services {
-		found := false
-		for _, ss2 := range stack.Services {
-			if ss1.Id == ss2.Id {
-				found = true
-			}
-		}
-
-		if !found {
-			// Service has been removed, detach the associated volume
-			s.detachVolume(userId, ss1.Id)
-
-			// Delete ingress
-		}
-	}
-
 	for i := range stack.Services {
 		stackService := &stack.Services[i]
+		// Create the stack service ID
 		stackService.Id = fmt.Sprintf("%s-%s", sid, stackService.Service)
+
+		spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
+		if spec != nil {
+			for _, mount := range spec.VolumeMounts {
+
+				found := 0
+				for fromPath, toPath := range stackService.VolumeMounts {
+					if toPath == mount.MountPath && len(toPath) > 0 {
+						found++
+					}
+
+					if len(fromPath) == 0 {
+						volPath := fmt.Sprintf("AppData/%s", s.kube.RandomString(5))
+						stackService.VolumeMounts[volPath] = mount.MountPath
+					}
+				}
+
+				if found > 1 {
+					glog.Error(fmt.Sprintf("Two volume mounts cannot refer to the same to path\n"))
+					w.WriteHeader(http.StatusConflict)
+					return
+				}
+
+				if found == 0 {
+					// Create a new temporary folder
+					volPath := fmt.Sprintf("AppData/%s", s.kube.RandomString(5))
+					stackService.VolumeMounts[volPath] = mount.MountPath
+				}
+			}
+		}
 	}
 
 	stack.Status = stackStatus[Stopped]
@@ -1196,20 +1172,6 @@ func (s *Server) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
-	}
-
-	volumes, err := s.etcd.GetVolumes(userId)
-	for _, volume := range *volumes {
-		for _, ss := range stack.Services {
-			vssid := strings.Split(volume.Attached, ":")[0]
-			if vssid == ss.Id {
-				glog.V(4).Infof("Detaching volume %s\n", volume.Id)
-				volume.Attached = ""
-				volume.Status = "available"
-				s.etcd.PutVolume(userId, volume.Id, volume)
-				// detach the volume
-			}
-		}
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -1280,47 +1242,69 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
 	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, stackService, spec, addrPortMap, &sharedEnv)
 
-	if len(spec.VolumeMounts) > 0 {
+	if len(stackService.VolumeMounts) > 0 || len(spec.VolumeMounts) > 0 {
 		k8vols := make([]k8api.Volume, 0)
 
-		for _, mount := range spec.VolumeMounts {
+		idx := 0
+		for fromPath, toPath := range stackService.VolumeMounts {
+
 			k8vol := k8api.Volume{}
-			k8vol.Name = mount.Name
+			k8hostPath := k8api.HostPathVolumeSource{}
+			found := false
+			for _, mount := range spec.VolumeMounts {
+				if mount.MountPath == toPath {
+					k8vol.Name = mount.Name
+					k8hostPath.Path = s.volDir + "/" + userId + "/" + fromPath
+					found = true
+				}
+			}
 
-			glog.V(4).Infof("Need volume for %s \n", stackService.Service)
-			if mount.Name == "docker" {
-				// TODO: Need to prevent non-NDS services from mounting the Docker socket
+			if !found {
+				// Create any user-specified mounts
+				volName := fmt.Sprintf("user%d", idx)
+				glog.V(4).Infof("Creating user mount %s\n", volName)
+				k8vol.Name = volName
+				k8vm := k8api.VolumeMount{Name: volName, MountPath: toPath}
+				if len(template.Spec.Template.Spec.Containers[0].VolumeMounts) == 0 {
+					template.Spec.Template.Spec.Containers[0].VolumeMounts = []k8api.VolumeMount{}
+				}
+				template.Spec.Template.Spec.Containers[0].VolumeMounts = append(template.Spec.Template.Spec.Containers[0].VolumeMounts, k8vm)
+				k8hostPath.Path = s.volDir + "/" + userId + "/" + fromPath
+				idx++
+			}
+			k8vol.HostPath = &k8hostPath
+			k8vols = append(k8vols, k8vol)
+		}
+
+		if len(spec.VolumeMounts) > 0 {
+			// Go back through the spec volume mounts and create emptyDirs where needed
+			for _, mount := range spec.VolumeMounts {
 				k8vol := k8api.Volume{}
-				k8vol.Name = "docker"
-				k8hostPath := k8api.HostPathVolumeSource{}
-				k8hostPath.Path = "/var/run/docker.sock"
-				k8vol.HostPath = &k8hostPath
-				k8vols = append(k8vols, k8vol)
-			} else {
-				volumes, _ := s.etcd.GetVolumes(userId)
-				found := false
-				for _, volume := range *volumes {
-					if volume.Attached == stackService.Id+":"+mount.Name {
-						glog.V(4).Infof("Found volume %s\n", volume.Attached)
-						found = true
+				k8vol.Name = mount.Name
 
-						if volume.Format == "hostPath" {
-							k8hostPath := k8api.HostPathVolumeSource{}
-							k8hostPath.Path = s.volDir + "/" + userId + "/" + volume.Id
-							k8vol.HostPath = &k8hostPath
-							k8vols = append(k8vols, k8vol)
-
-							glog.V(4).Infof("Attaching %s\n", s.volDir+"/"+userId+"/"+volume.Id)
-						} else {
-							glog.Warning("Invalid volume format\n")
+				glog.V(4).Infof("Need volume for %s \n", stackService.Service)
+				if mount.Name == "docker" {
+					// TODO: Need to prevent non-NDS services from mounting the Docker socket
+					k8vol := k8api.Volume{}
+					k8vol.Name = "docker"
+					k8hostPath := k8api.HostPathVolumeSource{}
+					k8hostPath.Path = "/var/run/docker.sock"
+					k8vol.HostPath = &k8hostPath
+					k8vols = append(k8vols, k8vol)
+				} else {
+					found := false
+					for _, toPath := range stackService.VolumeMounts {
+						if toPath == mount.MountPath {
+							found = true
 						}
 					}
-				}
-				if !found {
-					glog.Warningf("Required volume not found, using emptyDir\n")
-					k8empty := k8api.EmptyDirVolumeSource{}
-					k8vol.EmptyDir = &k8empty
-					k8vols = append(k8vols, k8vol)
+
+					if !found {
+						glog.Warningf("Required volume not found, using emptyDir\n")
+						k8empty := k8api.EmptyDirVolumeSource{}
+						k8vol.EmptyDir = &k8empty
+						k8vols = append(k8vols, k8vol)
+					}
 				}
 			}
 		}
@@ -1741,193 +1725,6 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 	return stack, nil
 }
 
-func (s *Server) GetAllVolumes(w rest.ResponseWriter, r *rest.Request) {
-	userId := s.getUser(r)
-	volumes, err := s.etcd.GetVolumes(userId)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteJson(&volumes)
-}
-
-func (s *Server) PostVolume(w rest.ResponseWriter, r *rest.Request) {
-	userId := s.getUser(r)
-
-	vol := api.Volume{}
-	err := r.DecodeJsonPayload(&vol)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if vol.Attached != "" {
-		ids := strings.Split(vol.Attached, ":")
-		ssid := ids[0]
-		volName := ids[1]
-		ss := s.getStackService(userId, ssid)
-		if ss == nil {
-			rest.NotFound(w, r)
-			return
-		} else {
-			if !s.volumeMountExists(userId, ss.Service, volName) {
-				rest.NotFound(w, r)
-				return
-			} else if s.attachmentExists(userId, vol.Attached) {
-				w.WriteHeader(http.StatusConflict)
-				return
-			} else {
-				vol.Status = "attached"
-			}
-		}
-	} else {
-		vol.Status = "available"
-	}
-
-	glog.V(4).Infoln("Creating local volume")
-	vol.Id = s.kube.RandomString(5)
-
-	err = os.MkdirAll(s.volDir+"/"+userId+"/"+vol.Id, 0755)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	vol.Format = "hostPath"
-
-	err = s.etcd.PutVolume(userId, vol.Id, vol)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteJson(&vol)
-}
-
-func (s *Server) PutVolume(w rest.ResponseWriter, r *rest.Request) {
-	vid := r.PathParam("vid")
-	userId := s.getUser(r)
-
-	vol := api.Volume{}
-	err := r.DecodeJsonPayload(&vol)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if vol.Attached != "" {
-		ids := strings.Split(vol.Attached, ":")
-		ssid := ids[0]
-		volName := ids[1]
-
-		ss := s.getStackService(userId, ssid)
-
-		if ss == nil {
-			rest.NotFound(w, r)
-			return
-		} else {
-			if !s.volumeMountExists(userId, ss.Service, volName) {
-				rest.NotFound(w, r)
-				return
-			} else if s.attachmentExists(userId, vol.Attached) {
-				w.WriteHeader(http.StatusConflict)
-				return
-			} else if !s.isStackStopped(userId, ssid) {
-				glog.V(4).Infof("Can't attach to a running stack\n")
-				w.WriteHeader(http.StatusConflict)
-				return
-			} else {
-				vol.Status = "attached"
-			}
-		}
-	} else {
-		existingVol, err := s.etcd.GetVolume(userId, vid)
-		if err != nil {
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		ssid := strings.Split(existingVol.Attached, ":")[0]
-		if existingVol != nil && existingVol.Attached != "" {
-			if !s.isStackStopped(userId, ssid) {
-				glog.V(4).Infof("Can't detach from a running stack\n")
-				w.WriteHeader(http.StatusConflict)
-				return
-			} else {
-				vol.Status = "available"
-			}
-		} else {
-			glog.V(4).Infof("Volume already detached\n")
-			w.WriteHeader(http.StatusConflict)
-		}
-	}
-
-	err = s.etcd.PutVolume(userId, vid, vol)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteJson(&vol)
-}
-
-func (s *Server) GetVolume(w rest.ResponseWriter, r *rest.Request) {
-	userId := s.getUser(r)
-	vid := r.PathParam("vid")
-
-	volume, err := s.etcd.GetVolume(userId, vid)
-	if volume == nil {
-		rest.NotFound(w, r)
-	} else if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-	} else {
-		w.WriteJson(&volume)
-	}
-}
-
-func (s *Server) DeleteVolume(w rest.ResponseWriter, r *rest.Request) {
-	userId := s.getUser(r)
-	vid := r.PathParam("vid")
-
-	glog.V(4).Infof("Deleting volume %s\n", vid)
-	volume, err := s.etcd.GetVolume(userId, vid)
-
-	if volume == nil {
-		glog.V(4).Infoln("No such volume")
-		if err != nil {
-			glog.Error(err)
-		}
-		rest.NotFound(w, r)
-		return
-	} else if volume.Attached != "" {
-		ssid := strings.Split(volume.Attached, ":")[0]
-		if !s.isStackStopped(userId, ssid) {
-			glog.V(4).Infof("Can't attach to a running stack\n")
-			w.WriteHeader(http.StatusConflict)
-			return
-		}
-	}
-
-	glog.V(4).Infof("Format %s\n", volume.Format)
-	if volume.Format == "hostPath" {
-		err = os.RemoveAll(s.volDir + "/" + userId + "/" + volume.Id)
-		if err != nil {
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-
-	err = s.etcd.DeleteVolume(userId, vid)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-}
-
 func (s *Server) GetLogs(w rest.ResponseWriter, r *rest.Request) {
 	userId := s.getUser(r)
 	ssid := r.PathParam("ssid")
@@ -2175,19 +1972,4 @@ func (s *Server) HandleReplicationControllerEvent(eventType watch.EventType, eve
 		}
 		s.etcd.PutStack(userId, sid, stack)
 	}
-}
-func (s *Server) detachVolume(userId string, ssid string) bool {
-	volumes, _ := s.etcd.GetVolumes(userId)
-
-	for _, volume := range *volumes {
-		vssid := strings.Split(volume.Attached, ":")[0]
-		if vssid == ssid {
-			glog.V(4).Infof("Detaching volume %s\n", volume.Id)
-			volume.Attached = ""
-			volume.Status = "available"
-			s.etcd.PutVolume(userId, volume.Id, volume)
-			return true
-		}
-	}
-	return false
 }

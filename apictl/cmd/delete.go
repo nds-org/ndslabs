@@ -12,7 +12,6 @@ func init() {
 	deleteServiceCmd.Flags().StringVarP(&catalog, "catalog", "c", "user", "Catalog to use")
 	RootCmd.AddCommand(deleteCmd)
 	deleteCmd.AddCommand(deleteStackCmd)
-	deleteCmd.AddCommand(deleteVolumeCmd)
 	deleteCmd.AddCommand(deleteAccountCmd)
 	deleteCmd.AddCommand(deleteServiceCmd)
 }
@@ -33,20 +32,6 @@ var deleteStackCmd = &cobra.Command{
 		}
 
 		deleteStack(args[0])
-	},
-}
-
-var deleteVolumeCmd = &cobra.Command{
-	Use:    "volume [volumeId]",
-	Short:  "Remove a volume",
-	PreRun: Connect,
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			cmd.Usage()
-			os.Exit(-1)
-		}
-
-		deleteVolume(args[0])
 	},
 }
 
@@ -112,15 +97,6 @@ func deleteAccount(account string) {
 		fmt.Printf("Unable to delete account %s: %s \n", account, err)
 	} else {
 		fmt.Printf("Account %s deleted\n", account)
-	}
-}
-
-func deleteVolume(id string) {
-	err := client.DeleteVolume(id)
-	if err != nil {
-		fmt.Printf("Unable to delete volume %s: %s \n", id, err)
-	} else {
-		fmt.Printf("Volume %s deleted\n", id)
 	}
 }
 

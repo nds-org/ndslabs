@@ -10,8 +10,19 @@ import (
 	"strings"
 )
 
+// listCmd represents the list command
 var setCmd = &cobra.Command{
-	Use:    "set [stack service id] [var name] [var value]",
+	Use:   "set",
+	Short: "Set optional stack values",
+}
+
+func init() {
+	RootCmd.AddCommand(setCmd)
+	setCmd.AddCommand(setEnvCmd)
+}
+
+var setEnvCmd = &cobra.Command{
+	Use:    "set env [stack service id] [var name] [var value]",
 	Short:  "Set stack service environment values",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -85,8 +96,4 @@ var setCmd = &cobra.Command{
 
 	},
 	PostRun: RefreshToken,
-}
-
-func init() {
-	RootCmd.AddCommand(setCmd)
 }

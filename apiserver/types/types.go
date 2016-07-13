@@ -157,6 +157,7 @@ type StackService struct {
 	CreatedTime    int               `json:"createdTime"`
 	UpdatedTime    int               `json:"updateTime"`
 	Config         map[string]string `json:"config"`
+	VolumeMounts   map[string]string `json:"volumeMounts"`
 }
 
 type Endpoint struct {
@@ -165,18 +166,4 @@ type Endpoint struct {
 	NodePort   int32  `json:"nodePort"`
 	Protocol   string `json:"protocol"`
 	Host       string `json:"host"`
-}
-
-type Volume struct {
-	Id          string `json:"id"`
-	Name        string `json:"name"`
-	Size        int    `json:"size"`
-	SizeUnit    string `json:"sizeUnit"`
-	Format      string `json:"format"`
-	Attached    string `json:"attached"`
-	Service     string `json:"service"`
-	Status      string `json:"status"`
-	Formatted   bool   `json:"formatted"`
-	CreatedTime int    `json:"createdTime"`
-	UpdatedTime int    `json:"updateTime"`
 }

@@ -275,65 +275,6 @@ func (s *EtcdHelper) PutStack(uid string, sid string, stack *api.Stack) error {
 	}
 }
 
-func (s *EtcdHelper) GetVolumes(uid string) (*[]api.Volume, error) {
-
-	volumes := make([]api.Volume, 0)
-
-	volumePath := etcdBasePath + "/accounts/" + uid + "/volumes"
-	resp, err := s.etcd.Get(context.Background(), volumePath, nil)
-	if err != nil {
-		if client.IsKeyNotFound(err) {
-			glog.V(4).Infof("Creating volumes key for %s\n", uid)
-			opts := client.SetOptions{Dir: true}
-			_, err = s.etcd.Set(context.Background(), volumePath, "", &opts)
-			if err != nil {
-				glog.V(4).Infof("Error creating volumes key for %s: %s\n", uid, err)
-			}
-			return &volumes, nil
-		} else {
-			glog.V(4).Infof("Error creating volumes key for %s\n", uid)
-			return &volumes, err
-		}
-	} else {
-		nodes := resp.Node.Nodes
-		for _, node := range nodes {
-			volume := api.Volume{}
-			json.Unmarshal([]byte(node.Value), &volume)
-
-			volumes = append(volumes, volume)
-		}
-	}
-
-	return &volumes, nil
-}
-
-func (s *EtcdHelper) PutVolume(uid string, vid string, volume api.Volume) error {
-	opts := client.SetOptions{Dir: true}
-	s.etcd.Set(context.Background(), etcdBasePath+"/accounts/"+uid, "/volumes", &opts)
-
-	data, _ := json.Marshal(volume)
-	path := etcdBasePath + "/accounts/" + uid + "/volumes/" + vid
-	_, err := s.etcd.Set(context.Background(), path, string(data), nil)
-	if err != nil {
-		return err
-	} else {
-		return nil
-	}
-}
-
-func (s *EtcdHelper) GetVolume(uid string, vid string) (*api.Volume, error) {
-	path := etcdBasePath + "/accounts/" + uid + "/volumes/" + vid
-	resp, err := s.etcd.Get(context.Background(), path, nil)
-
-	if err != nil {
-		return nil, err
-	} else {
-		volume := api.Volume{}
-		json.Unmarshal([]byte(resp.Node.Value), &volume)
-		return &volume, nil
-	}
-}
-
 func (s *EtcdHelper) DeleteAccount(uid string) error {
 	_, err := s.etcd.Delete(context.Background(), etcdBasePath+"/accounts/"+uid, &client.DeleteOptions{Recursive: true})
 	if err != nil {
@@ -360,15 +301,6 @@ func (s *EtcdHelper) DeleteService(uid string, key string) error {
 
 func (s *EtcdHelper) DeleteStack(uid string, sid string) error {
 	path := etcdBasePath + "/accounts/" + uid + "/stacks/" + sid
-	_, err := s.etcd.Delete(context.Background(), path, nil)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *EtcdHelper) DeleteVolume(uid string, vid string) error {
-	path := etcdBasePath + "/accounts/" + uid + "/volumes/" + vid
 	_, err := s.etcd.Delete(context.Background(), path, nil)
 	if err != nil {
 		return err
