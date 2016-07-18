@@ -6,12 +6,14 @@
  * use the single-argument notation for angular.module()
  */
 angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-filters', 'ndslabs-directives',  'ndslabs-api', 'ngWizard', 'ngGrid', 'ngAlert', 
-    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ngMessages', 'ui.bootstrap', 'ngPasswordStrength', 'ui.pwgen', 'frapontillo.gage', 'chart.js' ])
+    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ngMessages', 'ui.bootstrap', 'ngPasswordStrength', 'angular-clipboard', 'ui.pwgen', 'frapontillo.gage', 'chart.js' ])
 
 /**
  * If true, display verbose debug data as JSON
  */ 
-.constant('DEBUG', true)
+.constant('DEBUG', false)
+
+.constant('Layout', 'container')
 
 .value('InitialRedirect', true)
 
@@ -22,22 +24,22 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 
 /**
  * Make lodash available for injection into controllers
- */ 
+ */
 .constant('_', window._)
 
 /**
  * The route to our Login View
- */ 
+ */
 .constant('LoginRoute', '/login')
 
 /**
  * The route to our Expert Setup View
- */ 
+ */
 .constant('ExpertRoute', '/home')
 
 /**
  * The route to the stack service console view
- */ 
+ */
 .constant('ConsoleRoute', '/:ssid/console')
 
 /**
@@ -45,9 +47,9 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  */
 .constant('AppStoreRoute', '/store')
 
-.constant('CatalogRoute', '/catalog')
+.constant('AddEditSpecRoute', '/store/edit/:specKey')
 
-.constant('ConfigSvcRoute', '/configure/:ssid')
+.constant('ConfigSvcRoute', '/home/edit/:ssid')
 
 
 /**
@@ -134,8 +136,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'ExpertRoute', 'ConsoleRoute', 'ConfigSvcRoute', 'CatalogRoute',
-    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, ExpertRoute, ConsoleRoute, ConfigSvcRoute, CatalogRoute) {
+.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'ExpertRoute', 'ConsoleRoute', 'ConfigSvcRoute', 'AddEditSpecRoute',
+    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, ExpertRoute, ConsoleRoute, ConfigSvcRoute, AddEditSpecRoute) {
   // Squelch debug-level log messages
   $logProvider.debugEnabled(DEBUG);
       
@@ -207,35 +209,36 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   }]);
       
   // Setup routes to our different pages
-  $routeProvider.when(ExpertRoute, {
-    title: 'NDS Labs',
-    controller: 'ExpertSetupController',
-    templateUrl: 'app/expert/expertSetup.html'
-  })
+  $routeProvider
   .when(LoginRoute, {
     title: 'Sign into NDS Labs',
     controller: 'LoginController',
     templateUrl: 'app/login/login.html'
-  })
-  .when(ConsoleRoute, {
-    title: 'Console',
-    controller: 'ConsoleController',
-    templateUrl: 'app/expert/consoleViewer/console.html'
   })
   .when(AppStoreRoute, {
     title: 'Browse Applications',
     controller: 'ConfigurationWizardController',
     templateUrl: 'app/appStore/configWizard.html'
   })
+  .when(AddEditSpecRoute, {
+    title: 'Catalog',
+    controller: 'AddOrEditSpecController',
+    templateUrl: 'app/appStore/addOrEdit/addOrEditSpec.html'
+  })
+  .when(ExpertRoute, {
+    title: 'NDS Labs',
+    controller: 'ExpertSetupController',
+    templateUrl: 'app/expert/expertSetup.html'
+  })
   .when(ConfigSvcRoute, {
     title: 'Configure Service',
     controller: 'ConfigureServiceController',
-    templateUrl: 'app/configureService/configSvc.html'
+    templateUrl: 'app/editService/configSvc.html'
   })
-  .when(CatalogRoute, {
-    title: 'Catalog',
-    controller: 'CatalogController',
-    templateUrl: 'app/catalog/catalog.html'
+  .when(ConsoleRoute, {
+    title: 'Console',
+    controller: 'ConsoleController',
+    templateUrl: 'app/expert/consoleViewer/console.html'
   })
   .otherwise({ redirectTo: LoginRoute });
 }])

@@ -8,14 +8,16 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('ConfigurationWizardController', [ '$scope', '$filter', '$interval', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stack', 'Stacks', 'Volume', 
-    'StackService', 'Grid', 'Wizard', 'WizardPage', 'Specs', 'Volumes', 'ServiceDiscovery',
-    function($scope, $filter, $interval, $location, $log, _, NdsLabsApi, Project, Stack, Stacks, Volume, StackService, Grid, Wizard, WizardPage,
-    Specs, Volumes, ServiceDiscovery) {
+.controller('ConfigurationWizardController', [ '$scope', '$filter', '$interval', '$uibModal', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stack', 'Stacks', 'Volume', 
+    'StackService', 'Grid', 'Wizard', 'WizardPage', 'Specs', 'Volumes', 'ServiceDiscovery', 'clipboard',
+    function($scope, $filter, $interval, $uibModal, $location, $log, _, NdsLabsApi, Project, Stack, Stacks, Volume, StackService, Grid, Wizard, WizardPage,
+    Specs, Volumes, ServiceDiscovery, clipboard) {
       
   var projectId = Project.project.namespace;
   
-  $scope.installMax = 200;
+  $scope.showCards = true;
+  
+  $scope.installMax = 40;
       
   $scope.svcQuery = '';
   $scope.showStandalones = false;
@@ -27,7 +29,7 @@ angular
     $scope.filteredSpecs = $filter('isStack')(specs, $scope.showStandalones);
     $scope.filteredSpecs = $filter('orderBy')($scope.filteredSpecs, 'label');
     $scope.filteredSpecs = $filter('filter')($scope.filteredSpecs, $scope.svcQuery);
-    $scope.chunkedSpecs = _.chunk($scope.filteredSpecs, 4);
+    $scope.chunkedSpecs = _.chunk($scope.filteredSpecs, 3);
   };
 
   /* TODO: This is FAR too many manual watchers... */
@@ -43,6 +45,68 @@ angular
   $scope.$watch('svcQuery', function() { refilter($scope.specs); });
   $scope.$watch('showStandalones', function() { refilter($scope.specs); });
   
+  $scope.copyToClipboard = function(spec) {
+    if (!clipboard.supported) {
+      console.log('Sorry, copy to clipboard is not supported');
+      return;
+    }
+    
+    var specCopy = angular.copy(spec);
+    
+    // Remove unnecessary fields
+    delete specCopy.$$hashKey;
+    delete specCopy.updateTime;
+    delete specCopy.createdTime;
+    
+    console.log('Copying!');
+    clipboard.copyText(JSON.stringify(specCopy));
+    console.log('Copied!');
+  };
+  
+  $scope.openEdit = function(spec) {
+    $location.path('#/store/edit/' + spec.key);
+  };
+  
+  $scope.openExport = function(spec) {
+    $uibModal.open({
+      animation: true,
+      templateUrl: 'app/appStore/export/exportSpec.html',
+      controller: 'ExportSpecCtrl',
+      size: 'md',
+      backdrop: 'static',
+      keyboard: false,
+      resolve: {
+        spec: spec
+      }
+    });
+  };
+  
+  $scope.openImport = function() {
+    $uibModal.open({
+      animation: true,
+      templateUrl: 'app/appStore/import/importSpec.html',
+      controller: 'ImportSpecCtrl',
+      size: 'md',
+      backdrop: 'static',
+      keyboard: false,
+      resolve: {}
+    });
+  };
+  
+  $scope.openDelete = function(spec) {
+    $uibModal.open({
+      animation: true,
+      templateUrl: 'app/appStore/delete/deleteSpec.html',
+      controller: 'DeleteSpecCtrl',
+      size: 'md',
+      backdrop: 'static',
+      keyboard: false,
+      resolve: {
+        spec: spec
+      }
+    });
+  };
+  
   $scope.install = function(spec) {
     spec.installProgress = 1;
     spec.installCount = spec.installCount || 0;
@@ -52,7 +116,7 @@ angular
     
     console.log('Installing ' + spec.label + '...');
     
-    var increment = 20;
+    var increment = 5;
     
   	spec.installInterval = $interval(function() {
 				if ($scope.installs[spec.key].progress < $scope.installMax) {
@@ -62,7 +126,7 @@ angular
 				  $scope.installs[spec.key].progress = 0;
 				  $interval.cancel(spec.installInterval);
 				}
-			}, 500);
+			}, 200);
     
     var app = new Stack(spec);
     

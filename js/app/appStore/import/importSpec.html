@@ -1,0 +1,28 @@
+<!-- The "Import Spec" Modal -->
+<section>
+  <div class="modal-header">
+    <button type="button" class="btn btn-xs btn-default pull-right" data-dismiss="modal" aria-label="Close" ng-click="close()"><i class="fa fa-fw fa-times"></i></button>
+    <h4 class="modal-title">Import New Application</h4>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-sm-12">
+         <textarea class="form-control" style="height:350px;" placeholder="Paste your JSON spec here..." ng-model="json" ng-model-options="{ updateOn: 'default blur', debounce: { 'default': 400, 'blur': 0 } }"></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <div class="row">
+      <div class="col-sm-2">
+        <button type="button" class="btn btn-default pull-left" data-dismiss="modal" ng-click="close()">Close</button>
+      </div>
+      <div class="col-sm-8 text-center">
+        <p class="text-success" ng-if="validJson">Application Spec JSON is valid.</p>
+        <p class="text-danger" ng-if="!validJson">Application Spec is not valid JSON.</p>
+      </div>
+      <div class="col-sm-2">
+        <button type="button" class="btn btn-primary pull-right" data-dismiss="modal" ng-click="import()">Import</button>
+      </div>
+    </div>
+  </div>
+</section>

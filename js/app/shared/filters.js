@@ -24,6 +24,12 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
   };
 }])
 
+.filter('jsonStringify', function() {
+  return function(input) {
+    return JSON.stringify(input);
+  };
+})
+
 /**
  * Given a password strength (1 - 100), return an apprpriate label
  * TODO: Replace this with i18n / i10n??
