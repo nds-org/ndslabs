@@ -9,8 +9,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('ExpertSetupController', [ '$scope', '$log', '$location', '$interval', '$q', '$uibModal', '_', 'AuthInfo', 'Project', 'Volumes', 'Stacks', 'Specs', 'AutoRefresh', 'SoftRefresh',
-    'StackService', 'NdsLabsApi', function($scope, $log, $location, $interval, $q, $uibModal, _, AuthInfo, Project, Volumes, Stacks, Specs, AutoRefresh, SoftRefresh, 
+.controller('ExpertSetupController', [ '$scope', '$log', '$routeParams', '$location', '$interval', '$q', '$uibModal', '_', 'AuthInfo', 'Project', 'Volumes', 'Stacks', 'Specs', 'AutoRefresh', 'SoftRefresh',
+    'StackService', 'NdsLabsApi', function($scope, $log, $routeParams, $location, $interval, $q, $uibModal, _, AuthInfo, Project, Volumes, Stacks, Specs, AutoRefresh, SoftRefresh, 
     StackService, NdsLabsApi) {
   
   // Grab our projectId from the login page
@@ -21,10 +21,15 @@ angular
    * I am hoping asynchronous updates will allow me to remove this/these hack(s)
    */
   var sync = {};
-  sync.project = function(newValue, oldValue) { $scope.project = Project.project; };
-  sync.specs = function(newValue, oldValue) { $scope.allServices = Specs.all; };
-  sync.stacks = function(newValue, oldValue) { $scope.configuredStacks = Stacks.all; };
-  sync.volumes = function(newValue, oldValue) { $scope.configuredVolumes = Volumes.all; };
+  sync.project = function(newValue, oldValue) { $scope.project = newValue; };
+  sync.specs = function(newValue, oldValue) { $scope.allServices = newValue; };
+  sync.stacks = function(newValue, oldValue) { $scope.configuredStacks = newValue;
+  
+    angular.forEach(newValue, function(stack) {
+      stack.open = _.includes(stack.key, $routeParams.expand);
+    });
+  };
+  sync.volumes = function(newValue, oldValue) { $scope.configuredVolumes = newValue; };
    
   $scope.$watch(function () { return Project.project }, sync.project);
   $scope.$watch(function () { return Specs.all }, sync.specs);

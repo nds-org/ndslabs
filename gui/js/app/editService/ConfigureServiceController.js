@@ -11,14 +11,9 @@ angular
 .controller('ConfigureServiceController', [ '$scope', '$routeParams', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stacks', 'Specs', 
     function($scope, $routeParams, $location, $log, _, NdsLabsApi, Project, Stacks, Specs) {
       
-  var reload = function() {
-    return true;
-  };
-      
   var projectId = Project.project.namespace;
   $scope.$watch(function () { return Project.project; }, function(newValue, oldValue) { projectId = newValue.namespace; });
   $scope.$watch(function () { return Stacks.all; }, function(newValue, oldValue) {
-    reload();
     $scope.stack = _.find(Stacks.all, [ 'id', _.split($routeParams.ssid, '-')[0] ]);
     $scope.service = _.find($scope.stack.services, [ 'id', $routeParams.ssid ]);
     $scope.spec = _.find(Specs.all, [ 'key', $scope.service.service ]);
@@ -49,28 +44,7 @@ angular
     }
   });
   
-
-  /* TODO: This is FAR too many manual watchers... */
   $scope.$watch(function () { return Project.project; }, function(newValue, oldValue) { $scope.project = newValue; });
-  /*
-  $scope.$watch('selectedSpec', function(newValue, oldValue) {
-    if (newValue) {
-    }
-  });
-  
-  $scope.$watch('newStack.services', function() {
-      $scope.configs = [];
-      angular.forEach($scope.selectedSpec.config, function(cfg) {
-        $scope.configs.push({ 'key': cfg.label || cfg.name, 'value': cfg.value, 'def': cfg.value });
-      });
-      
-      $scope.volumes = [];
-      angular.forEach($scope.selectedSpec.volumeMounts, function(vol) {
-        $scope.volumes.push({ 'from': 'default/path', 'to': vol.mountPath });
-      });
-  });*/
-  
-  $scope.forms = {};
   
   $scope.isValid = function(spec, stack) {
     if (!$scope.selectedSpec || $scope.newStack.name === '') {
@@ -97,17 +71,6 @@ angular
   };
   
   $scope.save = function() {
-    // Install this app to etcd
-    var upsert = function (arr, key, newval) {
-      var match = _.find(arr, key);
-      if(match){
-          var index = _.indexOf(arr, _.find(arr, key));
-          arr.splice(index, 1, newval);
-      } else {
-          arr.push(newval);
-      }
-    };
-    
     // Parse environment vars into config map
     $scope.service.config = {};
     angular.forEach($scope.configs, function(cfg) {
@@ -125,9 +88,9 @@ angular
       $log.debug("successfully posted to /projects/" + projectId + "/stacks!");
       
       // TODO: Only update changed stack?
-      Stacks.populate(projectId);
-      
-      $location.path('/home');
+      Stacks.populate(projectId).then(function() {
+        $location.path('/home');
+      });
     }, function(headers) {
       $log.error("error putting to /projects/" + projectId + "/stacks!");
     });

@@ -1,0 +1,28 @@
+<!-- The "Export Spec" Modal -->
+<section>
+  <div class="modal-header">
+    <button type="button" class="btn btn-xs btn-default pull-right" data-dismiss="modal" aria-label="Close" ng-click="close()"><i class="fa fa-fw fa-times"></i></button>
+    <h4 class="modal-title">View Application Details</h4>
+  </div>
+  
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-sm-12">
+        <pre style="height:350px;">{{ spec | json }}</pre>
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal-footer">
+    <div class="row">
+      <div class="col-sm-12">
+        <button type="button" class="btn btn-default pull-left" data-dismiss="modal" ng-click="close()"><i class="fa fa-fw fa-times"></i> Close</button>
+        
+        <div class="pull-right">
+          <a ng-href="#/store/edit/{{ spec.id }}" type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-fw fa-pencil"></i> Edit</a>
+          <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="copy()"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

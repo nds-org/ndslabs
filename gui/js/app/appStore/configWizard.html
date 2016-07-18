@@ -1,11 +1,11 @@
 <!-- The Configuration Wizard -->
 <section>
   <div class="row">
-    <div class="col-xs-10 col-xs-offset-1">
+    <div class="col-xs-12">
       <h2>Browse Applications</h2>
       
       <ol class="breadcrumb">
-        <li><a href="http://labsportal.nationaldataservice.org/">NDS Labs</a></li>
+        <li><a href="#/home">Dashboard</a></li>
         <li class="active">Browse Applications</li>
       </ol>
       
@@ -20,13 +20,15 @@
         </span>
         
         <div class="input-group-btn">
-          <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            View As: {{ mode | capitalize }} <i class="fa fa-fw fa-chevron-down"></i>
+          <button type="button" class="btn btn-default" style="border-radius:0 !important;" ng-click="showCards = !showCards">
+            <span ng-if="showCards"><i class="fa fa-fw fa-table"></i></span>
+            <span ng-if="!showCards"><i class="fa fa-fw fa-list"></i></span>
           </button>
-          <div class="dropdown-menu dropdown-menu-right">
-            <a class="dropdown-item cursor-pointer" href="#/store" ng-click="mode = 'cards'">Cards</a>
-            <a class="dropdown-item cursor-pointer" href="#/store" ng-click="mode = 'table'">Table</a>
-          </div>
+        </div>
+        <div class="input-group-btn">
+          <button type="button" class="btn btn-secondary" ng-click="openImport()">
+            <i class="fa fa-fw fa-plus"></i> Import
+          </button>
         </div>
       </div>
       
@@ -38,7 +40,7 @@
       </p>
       
       <!-- Table -->
-      <table ng-if="mode === 'table'" class="table table-hover table-striped" ng-hide="(specs | filter : svcQuery).length === 0">
+      <table ng-if="!showCards" class="table table-hover table-striped" ng-hide="(specs | filter : svcQuery).length === 0">
         <thead>
           <tr>
             <th><label>Name</label></th>
@@ -49,22 +51,23 @@
         </thead>
         <tbody>
           <tr ng-repeat="spec in specs | isStack:showStandalones | orderBy:'label' | filter : svcQuery track by spec.key">
+           
             <td width="20%">
               {{ spec.label }}
             </td>
+            
             <td width="50%">
               {{ spec.description }}
             </td>
-            <td width="15%">
+            
+            <td width="10%">
               <!-- Install button -->
               <button ng-if="installs[spec.key].progress === 0" ng-disabled="installs[spec.key].progress > 0" 
                   class="btn btn-xs btn-primary pull-right" ng-click="install(spec)">
-                <span ng-if="installs[spec.key].count === 0">
-                  <i class="fa fa-fw fa-hand-pointer-o"></i> Install
-                </span>
-                
+                <i class="fa fa-fw" ng-class="{ 'fa-hand-pointer-o': installs[spec.key].count === 0, 'fa-repeat':installs[spec.key].count > 0 }"></i>
+                Install 
                 <span ng-if="installs[spec.key].count > 0">
-                  <i class="fa fa-fw fa-repeat"></i> Install ({{ installs[spec.key].count }} installed)
+                  ({{ installs[spec.key].count }} installed)
                 </span>
               </button>
               
@@ -76,20 +79,39 @@
                 </div>
               </div>
             </td>
+            
             <td width="5%">
-              <a type="button" class="btn btn-xs btn-default pull-right" href="#/home" ng-if="installs[spec.key].count > 0">
+              <a type="button" class="btn btn-xs btn-default pull-right" ng-href="#/home?expand={{ spec.key }}" ng-if="installs[spec.key].count > 0">
                 <i class="fa fa-fw fa-eye"></i> View
               </a>
+            </td>
+            
+            <td width="5%">
+              <!-- Simple dropdown -->
+              <span uib-dropdown on-toggle="toggled(open)" class="pull-right">
+                <small>
+                  <a href id="simple-dropdown" class="btn btn-xs btn-link" uib-dropdown-toggle>
+                    More <i class="fa fa-chevron-down"></i>
+                  </a>
+                </small>
+                <ul class="dropdown-menu" uib-dropdown-menu aria-labelledby="simple-dropdown">
+                  <li><a href ng-click="cloneSpec(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
+                  <li><a href ng-click="openEdit(spec)" ng-if="spec.catalog !== 'user'"><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
+                  <li><a href ng-click="openDelete(spec)"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
+                  <li><a href ng-click="openExport(spec)"><i class="fa fa-fw fa-eye"></i> Details</a></li>
+                  <li><a href ng-click="copyToClipboard(spec)"><i class="fa fa-fw fa-share-square-o"></i> Export</a></li>
+                </ul>
+              </span>
             </td>
           </tr>
         </tbody>
       </table>
       
       <!-- Cards -->
-      <div ng-if="mode === 'cards'" class="panel-body">
+      <div ng-if="showCards" class="panel-body">
         <div class="row table-row" ng-repeat="set in chunkedSpecs">
-          <div class="col-sm-3" ng-repeat="spec in set">
-            <div class="thumbnail" ng-class="{ 'bg-primary': selectedSpec === spec}">
+          <div class="col-sm-4" ng-repeat="spec in set">
+            <div class="thumbnail">
               <!--<img ng-if="spec.key === 'clowder'" height="44" width="200" src="https://medici.ncsa.illinois.edu/img/logo.png" alt="Clowder">
               <img ng-if="spec.key === 'dataverse'" height="44" width="200" src="http://www.worldagroforestry.org/open-access-week/img/logos/dataverse.png" alt="Dataverse">
               <img ng-if="spec.key === 'icat'" height="44" width="200"  src="http://bionics.it/site/assets/files/1050/irods-logo.200x0-is.png" alt="iRODS iCAT">
@@ -98,31 +120,49 @@
                 <h4>{{ spec.label }}</h4>
                 <p>{{ spec.description }}</p>
               </div>
-              <div class="row">
-                <div class="col-sm-7">
-                  <button ng-if="installs[spec.key].progress === 0" ng-disabled="installs[spec.key].progress > 0" 
-                      class="btn btn-xs btn-primary" ng-click="install(spec)" style="margin-bottom:11px;">
-                    <span ng-if="installs[spec.key].count === 0">
-                      <i class="fa fa-fw fa-hand-pointer-o"></i> Install
-                    </span>
-                    
-                    <span ng-if="installs[spec.key].count > 0">
-                      <i class="fa fa-fw fa-repeat"></i> Install ({{ installs[spec.key].count }} installed)
-                    </span>
+              
+              <div class="row" id="catalogCardButtonBar">
+                <!-- View Instance(s) -->
+                <div class="col-sm-3" ng-if="installs[spec.key].count > 0" >
+                  <a class="btn btn-xs btn-primary"  class="pull-right" ng-href="#/home?expand={{ spec.key }}">
+                    <i class="fa fa-fw fa-search"></i> View
+                  </a>
+                </div>
+                
+                <!-- Install button -->
+                <div class="col-sm-3" ng-if="installs[spec.key].progress === 0">
+                  <button ng-disabled="installs[spec.key].progress > 0" 
+                      class="btn btn-xs" ng-class="{ 'btn-primary':installs[spec.key].count === 0, 'btn-default':installs[spec.key].count > 0 }" ng-click="install(spec)">
+                    <i class="fa fa-fw" ng-class="{ 'fa-magic': installs[spec.key].count === 0, 'fa-repeat': installs[spec.key].count > 0 }"></i> Install
                   </button>
-                  
-                  <!-- Show "install" progress -->
-                  <div class="progress" style="margin:0;padding:0;min-width:130px;" ng-if="installs[spec.key].progress > 0">
+                </div>
+                
+                <!-- "Install" progress -->
+                <div class="col-sm-3" ng-if="installs[spec.key].progress > 0">
+                  <div class="progress" style="width:63px;margin:0;height:22px;">
                     <div class="progress-bar progress-bar-primary progress-bar-striped active" role="progressbar" aria-valuenow="{{ installs[spec.key].progress }}"
-                        aria-valuemin="0" aria-valuemax="{{ installMax }}" style="margin:0;width:{{ 100 * installs[spec.key].progress / installMax }}%;">
-                      <span class="sr-only">{{ installs[spec.key].progress / installMax  }}% Complete</span>
+                        aria-valuemin="1" aria-valuemax="{{ installMax }}" ng-style="{ 'width': 100 * installs[spec.key].progress / installMax + '%' }">
+                      {{ installs[spec.key].progress < installMax ? (100 * (installs[spec.key].progress / installMax)) : '100'  | number:0 }}% Complete
                     </div>
                   </div>
                 </div>
-                <div class="col-sm-5">
-                  <a type="button" class="btn btn-xs btn-default" href="#/home" ng-if="installs[spec.key].count > 0" style="margin:0 10px 11px 10px;">
-                    <i class="fa fa-fw fa-eye"></i> View
-                  </a>
+                
+                <!-- More Actions Dropdown -->
+                <div class="col-sm-4">
+                  <span uib-dropdown on-toggle="toggled(open)">
+                    <small>
+                      <a href id="simple-dropdown" class="btn btn-xs btn-link" uib-dropdown-toggle>
+                        More <i class="fa fa-chevron-down"></i>
+                      </a>
+                    </small>
+                    <ul class="dropdown-menu" uib-dropdown-menu aria-labelledby="simple-dropdown">
+                      <li><a href ng-click="cloneSpec(spec)" ng-if="spec.catalog !== 'user'"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
+                      <li><a href ng-click="copyToClipboard(spec)"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</a></li>
+                      <li><a href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> Details</a></li>
+                      <li><a ng-href="#/store/edit/{{ spec.key }}" ng-if="spec.catalog !== 'system'"><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
+                      <li><a href ng-click="openDelete(spec)"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
+                    </ul>
+                  </span>
                 </div>
               </div>
             </div>
