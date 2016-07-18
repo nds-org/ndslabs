@@ -9,10 +9,11 @@ import (
 )
 
 func init() {
+	deleteServiceCmd.Flags().StringVarP(&catalog, "catalog", "c", "user", "Catalog to use")
 	RootCmd.AddCommand(deleteCmd)
 	deleteCmd.AddCommand(deleteStackCmd)
 	deleteCmd.AddCommand(deleteVolumeCmd)
-	deleteCmd.AddCommand(deleteProjectCmd)
+	deleteCmd.AddCommand(deleteAccountCmd)
 	deleteCmd.AddCommand(deleteServiceCmd)
 }
 
@@ -31,7 +32,7 @@ var deleteStackCmd = &cobra.Command{
 			os.Exit(-1)
 		}
 
-		deleteStack(apiUser.username, args[0])
+		deleteStack(args[0])
 	},
 }
 
@@ -45,13 +46,13 @@ var deleteVolumeCmd = &cobra.Command{
 			os.Exit(-1)
 		}
 
-		deleteVolume(apiUser.username, args[0])
+		deleteVolume(args[0])
 	},
 }
 
-var deleteProjectCmd = &cobra.Command{
-	Use:    "project [projectId]",
-	Short:  "Remove a project (admin users only)",
+var deleteAccountCmd = &cobra.Command{
+	Use:    "account [accountId]",
+	Short:  "Remove a account (admin users only)",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
@@ -59,7 +60,7 @@ var deleteProjectCmd = &cobra.Command{
 			os.Exit(-1)
 		}
 
-		deleteProject(args[0])
+		deleteAccount(args[0])
 	},
 }
 
@@ -73,19 +74,23 @@ var deleteServiceCmd = &cobra.Command{
 			os.Exit(-1)
 		}
 
-		deleteService(args[0])
+		deleteService(args[0], catalog)
 	},
 }
 
-func deleteService(service string) {
-	password := credentials("Admin password: ")
-	token, err := client.Login("admin", password)
-	if err != nil {
-		fmt.Printf("Unable to delete service %s: %s \n", service, err)
-		return
+func deleteService(service string, catalog string) {
+	token := client.Token
+	if catalog == "system" {
+		password := credentials("Admin password: ")
+		t, err := client.Login("admin", password)
+		if err != nil {
+			fmt.Printf("Unable to delete service %s: %s \n", service, err)
+			return
+		}
+		token = t
 	}
 
-	err = client.DeleteService(service, token)
+	err := client.DeleteService(service, token, catalog)
 	if err != nil {
 		fmt.Printf("Unable to delete service %s: %s \n", service, err)
 	} else {
@@ -93,25 +98,25 @@ func deleteService(service string) {
 	}
 }
 
-func deleteProject(project string) {
+func deleteAccount(account string) {
 
 	password := credentials("Admin password: ")
 	token, err := client.Login("admin", password)
 	if err != nil {
-		fmt.Printf("Unable to delete project %s: %s \n", project, err)
+		fmt.Printf("Unable to delete account %s: %s \n", account, err)
 		return
 	}
 
-	err = client.DeleteProject(project, token)
+	err = client.DeleteAccount(account, token)
 	if err != nil {
-		fmt.Printf("Unable to delete project %s: %s \n", project, err)
+		fmt.Printf("Unable to delete account %s: %s \n", account, err)
 	} else {
-		fmt.Printf("Project %s deleted\n", project)
+		fmt.Printf("Account %s deleted\n", account)
 	}
 }
 
-func deleteVolume(project string, id string) {
-	err := client.DeleteVolume(project, id)
+func deleteVolume(id string) {
+	err := client.DeleteVolume(id)
 	if err != nil {
 		fmt.Printf("Unable to delete volume %s: %s \n", id, err)
 	} else {
@@ -119,8 +124,8 @@ func deleteVolume(project string, id string) {
 	}
 }
 
-func deleteStack(project string, stack string) {
-	err := client.DeleteStack(project, stack)
+func deleteStack(stack string) {
+	err := client.DeleteStack(stack)
 	if err != nil {
 		fmt.Printf("Unable to delete stack %s: %s \n", stack, err)
 	} else {

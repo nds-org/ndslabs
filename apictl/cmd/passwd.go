@@ -20,7 +20,7 @@ var passwdCmd = &cobra.Command{
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		project, err := client.GetProject(apiUser.username)
+		account, err := client.GetAccount(apiUser.username)
 		if err != nil {
 			fmt.Printf("Error changing password: %s\n", err)
 			return
@@ -29,7 +29,7 @@ var passwdCmd = &cobra.Command{
 		fmt.Print("Current password: ")
 		currentPassword := getPassword()
 		fmt.Print("\n")
-		if currentPassword != project.Password {
+		if currentPassword != account.Password {
 			fmt.Println("Invalid password")
 			return
 		}
@@ -50,9 +50,9 @@ var passwdCmd = &cobra.Command{
 			return
 		}
 
-		if newPassword == confirmPassword && currentPassword == project.Password {
-			project.Password = newPassword
-			err := client.UpdateProject(project)
+		if newPassword == confirmPassword && currentPassword == account.Password {
+			account.Password = newPassword
+			err := client.UpdateAccount(account)
 			if err != nil {
 				fmt.Printf("Error changing password: %s\n", err)
 				return

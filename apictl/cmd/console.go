@@ -22,13 +22,13 @@ var consoleCmd = &cobra.Command{
 
 		ssid := args[0]
 
-		err := client.CheckConsole(apiUser.username, ssid)
+		err := client.CheckConsole(ssid)
 		if err != nil {
 			fmt.Printf("Error getting console: %s\n", err)
 			return
 		}
 
-		client.Console(apiUser.username, ssid)
+		client.Console(ssid)
 	},
 	PostRun: RefreshToken,
 }

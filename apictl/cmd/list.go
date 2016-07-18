@@ -22,23 +22,23 @@ var listServicesCmd = &cobra.Command{
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		services, err := client.ListServices()
+		services, err := client.ListServices(catalog)
 		if err != nil {
 			fmt.Printf("Error listing services: %s\n", err)
 			return
 		}
 
 		w := new(tabwriter.Writer)
-		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
-		fmt.Fprintln(w, "SERVICE\tDEPENDENCY\tREQUIRED")
+		w.Init(os.Stdout, 15, 4, 3, ' ', 0)
+		fmt.Fprintln(w, "SERVICE\tDEPENDENCY\tREQUIRED\tCATALOG")
 		for _, service := range *services {
 			if service.Display != "" {
-				fmt.Fprintf(w, "%s\n", service.Key)
+				fmt.Fprintf(w, "%s\t\t\t%s\n", service.Key, service.Catalog)
 				for _, dependency := range service.Dependencies {
 					if dependency.Required {
-						fmt.Fprintf(w, "\t%s\t(required)\n", dependency.DependencyKey)
+						fmt.Fprintf(w, "\t%s\tYes\n", dependency.DependencyKey)
 					} else {
-						fmt.Fprintf(w, "\t%s\t(optional)\n", dependency.DependencyKey)
+						fmt.Fprintf(w, "\t%s\tNo\n", dependency.DependencyKey)
 					}
 				}
 			}
@@ -54,7 +54,7 @@ var listStacksCmd = &cobra.Command{
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		stacks, err := client.ListStacks(apiUser.username)
+		stacks, err := client.ListStacks()
 		if err != nil {
 			fmt.Printf("List failed: %s\n", err)
 			os.Exit(-1)
@@ -96,7 +96,7 @@ var listVolumesCmd = &cobra.Command{
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		volumes, err := client.ListVolumes(apiUser.username)
+		volumes, err := client.ListVolumes()
 		if err != nil {
 			fmt.Printf("List failed: %s\n", err)
 			os.Exit(-1)
@@ -113,20 +113,20 @@ var listVolumesCmd = &cobra.Command{
 	PostRun: RefreshToken,
 }
 
-var listProjectsCmd = &cobra.Command{
-	Use:    "projects",
-	Short:  "List existing projects (admin users only)",
+var listAccountsCmd = &cobra.Command{
+	Use:    "accounts",
+	Short:  "List existing accounts (admin users only)",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		password := credentials("Admin password: ")
 		token, err := client.Login("admin", password)
 		if err != nil {
-			fmt.Printf("Unable to list projects: %s \n", err)
+			fmt.Printf("Unable to list accounts: %s \n", err)
 			return
 		}
 
-		projects, err := client.ListProjects(token)
+		accounts, err := client.ListAccounts(token)
 		if err != nil {
 			fmt.Printf("List failed: %s\n", err)
 			os.Exit(-1)
@@ -135,14 +135,14 @@ var listProjectsCmd = &cobra.Command{
 		w := new(tabwriter.Writer)
 		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
 		fmt.Fprintln(w, "NAMESPACE\tSTORAGE\tCPU (Max)\tCPU (Default)\tMEMORY (Max)\tMEMORY (Default)\tDESCRIPTION")
-		for _, project := range *projects {
-			fmt.Fprintf(w, "%s\t%d\t%s\t%s\t%s\t%s\t%s\n", project.Namespace,
-				project.ResourceLimits.StorageQuota,
-				project.ResourceLimits.CPUMax,
-				project.ResourceLimits.CPUDefault,
-				project.ResourceLimits.MemoryMax,
-				project.ResourceLimits.MemoryDefault,
-				project.Description)
+		for _, account := range *accounts {
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", account.Namespace,
+				account.ResourceLimits.StorageQuota,
+				account.ResourceLimits.CPUMax,
+				account.ResourceLimits.CPUDefault,
+				account.ResourceLimits.MemoryMax,
+				account.ResourceLimits.MemoryDefault,
+				account.Description)
 		}
 		w.Flush()
 
@@ -180,9 +180,12 @@ var listConfigsCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(listCmd)
+
+	listServicesCmd.Flags().StringVarP(&catalog, "catalog", "c", "user", "Catalog to use")
+
 	listCmd.AddCommand(listServicesCmd)
 	listCmd.AddCommand(listStacksCmd)
 	listCmd.AddCommand(listVolumesCmd)
-	listCmd.AddCommand(listProjectsCmd)
+	listCmd.AddCommand(listAccountsCmd)
 	listCmd.AddCommand(listConfigsCmd)
 }

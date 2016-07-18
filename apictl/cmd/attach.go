@@ -21,7 +21,7 @@ var attachCmd = &cobra.Command{
 		name := args[0]
 		ssid := args[1]
 
-		volume, err := client.GetVolume(apiUser.username, name)
+		volume, err := client.GetVolume(name)
 		if err != nil {
 			fmt.Printf("Attach failed: %s\n", err.Error())
 			return
@@ -29,7 +29,7 @@ var attachCmd = &cobra.Command{
 
 		volume.Attached = ssid
 
-		vol, err := client.UpdateVolume(apiUser.username, volume)
+		vol, err := client.UpdateVolume(volume)
 		if err != nil {
 			fmt.Printf("Attach failed: %s\n", err.Error())
 		} else {

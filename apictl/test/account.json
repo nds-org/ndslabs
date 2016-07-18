@@ -1,7 +1,7 @@
 { 
     "id": "test",
-    "name": "test project",
-    "description": "test project description",
+    "name": "test account",
+    "description": "test account description",
     "namespace": "test" ,
     "password": "123456",
 	"resourceLimits": {

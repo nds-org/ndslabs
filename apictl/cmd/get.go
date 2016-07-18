@@ -58,7 +58,7 @@ var getStackCmd = &cobra.Command{
 			return
 		}
 
-		stack, err := client.GetStack(apiUser.username, sid)
+		stack, err := client.GetStack(sid)
 		if err != nil {
 			fmt.Printf("Get stack failed: %s\n", err)
 			return
@@ -94,46 +94,46 @@ var getStackCmd = &cobra.Command{
 	PostRun: RefreshToken,
 }
 
-var getProjectCmd = &cobra.Command{
-	Use:    "project",
-	Short:  "Get project details",
+var getAccountCmd = &cobra.Command{
+	Use:    "account",
+	Short:  "Get account details",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if len(args) == 1 && args[0] != apiUser.username {
-			// Trying to get another project, needs to be admin
+			// Trying to get another account, needs to be admin
 			password := credentials("Admin password: ")
 			token, err := client.Login("admin", password)
 			if err != nil {
-				fmt.Printf("Unable to get project: %s \n", err)
+				fmt.Printf("Unable to get account: %s \n", err)
 				return
 			}
 
-			project, err := client.GetProjectAdmin(args[0], token)
+			account, err := client.GetAccountAdmin(args[0], token)
 			if err != nil {
-				fmt.Printf("Unable to get project: %s\n", err)
+				fmt.Printf("Unable to get account: %s\n", err)
 				os.Exit(-1)
 			}
 
-			project.Password = "REDACTED"
-			data, err := json.MarshalIndent(project, "", "   ")
+			account.Password = "REDACTED"
+			data, err := json.MarshalIndent(account, "", "   ")
 			if err != nil {
-				fmt.Printf("Error marshalling project %s\n", err.Error)
+				fmt.Printf("Error marshalling account %s\n", err.Error)
 				return
 			}
 			fmt.Println(string(data))
 		} else {
-			pid := apiUser.username
+			username := apiUser.username
 
-			project, err := client.GetProject(pid)
+			account, err := client.GetAccount(username)
 			if err != nil {
-				fmt.Printf("Get project failed: %s\n", err)
+				fmt.Printf("Get account failed: %s\n", err)
 				return
 			}
-			project.Password = "REDACTED"
-			data, err := json.MarshalIndent(project, "", "   ")
+			account.Password = "REDACTED"
+			data, err := json.MarshalIndent(account, "", "   ")
 			if err != nil {
-				fmt.Printf("Error marshalling project %s\n", err.Error)
+				fmt.Printf("Error marshalling account %s\n", err.Error)
 				return
 			}
 			fmt.Println(string(data))
@@ -147,5 +147,5 @@ func init() {
 	RootCmd.AddCommand(getCmd)
 	getCmd.AddCommand(getServiceCmd)
 	getCmd.AddCommand(getStackCmd)
-	getCmd.AddCommand(getProjectCmd)
+	getCmd.AddCommand(getAccountCmd)
 }

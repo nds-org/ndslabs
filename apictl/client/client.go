@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"sort"
 	"strings"
 	"sync"
 	"syscall"
@@ -62,9 +63,12 @@ func (c *Client) Login(username string, password string) (string, error) {
 	}
 }
 
-func (c *Client) ListServices() (*[]api.ServiceSpec, error) {
+func (c *Client) ListServices(catalog string) (*[]api.ServiceSpec, error) {
 
 	url := c.BasePath + "services"
+	if catalog != "" {
+		url += "?catalog=" + catalog
+	}
 	request, err := http.NewRequest("GET", url, nil)
 
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
@@ -83,6 +87,7 @@ func (c *Client) ListServices() (*[]api.ServiceSpec, error) {
 
 		services := make([]api.ServiceSpec, 0)
 		json.Unmarshal([]byte(body), &services)
+		sort.Sort(api.ServiceSorter(services))
 		return &services, nil
 	} else {
 		err := errors.New(resp.Status)
@@ -148,9 +153,9 @@ func (c *Client) GetService(name string) (*api.ServiceSpec, error) {
 	return nil, nil
 }
 
-func (c *Client) ListStacks(pid string) (*[]api.Stack, error) {
+func (c *Client) ListStacks() (*[]api.Stack, error) {
 
-	url := c.BasePath + "projects/" + pid + "/stacks"
+	url := c.BasePath + "stacks"
 
 	request, err := http.NewRequest("GET", url, nil)
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
@@ -175,9 +180,9 @@ func (c *Client) ListStacks(pid string) (*[]api.Stack, error) {
 	}
 }
 
-func (c *Client) AddStack(project string, stack *api.Stack) (*api.Stack, error) {
+func (c *Client) AddStack(stack *api.Stack) (*api.Stack, error) {
 
-	url := c.BasePath + "projects/" + project + "/stacks"
+	url := c.BasePath + "stacks"
 
 	data, err := json.Marshal(stack)
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
@@ -205,9 +210,9 @@ func (c *Client) AddStack(project string, stack *api.Stack) (*api.Stack, error) 
 	return nil, nil
 }
 
-func (c *Client) UpdateStack(project string, stack *api.Stack) error {
+func (c *Client) UpdateStack(stack *api.Stack) error {
 
-	url := c.BasePath + "projects/" + project + "/stacks/" + stack.Id
+	url := c.BasePath + "stacks/" + stack.Id
 
 	data, err := json.Marshal(stack)
 	request, err := http.NewRequest("PUT", url, bytes.NewBuffer(data))
@@ -234,9 +239,9 @@ func (c *Client) UpdateStack(project string, stack *api.Stack) error {
 	}
 }
 
-func (c *Client) ListProjects(token string) (*[]api.Project, error) {
+func (c *Client) ListAccounts(token string) (*[]api.Account, error) {
 
-	url := c.BasePath + "projects"
+	url := c.BasePath + "accounts"
 
 	request, err := http.NewRequest("GET", url, nil)
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
@@ -253,20 +258,20 @@ func (c *Client) ListProjects(token string) (*[]api.Project, error) {
 			return nil, err
 		}
 
-		projects := make([]api.Project, 0)
-		json.Unmarshal([]byte(body), &projects)
-		return &projects, nil
+		accounts := make([]api.Account, 0)
+		json.Unmarshal([]byte(body), &accounts)
+		return &accounts, nil
 
 	} else {
 		return nil, errors.New(resp.Status)
 	}
 }
 
-func (c *Client) AddProject(project *api.Project, token string) error {
+func (c *Client) AddAccount(account *api.Account, token string) error {
 
-	url := c.BasePath + "projects/"
+	url := c.BasePath + "accounts"
 
-	data, err := json.Marshal(project)
+	data, err := json.Marshal(account)
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
@@ -281,8 +286,8 @@ func (c *Client) AddProject(project *api.Project, token string) error {
 				return err
 			}
 
-			project := api.Project{}
-			json.Unmarshal([]byte(body), &project)
+			account := api.Account{}
+			json.Unmarshal([]byte(body), &account)
 			return nil
 
 		} else {
@@ -291,11 +296,11 @@ func (c *Client) AddProject(project *api.Project, token string) error {
 	}
 }
 
-func (c *Client) UpdateProject(project *api.Project) error {
+func (c *Client) UpdateAccount(account *api.Account) error {
 
-	url := c.BasePath + "projects/" + project.Namespace
+	url := c.BasePath + "accounts/" + account.Namespace
 
-	data, err := json.Marshal(project)
+	data, err := json.Marshal(account)
 	request, err := http.NewRequest("PUT", url, bytes.NewBuffer(data))
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
@@ -310,8 +315,8 @@ func (c *Client) UpdateProject(project *api.Project) error {
 				return err
 			}
 
-			project := api.Project{}
-			json.Unmarshal([]byte(body), &project)
+			account := api.Account{}
+			json.Unmarshal([]byte(body), &account)
 			return nil
 
 		} else {
@@ -320,9 +325,13 @@ func (c *Client) UpdateProject(project *api.Project) error {
 	}
 }
 
-func (c *Client) AddService(service *api.ServiceSpec, token string) (*api.ServiceSpec, error) {
+func (c *Client) AddService(service *api.ServiceSpec, token string, catalog string) (*api.ServiceSpec, error) {
 
 	url := c.BasePath + "services"
+
+	if catalog != "" {
+		url += "?catalog=" + catalog
+	}
 
 	data, err := json.Marshal(service)
 	if err != nil {
@@ -352,9 +361,9 @@ func (c *Client) AddService(service *api.ServiceSpec, token string) (*api.Servic
 	}
 }
 
-func (c *Client) ListVolumes(pid string) (*[]api.Volume, error) {
+func (c *Client) ListVolumes() (*[]api.Volume, error) {
 
-	url := c.BasePath + "projects/" + pid + "/volumes"
+	url := c.BasePath + "volumes"
 
 	request, err := http.NewRequest("GET", url, nil)
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
@@ -380,9 +389,9 @@ func (c *Client) ListVolumes(pid string) (*[]api.Volume, error) {
 	}
 }
 
-func (c *Client) UpdateVolume(pid string, volume *api.Volume) (*api.Volume, error) {
+func (c *Client) UpdateVolume(volume *api.Volume) (*api.Volume, error) {
 
-	url := c.BasePath + "projects/" + pid + "/volumes/" + volume.Id
+	url := c.BasePath + "volumes/" + volume.Id
 
 	data, err := json.Marshal(volume)
 	if err != nil {
@@ -412,9 +421,9 @@ func (c *Client) UpdateVolume(pid string, volume *api.Volume) (*api.Volume, erro
 	}
 }
 
-func (c *Client) GetVolume(pid string, id string) (*api.Volume, error) {
+func (c *Client) GetVolume(id string) (*api.Volume, error) {
 
-	url := c.BasePath + "projects/" + pid + "/volumes/" + id
+	url := c.BasePath + "volumes/" + id
 
 	request, err := http.NewRequest("GET", url, nil)
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
@@ -440,14 +449,14 @@ func (c *Client) GetVolume(pid string, id string) (*api.Volume, error) {
 	}
 }
 
-func (c *Client) AddVolume(pid string, volume *api.Volume) (*api.Volume, error) {
+func (c *Client) AddVolume(volume *api.Volume) (*api.Volume, error) {
 
 	data, err := json.Marshal(&volume)
 	if err != nil {
 		return nil, err
 	}
 
-	url := c.BasePath + "projects/" + pid + "/volumes"
+	url := c.BasePath + "volumes"
 
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	request.Header.Set("Content-Type", "application/json")
@@ -472,10 +481,14 @@ func (c *Client) AddVolume(pid string, volume *api.Volume) (*api.Volume, error) 
 	}
 }
 
-func (c *Client) DeleteService(service string, token string) error {
+func (c *Client) DeleteService(service string, token string, catalog string) error {
 
 	url := c.BasePath + "services/" + service
 
+	if catalog != "" {
+		url += "?catalog=" + catalog
+	}
+
 	request, err := http.NewRequest("DELETE", url, nil)
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
@@ -497,9 +510,9 @@ func (c *Client) DeleteService(service string, token string) error {
 	return nil
 }
 
-func (c *Client) DeleteProject(project string, token string) error {
+func (c *Client) DeleteAccount(account string, token string) error {
 
-	url := c.BasePath + "projects/" + project
+	url := c.BasePath + "accounts/" + account
 
 	request, err := http.NewRequest("DELETE", url, nil)
 	request.Header.Set("Content-Type", "application/json")
@@ -522,9 +535,9 @@ func (c *Client) DeleteProject(project string, token string) error {
 	return nil
 }
 
-func (c *Client) DeleteVolume(project string, volumeId string) error {
+func (c *Client) DeleteVolume(volumeId string) error {
 
-	url := c.BasePath + "projects/" + project + "/volumes/" + volumeId
+	url := c.BasePath + "volumes/" + volumeId
 
 	request, err := http.NewRequest("DELETE", url, nil)
 	request.Header.Set("Content-Type", "application/json")
@@ -547,9 +560,9 @@ func (c *Client) DeleteVolume(project string, volumeId string) error {
 	return nil
 }
 
-func (c *Client) DeleteStack(project string, stackKey string) error {
+func (c *Client) DeleteStack(stackKey string) error {
 
-	url := c.BasePath + "projects/" + project + "/stacks/" + stackKey
+	url := c.BasePath + "stacks/" + stackKey
 
 	request, err := http.NewRequest("DELETE", url, nil)
 	request.Header.Set("Content-Type", "application/json")
@@ -572,8 +585,8 @@ func (c *Client) DeleteStack(project string, stackKey string) error {
 	return nil
 }
 
-func (c *Client) GetStack(pid string, sid string) (*api.Stack, error) {
-	url := fmt.Sprintf("%sprojects/%s/stacks/%s", c.BasePath, pid, sid)
+func (c *Client) GetStack(sid string) (*api.Stack, error) {
+	url := c.BasePath + "stacks/" + sid
 
 	request, err := http.NewRequest("GET", url, nil)
 
@@ -603,9 +616,9 @@ func (c *Client) GetStack(pid string, sid string) (*api.Stack, error) {
 	}
 }
 
-func (c *Client) GetLogs(pid string, sid string, lines int) (string, error) {
+func (c *Client) GetLogs(sid string, lines int) (string, error) {
 
-	url := c.BasePath + "projects/" + pid + "/logs/" + sid
+	url := c.BasePath + "logs/" + sid
 	if lines > 0 {
 		url += fmt.Sprintf("?lines=%d", lines)
 	}
@@ -632,9 +645,9 @@ func (c *Client) GetLogs(pid string, sid string, lines int) (string, error) {
 	}
 }
 
-func (c *Client) StartStack(pid string, stack string) (*api.Stack, error) {
+func (c *Client) StartStack(stack string) (*api.Stack, error) {
 
-	url := c.BasePath + "projects/" + pid + "/start/" + stack
+	url := c.BasePath + "start/" + stack
 
 	request, err := http.NewRequest("GET", url, nil)
 	request.Header.Set("Content-Type", "application/json")
@@ -663,8 +676,8 @@ func (c *Client) StartStack(pid string, stack string) (*api.Stack, error) {
 	}
 }
 
-func (c *Client) StopStack(pid string, stack string) (*api.Stack, error) {
-	url := c.BasePath + "projects/" + pid + "/stop/" + stack
+func (c *Client) StopStack(stack string) (*api.Stack, error) {
+	url := c.BasePath + "stop/" + stack
 
 	request, err := http.NewRequest("GET", url, nil)
 	request.Header.Set("Content-Type", "application/json")
@@ -693,16 +706,16 @@ func (c *Client) StopStack(pid string, stack string) (*api.Stack, error) {
 	}
 }
 
-func (c *Client) GetProject(pid string) (*api.Project, error) {
-	return c.getProject(pid, c.Token)
+func (c *Client) GetAccount(accountId string) (*api.Account, error) {
+	return c.getAccount(accountId, c.Token)
 }
 
-func (c *Client) GetProjectAdmin(pid string, token string) (*api.Project, error) {
-	return c.getProject(pid, token)
+func (c *Client) GetAccountAdmin(accountId string, token string) (*api.Account, error) {
+	return c.getAccount(accountId, token)
 }
 
-func (c *Client) getProject(pid string, token string) (*api.Project, error) {
-	url := fmt.Sprintf("%sprojects/%s", c.BasePath, pid)
+func (c *Client) getAccount(accountId string, token string) (*api.Account, error) {
+	url := fmt.Sprintf("%saccounts/%s", c.BasePath, accountId)
 
 	request, err := http.NewRequest("GET", url, nil)
 
@@ -720,13 +733,13 @@ func (c *Client) getProject(pid string, token string) (*api.Project, error) {
 			return nil, err
 		}
 
-		project := api.Project{}
-		err = json.Unmarshal([]byte(body), &project)
+		account := api.Account{}
+		err = json.Unmarshal([]byte(body), &account)
 		if err != nil {
 			return nil, err
 		}
 
-		return &project, nil
+		return &account, nil
 	} else {
 		return nil, errors.New(resp.Status)
 	}
@@ -790,7 +803,7 @@ func (c *Client) Version() (string, error) {
 	}
 }
 
-func (c *Client) Console(pid string, ssid string) error {
+func (c *Client) Console(ssid string) error {
 
 	var wsServer string
 	if c.BasePath[:5] == "https" {
@@ -799,7 +812,7 @@ func (c *Client) Console(pid string, ssid string) error {
 		wsServer = strings.Replace(c.BasePath, "http", "ws", 1)
 	}
 
-	wsUrl := wsServer + "console?namespace=" + pid + "&ssid=" + ssid
+	wsUrl := wsServer + "console?ssid=" + ssid
 	config := websocket.Config{}
 	config.Version = 13
 	config.Location, _ = url.Parse(wsUrl)
@@ -862,9 +875,9 @@ func (c *Client) Console(pid string, ssid string) error {
 	return nil
 }
 
-func (c *Client) CheckConsole(pid string, ssid string) error {
+func (c *Client) CheckConsole(ssid string) error {
 
-	url := c.BasePath + "check_console?namespace=" + pid + "&ssid=" + ssid
+	url := c.BasePath + "check_console?ssid=" + ssid
 
 	request, err := http.NewRequest("GET", url, nil)
 	request.Header.Set("Content-Type", "application/json")

@@ -16,7 +16,7 @@ var stopCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		stackId := args[0]
 
-		stack, err := client.StopStack(apiUser.username, stackId)
+		stack, err := client.StopStack(stackId)
 
 		if err != nil {
 			fmt.Printf("Error stopping %s: %s\n", stackId, err)
