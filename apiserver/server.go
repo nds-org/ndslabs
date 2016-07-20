@@ -479,7 +479,7 @@ func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 		} else {
-			fmt.Printf("Usage: %d %d \n", quota.Items[0].Status.Used.Memory().Value(), quota.Items[0].Status.Hard.Memory().Value())
+			glog.V(4).Infof("Usage: %d %d \n", quota.Items[0].Status.Used.Memory().Value(), quota.Items[0].Status.Hard.Memory().Value())
 			account.ResourceUsage = api.ResourceUsage{
 				CPU:       quota.Items[0].Status.Used.Cpu().String(),
 				Memory:    quota.Items[0].Status.Used.Memory().String(),
@@ -681,8 +681,6 @@ func (s *Server) GetService(w rest.ResponseWriter, r *rest.Request) {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		} else {
-			s, _ := json.Marshal(spec)
-			fmt.Println(string(s))
 			w.WriteJson(&spec)
 		}
 	} else {
@@ -696,8 +694,6 @@ func (s *Server) GetService(w rest.ResponseWriter, r *rest.Request) {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		} else {
-			s, _ := json.Marshal(spec)
-			fmt.Println(string(s))
 			w.WriteJson(&spec)
 		}
 	}
@@ -756,11 +752,6 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if s.serviceExists(userId, key) {
-		rest.Error(w, "Service exists with key", http.StatusConflict)
 		return
 	}
 
@@ -1329,7 +1320,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 		template.Spec.Template.Spec.Volumes = k8vols
 	}
 
-	fmt.Printf("Starting controller %s\n", name)
+	glog.V(4).Infof("Starting controller %s\n", name)
 	_, err := s.kube.StartController(userId, template)
 	if err != nil {
 		stackService.Status = "error"
