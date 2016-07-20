@@ -27,6 +27,17 @@ angular
   
   var perRow = 4;
   
+  $scope.stackExistsFor = function(spec) {
+    var exists = false;
+    angular.forEach(Stacks.all, function(stack) {
+      var check = _.find(stack.services, [ 'service', spec.key ]);
+      if (check) {
+        exists = true;
+      }
+    });
+    return exists;
+  };
+  
   var refilter = function(specs) {
     $scope.filteredSpecs = $filter('isStack')(specs, $scope.showStandalones);
     $scope.filteredSpecs = $filter('orderBy')($scope.filteredSpecs, 'label');
@@ -45,7 +56,6 @@ angular
     refilter($scope.specs = newValue);
   });
   $scope.$watch(function () { return Stacks.all; }, function(newValue, oldValue) {
-    $scope.stacks = newValue;
     $scope.installs = {};
     angular.forEach(Specs.all, function(spec) {
       var cnt =  _.filter(newValue, [ 'key', spec.key ]).length;
@@ -69,7 +79,7 @@ angular
     delete specCopy.updateTime;
     delete specCopy.createdTime;
     
-    clipboard.copyText(JSON.stringify(specCopy));
+    clipboard.copyText(JSON.stringify(specCopy, null, 4));
   };
   
   $scope.cloneSpec = function(spec) {

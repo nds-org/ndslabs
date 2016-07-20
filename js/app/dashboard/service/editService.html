@@ -2,7 +2,7 @@
 <section>
   <div class="row">
     <div class="col-xs-10 col-xs-offset-1">
-      <h2>Configure {{ service.service | specProperty:'label' }} ({{ service.id }})</h2>
+      <h3>{{ editingService ? 'Edit' : 'Add' }} {{ service.service | specProperty:'label' }}<span ng-if="service.id"> ({{ service.id }})</span></h3>
       
       <ol class="breadcrumb">
         <li><a href="#/home">Dashboard</a></li>
@@ -10,7 +10,6 @@
       </ol>
         
       <uib-tabset active="activeTab">
-        
         <uib-tab heading="Docker" index="0">
           <fieldset class="border-nds">
             <legend class="legend-fix">Docker</legend>
@@ -45,27 +44,32 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr ng-repeat="cfg in configs | orderBy:'canEdit':true track by cfg.name">
+                  <tr ng-repeat="cfg in configs | orderBy:['spec.canOverride', 'spec.isPassword'] track by cfg.name">
                       <td>
                         <span ng-if="!cfg.canEdit">{{ cfg.label || cfg.name }}</span>
                         <input ng-if="cfg.canEdit" class="form-control" ng-model="cfg.name" placeholder="Property Name..." />
                       </td>
                       <td>
-                        <input class="form-control" ng-if="!cfg.isPassword" ng-model="cfg.value" placeholder="Property Value..." />
-                        
-                        <div ng-if="cfg.isPassword">
-                          <pwgen id="configValue" name="configValue" ng-model="cfg.value" length="20" placeholder="Choose a Password" maxlength="32759" required></pwgen>
+                        <div ng-if="!cfg.spec.canOverride && !cfg.spec.isPassword">
+                          {{ cfg.value }}
+                        </div>
+                        <div ng-if="cfg.spec.canOverride || cfg.spec.isPassword">
+                          <input class="form-control" ng-if="!cfg.spec.isPassword" ng-model="cfg.value" placeholder="Property Value..." />
                           
-                          <!-- Password Strength -->
-                          <div ng-password-strength="cfg.value" strength="cfg.strength" 
-                              inner-class="progress-bar" inner-class-prefix="progress-bar-">
+                          <div ng-if="cfg.spec.isPassword">
+                            <pwgen id="configValue" name="configValue" ng-model="cfg.value" length="20" placeholder="Choose a Password" maxlength="32759" required></pwgen>
+                            
+                            <!-- Password Strength -->
+                            <div ng-password-strength="cfg.value" strength="cfg.strength" 
+                                inner-class="progress-bar" inner-class-prefix="progress-bar-">
+                            </div>
+                            
+                            Current strength is: <strong>{{ cfg.strength | passwordStrength }}</strong>
                           </div>
-                          
-                          Current strength is: <strong>{{ cfg.strength | passwordStrength }}</strong>
                         </div>
               
                       </td>
-                      <td class="text-center"><button class="btn btn-xs btn-default" ng-click="cfg.value = cfg.def"><i class="fa fa-fw fa-asterisk"></i></button></td>
+                      <td class="text-center"><button class="btn btn-xs btn-default" ng-click="cfg.value = cfg.spec.value"><i class="fa fa-fw fa-asterisk"></i></button></td>
                       <td class="text-center"><button class="btn btn-xs btn-default" ng-if="cfg.canEdit" ng-click="configs.splice(configs.indexOf(cfg), 1)"><i class="fa fa-fw fa-trash"></i></button></td>
                   </tr>
                   
@@ -84,7 +88,7 @@
                       <p class="text-success" ng-if="newCfgName && newCfgValue && !_.find(configs, ['name', newCfgName])">New variable is valid!</p>
                     </td>
                     <td class="text-center">
-                      <button class="btn btn-xs btn-primary" ng-click="configs.push({ 'name': newCfgName, 'value': newCfgValue, 'def': '', 'canEdit': true, 'editing': true })" 
+                      <button class="btn btn-xs btn-primary" ng-click="configs.push({ 'name': newCfgName, 'value': newCfgValue, 'spec': { 'default': '', canOverride: true, isPassword: false } })" 
                       ng-disabled="!newCfgName || !newCfgValue || _.find(configs, ['name', newCfgName])">
                         <i class="fa fa-fw fa-plus"></i>
                       </button>
@@ -142,7 +146,7 @@
         </uib-tab>
         
         <!-- Port Mapper -->
-        <uib-tab heading="Network" index="3">
+        <!-- <uib-tab heading="Network" index="3">
           <fieldset class="border-nds">
             <legend class="legend-fix">Ports</legend>
             <div class="table-responsive">
@@ -150,7 +154,7 @@
                 <thead>
                   <tr>
                     <th width="30%" class="text-center">Protocol</th>
-                    <th width="30%">Port Number</th>
+                    <th width="30%" class="text-center">Port Number</th>
                     <th width="30%" class="text-center">Exposure</th>
                     <th width="10%"></th>
                   </tr>
@@ -158,15 +162,10 @@
                 <tbody>
                   <tr ng-repeat="port in ports | orderBy:'canEdit':true">
                     <td class="text-center">
-                        <span ng-if="!port.canEdit">{{ port.protocol }}</span>
-                        <div class="btn-group" role="group" ng-if="port.canEdit">
-                          <button type="button" class="btn btn-xs" ng-click="port.protocol='tcp'" ng-class="{ 'btn-primary': port.protocol === 'tcp', 'btn-default': port.protocol !== 'tcp' }">TCP</button>
-                          <button type="button" class="btn btn-xs" ng-click="port.protocol='udp'" ng-class="{ 'btn-primary': port.protocol === 'udp', 'btn-default': port.protocol !== 'udp' }">UDP</button>
-                        </div>
+                      {{ port.protocol | uppercase }}
                     </td>
-                    <td>
-                      <span ng-if="!port.canEdit">{{ port.number }}</span>
-                      <input class="form-control" type="number" ng-if="port.canEdit" ng-model="port.number" placeholder="Choose Port Number..." />
+                    <td class="text-center">
+                      {{ port.port }}
                     </td>
                     <td class="text-center">
                       <div class="btn-group" role="group">
@@ -176,40 +175,19 @@
                     </td>
                     <td><button ng-if="port.canEdit" class="btn btn-xs btn-default" ng-click="ports.splice(ports.indexOf(port), 1)"><i class="fa fa-fw fa-trash"></i></button></td>
                   </tr>
-                  
-                  <!-- Map a new port -->
-                  <tr>
-                    <td class="text-center">
-                      <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-xs" ng-click="portProtocol='tcp'" ng-class="{ 'btn-primary': portProtocol === 'tcp', 'btn-default': portProtocol !== 'tcp' }">TCP</button>
-                        <button type="button" class="btn btn-xs" ng-click="portProtocol='udp'" ng-class="{ 'btn-primary': portProtocol === 'udp', 'btn-default': portProtocol !== 'udp' }">UDP</button>
-                      </div>
-                    </td>
-                    <td class="text-center">
-                      <input class="form-control" type="number" ng-model="portNumber" placeholder="Choose Port Number..." />
-                    </td>
-                    <td class="text-center">
-                      <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-xs" ng-click="portExposure='internal'" ng-class="{ 'btn-primary': portExposure === 'internal', 'btn-default': portExposure !== 'internal' }">
-                          <i class="fa fa-fw fa-eye-slash"></i>
-                        </button>
-                        <button type="button" class="btn btn-xs" ng-click="portExposure='external'" ng-class="{ 'btn-primary': portExposure === 'external', 'btn-default': portExposure !== 'external' }">
-                          <i class="fa fa-fw fa-eye"></i>
-                        </button>
-                      </div>
-                    </td>
-                    <td><button class="btn btn-xs btn-primary" ng-click="ports.push({ protocol: portProtocol, number: portNumber, exposure: portExposure, canEdit:true })" 
-                    ng-disabled="_.find(service.ports, { protocol:portProtocol, number:portNumber })" ><i class="fa fa-fw fa-plus"></i></button></td>
-                  </tr>
               </table>
             </div>
           </fieldset>
-        </uib-tab>
-      </uib-tabset> 
-      
+        </uib-tab> -->
+      </uib-tabset>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-sm-12">
       <div class="pull-right">
-        <button class="btn btn-lg btn-success" ng-click="save()"><i class="fa fa-fw fa-save"></i> Save</button>
-        <button class="btn btn-lg btn-danger" ng-click="cancel()"><i class="fa fa-fw fa-times"></i> Cancel</button>
+        <button class="btn btn-success" ng-click="save()"><i class="fa fa-fw fa-save"></i> Save</button>
+        <button class="btn btn-danger" ng-click="cancel()"><i class="fa fa-fw fa-times"></i> Cancel</button>
       </div>
     </div>
   </div>

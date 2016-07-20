@@ -20,28 +20,33 @@ angular
   //$scope.editingSpec = (path.indexOf('edit') !== -1);
   $scope.editingSpec = (path.indexOf('/edit/') !== -1);
   
-  // If a key is given, this is an edit, otherwise it is an add
-  if ($scope.editingSpec) {
-    // Update view when our spec list reloads
-    $scope.$watch(function () { return Specs.all; }, function(newValue, oldValue) {
-      if (newValue && newValue.length) {
-        $scope.specs = newValue;
-        $scope.key = $routeParams.specKey;
-        NdsLabsApi.getServicesByServiceId({ serviceId: $scope.key }).then(function(data) {
-          $scope.spec = data;
-          
-          if (!$scope.spec.image.tags) {
-            $scope.spec.image.tags = [];
-          }
-        });
-      }
-    });
-  } else {
-    $scope.$watch(function () { return Specs.all; }, function(newValue, oldValue) { 
-      $scope.specs = newValue;
+  // Set up some common defaults
+  $scope.portProtocol = 'http';
+  $scope.portNumber = 80;
+  $scope.portExposure = 'external';
+
+  // Update view when our spec list reloads
+  $scope.$watch(function () { return Specs.all; }, function(newValue, oldValue) {
+    if (!newValue) {
+      return;
+    }
+    
+    $scope.specs = newValue;
+    
+    // If a key is given, this is an edit, otherwise it is an add
+    if ($scope.editingSpec) {
+      $scope.key = $routeParams.specKey;
+      NdsLabsApi.getServicesByServiceId({ serviceId: $scope.key }).then(function(data) {
+        $scope.spec = data;
+        
+        if (!$scope.spec.image.tags) {
+          $scope.spec.image.tags = [];
+        }
+      });
+    } else {
       $scope.spec = new Spec();
-    });
-  }
+    }
+  });
   
   $scope.removeItem = function(target, obj) {
     target.splice(target.indexOf(obj), 1);
@@ -56,29 +61,18 @@ angular
   
   // Save the changes made on this page
   $scope.save = function() {
-    if ($scope.editingSpec) {
-      return NdsLabsApi.putServicesByServiceId({ service: $scope.spec, serviceId: $scope.spec.key }).then(function(data, b, c) {
-        console.log("Successfully PUT service: " + $scope.key);
-        
-        // TODO: Only populate changed spec?
-        Specs.populate().then(function() {
-          $location.path('/store');
-        });
+    var method = $scope.editingSpec ? 'putServicesByServiceId' : 'postServices';
+    
+    return NdsLabsApi[method]({ service: $scope.spec, serviceId: $scope.spec.key }).then(function(data, b, c) {
+      // TODO: Only populate changed spec?
+      Specs.populate().then(function() {
+        $location.path('/store');
       });
-    } else {
-      return NdsLabsApi.postServices({ service: $scope.spec }).then(function(data, b, c) {
-        console.log("Successfully POST service: " + $scope.key);
-        
-        // TODO: Only populate new spec?
-        Specs.populate().then(function() {
-          $location.path('/store');
-        });
-      });
-    }
+    });
   };
   
   $scope.cancel = function() {
     // Add the new stack to the UI
-    $location.path('/home');
+    $location.path('/store');
   };
 }]);

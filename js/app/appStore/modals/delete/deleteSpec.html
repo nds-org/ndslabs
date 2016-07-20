@@ -8,10 +8,14 @@
     <p>Are you sure that you would like to delete this application from your catalog?</p>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-default pull-left" data-dismiss="modal" ng-click="close()"><i class="fa fa-fw fa-times"></i> Cancel</button>
-    
-    <div class="pull-right">
-      <button type="button" class="btn btn-danger" data-dismiss="modal" ng-click="delete()">
+    <div class="col-sm-2">
+      <button type="button" class="btn btn-default pull-left" data-dismiss="modal" ng-click="close()"><i class="fa fa-fw fa-times"></i> Cancel</button>
+    </div>
+    <div class="col-sm-8 text-center">
+      <p class="text-danger" ng-if="showAlert"><a ng-href="#/home?expand={{ spec.key }}" ng-click="close()">Your instances</a> must be stopped and removed before this application can be deleted.</p>
+    </div>
+    <div class="col-sm-2">
+      <button type="button" class="btn btn-danger" data-dismiss="modal" ng-disabled="showAlert" ng-click="delete()">
         <i class="fa fa-fw fa-trash"></i> Delete
       </button>
     </div>
