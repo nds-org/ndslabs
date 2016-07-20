@@ -1052,8 +1052,9 @@ func (k *KubeHelper) GetReplicationController(pid string, name string) (*api.Rep
 
 func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHelper) *websocket.Handler {
 
-	url, err := url.Parse(k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" +
-		pod + "/exec?container=" + container + "&command=bash&tty=true&stdin=true&stdout=true&stderr=false")
+	url, err := url.Parse(
+		k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + pod +
+			"/exec?container=" + container + "&command=bash&tty=true&stdin=true&stdout=true&stderr=false")
 	if err != nil {
 		glog.Warning(err)
 	}
@@ -1366,4 +1367,37 @@ func (k *KubeHelper) GetResourceQuota(pid string) (*api.ResourceQuotaList, error
 		}
 	}
 	return nil, nil
+}
+
+// Execute an arbitrary command in the specified pod and return stdout
+func (k *KubeHelper) ExecCommand(pid string, pod string, command string) (string, error) {
+
+	u, err := url.Parse(
+		k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + pod +
+			"/exec?command=" + url.QueryEscape(command) + "&stderr=false&stdin=false&stdout=true&tty=false")
+	if err != nil {
+		glog.Warning(err)
+	}
+
+	conf := &restclient.Config{
+		Host:     k.kubeBase,
+		Insecure: true,
+	}
+
+	if len(k.token) > 0 {
+		conf.BearerToken = string(k.token)
+	} else {
+		conf.Username = k.username
+		conf.Password = k.password
+	}
+
+	e, err := remotecommand.NewExecutor(conf, "POST", u)
+	if err != nil {
+		glog.Warning(err)
+	}
+
+	localOut := &bytes.Buffer{}
+	localErr := &bytes.Buffer{}
+	err = e.Stream(remotecommandserver.SupportedStreamingProtocols, nil, localOut, localErr, false)
+	return localOut.String(), err
 }
