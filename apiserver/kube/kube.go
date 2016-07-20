@@ -422,8 +422,8 @@ func (k *KubeHelper) GetService(pid string, name string) (*api.Service, error) {
 			json.Unmarshal(data, &service)
 			return &service, nil
 		} else {
-			glog.Warningf("Failed to get Kubernetes service %s:%s: %s %d", pid, name,
-				resp.Status, resp.StatusCode)
+			//glog.Warningf("Failed to get Kubernetes service %s:%s: %s %d", pid, name,
+			//		resp.Status, resp.StatusCode)
 		}
 	}
 	return nil, nil
@@ -917,7 +917,8 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 				for {
 					data, err := reader.ReadBytes('\n')
 					if err != nil {
-						glog.Error(err)
+						// EOF error location NDS-372 needs fixing
+						//glog.Error(err)
 						break
 					}
 

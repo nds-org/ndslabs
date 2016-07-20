@@ -442,7 +442,6 @@ func (s *Server) GetAllAccounts(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) getUser(r *rest.Request) string {
-	glog.V(4).Infof("JWT_PAYLOAD: ", r.Env["JWT_PAYLOAD"])
 	payload := r.Env["JWT_PAYLOAD"].(map[string]interface{})
 	if payload["admin"] == true {
 		return ""
@@ -890,7 +889,6 @@ func (s *Server) serviceInUse(sid string) int {
 
 func (s *Server) GetAllStacks(w rest.ResponseWriter, r *rest.Request) {
 	userId := s.getUser(r)
-	glog.V(4).Infoln("GetAllStacks %s", userId)
 
 	stacks, err := s.getStacks(userId)
 	if err != nil {
