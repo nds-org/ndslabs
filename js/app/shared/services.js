@@ -79,8 +79,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
     },
     // Grab the project associated with our current namespace
     populate: function(projectId) {
-      return NdsLabsApi.getProjectsByProjectId({ 
-        "projectId": projectId 
+      return NdsLabsApi.getAccountsByAccountId({ 
+        "accountId": projectId 
       }).then(function(data, xhr) {
         $log.debug("successfully grabbed from /projects/" + projectId + "!");
         project.project = data;
@@ -109,11 +109,17 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
      */ 
     populate: function() {
       // Grab the list of available services at our site
-      return NdsLabsApi.getServices().then(function(data, xhr) {
+      return NdsLabsApi.getServices({ catalog: 'all' }).then(function(data, xhr) {
         $log.debug("successfully grabbed from /services!");
         specs.all = angular.copy(data);
+        
+        // Split out display === 'stack' vs 'standalone'
         specs.deps = angular.copy(data);
         specs.stacks = _.remove(specs.deps, function(svc) { return svc.stack === true; });
+        
+        // Split out catalog === 'system' vs 'user'
+        specs.system = _.filter(angular.copy(data), [ 'catalog', 'system']);
+        specs.user = _.filter(angular.copy(data), [ 'catalog', 'user']);
       }, function (headers) {
         $log.error("error grabbing from /services!");
       });
@@ -142,9 +148,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       * Grab the list of configured stacks in our project
       */
     populate: function(projectId) {
-      return NdsLabsApi.getProjectsByProjectIdStacks({ 
-        "projectId": projectId 
-      }).then(function(data, xhr) {
+      return NdsLabsApi.getStacks().then(function(data, xhr) {
         $log.debug("successfully grabbed from /projects/" + projectId + "/stacks!");
         
         stacks.all = data || [];
@@ -171,7 +175,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
      */ 
     populate: function(projectId) {
       // Grab the list of configured volumes in our namespace
-      return NdsLabsApi.getProjectsByProjectIdVolumes({ 
+      /*return NdsLabsApi.getProjectsByProjectIdVolumes({ 
         "projectId": projectId
       }).then(function(data, xhr) {
         $log.debug("successfully grabbed from /projects/" + projectId + "/volumes!");
@@ -181,7 +185,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
         volumes.attached = angular.copy(data) || [];
       }, function(headers) {
         $log.error("error grabbing from /projects/" + projectId + "/volumes!");
-      });
+      });*/
+      return false;
     }, 
     all: [],
     attached: [],
@@ -189,6 +194,48 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
   };
   
   return volumes;
+}])
+
+/**
+ * Represents a spec.
+ * @constructor
+ */
+.service('Spec', [ '$log', 'Specs', '_', function($log, Specs, _) {
+  return function() {
+    
+      return {
+      "id": "",
+      "key": "",
+      "label": "",
+      "description": "",
+      "logo": "",
+      "maintainer": "",
+      "requiresVolume": false,
+      "image": {
+        "registry": "",
+        "name": "",
+        "tags": []
+      },
+      "display": "stack",
+      "access": "external",
+      "depends": [],
+      "config": [],
+      "command": null,
+      "args": null,
+      "ports": [],
+      "repository": [],
+      "volumeMounts": [],
+      "resourceLimits": {
+        "cpuMax": "1",
+        "cpuDefault": "100m",
+        "memMax": "1Gi",
+        "memDefault": "50Mi",
+        "storageQuota": ""
+      },
+      "developerEnvironment": "",
+      "tags": []
+    };
+  }
 }])
 
 /**

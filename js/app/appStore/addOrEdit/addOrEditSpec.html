@@ -1,19 +1,19 @@
 <section class="container">
-    <h3>Edit Application: {{ spec.label }}</h3>
+    <h3>{{ editingSpec ? 'Edit' : 'Add' }} Application<span ng-if="spec.label">: {{ spec.label }}</span></h3>
     
     <form>
         <!-- Application Spec Details -->
         <div class="row">
-            <div class="col-sm-12">
+            <div class="col-sm-4">
                 <fieldset class="border-nds">
                     <legend class="legend-fix">Basic Information</legend>
+                    <div class="form-group" >
+                        <label for="keyField">Short Name</label>
+                        <input type="text" class="form-control" id="keyField" placeholder="Key" ng-model="spec.key" ng-disabled="editingSpec" />
+                    </div>
                     <div class="form-group">
                         <label for="nameField">Display Name</label>
                         <input type="text" class="form-control" id="nameField" placeholder="Name" ng-model="spec.label">
-                    </div>
-                    <div class="form-group" ng-disabled="editingSpec">
-                        <label for="keyField">Short Name</label>
-                        <input type="text" class="form-control" id="keyField" placeholder="Key" ng-model="spec.key">
                     </div>
                     <div class="form-group">
                         <label for="descriptionField">Description</label>
@@ -21,24 +21,103 @@
                     </div>
                 </fieldset>
             </div>
-        </div>
+            
+            
+             <!-- List / edit resource limits -->
+            <div class="col-sm-4">
+                <fieldset class="border-nds">
+                    <legend class="legend-fix">Resource Limits</legend>
+                            <!-- TODO - Validation:
+                                -Ensure valid resource limits -->
+                                
+                    <!-- CPU Default -->
+                    <div class="form-group">
+                        <label for="limitCpuDefaultField">CPU Default</label>
+                        <div class="input-group">
+                          <input type="text" class="form-control" id="limitCpuDefaultField" placeholder="Enter CPU Default..." ng-model="spec.resourceLimits.cpuDefault" aria-describedby="cpudefault-addon" />
+                          <span class="input-group-addon" id="cpudefault-addon">m</span>
+                        </div>
+                    </div>
+                    
+                    <!-- CPU Max -->
+                    <div class="form-group">
+                        <label for="limitCpuMaxField">CPU Max</label>
+                        <div class="input-group">
+                          <input type="text" class="form-control" id="limitCpuMaxField" placeholder="Enter CPU Max..." ng-model="spec.resourceLimits.cpuMax" aria-describedby="cpumax-addon" />
+                          <span class="input-group-addon" id="cpumax-addon"></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Memory Default -->
+                    <div class="form-group">
+                        <label for="limitMemDefaultField">CPU Default</label>
+                        <div class="input-group">
+                          <input type="text" class="form-control" id="limitMemDefaultField" placeholder="Enter Memory Default..." ng-model="spec.resourceLimits.memDefault" aria-describedby="memdefault-addon" />
+                          <span class="input-group-addon" id="cpudefault-addon">Mi</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Memory Max -->
+                    <div class="form-group">
+                        <label for="limitMemMaxField">CPU Max</label>
+                        <div class="input-group">
+                          <input type="text" class="form-control" id="limitMemMaxField" placeholder="Enter Memory Max..." ng-model="spec.resourceLimits.memMax" aria-describedby="memmax-addon" />
+                          <span class="input-group-addon" id="memmax-addon">Mi</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Storage Quota -->
+                    <div class="form-group">
+                        <label for="limitStorageQuotaField">Storage Quota</label>
+                        <div class="input-group">
+                          <input type="text" class="form-control" id="limitStorageQuotaField" placeholder="Enter storage quota..." ng-model="spec.resourceLimits.storageQuota" aria-describedby="storagequota-addon" />
+                          <span class="input-group-addon" id="storagequota-addon"></span>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
         
-        <!-- Docker Image Details -->
-        <div class="row">
-            <div class="col-sm-12">
+            <!-- Docker Image Details -->
+            <div class="col-sm-4" style="height:100% !important;">
                 <fieldset class="border-nds">
                     <legend class="legend-fix">Docker</legend>
+                    <!-- TODO: Do we support different registries? -->
                     <div class="form-group">
-                        <label for="registryField">Registry</label>
-                        <input type="text" class="form-control" id="registryField" placeholder="Docker Registry" ng-model="spec.image.registry">
+                        <label for="registryField">Registry</label> <small class="pull-right">Coming soon!</small>
+                        <input type="text" class="form-control" id="registryField" placeholder="Docker Registry" value="docker.io" ng-disabled="true">
                     </div>
                     <div class="form-group">
                         <label for="imageNameField">Image Name</label>
-                        <input type="text" class="form-control" id="imageNameField" placeholder="Docker Image Name" ng-model="spec.image.name">
+                        <input type="text" class="form-control" id="imageNameField" placeholder="Enter a Docker image name..." ng-model="spec.image.name">
                     </div>
                     <div class="form-group">
-                        <label for="imageTagField">Image Tags</label>
-                        <input type="text" class="form-control" id="imageTagField" placeholder="Docker Image Tag(s)" ng-model="spec.image.tag" />
+                        <label for="imageTagField">Image Tags</label> <small class="pull-right">The first tag on the list will be the default for new installs</small>
+                        <ul class="fa-ul">
+                            <li ng-repeat="tag in spec.image.tags" class="item">
+                                <i class="fa-li fa fa-tag"></i>
+                                <div class="row">
+                                    <div class="col-xs-8">{{ tag }}</div>
+                                    <div class="col-xs-4">
+                                        <button class="btn btn-xs btn-default pull-right" ng-click="spec.image.tags.splice(spec.image.tags.indexOf(tag), 1)">
+                                            <i class="fa fa-fw fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div> 
+                            </li>
+                        </ul>
+                        
+                        <!-- Add new tag -->
+                        <div class="row">
+                            <div class="col-sm-11">
+                                <!-- <input style="width:100%;" class="form-control" ng-model="newDepName" placeholder="Key of another Application..." /> -->
+                                <input class="form-control" ng-model="newTag" placeholder="Enter a Docker tag name..." />
+                            </div>
+                            <div class="col-sm-1">
+                                <button class="btn btn-primary btn-xs pull-right" ng-disabled="!newTag || (spec.image.tags && spec.image.tags.indexOf(newTag) !== -1)" ng-click="spec.image.tags.push(newTag);newTag=''">
+                                    <i class="fa fa-fw fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </fieldset>
             </div>
@@ -49,44 +128,45 @@
             <div class="col-sm-12">
                 <fieldset class="border-nds">
                     <legend class="legend-fix">Dependencies</legend>
-                    <table class="table" ng-show="spec.depends.length > 0">
-                        <thead>
-                            <tr>
-                                <th width="45%">Key</th>
-                                <th width="45%">Required?</th>
-                                <th width="10%"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr ng-repeat="dep in spec.depends">
-                                <td>{{ dep.key | specProperty:'label' }}</td>
-                                <td><input type="checkbox" class="checkbox" ng-model="dep.required" /></td>
-                                <td><button class="btn btn-xs btn-default" ng-click="removeItem(spec.depends, dep)"><i class="fa fa-fw fa-trash"></i></button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    
-                    <!-- TODO - Validation:
-                        -Ensure spec exists
-                        -Ensure no duplicates
-                    -->
-                    
-                    <!-- Add new dependency -->
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <!-- <input style="width:100%;" class="form-control" ng-model="newDepName" placeholder="Key of another Application..." /> -->
-                            <select class="form-control" ng-model="newDep" ng-options="dep as dep.label for dep in spec.depends | invertSpecList track by dep.key"></select>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="checkbox">
-                                <label><input type="checkbox" class="checkbox" ng-model="newDepReq" /> Required</label>
-                            </div>
-                        </div>
-                        <div class="col-sm-2">
-                            <button class="btn btn-primary" ng-disabled="!newDep" ng-click="addItem('depends', { key: newDep.key, required: newDepReq });newDepName=''">
-                                Add
-                            </button>
-                        </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-condensed table-hover">
+                            <thead>
+                                <tr>
+                                    <th width="45%">Key</th>
+                                    <th width="45%">Required?</th>
+                                    <th width="10%"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="dep in spec.depends">
+                                    <td>{{ dep.key | specProperty:'label' }}</td>
+                                    <td><input type="checkbox" class="checkbox" ng-model="dep.required" /></td>
+                                    <td><button class="btn btn-xs btn-default" ng-click="removeItem(spec.depends, dep)"><i class="fa fa-fw fa-trash"></i></button></td>
+                                </tr>
+                        
+                                <!-- TODO - Validation:
+                                    -Ensure spec exists
+                                    -Ensure no duplicates
+                                -->
+                                
+                                <!-- Add new dependency -->
+                                <tr>
+                                    <td>
+                                        <select class="form-control" ng-model="newDep" ng-options="dep as dep.label for dep in spec.depends | invertSpecList track by dep.key"></select>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox">
+                                            <label><input type="checkbox" class="checkbox" ng-model="newDepReq" /> Required</label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-primary btn-xs" ng-disabled="!newDep" ng-click="addItem('depends', { key: newDep.key, required: newDepReq });newDepName=''">
+                                            <i class="fa fa-fw fa-plus"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </fieldset>
             </div>
@@ -97,103 +177,110 @@
             <div class="col-sm-12">
                 <fieldset class="border-nds">
                     <legend class="legend-fix">Volumes</legend>
-                    <table class="table" ng-show="spec.volumeMounts.length > 0">
-                        <thead>
-                            <tr>
-                                <th width="45%">Name</th>
-                                <th width="45%">Mount Path</th>
-                                <th width="10%"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr ng-repeat="vol in spec.volumeMounts">
-                                <td>{{ vol.name }}</td>
-                                <td>{{ vol.mountPath }}</td>
-                                <td>
-                                    <button class="btn btn-xs btn-default" ng-click="removeItem(spec.volumeMounts, vol)">
-                                        <i class="fa fa-fw fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                            
-                    <!-- TODO - Validation:
-                        -Ensure no duplicates
-                    -->
-                    
-                    <!-- Add new volume -->
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <input class="form-control" ng-model="newVolName" placeholder="Enter a name for this volume..." />
-                        </div>
-                        <div class="col-sm-4">
-                            <input class="form-control" ng-model="newVolPath" placeholder="Enter a container mount path..." />
-                        </div>
-                        <div class="col-sm-4">
-                            <button class="btn btn-primary" ng-disabled="!newVolName || !newVolPath" ng-click="addItem('volumeMounts', { name:newVolName, mountPath: newVolPath });newVolName=newVolPath=''">
-                                Add
-                            </button>
-                        </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-condensed table-hover">
+                            <thead>
+                                <tr>
+                                    <th width="45%">Name</th>
+                                    <th width="45%">Mount Path</th>
+                                    <th width="10%"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="vol in spec.volumeMounts">
+                                    <td>{{ vol.name }}</td>
+                                    <td>{{ vol.mountPath }}</td>
+                                    <td>
+                                        <button class="btn btn-xs btn-default" ng-click="removeItem(spec.volumeMounts, vol)">
+                                            <i class="fa fa-fw fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- TODO - Validation:
+                                    -Ensure no duplicates
+                                -->
+                        
+                                <!-- Add new volume -->
+                                <tr>
+                                    <td>
+                                        <input class="form-control" ng-model="newVolName" placeholder="Enter a name for this volume..." />
+                                    </td>
+                                    <td>
+                                        <input class="form-control" ng-model="newVolPath" placeholder="Enter a container mount path..." />
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-primary" ng-disabled="!newVolName || !newVolPath" ng-click="addItem('volumeMounts', { name:newVolName, mountPath: newVolPath });newVolName=newVolPath=''">
+                                            <i class="fa fa-fw fa-plus"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </fieldset>
             </div>
         </div>
-                    
-            
-                    
+        
         <!-- List / edit mapped environment variables -->    
         <div class="row">
             <div class="col-sm-12">
                 <fieldset class="border-nds">
                     <legend class="legend-fix">Environment</legend>
-                    <table class="table" ng-show="spec.depends.length > 0">
-                        <thead>
-                            <tr>
-                                <th width="22%">Name</th>
-                                <th width="22%">Default Value</th>
-                                <th width="22%">Can Override?</th>
-                                <th width="22%">Is Password?</th>
-                                <th width="12%"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr ng-repeat="cfg in spec.config">
-                                <td>{{ cfg.name }}</td>
-                                <td>{{ cfg.value }}</td>
-                                <td><input type="checkbox" class="checkbox" ng-model="cfg.canOverride" /></td>
-                                <td><input type="checkbox" class="checkbox" ng-model="cfg.isPassword" /></td>
-                                <td><button class="btn btn-xs btn-default" ng-click="removeItem(spec.config, cfg)"><i class="fa fa-fw fa-trash"></i></button></td>
-                            </tr>
-                    
-                    <!-- TODO - Validation:
-                        -Ensure name is all uppercase with no spaces
-                        -Ensure that if value is blank, canOverride is true
-                        -Ensure that canOverride is marked true when isPassword is marked as true
-                    -->
-                    
-                            <!-- Add new environment variable -->
-                            <tr>
-                                <td>
-                                    <input style="width:100%;" class="form-control" ng-model="newCfgName" placeholder="New variable name..." />
-                                </td>
-                                <td>
-                                    <input style="width:100%;" class="form-control" ng-model="newCfgValue" placeholder="Default value..." />
-                                </td>
-                                <td>
-                                    <div class="checkbox"><label><input type="checkbox" class="checkbox" ng-model="newCfgCanOverride" /> Can Override?</label></div>
-                                </td>
-                                <td>
-                                    <div class="checkbox"><label><input type="checkbox" class="checkbox" ng-model="newCfgIsPassword" /> Is Password?</label></div>
-                                </td>
-                                <td>
-                                    <button class="btn btn-xs btn-primary" ng-disabled="!newCfgName" ng-click="addItem('config', { name: newCfgName, value: newCfgValue, canOverride: newCfgCanOverride, isPassword: newCfgIsPassword });newCfgName=newCfgValue=''">
-                                        Add
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-condensed table-hover">
+                            <thead>
+                                <tr>
+                                    <th width="18%">Name</th>
+                                    <th width="18%">Label</th>
+                                    <th width="18%">Default Value</th>
+                                    <th width="18%">Can Override?</th>
+                                    <th width="18%">Is Password?</th>
+                                    <th width="10%"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="cfg in spec.config">
+                                    <td>{{ cfg.name }}</td>
+                                    <td>{{ cfg.label }}</td>
+                                    <td>{{ cfg.value }}</td>
+                                    <td><input type="checkbox" class="checkbox" ng-model="cfg.canOverride" /></td>
+                                    <td><input type="checkbox" class="checkbox" ng-model="cfg.isPassword" /></td>
+                                    <td><button class="btn btn-xs btn-default" ng-click="removeItem(spec.config, cfg)"><i class="fa fa-fw fa-trash"></i></button></td>
+                                </tr>
+                        
+                                <!-- TODO - Validation:
+                                    -Ensure name is all uppercase with no spaces
+                                    -Ensure that if value is blank, canOverride is true
+                                    -Ensure that canOverride is marked true when isPassword is marked as true
+                                -->
+                        
+                                <!-- Add new environment variable -->
+                                <tr>
+                                    <td>
+                                        <input class="form-control" ng-model="newCfgName" placeholder="Variable name..." />
+                                    </td>
+                                    <td>
+                                        <input class="form-control" ng-model="newCfgLbl" placeholder="Variable label (optional)..." />
+                                    </td>
+                                    <td>
+                                        <input class="form-control" ng-model="newCfgValue" placeholder="Default value..." />
+                                    </td>
+                                    <td>
+                                        <div class="checkbox"><label><input type="checkbox" class="checkbox" ng-model="newCfgCanOverride" /> Can Override?</label></div>
+                                    </td>
+                                    <td>
+                                        <div class="checkbox"><label><input type="checkbox" class="checkbox" ng-model="newCfgIsPassword" /> Is Password?</label></div>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-xs btn-primary" ng-disabled="!newCfgName" ng-click="addItem('config', { name: newCfgName, label: newCfgLbl, value: newCfgValue, canOverride: newCfgCanOverride, isPassword: newCfgIsPassword });newCfgName=newCfgValue=''">
+                                            <i class="fa fa-fw fa-plus"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </fieldset>
             </div>
         </div>
@@ -212,4 +299,13 @@
             </div>
         </div>
     </form>
+    
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="pull-right">
+                <button class="btn btn-lg btn-success" ng-click="save()"><i class="fa fa-fw fa-save"></i> Save</button>
+                <button class="btn btn-lg btn-danger" ng-click="cancel()"><i class="fa fa-fw fa-times"></i> Cancel</button>
+            </div>
+        </div>
+    </div>
 </section>

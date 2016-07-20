@@ -8,9 +8,10 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('ConfigViewerCtrl', [ '$scope', '$log', '$uibModalInstance', '_', 'ApiHost', 'NdsLabsApi', 'service',
-    function($scope, $log, $uibModalInstance, _, ApiHost, NdsLabsApi, service) {
+.controller('ConfigViewerCtrl', [ '$scope', '$log', '$uibModalInstance', '_', 'ApiHost', 'NdsLabsApi', 'Specs', 'service',
+    function($scope, $log, $uibModalInstance, _, ApiHost, NdsLabsApi, Specs, service) {
   $scope.service = service;
+  $scope.spec = _.find(Specs.all, [ 'key', service.service ]);
   $scope.apiHost = ApiHost;
   
   // Build up our display of current property values

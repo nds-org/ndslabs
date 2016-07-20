@@ -1,45 +1,43 @@
 <section>
-  <div class="row">
-    <div class="col-sm-12">
+  <div class="row" id="dashHeader">
+    <div class="col-xs-8">
       <h3>{{ project.name | capitalize }}</h3>
+    </div>
+    
+    <div class="col-xs-4">
+      <div class="pull-right">
+        <a class="btn btn-sm btn-primary" href="#/store"
+           ng-mouseenter="iconBounce = true" ng-mouseleave="iconBounce = false"
+           uib-tooltip="Install a New Application" tooltip-placement="left">
+          <i class="fa fa-fw fa-plus"  ng-class="{ 'faa-bounce animated':iconBounce }"></i>
+        </a>
+       
+        <button class="btn btn-default btn-sm" ng-click="autoRefresh.toggle()"
+             ng-class="{ 'btn-info':autoRefresh.interval !== null }"
+             ng-mouseenter="iconSpin = true" ng-mouseleave="iconSpin = false"
+             uib-tooltip="Refresh" tooltip-placement="left">
+          <i class="fa fa-refresh fa-fw" ng-class="{ 'fa-spin':iconSpin || autoRefresh.interval !== null }"></i>
+        </button>
+      </div>
     </div>
   </div>
   
   <!-- Applications / Volumes Area -->
   <div class="row">
     <div class="col-sm-12 fill-height">
-      <!-- Tabs for Stacks / Volumes -->
-      <uib-tabset active="selectedTab" type="pills">
-        <div class="pull-right">
-          
-          <!-- Launch New Application -->
-          <a class="btn btn-sm btn-primary" href="#/store"
-             ng-mouseenter="iconBounce = true" ng-mouseleave="iconBounce = false"
-             uib-tooltip="Install a New Application" tooltip-placement="left">
-            <i class="fa fa-fw fa-plus"  ng-class="{ 'faa-bounce animated':iconBounce }"></i>
-          </a>
-         
-          <!-- Refresh button -->
-          <button class="btn btn-default btn-sm" ng-click="autoRefresh.toggle()"
-               ng-class="{ 'btn-info':autoRefresh.interval !== null }"
-               ng-mouseenter="iconSpin = true" ng-mouseleave="iconSpin = false"
-               uib-tooltip="Refresh" tooltip-placement="left">
-            <i class="fa fa-refresh fa-fw" ng-class="{ 'fa-spin':iconSpin || autoRefresh.interval !== null }"></i>
-            <!-- Refresh -->
-          </button>
-        </div>
         
-        <!-- Stacks Tab --> 
+      <!-- Tabs for Stacks / Volumes -->
+       <!--<uib-tabset active="selectedTab" type="pills">
         <uib-tab index="0">
           <uib-tab-heading>
             <i class="fa fa-fw fa-align-justify"></i> Applications 
             <span class="badge" ng-if="configuredStacks.length > 0">{{ configuredStacks.length }}</span>
-          </uib-tab-heading>
+          </uib-tab-heading>-->
           <div class="well well-lg fill-height">
             <!-- Helper text to display if the user has no yet configured any stacks -->
             <div ng-if="configuredStacks.length === 0" class="helper-text">
-              <h2>It looks like you haven't installed any applications</h2>
-              <h4><a href="#/store">Install a new application</a> to see and manage it here</h4>
+              <h2>It looks like you haven't added any applications</h2>
+              <h4><a href="#/store">Add an application</a> to see and manage it here</h4>
             </div>
             
             <!-- The Accordion of Configured Stacks -->
@@ -48,7 +46,7 @@
               <!-- TODO: This is a silly hack, since we can't bind to the accordion's panel-class attribute, \
               and we apparently cannot use ng-class to do the same thing, due to an implementation detail. -->
               <!-- See https://github.com/angular-ui/bootstrap/issues/5368 -->
-              <uib-accordion-group ng-repeat="stack in configuredStacks | orderBy:['name','id'] track by stack.id" is-open="stack.open" 
+              <uib-accordion-group ng-repeat="stack in configuredStacks | orderBy:['name','id'] track by stack.id" is-open="expandedStacks[stack.id]" 
                   class="{{ stack.status === 'started' ? 'panel-success' : 
                     (stack.status === 'stopped' ? 'panel-danger' : 'panel-warning')  }}">
                 
@@ -66,7 +64,7 @@
                       <h4><strong>{{ stack.name | capitalize }}</strong></h4>
                     </div>
                     <div class="col-xs-3 col-md-1">
-                      <i class="pull-right fa fa-2x fa-fw" ng-class="{'fa-caret-down': open, 'fa-caret-right': !open}"></i>
+                      <i class="pull-right fa fa-2x fa-fw" ng-class="{'fa-caret-down': expandedStacks[stack.id], 'fa-caret-right': !expandedStacks[stack.id]}"></i>
                     </div>
                   </div>
                 </uib-accordion-heading>
@@ -83,7 +81,10 @@
                             <td width="10%" class="text-center"><strong>Volumes</strong></td>
                             <td width="30%"><strong>Name</strong></td>
                             <td width="15%" class="text-center"><strong>Console</strong></td>
-                            <td width="15%" class="text-center"><strong>Config</strong></td>
+                            <td width="15%" class="text-center">
+                              <strong ng-if="stack.status !== 'stopped'">Config</strong>
+                              <strong ng-if="stack.status === 'stopped'">Edit</strong>
+                            </td>
                             <td width="15%" class="text-center">
                               <strong ng-if="stack.status !== 'stopped'">Logs</strong>
                               <strong ng-if="stack.status === 'stopped'">Remove</strong>
@@ -140,7 +141,7 @@
                               </a>
                             </td>
                             
-                            <!-- Config -->
+                            <!-- View/Edit Config buttons -->
                             <td class="text-center">
                               <!-- ng-click="showConfig(svc)" -->
                               <a type="button" class="btn btn-default btn-xs" ng-href="#/home/edit/{{ svc.id }}"
@@ -160,7 +161,7 @@
                               <button type="button" class="btn btn-xs btn-default" 
                                   uib-tooltip="View {{ svc.service | specProperty:'label' }} Logs" 
                                   ng-if="stack.status !== 'stopped'"
-                                  ng-disabled="svc.status === ''" tooltip-placement="left" ng-click="showLogs(svc)">
+                                  ng-disabled="stack.status === 'stopped'" tooltip-placement="left" ng-click="showLogs(svc)">
                                 <i class="fa fa-fw fa-file-text" ng-class="{ 'animated faa-vertical': stack.status === 'starting' && (svc.status === 'waiting' || svc.status === 'starting') }"></i>
                               </button>
                               
@@ -229,23 +230,21 @@
               </uib-accordion-group>
             </uib-accordion>
           </div>
-        </uib-tab>
+        <!--</uib-tab>-->
         
         <!-- Volumes Tab -->
-        <uib-tab index="1">
+        <!--<uib-tab index="1">
           <uib-tab-heading>
             <i class="fa fa-fw fa-database"></i> Volumes 
             <span class="badge" ng-if="configuredVolumes.length > 0">{{ configuredVolumes.length }}</span>
           </uib-tab-heading>
           
           <div class="well well-lg fill-height">
-            <!-- Helper text to display if the user has no yet configured any volumes -->
             <div ng-if="configuredVolumes.length === 0" class="helper-text">
               <h2>It looks like you haven't configured any volumes</h3>
-              <h4>Once you add an application, its volumes will appear here</h4>
+              <h4>Once you <a href="#/store">add an application</a>, its data will appear here</h4>
             </div>
             
-            <!-- Slide-Out Panel Contents -->
             <div class="table-responsive">
               <table class="table table-hover" ng-if="configuredVolumes.length > 0">
                 <thead>
@@ -266,8 +265,6 @@
                     
                     <td class="text-center">{{ volume.size }} {{ volume.sizeUnit }}</td>
                     
-                    <!-- TODO: Detattaching a volume still shows status as 'attached' -->
-                    <!--<td>{{ volume.status }}</td>-->
                     <td>{{ volume.attached ? 'Attached to ' + (volume.attached | stackProperty:'name') : 'Detattached' }}</td>
                     
                     <td class="text-center">
@@ -289,7 +286,7 @@
             </div>
           </div>
         </uib-tab>
-      </uib-tabset>
+      </uib-tabset>-->
     </div>
   </div>
 </section>

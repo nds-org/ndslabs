@@ -9,12 +9,13 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('ExpertSetupController', [ '$scope', '$log', '$routeParams', '$location', '$interval', '$q', '$uibModal', '_', 'AuthInfo', 'Project', 'Volumes', 'Stacks', 'Specs', 'AutoRefresh', 'SoftRefresh',
+.controller('DashboardController', [ '$scope', '$log', '$routeParams', '$location', '$interval', '$q', '$uibModal', '_', 'AuthInfo', 'Project', 'Volumes', 'Stacks', 'Specs', 'AutoRefresh', 'SoftRefresh',
     'StackService', 'NdsLabsApi', function($scope, $log, $routeParams, $location, $interval, $q, $uibModal, _, AuthInfo, Project, Volumes, Stacks, Specs, AutoRefresh, SoftRefresh, 
     StackService, NdsLabsApi) {
   
   // Grab our projectId from the login page
   var projectId = AuthInfo.get().namespace;
+  $scope.expandedStacks = {};
   
   /** 
    * FIXME: Temporary hack to update $scope when service data changes.
@@ -23,11 +24,15 @@ angular
   var sync = {};
   sync.project = function(newValue, oldValue) { $scope.project = newValue; };
   sync.specs = function(newValue, oldValue) { $scope.allServices = newValue; };
-  sync.stacks = function(newValue, oldValue) { $scope.configuredStacks = newValue;
-  
-    angular.forEach(newValue, function(stack) {
-      stack.open = _.includes(stack.key, $routeParams.expand);
-    });
+  sync.stacks = function(newValue, oldValue) {
+    if (newValue) {
+      $scope.configuredStacks = newValue;
+      angular.forEach(newValue, function(stack) {
+        if (!angular.isDefined($scope.expandedStacks[stack.id])) {
+          $scope.expandedStacks[stack.id] = (stack.key === $routeParams.expand);
+        }
+      });
+    }
   };
   sync.volumes = function(newValue, oldValue) { $scope.configuredVolumes = newValue; };
    
@@ -72,8 +77,7 @@ angular
     $scope.starting[stack.id] = true;
     
     // Then send the "start" command to the API server
-    NdsLabsApi.getProjectsByProjectIdStartByStackId({
-      'projectId': projectId,
+    NdsLabsApi.getStartByStackId({
       'stackId': stack.id
     }).then(function(data, xhr) {
       $log.debug('successfully started ' + stack.name);
@@ -89,10 +93,10 @@ angular
    * @param {Object} stack - the stack to shut down
    */ 
   $scope.stopStack = function(stack) {
-    // See 'app/expert/stackStop/stackStop.html'
+    // See 'app/dashboard/modals/stackStop/stackStop.html'
     var modalInstance = $uibModal.open({
       animation: true,
-      templateUrl: 'app/expert/stackStop/stackStop.html',
+      templateUrl: 'app/dashboard/modals/stackStop/stackStop.html',
       controller: 'StackStopCtrl',
       size: 'md',
       keyboard: false,
@@ -108,8 +112,7 @@ angular
       $scope.stopping[stack.id] = true;
     
       // Then send the "stop" command to the API server
-      NdsLabsApi.getProjectsByProjectIdStopByStackId({
-        'projectId': projectId,
+      NdsLabsApi.getStopByStackId({
         'stackId': stack.id
       }).then(function(data, xhr) {
         $log.debug('successfully stopped ' + stack.name);
@@ -175,9 +178,8 @@ angular
       stack.services.push(newService);
       
       // Then update the entire stack in etcd
-      return NdsLabsApi.putProjectsByProjectIdStacksByStackId({
+      return NdsLabsApi.putStacksByStackId({
         'stack': stack,
-        'projectId': projectId,
         'stackId': stack.id
       }).then(function(data, xhr) {
         $log.debug('successfully added service ' + service.key + ' to stack ' + stack.name);
@@ -189,16 +191,16 @@ angular
         Stacks.populate(projectId);
       });
     }
-    debugger;
+    
     var spec = _.find(Specs.all, [ 'key', svc.key ]);
     var mounts = _.filter(spec.volumeMounts, function(mnt) { return mnt.name != 'docker'; });
     var config = spec.config;
     
     if (mounts.length > 0 || config) {
-      // See 'app/expert/addService/addService.html'
+      // See 'app/dashboard/modals/addService/addService.html'
       var modalInstance = $uibModal.open({
         animation: true,
-        templateUrl: 'app/expert/addService/addService.html',
+        templateUrl: 'app/dashboard/modals/addService/addService.html',
         controller: 'AddServiceCtrl',
         size: 'md',
         keyboard: false,
@@ -213,9 +215,9 @@ angular
       modalInstance.result.then(function(result) {
         performAdd(result.spec, result.config).then(function() {
           Stacks.populate(projectId).then(function() {
-            attachOrCreateVolumes(stack, result.volumes).then(function() {
-              Volumes.populate(projectId);
-            });
+            //attachOrCreateVolumes(stack, result.volumes).then(function() {
+             // Volumes.populate(projectId);
+            //});
           });
         });
       });
@@ -234,9 +236,8 @@ angular
     stack.services.splice(stack.services.indexOf(svc), 1);
     
     // Then update the entire stack in etcd
-    NdsLabsApi.putProjectsByProjectIdStacksByStackId({
+    NdsLabsApi.putStacksByStackId({
       'stack': stack,
-      'projectId': projectId,
       'stackId': stack.id
     }).then(function(data, xhr) {
       $log.debug('successfully removed service ' + svc.service + ' from stack ' + stack.name);
@@ -248,47 +249,7 @@ angular
       Stacks.populate(projectId);
     });
   };
-  
-  /**
-   * Opens the Configuration Wizard to configure and add a new stack
-   * @param {Object} spec - the spec to use to create a new stack
-   */ 
-  $scope.openWizard = function(spec) {
-    // See 'app/expert/configWizard/configurationWizard.html'
-    var modalInstance = $uibModal.open({
-      animation: true,
-      templateUrl: 'app/expert/configWizard/configurationWizard.html',
-      controller: 'ConfigurationWizardCtrl',
-      size: 'lg',
-      backdrop: 'static',
-      keyboard: false,
-      resolve: {
-        configuredVolumes: function() { return $scope.configuredVolumes; },
-        configuredStacks: function() { return $scope.configuredStacks; }
-      }
-    });
-
-    // Define what we should do when the modal is closed
-    modalInstance.result.then(function(newEntities) {
-      $log.debug('Modal accepted at: ' + new Date());
-      
-      // Create the stack inside our project first
-      return NdsLabsApi.postProjectsByProjectIdStacks({ 'stack': newEntities.stack, 'projectId': projectId }).then(function(stack, xhr) {
-        $log.debug("successfully posted to /projects/" + projectId + "/stacks!");
-        
-        // Add the new stack to the UI
-        Stacks.all.push(stack);
-        
-        // Then attach our necessary volumes
-        attachOrCreateVolumes(stack, newEntities.volumes).then(function() {
-          Volumes.populate(projectId);
-        });
-      }, function(headers) {
-        $log.error("error posting to /projects/" + projectId + "/stacks!");
-      });
-    });
-  };
-  
+  /*
   var attachOrCreateVolumes = function(stack, volumes) {
     var promises = [];
     angular.forEach(volumes, function(volume) {
@@ -313,7 +274,6 @@ angular
     return NdsLabsApi.putProjectsByProjectIdVolumesByVolumeId({ 
       'volume': volume,
       'volumeId': volumeId,
-      'projectId': projectId
     }).then(function(data, xhr) {
       $log.debug("successfully updated /projects/" + projectId + "/volumes/" + volume.id + "!");
       //_.merge(exists, data);
@@ -335,17 +295,17 @@ angular
     }, function(headers) {
       $log.error("error posting to /projects/" + projectId + "/volumes!");
     });
-  };
+  };*/
   
   /**
    * Display a modal window showing running log data for the given service
    * @param {} service - the service to show logs for
    */ 
   $scope.showLogs = function(service) {
-    // See 'app/expert/logViewer/logViewer.html'
+    // See 'app/dashboard/modals/logViewer/logViewer.html'
     $uibModal.open({
       animation: true,
-      templateUrl: 'app/expert/logViewer/logViewer.html',
+      templateUrl: 'app/dashboard/modals/logViewer/logViewer.html',
       controller: 'LogViewerCtrl',
       windowClass: 'log-modal-window',
       size: 'lg',
@@ -363,10 +323,10 @@ angular
    * @param {} service - the service to show logs for
    */ 
   $scope.showConfig = function(service) {
-    // See 'app/expert/logViewer/logViewer.html'
+    // See 'app/dashboard/modals/logViewer/logViewer.html'
     $uibModal.open({
       animation: true,
-      templateUrl: 'app/expert/configViewer/configViewer.html',
+      templateUrl: 'app/dashboard/modals/configViewer/configViewer.html',
       controller: 'ConfigViewerCtrl',
       size: 'md',
       keyboard: false,      // Force the user to explicitly click "Close"
@@ -384,10 +344,10 @@ angular
    * TODO: If user specifies, also loop through and delete volumes?
    */
   $scope.deleteStack = function(stack) {
-    // See 'app/expert/stackDelete/stackDelete.html'
+    // See 'app/dashboard/modals/stackDelete/stackDelete.html'
     var modalInstance = $uibModal.open({
       animation: true,
-      templateUrl: 'app/expert/stackDelete/stackDelete.html',
+      templateUrl: 'app/dashboard/modals/stackDelete/stackDelete.html',
       controller: 'StackDeleteCtrl',
       size: 'md',
       keyboard: false,
@@ -402,15 +362,13 @@ angular
       $log.debug('Delete Stack Confirmation Modal dismissed at: ' + new Date());
       
       // Delete the stack and orphan the volumes
-      NdsLabsApi.deleteProjectsByProjectIdStacksByStackId({
-        'projectId': projectId,
+      NdsLabsApi.deleteStacksByStackId({
         'stackId': stack.id
       }).then(function(data, xhr) {
         $log.debug('successfully deleted stack: ' + stack.name);
         
         $scope.configuredStacks.splice($scope.configuredStacks.indexOf(stack), 1);
         
-        var toRemove = [];
         angular.forEach(stack.services, function(service) {
           angular.forEach($scope.configuredVolumes, function(volume) {
             if (volume.attached === service.id) {
@@ -439,7 +397,7 @@ angular
    */
   $scope.deleteVolume = function(volume, skipConfirm) {
     var performDelete = function() {
-      NdsLabsApi.deleteProjectsByProjectIdVolumesByVolumeId({
+      /*NdsLabsApi.deleteProjectsByProjectIdVolumesByVolumeId({
           'projectId': projectId,
           'volumeId': volume.id
         }).then(function(data, xhr) {
@@ -447,16 +405,16 @@ angular
           $scope.configuredVolumes.splice($scope.configuredVolumes.indexOf(volume), 1);
         }, function(headers) {
           $log.error('failed to delete volume: ' + volume.id);
-        });
+        });*/
     };
     
     if (skipConfirm) {
       performDelete();
     } else {
-      // See 'app/expert/volumeDelete/volumeDelete.html'
+      // See 'app/dashboard/modals/volumeDelete/volumeDelete.html'
       var modalInstance = $uibModal.open({
         animation: true,
-        templateUrl: 'app/expert/volumeDelete/volumeDelete.html',
+        templateUrl: 'app/dashboard/modals/volumeDelete/volumeDelete.html',
         controller: 'VolumeDeleteCtrl',
         size: 'md',
         keyboard: false,

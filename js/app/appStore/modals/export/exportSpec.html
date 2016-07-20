@@ -19,7 +19,7 @@
         <button type="button" class="btn btn-default pull-left" data-dismiss="modal" ng-click="close()"><i class="fa fa-fw fa-times"></i> Close</button>
         
         <div class="pull-right">
-          <a ng-href="#/store/edit/{{ spec.id }}" type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-fw fa-pencil"></i> Edit</a>
+          <a ng-href="#/store/edit/{{ spec.key }}" ng-if="spec.catalog === 'user'" type="button" class="btn btn-default" data-dismiss="modal" ng-click="close()"><i class="fa fa-fw fa-pencil"></i> Edit</a>
           <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="copy()"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</button>
         </div>
       </div>
