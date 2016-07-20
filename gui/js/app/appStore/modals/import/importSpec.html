@@ -17,11 +17,12 @@
         <button type="button" class="btn btn-default pull-left" data-dismiss="modal" ng-click="close()">Close</button>
       </div>
       <div class="col-sm-8 text-center">
-        <p class="text-success" ng-if="validJson">Application Spec JSON is valid.</p>
+        <p class="text-success" ng-if="validJson && keyUnique">Application Spec JSON is valid.</p>
+        <p class="text-danger" ng-if="!keyUnique">Application key is not unique.</p>
         <p class="text-danger" ng-if="!validJson">Application Spec is not valid JSON.</p>
       </div>
       <div class="col-sm-2">
-        <button type="button" class="btn btn-primary pull-right" data-dismiss="modal" ng-click="import()">Import</button>
+        <button type="button" class="btn btn-primary pull-right" data-dismiss="modal" ng-click="import()" ng-disabled="!validJson || !keyUnique">Import</button>
       </div>
     </div>
   </div>

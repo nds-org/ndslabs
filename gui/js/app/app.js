@@ -35,17 +35,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * The route to our "Request Access" View
  */
-.constant('LoginRoute', '/register')
-
-/**
- * The route to our "Dashboard" View
- */
-.constant('HomeRoute', '/home')
-
-/**
- * The route to the "Application Service Console" view
- */
-.constant('ConsoleRoute', '/:ssid/console')
+.constant('SignUpRoute', '/register')
 
 /**
  * The route to the "AppStore" view
@@ -63,9 +53,24 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 .constant('EditSpecRoute', '/store/edit/:specKey')
 
 /**
+ * The route to our "Dashboard" View
+ */
+.constant('HomeRoute', '/home')
+
+/**
+ * The route to the "Add Application Service" view
+ */
+.constant('AddServiceRoute', '/home/:stackId/add/:service')
+
+/**
  * The route to the "Edit Application Service" view
  */
-.constant('EditServiceRoute', '/home/edit/:ssid')
+.constant('EditServiceRoute', '/home/:stackId/edit/:service')
+
+/**
+ * The route to the "Application Service Console" view
+ */
+.constant('ConsoleRoute', '/home/:stackId/console/:service')
 
 
 /**
@@ -152,8 +157,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ConsoleRoute', 'EditServiceRoute', 'AddSpecRoute', 'EditSpecRoute',
-    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, HomeRoute, ConsoleRoute, EditServiceRoute, AddSpecRoute, EditSpecRoute) {
+.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ConsoleRoute', 'AddServiceRoute', 'EditServiceRoute', 'AddSpecRoute', 'EditSpecRoute',
+    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, HomeRoute, ConsoleRoute, AddServiceRoute, EditServiceRoute, AddSpecRoute, EditSpecRoute) {
   // Squelch debug-level log messages
   $logProvider.debugEnabled(DEBUG);
       
@@ -250,6 +255,11 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     title: 'NDS Labs Dashboard',
     controller: 'DashboardController',
     templateUrl: 'app/dashboard/dashboard.html'
+  })
+  .when(AddServiceRoute, {
+    title: 'Add Application Service',
+    controller: 'EditServiceController',
+    templateUrl: 'app/dashboard/service/editService.html'
   })
   .when(EditServiceRoute, {
     title: 'Edit Application Service',

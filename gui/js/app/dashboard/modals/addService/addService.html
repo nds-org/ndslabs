@@ -163,7 +163,12 @@
   </div>
   
   <div class="modal-footer">
-    <button type="button" class="btn btn-default pull-left" data-dismiss="modal" ng-click="close()">Cancel</button>
-    <button type="button" class="btn btn-success pull-right" data-dismiss="modal" ng-disabled="!validate()" ng-click="ok()">Confirm</button>
+    <button type="button" class="btn btn-default pull-left" data-dismiss="modal" ng-click="close()">
+      <i class="fa fa-fw fa-times"></i> Cancel
+    </button>
+    
+    <button type="button" class="btn btn-success pull-right" data-dismiss="modal" ng-disabled="!validate()" ng-click="ok()">
+      <i class="fa fa-fw fa-check"></i> Confirm
+    </button>
   </div>
 </section>
