@@ -33,6 +33,7 @@ type Server struct {
 	Namespace      string
 	local          bool
 	volDir         string
+	volName        string
 	hostname       string
 	jwt            *jwt.JWTMiddleware
 	prefix         string
@@ -141,6 +142,13 @@ func main() {
 		glog.Errorf("Kubernetes API server not available\n")
 		glog.Fatal(err)
 	}
+
+	/*
+		str, err := kube.ExecCommand("default", "nginx", []string{"ls", "/var/log"})
+		fmt.Println(str)
+
+		os.Exit(1)
+	*/
 
 	server := Server{}
 	server.hostname = hostname
@@ -583,14 +591,18 @@ func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
 
+	err := os.MkdirAll(s.volDir+"/"+account.Namespace, 0755)
+	if err != nil {
+		return false, err
+	}
+
 	// Get the GFS server pods
 	gfs, err := s.kube.GetPods("default", "name", "glusterfs-server-globalfs")
 	if err != nil {
 		return false, err
 	}
 	if len(gfs) > 0 {
-		cmd := fmt.Sprintf("gluster volume quota %s limit-usage /%s %sGB", s.volName,
-			account.Namespace, account.ResourceLimits.StorageQuota)
+		cmd := []string{"gluster", "volume", "quota", s.volName, "limit-usage", "/" + account.Namespace, account.ResourceLimits.StorageQuota + "GB"}
 		_, err := s.kube.ExecCommand("default", gfs[0].Name, cmd)
 		if err != nil {
 			return false, err

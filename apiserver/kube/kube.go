@@ -1370,14 +1370,18 @@ func (k *KubeHelper) GetResourceQuota(pid string) (*api.ResourceQuotaList, error
 }
 
 // Execute an arbitrary command in the specified pod and return stdout
-func (k *KubeHelper) ExecCommand(pid string, pod string, command string) (string, error) {
+func (k *KubeHelper) ExecCommand(pid string, pod string, command []string) (string, error) {
 
-	u, err := url.Parse(
-		k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + pod +
-			"/exec?command=" + url.QueryEscape(command) + "&stderr=false&stdin=false&stdout=true&tty=false")
+	urlStr := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + pod +
+		"/exec?&stderr=false&stdin=false&stdout=true&tty=false"
+	for _, arg := range command {
+		urlStr += "&command=" + url.QueryEscape(arg)
+	}
+	u, err := url.Parse(urlStr)
 	if err != nil {
 		glog.Warning(err)
 	}
+	fmt.Println(u.String())
 
 	conf := &restclient.Config{
 		Host:     k.kubeBase,
