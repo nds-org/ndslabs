@@ -148,8 +148,8 @@ func (k *KubeHelper) CreateResourceQuota(pid string, cpu string, mem string) (*a
 		ObjectMeta: api.ObjectMeta{Name: "quota"},
 		Spec: api.ResourceQuotaSpec{
 			Hard: api.ResourceList{
-				api.ResourceCPU:    resource.MustParse(cpu),
-				api.ResourceMemory: resource.MustParse(mem),
+				api.ResourceCPU:    resource.MustParse(cpu + "m"),
+				api.ResourceMemory: resource.MustParse(mem + "M"),
 			},
 		},
 	}
@@ -203,8 +203,8 @@ func (k *KubeHelper) CreateLimitRange(pid string, cpu string, mem string) (*api.
 				{
 					Type: api.LimitTypeContainer,
 					Default: api.ResourceList{
-						api.ResourceCPU:    resource.MustParse(cpu),
-						api.ResourceMemory: resource.MustParse(mem),
+						api.ResourceCPU:    resource.MustParse(cpu + "m"),
+						api.ResourceMemory: resource.MustParse(mem + "M"),
 					},
 				},
 			},
@@ -812,12 +812,12 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	k8rq := api.ResourceRequirements{}
 	if len(spec.ResourceLimits.CPUMax) > 0 && len(spec.ResourceLimits.MemoryMax) > 0 {
 		k8rq.Limits = api.ResourceList{
-			api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUMax),
-			api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryMax),
+			api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUMax + "m"),
+			api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryMax + "M"),
 		}
 		k8rq.Requests = api.ResourceList{
-			api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUDefault),
-			api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryDefault),
+			api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUDefault + "m"),
+			api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryDefault + "M"),
 		}
 	} else {
 		glog.Warningf("No resource requirements specified for service %s\n", spec.Label)
