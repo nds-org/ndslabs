@@ -705,6 +705,7 @@ func (s *Server) GetService(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
+	userId := s.getUser(r)
 	catalog := r.Request.FormValue("catalog")
 
 	service := api.ServiceSpec{}
@@ -712,6 +713,11 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if s.serviceExists(userId, service.Key) {
+		rest.Error(w, "Service exists with key", http.StatusConflict)
 		return
 	}
 
@@ -729,7 +735,6 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 		}
 		glog.V(1).Infof("Added system service %s\n", service.Key)
 	} else {
-		userId := s.getUser(r)
 		err = s.etcd.PutService(userId, service.Key, &service)
 		if err != nil {
 			glog.Error(err)
@@ -743,6 +748,7 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
+	userId := s.getUser(r)
 	key := r.PathParam("key")
 	catalog := r.Request.FormValue("catalog")
 
@@ -751,6 +757,11 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if s.serviceExists(userId, key) {
+		rest.Error(w, "Service exists with key", http.StatusConflict)
 		return
 	}
 
@@ -781,7 +792,6 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 			return
 		}
 
-		userId := s.getUser(r)
 		err = s.etcd.PutService(userId, key, &service)
 		if err != nil {
 			glog.Error(err)
