@@ -259,7 +259,6 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 				strings.HasPrefix(request.URL.Path, s.prefix+"logs") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"volumes") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"configs") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"console") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"check_token") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"refresh_token") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"check_console")
@@ -340,7 +339,7 @@ func (s *Server) CheckConsole(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) GetConsole(w rest.ResponseWriter, r *rest.Request) {
-	userId := s.getUser(r)
+	userId := r.Request.FormValue("namespace")
 	ssid := r.Request.FormValue("ssid")
 
 	if !s.kube.NamespaceExists(userId) || !s.stackServiceExists(userId, ssid) {
