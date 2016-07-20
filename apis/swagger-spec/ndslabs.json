@@ -132,11 +132,11 @@
                 "description": "Retrieves a site-wide list of available service definitions.\n",
                 "parameters": [
                     {
-                        "name": "stack",
+                        "name": "catalog",
                         "in": "query",
-                        "description": "Filter list for stacks (true or false)",
+                        "description": "Filter list for catalog (user, system, all)",
                         "required": false,
-                        "type": "boolean"
+                        "type": "string"
                     }
                 ],
                 "responses": {
