@@ -27,8 +27,7 @@ angular
     };
   
   ($scope.refreshLog = function() {
-    NdsLabsApi.getProjectsByProjectIdLogsByStackServiceId({
-      'projectId': projectId,
+    NdsLabsApi.getLogsByStackServiceId({
       'stackServiceId': service.id
     }).then(function(data, xhr) {
       $log.debug('successfully grabbed logs for serviceId ' + service.id);

@@ -25,8 +25,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'AppStoreRoute', 'ExpertRoute', 'DEBUG', 'Layout',
-    function($scope, $location, LoginRoute, AppStoreRoute, ExpertRoute, DEBUG, Layout) {
+.controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'DEBUG', 'Layout',
+    function($scope, $location, LoginRoute, AppStoreRoute, HomeRoute, DEBUG, Layout) {
   $scope.layout = Layout;    
       
   $scope.$on('$routeChangeSuccess', function(event, current, previous){
@@ -49,7 +49,7 @@ angular
   $scope.navs = [
     {
       name: 'Dashboard',
-      url: '#' + ExpertRoute,
+      url: '#' + HomeRoute,
       icon: 'fa-dashboard'
     },
     {

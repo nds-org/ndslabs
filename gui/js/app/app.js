@@ -28,28 +28,44 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 .constant('_', window._)
 
 /**
- * The route to our Login View
+ * The route to our "Login" View
  */
 .constant('LoginRoute', '/login')
 
 /**
- * The route to our Expert Setup View
+ * The route to our "Request Access" View
  */
-.constant('ExpertRoute', '/home')
+.constant('LoginRoute', '/register')
 
 /**
- * The route to the stack service console view
+ * The route to our "Dashboard" View
+ */
+.constant('HomeRoute', '/home')
+
+/**
+ * The route to the "Application Service Console" view
  */
 .constant('ConsoleRoute', '/:ssid/console')
 
 /**
- * The route to the "Configure New Stack" view
+ * The route to the "AppStore" view
  */
 .constant('AppStoreRoute', '/store')
 
-.constant('AddEditSpecRoute', '/store/edit/:specKey')
+/**
+ * The route to the "Add Application Spec" view
+ */
+.constant('AddSpecRoute', '/store/add')
 
-.constant('ConfigSvcRoute', '/home/edit/:ssid')
+/**
+ * The route to the "Edit Application Spec" view
+ */
+.constant('EditSpecRoute', '/store/edit/:specKey')
+
+/**
+ * The route to the "Edit Application Service" view
+ */
+.constant('EditServiceRoute', '/home/edit/:ssid')
 
 
 /**
@@ -136,8 +152,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'ExpertRoute', 'ConsoleRoute', 'ConfigSvcRoute', 'AddEditSpecRoute',
-    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, ExpertRoute, ConsoleRoute, ConfigSvcRoute, AddEditSpecRoute) {
+.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ConsoleRoute', 'EditServiceRoute', 'AddSpecRoute', 'EditSpecRoute',
+    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, HomeRoute, ConsoleRoute, EditServiceRoute, AddSpecRoute, EditSpecRoute) {
   // Squelch debug-level log messages
   $logProvider.debugEnabled(DEBUG);
       
@@ -216,29 +232,34 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     templateUrl: 'app/login/login.html'
   })
   .when(AppStoreRoute, {
-    title: 'Browse Applications',
-    controller: 'ConfigurationWizardController',
-    templateUrl: 'app/appStore/configWizard.html'
+    title: 'NDS Labs Catalog',
+    controller: 'CatalogController',
+    templateUrl: 'app/appStore/catalog.html'
   })
-  .when(AddEditSpecRoute, {
-    title: 'Catalog',
+  .when(AddSpecRoute, {
+    title: 'Add Application',
     controller: 'AddOrEditSpecController',
     templateUrl: 'app/appStore/addOrEdit/addOrEditSpec.html'
   })
-  .when(ExpertRoute, {
-    title: 'NDS Labs',
-    controller: 'ExpertSetupController',
-    templateUrl: 'app/expert/expertSetup.html'
+  .when(EditSpecRoute, {
+    title: 'Edit Application',
+    controller: 'AddOrEditSpecController',
+    templateUrl: 'app/appStore/addOrEdit/addOrEditSpec.html'
   })
-  .when(ConfigSvcRoute, {
-    title: 'Configure Service',
-    controller: 'ConfigureServiceController',
-    templateUrl: 'app/editService/configSvc.html'
+  .when(HomeRoute, {
+    title: 'NDS Labs Dashboard',
+    controller: 'DashboardController',
+    templateUrl: 'app/dashboard/dashboard.html'
+  })
+  .when(EditServiceRoute, {
+    title: 'Edit Application Service',
+    controller: 'EditServiceController',
+    templateUrl: 'app/dashboard/service/editService.html'
   })
   .when(ConsoleRoute, {
-    title: 'Console',
+    title: 'Application Service Console',
     controller: 'ConsoleController',
-    templateUrl: 'app/expert/consoleViewer/console.html'
+    templateUrl: 'app/dashboard/console/console.html'
   })
   .otherwise({ redirectTo: LoginRoute });
 }])
@@ -246,8 +267,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', 'InitialRedirect', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'ExpertRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData',
-    function($rootScope, $window, $location, $log, $interval, $cookies, $uibModalStack, Stacks, InitialRedirect, _, authInfo, LoginRoute, AppStoreRoute, ExpertRoute, NdsLabsApi, AutoRefresh, ServerData) {
+.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', 'InitialRedirect', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData',
+    function($rootScope, $window, $location, $log, $interval, $cookies, $uibModalStack, Stacks, InitialRedirect, _, authInfo, LoginRoute, AppStoreRoute, HomeRoute, NdsLabsApi, AutoRefresh, ServerData) {
   
   // Grab saved auth data from cookies and attempt to use the leftover session
   var token = $cookies.get('token');
@@ -323,7 +344,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
         ServerData.populateAll(authInfo.get().namespace).finally(function() {
           /*if (InitialRedirect) {
             InitialRedirect = false;
-            var dest = Stacks.all.length > 0 ? ExpertRoute : AppStoreRoute;
+            var dest = Stacks.all.length > 0 ? HomeRoute : AppStoreRoute;
             debugger;
             $location.path(dest);
           }*/

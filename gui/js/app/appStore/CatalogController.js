@@ -8,7 +8,7 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('ConfigurationWizardController', [ '$scope', '$filter', '$interval', '$uibModal', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stack', 'Stacks', 'Volume', 
+.controller('CatalogController', [ '$scope', '$filter', '$interval', '$uibModal', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stack', 'Stacks', 'Volume', 
     'StackService', 'Grid', 'Wizard', 'WizardPage', 'Specs', 'Volumes', 'ServiceDiscovery', 'clipboard',
     function($scope, $filter, $interval, $uibModal, $location, $log, _, NdsLabsApi, Project, Stack, Stacks, Volume, StackService, Grid, Wizard, WizardPage,
     Specs, Volumes, ServiceDiscovery, clipboard) {
@@ -25,19 +25,30 @@ angular
   
   $scope.installs = {};
   
+  var perRow = 4;
+  
   var refilter = function(specs) {
     $scope.filteredSpecs = $filter('isStack')(specs, $scope.showStandalones);
     $scope.filteredSpecs = $filter('orderBy')($scope.filteredSpecs, 'label');
     $scope.filteredSpecs = $filter('filter')($scope.filteredSpecs, $scope.svcQuery);
-    $scope.chunkedSpecs = _.chunk($scope.filteredSpecs, 3);
+    $scope.chunkedSpecs = _.chunk($scope.filteredSpecs, perRow);
   };
 
   /* TODO: This is FAR too many manual watchers... */
-  $scope.$watch(function () { return Specs.all; }, function(newValue, oldValue) { refilter($scope.specs = newValue); });
+  $scope.$watch(function () { return Specs.all; }, function(newValue, oldValue) {
+    $scope.installs = {};
+    angular.forEach(newValue, function(spec) {
+      var cnt =  _.filter(Stacks.all, [ 'key', spec.key ]).length;
+      $scope.installs[spec.key] = { count: cnt, progress: 0 };
+    });
+    
+    refilter($scope.specs = newValue);
+  });
   $scope.$watch(function () { return Stacks.all; }, function(newValue, oldValue) {
+    $scope.stacks = newValue;
     $scope.installs = {};
     angular.forEach(Specs.all, function(spec) {
-      var cnt =  _.filter(Stacks.all, [ 'key', spec.key ]).length;
+      var cnt =  _.filter(newValue, [ 'key', spec.key ]).length;
       $scope.installs[spec.key] = { count: cnt, progress: 0 };
     });
   });
@@ -47,30 +58,38 @@ angular
   
   $scope.copyToClipboard = function(spec) {
     if (!clipboard.supported) {
-      console.log('Sorry, copy to clipboard is not supported');
+      alert('Sorry, copy to clipboard is not supported');
       return;
     }
     
     var specCopy = angular.copy(spec);
     
-    // Remove unnecessary fields
+    // Remove unused / unnecessary fields
     delete specCopy.$$hashKey;
     delete specCopy.updateTime;
     delete specCopy.createdTime;
     
-    console.log('Copying!');
     clipboard.copyText(JSON.stringify(specCopy));
-    console.log('Copied!');
   };
   
-  $scope.openEdit = function(spec) {
-    $location.path('#/store/edit/' + spec.key);
+  $scope.cloneSpec = function(spec) {
+    $uibModal.open({
+      animation: true,
+      templateUrl: 'app/appStore/modals/clone/cloneSpec.html',
+      controller: 'CloneSpecCtrl',
+      size: 'md',
+      backdrop: 'static',
+      keyboard: false,
+      resolve: {
+        spec: spec
+      }
+    });
   };
   
   $scope.openExport = function(spec) {
     $uibModal.open({
       animation: true,
-      templateUrl: 'app/appStore/export/exportSpec.html',
+      templateUrl: 'app/appStore/modals/export/exportSpec.html',
       controller: 'ExportSpecCtrl',
       size: 'md',
       backdrop: 'static',
@@ -84,7 +103,7 @@ angular
   $scope.openImport = function() {
     $uibModal.open({
       animation: true,
-      templateUrl: 'app/appStore/import/importSpec.html',
+      templateUrl: 'app/appStore/modals/import/importSpec.html',
       controller: 'ImportSpecCtrl',
       size: 'md',
       backdrop: 'static',
@@ -96,7 +115,7 @@ angular
   $scope.openDelete = function(spec) {
     $uibModal.open({
       animation: true,
-      templateUrl: 'app/appStore/delete/deleteSpec.html',
+      templateUrl: 'app/appStore/modals/delete/deleteSpec.html',
       controller: 'DeleteSpecCtrl',
       size: 'md',
       backdrop: 'static',
@@ -108,23 +127,20 @@ angular
   };
   
   $scope.install = function(spec) {
-    spec.installProgress = 1;
-    spec.installCount = spec.installCount || 0;
-    
-    var specDetails = $scope.installs[spec.key] || ($scope.installs[spec.key] = { count: 0, progress: 0 });
+    var specDetails = $scope.installs[spec.key] || ($scope.installs[spec.key] = { count: 0, progress: 0, interval: null });
     specDetails.progress = 1;
     
     console.log('Installing ' + spec.label + '...');
     
     var increment = 5;
     
-  	spec.installInterval = $interval(function() {
-				if ($scope.installs[spec.key].progress < $scope.installMax) {
-				  $scope.installs[spec.key].progress += increment;
+  	specDetails.interval = $interval(function() {
+				if (specDetails.progress < $scope.installMax) {
+				  specDetails.progress += increment;
 				} else {
-          $scope.installs[spec.key].count += 1;
-				  $scope.installs[spec.key].progress = 0;
-				  $interval.cancel(spec.installInterval);
+          specDetails.count += 1;
+				  specDetails.progress = 0;
+				  $interval.cancel(specDetails.interval);
 				}
 			}, 200);
     
@@ -151,7 +167,7 @@ angular
     
     
     // Install this app to etcd
-    return NdsLabsApi.postProjectsByProjectIdStacks({ 'stack': app, 'projectId': projectId }).then(function(stack, xhr) {
+    return NdsLabsApi.postStacks({ 'stack': app }).then(function(stack, xhr) {
       $log.debug("successfully posted to /projects/" + projectId + "/stacks!");
       
       // Add /the new stack to the UI

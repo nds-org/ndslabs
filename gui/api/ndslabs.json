@@ -2,7 +2,7 @@
     "swagger": "2.0",
     "info": {
         "title": "ndslabs",
-        "version": "0.1"
+        "version": "1.0.1-alpha"
     },
     "basePath": "/v1",
     "schemes": [
@@ -22,10 +22,10 @@
             "type": "string",
             "required": true
         },
-        "project-id": {
-            "name": "project-id",
+        "account-id": {
+            "name": "account-id",
             "in": "path",
-            "description": "The unique project identifier",
+            "description": "The unique account identifier",
             "type": "string",
             "required": true
         },
@@ -40,13 +40,6 @@
             "name": "stack-service-id",
             "in": "path",
             "description": "The unique stack service identifier",
-            "type": "string",
-            "required": true
-        },
-        "volume-id": {
-            "name": "volume-id",
-            "in": "path",
-            "description": "The unique volume identifier",
             "type": "string",
             "required": true
         }
@@ -139,11 +132,11 @@
                 "description": "Retrieves a site-wide list of available service definitions.\n",
                 "parameters": [
                     {
-                        "name": "stack",
+                        "name": "catalog",
                         "in": "query",
-                        "description": "Filter list for stacks (true or false)",
+                        "description": "Filter list for catalog (user, system, all)",
                         "required": false,
-                        "type": "boolean"
+                        "type": "string"
                     }
                 ],
                 "responses": {
@@ -233,9 +226,9 @@
                 }
             }
         },
-        "/projects": {
+        "/accounts": {
             "get": {
-                "description": "Retrieves a site-wide list of NDSLabs projects.\n",
+                "description": "Retrieves a site-wide list of NDSLabs accounts.\n",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -245,7 +238,7 @@
                                 "data": {
                                     "type": "array",
                                     "items": {
-                                        "$ref": "#/definitions/Project"
+                                        "$ref": "#/definitions/Account"
                                     }
                                 }
                             }
@@ -257,14 +250,14 @@
                 }
             },
             "post": {
-                "description": "Adds a new project\n",
+                "description": "Adds a new accounts\n",
                 "parameters": [
                     {
-                        "name": "project",
+                        "name": "accounts",
                         "in": "body",
-                        "description": "Project definition",
+                        "description": "Account definition",
                         "schema": {
-                            "$ref": "#/definitions/Project"
+                            "$ref": "#/definitions/Account"
                         },
                         "required": true
                     }
@@ -276,14 +269,14 @@
                 }
             }
         },
-        "/projects/{project-id}": {
+        "/accounts/{account-id}": {
             "parameters": [
                 {
-                    "$ref": "#/parameters/project-id"
+                    "$ref": "#/parameters/account-id"
                 }
             ],
             "get": {
-                "description": "Retrieves basic information about a project.\n",
+                "description": "Retrieves basic information about a account.\n",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -291,7 +284,7 @@
                             "type": "object",
                             "properties": {
                                 "data": {
-                                    "$ref": "#/definitions/Project"
+                                    "$ref": "#/definitions/Account"
                                 }
                             }
                         }
@@ -299,14 +292,14 @@
                 }
             },
             "put": {
-                "description": "Updates project information\n",
+                "description": "Updates account information\n",
                 "parameters": [
                     {
-                        "name": "project",
+                        "name": "account",
                         "in": "body",
-                        "description": "Project definition",
+                        "description": "Account definition",
                         "schema": {
-                            "$ref": "#/definitions/Project"
+                            "$ref": "#/definitions/Account"
                         },
                         "required": true
                     }
@@ -318,7 +311,7 @@
                 }
             },
             "delete": {
-                "description": "Delete a project\n",
+                "description": "Delete a account\n",
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -326,14 +319,9 @@
                 }
             }
         },
-        "/projects/{project-id}/stacks": {
-            "parameters": [
-                {
-                    "$ref": "#/parameters/project-id"
-                }
-            ],
+        "/stacks": {
             "get": {
-                "description": "Retrieves a list of stacks for this project.\n",
+                "description": "Retrieves a list of stacks for this account.\n",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -355,7 +343,7 @@
                 }
             },
             "post": {
-                "description": "Adds a new stack to this project\n",
+                "description": "Adds a new stack to this account\n",
                 "parameters": [
                     {
                         "name": "stack",
@@ -374,11 +362,8 @@
                 }
             }
         },
-        "/projects/{project-id}/stacks/{stack-id}": {
+        "/stacks/{stack-id}": {
             "parameters": [
-                {
-                    "$ref": "#/parameters/project-id"
-                },
                 {
                     "$ref": "#/parameters/stack-id"
                 }
@@ -427,112 +412,8 @@
                 }
             }
         },
-        "/projects/{project-id}/volumes": {
+        "/logs/{stack-service-id}": {
             "parameters": [
-                {
-                    "$ref": "#/parameters/project-id"
-                }
-            ],
-            "get": {
-                "description": "Retrieves a list of volumes for this project.\n",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "data": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/definitions/Volume"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not found"
-                    }
-                }
-            },
-            "post": {
-                "description": "Adds a new volume to this project\n",
-                "parameters": [
-                    {
-                        "name": "volume",
-                        "in": "body",
-                        "description": "Volume definition",
-                        "schema": {
-                            "$ref": "#/definitions/Volume"
-                        },
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created"
-                    }
-                }
-            }
-        },
-        "/projects/{project-id}/volumes/{volume-id}": {
-            "parameters": [
-                {
-                    "$ref": "#/parameters/project-id"
-                },
-                {
-                    "$ref": "#/parameters/volume-id"
-                }
-            ],
-            "get": {
-                "description": "Retrieves the volume definition.\n",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "data": {
-                                    "$ref": "#/definitions/Volume"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Updates volume information\n",
-                "parameters": [
-                    {
-                        "name": "volume",
-                        "in": "body",
-                        "description": "Volume definition",
-                        "schema": {
-                            "$ref": "#/definitions/Volume"
-                        },
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Updated"
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete a volume\n",
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                }
-            }
-        },
-        "/projects/{project-id}/logs/{stack-service-id}": {
-            "parameters": [
-                {
-                    "$ref": "#/parameters/project-id"
-                },
                 {
                     "$ref": "#/parameters/stack-service-id"
                 }
@@ -554,11 +435,8 @@
                 }
             }
         },
-        "/projects/{project-id}/start/{stack-id}": {
+        "/start/{stack-id}": {
             "parameters": [
-                {
-                    "$ref": "#/parameters/project-id"
-                },
                 {
                     "$ref": "#/parameters/stack-id"
                 }
@@ -572,11 +450,8 @@
                 }
             }
         },
-        "/projects/{project-id}/stop/{stack-id}": {
+        "/stop/{stack-id}": {
             "parameters": [
-                {
-                    "$ref": "#/parameters/project-id"
-                },
                 {
                     "$ref": "#/parameters/stack-id"
                 }
@@ -647,11 +522,11 @@
                 "description": "Register\n",
                 "parameters": [
                     {
-                        "name": "project",
+                        "name": "account",
                         "in": "body",
-                        "description": "Project definition",
+                        "description": "Account definition",
                         "schema": {
-                            "$ref": "#/definitions/Project"
+                            "$ref": "#/definitions/Account"
                         },
                         "required": true
                     }
@@ -713,32 +588,35 @@
                 "maintainer": {
                     "type": "string"
                 },
-                "requiresVolume": {
-                    "type": "boolean"
+                "logo": {
+                    "type": "string"
                 },
-                "isStack": {
-                    "type": "boolean"
+                "display": {
+                    "type": "string"
                 },
-                "isService": {
-                    "type": "boolean"
+                "access": {
+                    "type": "string"
                 },
-                "isPublic": {
-                    "type": "boolean"
+                "developerEnvironment": {
+                    "type": "string"
                 },
-                "isStandalone": {
-                    "type": "boolean"
+                "config": {
+                    "$ref": "#/definitions/Config"
                 },
                 "readinessProbe": {
                     "$ref": "#/definitions/ReadyProbe"
+                },
+                "image": {
+                    "$ref": "#/definitions/ServiceImage"
+                },
+                "resourceLimits": {
+                    "$ref": "#/definitions/ResourceLimits"
                 },
                 "depends": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/ServiceDependency"
                     }
-                },
-                "image": {
-                    "type": "string"
                 },
                 "ports": {
                     "type": "array",
@@ -752,7 +630,25 @@
                         "$ref": "#/definitions/VolumeMount"
                     }
                 },
+                "repositories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Repository"
+                    }
+                },
+                "command": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "args": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tags": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -794,6 +690,17 @@
                 }
             }
         },
+        "Repository": {
+            "type": "object",
+            "properties": {
+                "port": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
         "ServiceDependency": {
             "type": "object",
             "properties": {
@@ -805,7 +712,7 @@
                 }
             }
         },
-        "Project": {
+        "Account": {
             "type": "object",
             "properties": {
                 "id": {
@@ -820,9 +727,38 @@
                 "namespace": {
                     "type": "string"
                 },
-                "quotas": {
+                "storageQuota": {
+                    "type": "string"
+                },
+                "resourceLimits": {
                     "type": "object",
                     "properties": {
+                        "cpuMax": {
+                            "type": "string"
+                        },
+                        "cpuDefault": {
+                            "type": "string"
+                        },
+                        "memMax": {
+                            "type": "string"
+                        },
+                        "memDefault": {
+                            "type": "string"
+                        },
+                        "storageQuota": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "resourceUsage": {
+                    "type": "object",
+                    "properties": {
+                        "cpu": {
+                            "type": "string"
+                        },
+                        "memory": {
+                            "type": "string"
+                        },
                         "storage": {
                             "type": "string"
                         }
@@ -877,54 +813,45 @@
                 "status": {
                     "type": "string"
                 },
+                "imageTag": {
+                    "type": "string"
+                },
+                "statusMessage": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "endpoints": {
                     "type": "array",
                     "items": {
                         "type": "object",
                         "properties": {
-                            "url": {
+                            "internalIP": {
                                 "type": "string"
+                            },
+                            "host": {
+                                "type": "string"
+                            },
+                            "ports": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object"
+                                },
+                                "properties": {
+                                    "port": {
+                                        "type": "integer"
+                                    },
+                                    "nodePort": {
+                                        "type": "integer"
+                                    },
+                                    "protocol": {
+                                        "type": "string"
+                                    }
+                                }
                             }
                         }
                     }
-                }
-            }
-        },
-        "Volume": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "size": {
-                    "type": "integer"
-                },
-                "sizeUnit": {
-                    "type": "string"
-                },
-                "format": {
-                    "type": "string"
-                },
-                "attached": {
-                    "type": "string"
-                },
-                "service": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "formatted": {
-                    "type": "boolean"
-                },
-                "createTime": {
-                    "type": "integer"
-                },
-                "updateTime": {
-                    "type": "integer"
                 }
             }
         },
@@ -953,6 +880,37 @@
                 },
                 "isPassword": {
                     "type": "boolean"
+                }
+            }
+        },
+        "ServiceImage": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "ResourceLimits": {
+            "type": "object",
+            "properties": {
+                "cpuMax": {
+                    "type": "string"
+                },
+                "cpuDefault": {
+                    "type": "string"
+                },
+                "memMax": {
+                    "type": "string"
+                },
+                "memDefault": {
+                    "type": "string"
                 }
             }
         }
