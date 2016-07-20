@@ -521,16 +521,15 @@ func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	if account.ResourceLimits == (api.ResourceLimits{}) {
+	if account.ResourceLimits == (api.AccountResourceLimits{}) {
 		glog.Warningf("No resource limits specified for account %s, using defaults\n", account.Name)
-		account.ResourceLimits = api.ResourceLimits{
+		account.ResourceLimits = api.AccountResourceLimits{
 			CPUMax:        s.cpuMax,
 			CPUDefault:    s.cpuDefault,
 			MemoryMax:     s.memMax,
 			MemoryDefault: s.memDefault,
 			StorageQuota:  fmt.Sprintf("%d", s.storageDefault),
 		}
-		account.StorageQuota = s.storageDefault
 	}
 	_, err = s.kube.CreateResourceQuota(account.Namespace,
 		account.ResourceLimits.CPUMax,

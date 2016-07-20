@@ -91,18 +91,23 @@ type AccountList struct {
 }
 
 type Account struct {
-	Id             string         `json:"id"`
-	Name           string         `json:"name"`
-	Description    string         `json:"description"`
-	Namespace      string         `json:"namespace"`
-	StorageQuota   int            `json:"storageQuota"`
-	EmailAddress   string         `json:"email"`
-	Password       string         `json:"password"`
-	ResourceLimits ResourceLimits `json:"resourceLimits"`
-	ResourceUsage  ResourceUsage  `json:"resourceUsage"`
+	Id             string                `json:"id"`
+	Name           string                `json:"name"`
+	Description    string                `json:"description"`
+	Namespace      string                `json:"namespace"`
+	EmailAddress   string                `json:"email"`
+	Password       string                `json:"password"`
+	ResourceLimits AccountResourceLimits `json:"resourceLimits"`
+	ResourceUsage  ResourceUsage         `json:"resourceUsage"`
 }
 
 type ResourceLimits struct {
+	CPUMax        string `json:"cpuMax"`
+	CPUDefault    string `json:"cpuDefault"`
+	MemoryMax     string `json:"memMax"`
+	MemoryDefault string `json:"memDefault"`
+}
+type AccountResourceLimits struct {
 	CPUMax        string `json:"cpuMax"`
 	CPUDefault    string `json:"cpuDefault"`
 	MemoryMax     string `json:"memMax"`
