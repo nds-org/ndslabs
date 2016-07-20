@@ -325,10 +325,13 @@ func (c *Client) UpdateAccount(account *api.Account) error {
 	}
 }
 
-func (c *Client) AddService(service *api.ServiceSpec, token string, catalog string) (*api.ServiceSpec, error) {
+func (c *Client) AddService(service *api.ServiceSpec, token string, catalog string, update bool) (*api.ServiceSpec, error) {
 
 	url := c.BasePath + "services"
 
+	if update {
+		url += "/" + service.Key
+	}
 	if catalog != "" {
 		url += "?catalog=" + catalog
 	}
@@ -337,8 +340,12 @@ func (c *Client) AddService(service *api.ServiceSpec, token string, catalog stri
 	if err != nil {
 		return nil, err
 	}
+	method := "POST"
+	if update {
+		method = "PUT"
+	}
 
-	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	request, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	resp, err := c.HttpClient.Do(request)

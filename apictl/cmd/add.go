@@ -18,6 +18,7 @@ var (
 	file    string
 	dir     string
 	catalog string
+	update  bool
 )
 
 func init() {
@@ -36,6 +37,7 @@ func init() {
 	addServiceCmd.Flags().StringVarP(&file, "file", "f", "", "Path to service definition (json)")
 	addServiceCmd.Flags().StringVar(&dir, "dir", "", "Path to directory of service definitions (json)")
 	addServiceCmd.Flags().StringVarP(&catalog, "catalog", "c", "user", "Catalog to use")
+	addServiceCmd.Flags().BoolVarP(&update, "update", "u", false, "Update existing service")
 
 }
 
@@ -225,7 +227,7 @@ var addTagCmd = &cobra.Command{
 		}
 		spec.Tags = append(spec.Tags, tagId)
 
-		_, err = client.AddService(spec, client.Token, catalog)
+		_, err = client.AddService(spec, client.Token, catalog, true)
 		if err != nil {
 			fmt.Printf("Error updating stack: %s\n", err)
 			return
@@ -353,11 +355,11 @@ func addService(service api.ServiceSpec, catalog string) {
 		token = t
 	}
 
-	_, err := client.AddService(&service, token, catalog)
+	_, err := client.AddService(&service, token, catalog, update)
 	if err != nil {
-		fmt.Printf("Unable to add service %s: %s \n", service.Label, err)
+		fmt.Printf("Unable to add/update service %s: %s \n", service.Label, err)
 	} else {
-		fmt.Println("Added service " + service.Label)
+		fmt.Println("Added/updated service " + service.Label)
 	}
 }
 
