@@ -760,6 +760,12 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 			return
 		}
 
+		if s.serviceInUse(key) > 0 {
+			glog.Warningf("Cannot update service spec %s because it is in use by one or more accounts\n", key)
+			rest.Error(w, "Service is in use", http.StatusConflict)
+			return
+		}
+
 		err = s.etcd.PutGlobalService(key, &service)
 		if err != nil {
 			glog.Error(err)
@@ -769,6 +775,12 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 
 		glog.V(1).Infof("Updated system service %s\n", key)
 	} else {
+		if s.serviceInUse(key) > 0 {
+			glog.Warningf("Cannot update service spec %s because it is in use by one or more accounts\n", key)
+			rest.Error(w, "Service is in use", http.StatusConflict)
+			return
+		}
+
 		userId := s.getUser(r)
 		err = s.etcd.PutService(userId, key, &service)
 		if err != nil {
