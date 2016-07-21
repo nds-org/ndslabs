@@ -1,0 +1,135 @@
+<!-- The Configuration Wizard -->
+<section>
+  <div class="row">
+    <div class="col-xs-10 col-xs-offset-1">
+      <h2>Configure {{ service.service | specProperty:'label' }} ({{ service.id }})</h2>
+      
+      <ol class="breadcrumb">
+        <li><a href="http://labsportal.nationaldataservice.org/">NDS Labs</a></li>
+        <li><a href="#/home">Dashboard</a></li>
+        <li class="active">Configure Service</li>
+      </ol>
+        
+      <uib-tabset active="activeTab">
+        <!-- Config Mapper -->
+        <uib-tab heading="Environment" index="0">
+          <h3>Environment</h3>
+          <table class="table table-condensed table-hover table-striped">
+            <thead>
+              <tr>
+                <th width="33%">Property</th>
+                <th width="33%">Value</th>
+                <th width="17%"><span class="pull-right">Use Default</span></th>
+                <th width="17%"><span class="pull-right">Delete</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="cfg in configs | orderBy:'name':true | orderBy:'canEdit':true track by cfg.name">
+                  <td>
+                    <span ng-if="!cfg.canEdit">{{ cfg.label || cfg.name }}</span>
+                    <input ng-if="cfg.canEdit" class="form-control" ng-model="cfg.name" placeholder="Property Name..." />
+                  </td>
+                  <td>
+                    <input class="form-control" ng-if="!cfg.isPassword" ng-model="cfg.value" placeholder="Property Value..." />
+                    
+                    <div ng-if="cfg.isPassword">
+                      <pwgen id="configValue" name="configValue" ng-model="cfg.value" length="20" placeholder="Choose a Password" maxlength="32759" required></pwgen>
+                      
+                      <!-- Password Strength -->
+                      <div ng-password-strength="cfg.value" strength="cfg.strength" 
+                          inner-class="progress-bar" inner-class-prefix="progress-bar-">
+                      </div>
+                      
+                      Current strength is: <strong>{{ cfg.strength | passwordStrength }}</strong>
+                    </div>
+          
+                  </td>
+                  <td><button class="pull-right btn btn-xs btn-link" ng-click="cfg.value = cfg.def"><i class="fa fa-asterisk"></i></button></td>
+                  <td><button class="pull-right btn btn-xs btn-link" ng-if="cfg.canEdit" ng-click="configs.splice(configs.indexOf(cfg), 1)"><i class="fa fa-trash"></i></button></td>
+              </tr>
+              <tr>
+                <td><button class="btn btn-xs btn-primary" ng-click="configs.push({ 'name': '', 'value': '', 'def': '', 'canEdit': true, 'editing': true })">Add Property</button></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </uib-tab>
+      
+        <!-- Volume Mapper -->
+        <uib-tab heading="Data" index="1">
+          <h3>Data</h3>
+          <table class="table table-condensed table-hover table-striped">
+            <thead>
+              <tr>
+                <th width="50%">Source</th>
+                <th width="35%">Destination</th>
+                <th width="15%">Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="volume in volumes">
+                <td>
+                  <div class="input-group">
+                    <span class="input-group-addon" id="volume-map-from">/home/{{ project.namespace }}/</span>
+                  <input class="form-control" type="text" ng-model="volume.from" placeholder="Map From..." aria-describedby="volume-map-from"/>
+                  </div>
+                </td>
+                <td>
+                  <span ng-if="!volume.canEdit">{{ volume.to }}</span>
+                  <input ng-if="volume.canEdit" class="form-control" ng-model="volume.to" placeholder="Map To..." />
+                </td>
+                <td><button class="btn btn-xs btn-link" ng-if="volume.canEdit" ng-click="volumes.splice(volumes.indexOf(cfg), 1)"><i class="fa fa-trash"></i></button></td>
+              </tr>
+              <tr>
+                <td><button class="btn btn-xs btn-primary" ng-click="volumes.push({ 'from': '', 'to': '', 'canEdit': true, 'editing': true })">Map Volume</button></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </uib-tab>
+        
+        <!-- Port Mapper -->
+        <uib-tab heading="Network" index="2">
+          <h3>Network</h3>
+          <table class="table table-condensed table-hover table-striped">
+            <thead>
+              <tr>
+                <th width="33%">Port Number</th>
+                <th width="34%">Protocol</th>
+                <th width="33%">Exposure</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="port in ports">
+                <td>
+                  <div class="input-group">
+                    <span class="input-group-addon" id="volume-map-from">/home/{{ project.namespace }}/</span>
+                  <input class="form-control" type="text" ng-model="volume.from" placeholder="Map From..." aria-describedby="volume-map-from"/>
+                  </div>
+                </td>
+                <td>
+                  <span ng-if="!volume.canEdit">{{ volume.to }}</span>
+                  <input ng-if="volume.canEdit" class="form-control" ng-model="volume.to" placeholder="Map To..." />
+                </td>
+                <td><button class="btn btn-xs btn-link" ng-if="volume.canEdit" ng-click="volumes.splice(volumes.indexOf(cfg), 1)"><i class="fa fa-trash"></i></button></td>
+              </tr>
+              <tr>
+                <td><button class="btn btn-xs btn-primary" >Map Port</button></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </uib-tab>
+      </uib-tabset> 
+      
+      <div class="pull-right">
+        <button class="btn btn-lg btn-success" ng-click="save()">Save</button>
+        <button class="btn btn-lg btn-danger" ng-click="cancel()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</section>

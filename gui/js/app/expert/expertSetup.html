@@ -1,65 +1,22 @@
 <section>
   <div class="row">
-    <div class="col-sm-12">
-      <div class="jumbotron">
-        <div class="row">
-          <div class="col-sm-12">
-            <h3><small class="text-muted">PROJECT</small>
-            &nbsp;&nbsp;&nbsp;{{ project.name | capitalize }}</h3>
-          </div>
-        </div>
-      </div>
+    <div class="col-sm-10 col-sm-offset-1">
+      <h3>{{ project.name | capitalize }}</h3>
     </div>
   </div>
-    
-  <!-- Left Half (Selector Pane) -->
+  
   <div class="row">
-    <div class="col-sm-3">
-      <div class="panel panel-default" >
-        <div class="panel-body">
-          <div class="input-group">
-            <span class="input-group-addon" id="searchHeader"><i class="fa fa-search"></i></span>
-            <input type="text" class="form-control" placeholder="Find Services..." ng-model="svcQuery" 
-                aria-describedby="searchHeader" />
-            <span class="input-group-addon">
-              <input type="checkbox" ng-model="showStandalones" uib-tooltip="Show standalone services" tooltip-placement="top-right">
-            </span>
-          </div>
-          
-          <p class="text-center text-danger" ng-if="(allServices | filter : svcQuery).length === 0">
-            <small>No services matched the specified query</small>
-          </p>
-        </div>
-        
-        <table class="table table-condensed table-hover table-striped" ng-hide="(allServices | filter : svcQuery).length === 0">
-          <tbody>
-            <tr ng-repeat="stack in allServices | isStack:showStandalones | orderBy:'label' | filter : svcQuery track by stack.key">
-              <td width="95%">{{ stack.label }}</td>
-              <td width="5%">
-               <button class="btn btn-xs btn-default" ng-click="openWizard(stack)" 
-                     uib-tooltip="{{ stack.description }}" tooltip-placement="top-right">
-                  <i class="fa fa-plus"></i>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="col-sm-10 col-sm-offset-1">
+      <ol class="breadcrumb">
+        <li><a href="http://labsportal.nationaldataservice.org/">NDS Labs</a></li>
+        <li class="active">Dashboard</li>
+      </ol>
     </div>
-   
-    <!-- Right Half (Content Pane) -->
-    <div class="col-sm-9 fill-height">
-      <div class="row">
-        <div class="col-sm-12">
-          <button class="btn btn-default btn-sm pull-right" ng-click="autoRefresh.toggle()"
-               ng-class="{ 'btn-info':autoRefresh.interval !== null }"
-               ng-mouseenter="iconSpin = true" ng-mouseleave="iconSpin = false"
-               uib-tooltip="Automatically refresh the data on this page?" tooltip-placement="left">
-             <i class="fa fa-refresh fa-fw" ng-class="{ 'fa-spin':iconSpin || autoRefresh.interval !== null }"></i>
-             Auto Refresh
-          </button>
-        </div>
-      </div>
+  </div>
+  
+  <!-- Applications / Volumes Area -->
+  <div class="row">
+    <div class="col-sm-10 col-sm-offset-1 fill-height">
       <div class="row">
         <div class="col-sm-3">
           <!-- TODO: Refreshing data through nested AJAX does not seem to work well here... -->
@@ -72,24 +29,43 @@
               value="{{ configuredStacks | runningStacksCount }}"  label="Stacks"></justgage>-->
         </div>
       </div>
-      
-      <!-- <pre>{{ (configuredStacks | orderBy:'name')[0].status }}</pre> -->
-      
+         
       <div class="row">
         <div class="col-sm-12">
           <!-- Tabs for Stacks / Volumes -->
           <uib-tabset active="selectedTab" type="pills">
+            <div class="pull-right">
+              <!-- Launch New Stack Button -->
+              
+              <!-- openWizard(stack) -->
+              <a class="btn btn-sm btn-primary" href="#/store"
+                 ng-mouseenter="iconBounce = true" ng-mouseleave="iconBounce = false"
+                 uib-tooltip="Refresh" tooltip-placement="left">
+                <i class="fa fa-fw fa-plus"  ng-class="{ 'faa-bounce animated':iconBounce }"></i>
+                <!-- Launch New Application -->
+              </a>
+             
+              <!-- Refresh button -->
+              <button class="btn btn-default btn-sm" ng-click="autoRefresh.toggle()"
+                   ng-class="{ 'btn-info':autoRefresh.interval !== null }"
+                   ng-mouseenter="iconSpin = true" ng-mouseleave="iconSpin = false"
+                   uib-tooltip="Refresh" tooltip-placement="left">
+                <i class="fa fa-refresh fa-fw" ng-class="{ 'fa-spin':iconSpin || autoRefresh.interval !== null }"></i>
+                <!-- Refresh -->
+              </button>
+            </div>
             
-            <!-- Configured Stacks --> 
+            <!-- Stacks Tab --> 
             <uib-tab index="0">
               <uib-tab-heading>
-                <i class="fa fa-fw fa-align-justify"></i> Stacks
+                <i class="fa fa-fw fa-align-justify"></i> Applications 
+                <span class="badge" ng-if="configuredStacks.length > 0">{{ configuredStacks.length }}</span>
               </uib-tab-heading>
               <div class="well well-lg fill-height">
                 <!-- Helper text to display if the user has no yet configured any stacks -->
                 <div ng-if="configuredStacks.length === 0" class="helper-text">
-                  <h2>It looks like you haven't configured any stacks</h2>
-                  <h4>Search and add a stack of services to see and manage it here</h4>
+                  <h2>It looks like you haven't installed any applications</h2>
+                  <h4>Install a new application to see and manage it here</h4>
                 </div>
                 
                 <!-- The Accordion of Configured Stacks -->
@@ -121,7 +97,7 @@
                       </div>
                     </uib-accordion-heading>
                       
-                    <!-- Stack Services -->
+                    <!-- Application Services -->
                     <div class="row">
                       <div class="col-sm-12">
                         <!-- List off our stack's services here -->
@@ -141,7 +117,7 @@
                               </tr>
                             </thead>
                             <tbody>
-                              <tr ng-repeat="svc in stack.services track by svc.service" 
+                              <tr ng-repeat="svc in stack.services track by svc.id" 
                                   ng-class="{ 'danger':svc.status === 'stopping', 'success': svc.status === 'starting', 'warning': svc.status === 'waiting' }">
                                 
                                 <td class="text-center">
@@ -192,9 +168,14 @@
                                 
                                 <!-- Config -->
                                 <td class="text-center">
+                                  <!-- ng-click="showConfig(svc)" -->
+                                  <a type="button" class="btn btn-default btn-xs" ng-href="#/configure/{{ svc.id }}"
+                                      ng-if="stack.status === 'stopped'">
+                                    <i class="fa fa-wrench"></i>
+                                  </a>
+                                  
                                   <button type="button" class="btn btn-default btn-xs" ng-click="showConfig(svc)"
-                                      ng-if="!_.isEmpty(svc.config) || svc.endpoints.length > 0"
-                                      ng-disabled="_.isEmpty(svc.config) && svc.endpoints.length === 0">
+                                      ng-if="stack.status !== 'stopped' && (!_.isEmpty(svc.config) || svc.endpoints.length > 0)">
                                     <i class="fa fa-puzzle-piece"></i>
                                   </button>
                                 </td>
@@ -247,28 +228,28 @@
                     <!-- The Stack's "Button Bar" -->
                     <div class="pull-right" role="group" aria-label="...">
                   
-                      <!-- Delete Stack Button -->
+                      <!-- Delete Application Button -->
                       <button class="btn btn-sm btn-default" ng-disabled="stack.status !== 'stopped' || starting[stack.id]" ng-if="stack.status.indexOf('start') === -1"
-                          ng-click="deleteStack(stack)" uib-tooltip="Delete this Stack"
+                          ng-click="deleteStack(stack)" uib-tooltip="Remove Application"
                           tooltip-placement="left">
-                        <i class="fa fa-times"></i>
-                        Delete Stack
+                        <i class="fa fa-fw fa-trash"></i>
+                        Remove
                       </button>
                       
-                      <!-- Launch Stack Button -->
-                      <button class="btn btn-sm btn-success" ng-disabled="stack.status !== 'stopped' || starting[stack.id]" 
-                           ng-click="startStack(stack)" ng-if="stack.status.indexOf('start') === -1" uib-tooltip="Start all services in this stack"
+                      <!-- Launch Application Button -->
+                      <button class="btn btn-sm btn-primary" ng-disabled="stack.status !== 'stopped' || starting[stack.id]" 
+                           ng-click="startStack(stack)" ng-if="stack.status.indexOf('start') === -1" uib-tooltip="Launch application services"
                           tooltip-placement="top">
-                        <i class="fa fa-fw fa-play"></i>
-                        Launch Stack
+                        <i class="fa fa-fw fa-rocket"></i>
+                        Launch
                       </button>
                   
-                      <!-- Stop Stack Button -->
-                      <button class="btn btn-sm btn-danger" ng-disabled="(stack.status !== 'started' && stack.status !== 'error') || stopping[stack.id]" 
-                           ng-click="stopStack(stack)" ng-if="stack.status.indexOf('stop') === -1" uib-tooltip="Stop all services in this stack"
+                      <!-- Stop Application Button -->
+                      <button class="btn btn-sm btn-primary" ng-disabled="(stack.status !== 'started' && stack.status !== 'error') || stopping[stack.id]" 
+                           ng-click="stopStack(stack)" ng-if="stack.status.indexOf('stop') === -1" uib-tooltip="Shutdown application services"
                           tooltip-placement="left">
-                        <i class="fa fa-fw fa-stop"></i>
-                        Stop Stack
+                        <i class="fa fa-fw fa-power-off"></i>
+                        Shutdown
                       </button>
                     </div>
                   </uib-accordion-group>
@@ -276,23 +257,23 @@
               </div>
             </uib-tab>
             
-            <!-- Configured Volumes -->
+            <!-- Volumes Tab -->
             <uib-tab index="1">
               <uib-tab-heading>
-                <i class="fa fa-fw fa-database"></i> Volumes
+                <i class="fa fa-fw fa-database"></i> Volumes 
+                <span class="badge" ng-if="configuredVolumes.length > 0">{{ configuredVolumes.length }}</span>
               </uib-tab-heading>
               
               <div class="well well-lg fill-height">
                 <!-- Helper text to display if the user has no yet configured any volumes -->
                 <div ng-if="configuredVolumes.length === 0" class="helper-text">
                   <h2>It looks like you haven't configured any volumes</h3>
-                  <h4>Once you add a stack, its volumes will appear here</h4>
+                  <h4>Once you add an application, its volumes will appear here</h4>
                 </div>
                 
                 <!-- Slide-Out Panel Contents -->
                 <div class="table-responsive">
-                  <table class="table table-hover" ng-if="configuredVolumes.length > 0" 
-                      style="">
+                  <table class="table table-hover" ng-if="configuredVolumes.length > 0">
                     <thead>
                       <tr>
                         <td width="20%"><strong>Name</strong></td>

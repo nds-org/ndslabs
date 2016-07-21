@@ -16,8 +16,30 @@
 /* Fix that silly blue border around accordion headers */
 .accordion-toggle:focus{outline: none;}
 
+/*change breadcrumb separator to raquo symbol*/
+.breadcrumb > li + li:before {
+     content: "\2215\00A0";
+     color: #aaa;
+}
+
 .btn {
   border-radius:5px;
+}
+
+@media (min-width: 768px) {
+  .table-row {
+    display: table;
+    table-layout: fixed;
+  }
+
+  .table-row [class^="col-"] {
+    display: table-cell;
+    float: none;
+  }
+}
+
+.thumbnail {
+  height: 100%;
 }
 
 .terminal {
@@ -62,7 +84,8 @@
 }
 
 .fill-height {
-  height:100%;
+  height:100% !important;
+  min-height: 100% !important;
 }
 
 .fill-width {
@@ -82,6 +105,10 @@
   padding-bottom:100px;
   vertical-align:middle;
   height:100%;
+}
+
+html,body {
+    height:100%;
 }
 
 .margin-left-right-120 {
@@ -105,8 +132,35 @@
   color:inherit !important;
 }
 
+/* Browse Happy styles
+-------------------------------------------------- */
+.browsehappy {
+	display:block;
+	width:100%;
+	height:100px;
+	background-color:#f2dede;
+	margin: 0 0 10px;
+	font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+	font-size: 22px;
+	line-height: 1.4;
+	color: #333;
+	vertical-align:middle;
+}
+.browsehappy span{
+	vertical-align:middle;
+	margin: 0 20px 0 20px;
+	background:url("https://cdn.rawgit.com/alrra/browser-logos/master/internet-explorer/internet-explorer_64x64.png") no-repeat;
+	height:64px;
+	width:64px;
+	display:inline-block;
+}
+
 /* Specific id styles
 -------------------------------------------------- */
+
+#appContent {
+  margin-bottom:100px;
+}
 
 #configWizard {
   min-height:400px;
@@ -122,9 +176,9 @@
  position:fixed;
  left:0px;
  bottom:0px;
- height:50px;
+ height:60px;
  width:100%;
- background:#DDD;
+ background:#a8a8a1;
 }
 
 #loginPanel {
@@ -141,12 +195,12 @@
 }
 
 #volumeTable {
-  border-radius:25px;
+  border-radius:10px;
   border:1px solid lightgray;
 }
+
 #addFieldBtn, #addFieldDropdown {
   cursor: pointer;
 }
-
 
 
