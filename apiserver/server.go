@@ -1068,6 +1068,10 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 		spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
 		if spec != nil {
 			for _, mount := range spec.VolumeMounts {
+				if mount.Name == "docker" {
+					continue
+				}
+
 				glog.V(4).Infof("Looking for mount %s\n", mount.MountPath)
 				found := false
 				for _, toPath := range stackService.VolumeMounts {
