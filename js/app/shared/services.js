@@ -214,7 +214,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       "image": {
         "registry": "",
         "name": "",
-        "tags": []
+        "tags": [ "latest" ]
       },
       "display": "stack",
       "access": "external",
