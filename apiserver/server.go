@@ -305,6 +305,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Get(s.prefix+"logs/:ssid", s.GetLogs),
 		rest.Get(s.prefix+"console", s.GetConsole),
 		rest.Get(s.prefix+"check_console", s.CheckConsole),
+		rest.Get(s.prefix+"vocabulary/:name", s.GetVocabulary),
 	)
 
 	router, err := rest.MakeRouter(routes...)
@@ -320,6 +321,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		if err != nil {
 			glog.Warningf("Error loading specs: %s\n", err)
 		}
+		s.addVocabulary(cfg.Server.SpecsDir + "/vocab/tags.json")
 	}
 
 	go s.initExistingAccounts()
@@ -2025,13 +2027,14 @@ func (s *Server) loadSpecs(path string) error {
 
 	for _, file := range files {
 		if file.IsDir() {
-			if file.Name() != "test" {
+			if file.Name() != "vocab" {
 				s.loadSpecs(fmt.Sprintf("%s/%s", path, file.Name()))
 			}
 		} else {
 			s.addServiceFile(fmt.Sprintf("%s/%s", path, file.Name()))
 		}
 	}
+
 	return nil
 }
 
@@ -2171,4 +2174,35 @@ func (s *Server) detachVolume(userId string, ssid string) bool {
 		}
 	}
 	return false
+}
+
+func (s *Server) addVocabulary(path string) error {
+	if path[len(path)-4:len(path)] != "json" {
+		return nil
+	}
+	glog.V(4).Infof("Adding vocabulary %s", path)
+	vocab := api.Vocabulary{}
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	err = json.Unmarshal(data, &vocab)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	s.etcd.PutVocabulary(vocab.Name, &vocab)
+	return nil
+}
+
+func (s *Server) GetVocabulary(w rest.ResponseWriter, r *rest.Request) {
+	name := r.PathParam("name")
+	vocab, err := s.etcd.GetVocabulary(name)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	} else {
+		w.WriteJson(&vocab)
+	}
 }
