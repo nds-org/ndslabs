@@ -36,10 +36,10 @@ type Server struct {
 	prefix         string
 	ingress        IngressType
 	domain         string
-	cpuMax         string
-	cpuDefault     string
-	memMax         string
-	memDefault     string
+	cpuMax         int
+	cpuDefault     int
+	memMax         int
+	memDefault     int
 	storageDefault int
 }
 
@@ -56,10 +56,10 @@ type Config struct {
 		Ingress      IngressType
 	}
 	DefaultLimits struct {
-		CpuMax         string
-		CpuDefault     string
-		MemMax         string
-		MemDefault     string
+		CpuMax         int
+		CpuDefault     int
+		MemMax         int
+		MemDefault     int
 		StorageDefault int
 	}
 	Etcd struct {
@@ -105,17 +105,17 @@ func main() {
 	if cfg.Kubernetes.TokenPath == "" {
 		cfg.Kubernetes.TokenPath = "/run/secrets/kubernetes.io/serviceaccount/token"
 	}
-	if cfg.DefaultLimits.MemMax == "" {
-		cfg.DefaultLimits.MemMax = "8Gi"
+	if cfg.DefaultLimits.MemMax <= 0 {
+		cfg.DefaultLimits.MemMax = 8196 //M
 	}
-	if cfg.DefaultLimits.MemDefault == "" {
-		cfg.DefaultLimits.MemDefault = "100Mi"
+	if cfg.DefaultLimits.MemDefault <= 0 {
+		cfg.DefaultLimits.MemDefault = 100 //M
 	}
-	if cfg.DefaultLimits.CpuMax == "" {
-		cfg.DefaultLimits.CpuMax = "2"
+	if cfg.DefaultLimits.CpuMax <= 0 {
+		cfg.DefaultLimits.CpuMax = 2000 //m
 	}
-	if cfg.DefaultLimits.CpuDefault == "" {
-		cfg.DefaultLimits.CpuDefault = "1"
+	if cfg.DefaultLimits.CpuDefault <= 0 {
+		cfg.DefaultLimits.CpuDefault = 1000 //m
 	}
 	if cfg.DefaultLimits.StorageDefault <= 0 {
 		cfg.DefaultLimits.StorageDefault = 10
@@ -365,8 +365,8 @@ func (s *Server) initExistingAccounts() {
 		if !s.kube.NamespaceExists(account.Namespace) {
 			s.kube.CreateNamespace(account.Namespace)
 
-			if len(account.ResourceLimits.CPUMax) > 0 &&
-				len(account.ResourceLimits.MemoryMax) > 0 {
+			if account.ResourceLimits.CPUMax > 0 &&
+				account.ResourceLimits.MemoryMax > 0 {
 				s.kube.CreateResourceQuota(account.Namespace,
 					account.ResourceLimits.CPUMax,
 					account.ResourceLimits.MemoryMax)
@@ -527,7 +527,7 @@ func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 			CPUDefault:    s.cpuDefault,
 			MemoryMax:     s.memMax,
 			MemoryDefault: s.memDefault,
-			StorageQuota:  fmt.Sprintf("%d", s.storageDefault),
+			StorageQuota:  s.storageDefault,
 		}
 	}
 	_, err = s.kube.CreateResourceQuota(account.Namespace,

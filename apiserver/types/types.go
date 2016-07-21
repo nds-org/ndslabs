@@ -102,17 +102,17 @@ type Account struct {
 }
 
 type ResourceLimits struct {
-	CPUMax        string `json:"cpuMax"`
-	CPUDefault    string `json:"cpuDefault"`
-	MemoryMax     string `json:"memMax"`
-	MemoryDefault string `json:"memDefault"`
+	CPUMax        int `json:"cpuMax"`
+	CPUDefault    int `json:"cpuDefault"`
+	MemoryMax     int `json:"memMax"`
+	MemoryDefault int `json:"memDefault"`
 }
 type AccountResourceLimits struct {
-	CPUMax        string `json:"cpuMax"`
-	CPUDefault    string `json:"cpuDefault"`
-	MemoryMax     string `json:"memMax"`
-	MemoryDefault string `json:"memDefault"`
-	StorageQuota  string `json:"storageQuota"`
+	CPUMax        int `json:"cpuMax"`
+	CPUDefault    int `json:"cpuDefault"`
+	MemoryMax     int `json:"memMax"`
+	MemoryDefault int `json:"memDefault"`
+	StorageQuota  int `json:"storageQuota"`
 }
 
 type ResourceUsage struct {

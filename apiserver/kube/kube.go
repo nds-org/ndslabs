@@ -137,7 +137,7 @@ func (k *KubeHelper) CreateNamespace(pid string) (*api.Namespace, error) {
 	return nil, nil
 }
 
-func (k *KubeHelper) CreateResourceQuota(pid string, cpu string, mem string) (*api.ResourceQuota, error) {
+func (k *KubeHelper) CreateResourceQuota(pid string, cpu int, mem int) (*api.ResourceQuota, error) {
 
 	glog.V(4).Infof("Creating resource quota for %s: %s, %s\n", pid, cpu, mem)
 	rq := api.ResourceQuota{
@@ -148,8 +148,8 @@ func (k *KubeHelper) CreateResourceQuota(pid string, cpu string, mem string) (*a
 		ObjectMeta: api.ObjectMeta{Name: "quota"},
 		Spec: api.ResourceQuotaSpec{
 			Hard: api.ResourceList{
-				api.ResourceCPU:    resource.MustParse(cpu + "m"),
-				api.ResourceMemory: resource.MustParse(mem + "M"),
+				api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", cpu)),
+				api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", mem)),
 			},
 		},
 	}
@@ -188,7 +188,7 @@ func (k *KubeHelper) CreateResourceQuota(pid string, cpu string, mem string) (*a
 	return nil, nil
 }
 
-func (k *KubeHelper) CreateLimitRange(pid string, cpu string, mem string) (*api.LimitRange, error) {
+func (k *KubeHelper) CreateLimitRange(pid string, cpu int, mem int) (*api.LimitRange, error) {
 
 	lr := &api.LimitRange{
 		TypeMeta: unversioned.TypeMeta{
@@ -203,8 +203,8 @@ func (k *KubeHelper) CreateLimitRange(pid string, cpu string, mem string) (*api.
 				{
 					Type: api.LimitTypeContainer,
 					Default: api.ResourceList{
-						api.ResourceCPU:    resource.MustParse(cpu + "m"),
-						api.ResourceMemory: resource.MustParse(mem + "M"),
+						api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", cpu)),
+						api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", mem)),
 					},
 				},
 			},
@@ -815,14 +815,14 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	}
 
 	k8rq := api.ResourceRequirements{}
-	if len(spec.ResourceLimits.CPUMax) > 0 && len(spec.ResourceLimits.MemoryMax) > 0 {
+	if spec.ResourceLimits.CPUMax > 0 && spec.ResourceLimits.MemoryMax > 0 {
 		k8rq.Limits = api.ResourceList{
-			api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUMax + "m"),
-			api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryMax + "M"),
+			api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", spec.ResourceLimits.CPUMax)),
+			api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", spec.ResourceLimits.MemoryMax)),
 		}
 		k8rq.Requests = api.ResourceList{
-			api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUDefault + "m"),
-			api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryDefault + "M"),
+			api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", spec.ResourceLimits.CPUMax)),
+			api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", spec.ResourceLimits.MemoryMax)),
 		}
 	} else {
 		glog.Warningf("No resource requirements specified for service %s\n", spec.Label)
