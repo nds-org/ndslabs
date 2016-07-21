@@ -1251,8 +1251,17 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
 	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, stackService, spec, addrPortMap, &sharedEnv)
 
+	k8vols := make([]k8api.Volume, 0)
+
+	// Mount the home directory
+	k8homeVol := k8api.Volume{}
+	k8homeVol.Name = "home"
+	k8homeHostPath := k8api.HostPathVolumeSource{}
+	k8homeHostPath.Path = s.volDir + "/" + userId
+	k8homeVol.HostPath = &k8homeHostPath
+	k8vols = append(k8vols, k8homeVol)
+
 	if len(stackService.VolumeMounts) > 0 || len(spec.VolumeMounts) > 0 {
-		k8vols := make([]k8api.Volume, 0)
 
 		idx := 0
 		for fromPath, toPath := range stackService.VolumeMounts {
@@ -1317,8 +1326,8 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 				}
 			}
 		}
-		template.Spec.Template.Spec.Volumes = k8vols
 	}
+	template.Spec.Template.Spec.Volumes = k8vols
 
 	glog.V(4).Infof("Starting controller %s\n", name)
 	_, err := s.kube.StartController(userId, template)
