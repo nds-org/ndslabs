@@ -16,11 +16,12 @@
                                     <div class="form-group" >
                                         <label for="keyField">Short Name</label>
                                         <input type="text" class="form-control" id="keyField" name="keyField" placeholder="Short Name"
-                                            ng-model="spec.key" ng-disabled="editingSpec" required ng-pattern="/^[a-z]+$/" />
+                                            ng-model="spec.key" ng-disabled="editingSpec" required ng-pattern="/^[a-z0-9]+$/" />
                                         
+                                        <p class="text-danger" ng-if="!keyUnique">This key is already in use</p>
                                         <ng-messages class="text-danger" for="modifySpec.keyField.$error" role="alert">
                                           <ng-message when="required">This field is required</ng-message>
-                                          <ng-message when="pattern">This field may only contain lowercase characters</ng-message>
+                                          <ng-message when="pattern">This field may only contain lowercase alphanumeric characters</ng-message>
                                         </ng-messages>
                                     </div>
                                     
@@ -56,13 +57,14 @@
                                         <label for="limitCpuDefaultField">CPU Default</label>
                                         <div class="input-group">
                                           <input type="number" class="form-control" id="limitCpuDefaultField" name="limitCpuDefaultField" 
-                                                ng-model="spec.resourceLimits.cpuDefault" aria-describedby="cpudefault-addon" ng-min="10" required />
+                                                ng-model="spec.resourceLimits.cpuDefault" aria-describedby="cpudefault-addon" ng-min="10" ng-max="{{ spec.resourceLimits.cpuMax }}" required />
                                           <span class="input-group-addon" id="cpudefault-addon">m</span>
                                         </div>
                                         
                                         <ng-messages class="text-danger" for="modifySpec.limitCpuDefaultField.$error" role="alert">
                                           <ng-message when="required">This field is required</ng-message>
-                                          <ng-message when="min">This field must be above the minimum</ng-message>
+                                          <ng-message when="min">This field must be above the minimum (10)</ng-message>
+                                          <ng-message when="max">This field must be below the maximum ({{ spec.resourceLimits.cpuMax }})</ng-message>
                                         </ng-messages>
                                     </div>
                                     
@@ -77,7 +79,7 @@
                                         
                                         <ng-messages class="text-danger" for="modifySpec.limitCpuMaxField.$error" role="alert">
                                           <ng-message when="required">This field is required</ng-message>
-                                          <ng-message when="min">This field must be above the minimum</ng-message>
+                                          <ng-message when="min">This field must be above the minimum (10)</ng-message>
                                         </ng-messages>
                                     </div>
                                     
@@ -86,13 +88,14 @@
                                         <label for="limitMemDefaultField">Memory Default</label>
                                         <div class="input-group">
                                           <input type="number" class="form-control" id="limitMemDefaultField" name="limitMemDefaultField" 
-                                                ng-model="spec.resourceLimits.memDefault" aria-describedby="memdefault-addon" ng-min="10" required />
+                                                ng-model="spec.resourceLimits.memDefault" aria-describedby="memdefault-addon" ng-min="10" ng-max="{{ spec.resourceLimits.memMax }}" required />
                                           <span class="input-group-addon" id="memdefault-addon">M</span>
                                         </div>
                                         
                                         <ng-messages class="text-danger" for="modifySpec.limitMemDefaultField.$error" role="alert">
                                           <ng-message when="required">This field is required</ng-message>
-                                          <ng-message when="min">This field must be above the minimum</ng-message>
+                                          <ng-message when="min">This field must be above the minimum (10)</ng-message>
+                                          <ng-message when="max">This field must be below the maximum ({{ spec.resourceLimits.memMax }})</ng-message>
                                         </ng-messages>
                                     </div>
                                     
@@ -107,7 +110,7 @@
                                         
                                         <ng-messages class="text-danger" for="modifySpec.limitMemMaxField.$error" role="alert">
                                           <ng-message when="required">This field is required</ng-message>
-                                          <ng-message when="min">This field must be above the minimum</ng-message>
+                                          <ng-message when="min">This field must be above the minimum (10)</ng-message>
                                         </ng-messages>
                                     </div>
                                 </fieldset>
@@ -307,8 +310,9 @@
                                                 <!-- Add new volume -->
                                                 <tr>
                                                     <td>
-                                                        <input class="form-control" ng-model="newVolName" name="volNameField" placeholder="Enter a new volume name..." required ng-pattern="/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/" />
-                                                        <!-- <ng-messages class="text-danger" role="alert" for="modifySpec.newVolume.volNameField.$error">
+                                                        <input class="form-control" ng-model="newVolName" name="volNameField" placeholder="Enter a new volume name..."  />
+                                                        <!--required ng-pattern="/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/" /> 
+                                                        <ng-messages class="text-danger" role="alert" for="modifySpec.newVolume.volNameField.$error">
                                                             <ng-message when="required">This field is required</ng-message>
                                                             <ng-message when="pattern">This field may only contain dashes and lowercase alphanumeric characters</ng-message>
                                                         </ng-messages> -->
@@ -356,8 +360,8 @@
                                         <td class="text-center">
                                             <div class="btn-group" role="group">
                                               <button type="button" class="btn btn-xs" ng-click="port.protocol='http'" ng-class="{ 'btn-primary': port.protocol === 'http', 'btn-default': port.protocol !== 'http' }">HTTP</button>
-                                              <button type="button" class="btn btn-xs" ng-click="port.protocol='tcp'" ng-class="{ 'btn-primary': port.protocol === 'tcp', 'btn-default': port.protocol !== 'tcp' }">TCP</button>
-                                              <button type="button" class="btn btn-xs" ng-disabled="true" ng-click="port.protocol='udp'" ng-class="{ 'btn-primary': port.protocol === 'udp', 'btn-default': port.protocol !== 'udp' }">UDP</button>
+                                              <!--<button type="button" class="btn btn-xs" ng-click="port.protocol='tcp'" ng-class="{ 'btn-primary': port.protocol === 'tcp', 'btn-default': port.protocol !== 'tcp' }">TCP</button>
+                                              <button type="button" class="btn btn-xs" ng-disabled="true" ng-click="port.protocol='udp'" ng-class="{ 'btn-primary': port.protocol === 'udp', 'btn-default': port.protocol !== 'udp' }">UDP</button>-->
                                             </div>
                                         </td>
                                         <td>
@@ -378,8 +382,8 @@
                                         <td class="text-center">
                                           <div class="btn-group" role="group">
                                             <button type="button" class="btn btn-xs" ng-click="portProtocol='http'" ng-class="{ 'btn-primary': portProtocol === 'http', 'btn-default': portProtocol !== 'http' }">HTTP</button>
-                                            <button type="button" class="btn btn-xs" ng-click="portProtocol='tcp'" ng-class="{ 'btn-primary': portProtocol === 'tcp', 'btn-default': portProtocol !== 'tcp' }">TCP</button>
-                                            <button type="button" class="btn btn-xs" ng-disabled="true" ng-click="portProtocol='udp'" ng-class="{ 'btn-primary': portProtocol === 'udp', 'btn-default': portProtocol !== 'udp' }">UDP</button>
+                                            <!--<button type="button" class="btn btn-xs" ng-click="portProtocol='tcp'" ng-class="{ 'btn-primary': portProtocol === 'tcp', 'btn-default': portProtocol !== 'tcp' }">TCP</button>
+                                            <button type="button" class="btn btn-xs" ng-disabled="true" ng-click="portProtocol='udp'" ng-class="{ 'btn-primary': portProtocol === 'udp', 'btn-default': portProtocol !== 'udp' }">UDP</button> -->
                                           </div>
                                         </td>
                                         <td class="text-center">
@@ -398,7 +402,7 @@
                                             </button>
                                           </div>
                                         </td>-->
-                                        <td><button class="btn btn-xs btn-primary" ng-click="spec.ports.push({ protocol: portProtocol, port: portNumber, access: portExposure })" 
+                                        <td><button class="btn btn-xs btn-primary" ng-click="spec.ports.push({ protocol: portProtocol, port: portNumber, access: portExposure });portNumber=0" 
                                         ng-disabled="_.find(spec.ports, { protocol:portProtocol, port:portNumber })" ><i class="fa fa-fw fa-plus"></i></button></td>
                                       </tr>
                                   </table>
@@ -415,7 +419,7 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="pull-right">
-                <button class="btn btn-success" ng-click="save()" ng-disabled="modifySpec.$invalid"><i class="fa fa-fw fa-save"></i> Save</button>
+                <button class="btn btn-success" ng-click="save()" ng-disabled="!keyUnique || modifySpec.$invalid"><i class="fa fa-fw fa-save"></i> Save</button>
                 <button class="btn btn-danger" ng-click="cancel()"><i class="fa fa-fw fa-times"></i> Cancel</button>
             </div>    
         </div>

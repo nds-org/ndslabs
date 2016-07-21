@@ -26,8 +26,16 @@ angular
   
   // Set up some common defaults
   $scope.portProtocol = 'http';
-  $scope.portNumber = 80;
+  $scope.portNumber = 0;
   $scope.portExposure = 'external';
+  
+  $scope.$watch('spec.key', function(newValue, oldValue) {
+    if (newValue && !$scope.editingSpec) {
+      $scope.keyUnique = !_.find(Specs.all, [ 'key', newValue ]);
+    } else {
+      $scope.keyUnique = true;
+    }
+  })
 
   // Update view when our spec list reloads
   $scope.$watch(function () { return Specs.all; }, function(newValue, oldValue) {

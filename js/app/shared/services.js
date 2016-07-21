@@ -226,10 +226,10 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       "repository": [],
       "volumeMounts": [],
       "resourceLimits": {
-        "cpuMax": "500",
-        "cpuDefault": "100",
-        "memMax": "1000",
-        "memDefault": "50"
+        "cpuMax": 500,
+        "cpuDefault": 100,
+        "memMax": 1000,
+        "memDefault": 50
       },
       "developerEnvironment": "",
       "tags": []

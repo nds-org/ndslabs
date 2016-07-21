@@ -13,7 +13,6 @@ angular
       
   var path = $location.path();
   $scope.editingService = (path.indexOf('/edit/') !== -1);
-      
   
   var projectId = Project.project.namespace;
   $scope.$watch(function () { return Project.project; }, function(newValue, oldValue) { projectId = newValue.namespace; });
@@ -104,7 +103,8 @@ angular
     return NdsLabsApi.putStacksByStackId({ 'stackId': $scope.stack.id, 'stack': $scope.stack }).then(function(stack, xhr) {
       // TODO: Only update changed stack?
       Stacks.populate(projectId).then(function() {
-        $location.path('/home?expand=' + $scope.stack.key);
+        $location.path('/home');
+        $location.search('expand', $scope.stack.key);
       });
     });
   };
@@ -112,5 +112,6 @@ angular
   $scope.cancel = function() {
     // Add the new stack to the UI
     $location.path('/home');
+    $location.search('expand', $scope.stack.key);
   };
 }]);
