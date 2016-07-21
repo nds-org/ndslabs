@@ -55,7 +55,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * The route to our "Dashboard" View
  */
-.constant('HomeRoute', '/home')
+.constant('HomeRoute', '/home:query?')
 
 /**
  * The route to the "Add Application Service" view

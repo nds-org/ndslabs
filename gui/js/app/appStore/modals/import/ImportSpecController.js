@@ -20,6 +20,7 @@ angular
     try {
       $scope.spec = JSON.parse($scope.json);
       $scope.validJson = true;
+      $scope.validKey = /^[a-z0-9]+$/.test($scope.spec.key);
       $scope.keyUnique = !_.find(Specs.all, [ 'key', $scope.spec.key ]);
     } catch (e) {
       $scope.validJson = false;

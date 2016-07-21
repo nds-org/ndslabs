@@ -151,7 +151,7 @@
                   <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu aria-labelledby="simple-dropdown">
                     <li><a href ng-click="cloneSpec(spec)"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
                     <li><a href ng-click="copyToClipboard(spec)"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</a></li>
-                    <li><a href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> Details</a></li>
+                    <li><a href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> View JSON</a></li>
                     <li><a ng-href="#/store/edit/{{ spec.key }}" ng-if="spec.catalog === 'user'" ng-disabled="stackExistsFor(spec)"><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
                     <li><a href ng-click="openDelete(spec)" ng-if="spec.catalog === 'user'" ng-disabled="stackExistsFor(spec)"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
                   </ul>
