@@ -20,6 +20,10 @@ angular
   //$scope.editingSpec = (path.indexOf('edit') !== -1);
   $scope.editingSpec = (path.indexOf('/edit/') !== -1);
   
+  $scope.forms = {};
+  
+  $scope.specs = Specs.all;
+  
   // Set up some common defaults
   $scope.portProtocol = 'http';
   $scope.portNumber = 80;

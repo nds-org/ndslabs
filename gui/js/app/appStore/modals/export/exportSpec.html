@@ -25,7 +25,7 @@
       </div>-->
       
       <div class="col-sm-10">
-        <a ng-href="#/store/edit/{{ spec.key }}" ng-if="spec.catalog === 'user'" type="button" class="btn btn-default" data-dismiss="modal" ng-click="close()"><i class="fa fa-fw fa-edit"></i> Edit</a>
+        <a ng-href="#/store/edit/{{ spec.key }}" ng-if="spec.catalog === 'user'" ng-disabled="showAlert" type="button" class="btn btn-default" data-dismiss="modal" ng-click="close()"><i class="fa fa-fw fa-edit"></i> Edit</a>
         <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="copy()"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</button>
       </div>
     </div>
