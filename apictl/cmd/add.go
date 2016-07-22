@@ -259,16 +259,20 @@ func addRequiredDependencies(stackKey string, stack *api.Stack) {
 
 	service, _ := client.GetService(stackKey)
 
-	for _, depends := range service.Dependencies {
-		if depends.Required {
-			stackService := api.StackService{}
-			stackService.Service = depends.DependencyKey
-			if !containsService(stack.Services, stackService) {
-				stack.Services = append(stack.Services, stackService)
-				//fmt.Printf("Adding required dependency %s\n", depends.DependencyKey)
-				addRequiredDependencies(depends.DependencyKey, stack)
+	if service != nil {
+		for _, depends := range service.Dependencies {
+			if depends.Required {
+				stackService := api.StackService{}
+				stackService.Service = depends.DependencyKey
+				if !containsService(stack.Services, stackService) {
+					stack.Services = append(stack.Services, stackService)
+					//fmt.Printf("Adding required dependency %s\n", depends.DependencyKey)
+					addRequiredDependencies(depends.DependencyKey, stack)
+				}
 			}
 		}
+	} else {
+		fmt.Printf("Warning: unable to find service with key %s\n", stackKey)
 	}
 }
 
@@ -286,6 +290,10 @@ func containsService(list []api.StackService, service api.StackService) bool {
 func addStack(serviceKey string, name string, opt string) {
 
 	service, _ := client.GetService(serviceKey)
+	if service == nil {
+		fmt.Println("Warning: unable to find service with key %s\n", serviceKey)
+		return
+	}
 	optional := strings.Split(opt, ",")
 
 	// Add this service
