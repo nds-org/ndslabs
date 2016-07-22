@@ -13,17 +13,16 @@ angular
   $scope.json = '';
   
   $scope.$watch('json', function(newValue, oldValue) {
-    if (newValue === '') {
-      return;
-    }
-    
     try {
-      $scope.spec = JSON.parse($scope.json);
+      $scope.spec = JSON.parse(newValue);
       $scope.validJson = true;
       $scope.validKey = /^[a-z0-9]+$/.test($scope.spec.key);
       $scope.keyUnique = !_.find(Specs.all, [ 'key', $scope.spec.key ]);
     } catch (e) {
       $scope.validJson = false;
+      
+      // Hide these other validation messages for now
+      $scope.keyUnique = $scope.validKey = true;
     }
   });
 
