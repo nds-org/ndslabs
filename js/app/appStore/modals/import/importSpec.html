@@ -17,10 +17,11 @@
         <button type="button" class="btn btn-default pull-left" data-dismiss="modal" ng-click="close()">Close</button>
       </div>
       <div class="col-sm-8 text-center">
-        <p class="text-success" ng-if="validJson && keyUnique">Application Spec JSON is valid</p>
-        <p class="text-danger" ng-if="!keyUnique">Application key is not unique</p>
-        <p class="text-danger" ng-if="!validKey">Application key may consist only of lowercase alphanumeric characters</p>
+        <p class="text-success" ng-if="validJson && keyPresent && validKey && keyUnique">Application Spec JSON is valid</p>
         <p class="text-danger" ng-if="!validJson">Application Spec is not valid JSON</p>
+        <p class="text-danger" ng-if="!keyPresent">Application Spec must specify a "key" field</p>
+        <p class="text-danger" ng-if="!validKey">Application key may consist only of lowercase alphanumeric characters</p>
+        <p class="text-danger" ng-if="!keyUnique">Application key is not unique</p>
       </div>
       <div class="col-sm-2">
         <button type="button" class="btn btn-primary pull-right" data-dismiss="modal" ng-click="import()" ng-disabled="!validJson || !validKey || !keyUnique">Import</button>
