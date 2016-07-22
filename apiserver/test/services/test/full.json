@@ -34,7 +34,7 @@
 		"protocol": "http"
 	}],
 	"repositories": [{
-		"name": "https://github.com/golang/example",
+		"url": "https://github.com/golang/example",
 		"type": "git"
 	}],
 	"developerEnvironment": "idOfDevEnv",

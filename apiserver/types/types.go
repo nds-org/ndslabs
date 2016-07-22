@@ -35,7 +35,7 @@ type ServiceImage struct {
 }
 
 type Repository struct {
-	Name string         `json:"name"`
+	URL  string         `json:"url"`
 	Type RepositoryType `json:"type"`
 }
 
