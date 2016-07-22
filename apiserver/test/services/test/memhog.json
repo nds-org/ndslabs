@@ -6,9 +6,9 @@
     "description": "A test container for resource limits",
 	"command": [ "stress", "--vm", "100" ],
     "resourceLimits": {
-        "cpuMax": "1",
-        "cpuDefault": "1",
-        "memMax": "1Gi",
-        "memDefault": "100Mi"
+        "cpuMax": 1000,
+        "cpuDefault": 100,
+        "memMax": 1024,
+        "memDefault": 100
     }
 }

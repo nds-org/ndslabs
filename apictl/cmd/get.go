@@ -74,6 +74,9 @@ var getStackCmd = &cobra.Command{
 		fmt.Println("\nSID\tCONFIG")
 
 		for _, service := range stack.Services {
+			for name, value := range service.Config {
+				fmt.Printf("%s\t%s=%s\n", service.Id, name, value)
+			}
 
 			spec, _ := client.GetService(service.Service)
 			if len(spec.Config) > 0 {
@@ -81,10 +84,7 @@ var getStackCmd = &cobra.Command{
 				for _, config := range spec.Config {
 					name := config.Name
 					value := config.Value
-					if config.CanOverride {
-						if val, ok := service.Config[name]; ok {
-							value = val
-						}
+					if service.Config[name] == "" {
 						fmt.Printf("%s\t%s=%s\n", service.Id, name, value)
 					}
 				}
@@ -143,9 +143,32 @@ var getAccountCmd = &cobra.Command{
 	PostRun: RefreshToken,
 }
 
+var getTagsCmd = &cobra.Command{
+	Use:    "tags",
+	Short:  "Get tags",
+	PreRun: Connect,
+	Run: func(cmd *cobra.Command, args []string) {
+
+		vocab, err := client.GetVocabulary("tags")
+		if err != nil {
+			fmt.Printf("Get vocabulary failed: %s\n", err)
+			return
+		}
+
+		data, err := json.MarshalIndent(vocab, "", "   ")
+		if err != nil {
+			fmt.Printf("Error marshalling vocab spec %s\n", err.Error)
+			return
+		}
+		fmt.Println(string(data))
+	},
+	PostRun: RefreshToken,
+}
+
 func init() {
 	RootCmd.AddCommand(getCmd)
 	getCmd.AddCommand(getServiceCmd)
 	getCmd.AddCommand(getStackCmd)
 	getCmd.AddCommand(getAccountCmd)
+	getCmd.AddCommand(getTagsCmd)
 }

@@ -30,6 +30,7 @@
   .table-row {
     display: table;
     table-layout: fixed;
+    width: 100%;
   }
 
   .table-row [class^="col-"] {
@@ -38,8 +39,12 @@
   }
 }
 
+.caption {
+  min-height: 125px;
+}
+
 .thumbnail {
-  height: 100%;
+  min-height: 175px;
 }
 
 .terminal {
@@ -54,14 +59,6 @@
 .terminal-cursor {
   color: #000;
   background: #f0f0f0;
-}
-
-.jumbotron {
-  margin-left:-15px;
-  margin-right:-15px;
-  padding-top:5px;
-  padding-left:15px;
-  padding-bottom:5px;
 }
 
 .modal-content {
@@ -98,6 +95,11 @@
   padding:0;
 }
 
+.text-center {
+  text-align:center !important;
+  vertical-align: middle !important; 
+}
+
 .helper-text {
   border:dashed;
   text-align:center;
@@ -115,12 +117,6 @@ html,body {
   display: block;
   margin-left: 120px;
   margin-right: 120px;
-}
-
-.modal-body-scrollable {
-   min-height:350px;
-   max-height:500px;
-   overflow: auto;
 }
 
 .top-margin {
@@ -172,6 +168,14 @@ html,body {
   max-width:900px;
 }
 
+#dashHeader {
+  margin-left:-15px;
+  margin-right:-15px;
+  padding-top:5px;
+  padding-left:15px;
+  padding-bottom:5px;
+}
+
 #footer {
  position:fixed;
  left:0px;
@@ -179,6 +183,10 @@ html,body {
  height:60px;
  width:100%;
  background:#a8a8a1;
+}
+
+#logBody {
+  height: 400px;
 }
 
 #loginPanel {
@@ -203,4 +211,28 @@ html,body {
   cursor: pointer;
 }
 
+#catalogCardButtonBar {
+  margin-bottom:15px;
+}
 
+.border-nds-thin {
+  border: 1px solid #ccc !important;
+  border-radius: 16px !important;
+  margin:20px;
+  padding:10px;
+}
+
+.border-nds {
+  border: 3px solid #ccc !important;
+  border-radius: 16px !important;
+  margin: 15px 0 15px 0;
+  padding:10px;
+  width:auto !important;
+  height:100% !important;
+  border-bottom:none;
+}
+
+.legend-fix { 
+   border: none;
+   width:auto !important;
+}

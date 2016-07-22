@@ -8,12 +8,10 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('LoginController', [ '$scope', '$cookies', '$location', '$log', '$uibModal', 'AuthInfo', 'NdsLabsApi', 'LoginRoute', 'ExpertRoute', '$uibModalStack', 'ServerData',
-    function($scope, $cookies, $location, $log, $uibModal, authInfo, NdsLabsApi, LoginRoute, ExpertRoute, $uibModalStack, ServerData) {
+.controller('LoginController', [ '$scope', '$cookies', '$location', '$log', '$uibModal', 'AuthInfo', 'NdsLabsApi', 'LoginRoute', 'HomeRoute', '$uibModalStack', 'ServerData',
+    function($scope, $cookies, $location, $log, $uibModal, authInfo, NdsLabsApi, LoginRoute, HomeRoute, $uibModalStack, ServerData) {
   // Grab our injected AuthInfo from the provider
   $scope.settings = authInfo.get();
-  
-  var HomeRoute = ExpertRoute;
   
   // If we found a token, the user should be sent to the HomePage to check its validity
   if (!$scope.settings.token) {

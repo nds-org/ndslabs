@@ -10,8 +10,19 @@ import (
 	"strings"
 )
 
+// listCmd represents the list command
 var setCmd = &cobra.Command{
-	Use:    "set [stack service id] [var name] [var value]",
+	Use:   "set",
+	Short: "Set optional stack values",
+}
+
+func init() {
+	RootCmd.AddCommand(setCmd)
+	setCmd.AddCommand(setEnvCmd)
+}
+
+var setEnvCmd = &cobra.Command{
+	Use:    "env [stack service id] [var name] [var value]",
 	Short:  "Set stack service environment values",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -42,16 +53,15 @@ var setCmd = &cobra.Command{
 				if err != nil {
 					fmt.Printf("Error getting service spec %s\n", err.Error)
 				}
+				if stackService.Config == nil {
+					stackService.Config = make(map[string]string)
+				}
 				found := false
 				for _, config := range spec.Config {
 					if config.Name == varName {
-						if stackService.Config == nil {
-							stackService.Config = make(map[string]string)
-						}
 						if config.CanOverride {
 							fmt.Printf("%s %s %t\n", varName, varValue, config.CanOverride)
 							stackService.Config[varName] = varValue
-							stack.Services[i] = stackService
 							found = true
 						} else {
 							fmt.Printf("Cannot override variable %s\n", varName)
@@ -60,8 +70,10 @@ var setCmd = &cobra.Command{
 					}
 				}
 				if !found {
-					fmt.Printf("No such variable %s\n", varName)
+					// Custom variable
+					stackService.Config[varName] = varValue
 				}
+				stack.Services[i] = stackService
 				ssidFound = true
 			}
 		}
@@ -85,8 +97,4 @@ var setCmd = &cobra.Command{
 
 	},
 	PostRun: RefreshToken,
-}
-
-func init() {
-	RootCmd.AddCommand(setCmd)
 }

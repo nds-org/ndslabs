@@ -137,7 +137,7 @@ func (k *KubeHelper) CreateNamespace(pid string) (*api.Namespace, error) {
 	return nil, nil
 }
 
-func (k *KubeHelper) CreateResourceQuota(pid string, cpu string, mem string) (*api.ResourceQuota, error) {
+func (k *KubeHelper) CreateResourceQuota(pid string, cpu int, mem int) (*api.ResourceQuota, error) {
 
 	glog.V(4).Infof("Creating resource quota for %s: %s, %s\n", pid, cpu, mem)
 	rq := api.ResourceQuota{
@@ -148,8 +148,8 @@ func (k *KubeHelper) CreateResourceQuota(pid string, cpu string, mem string) (*a
 		ObjectMeta: api.ObjectMeta{Name: "quota"},
 		Spec: api.ResourceQuotaSpec{
 			Hard: api.ResourceList{
-				api.ResourceCPU:    resource.MustParse(cpu),
-				api.ResourceMemory: resource.MustParse(mem),
+				api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", cpu)),
+				api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", mem)),
 			},
 		},
 	}
@@ -188,7 +188,7 @@ func (k *KubeHelper) CreateResourceQuota(pid string, cpu string, mem string) (*a
 	return nil, nil
 }
 
-func (k *KubeHelper) CreateLimitRange(pid string, cpu string, mem string) (*api.LimitRange, error) {
+func (k *KubeHelper) CreateLimitRange(pid string, cpu int, mem int) (*api.LimitRange, error) {
 
 	lr := &api.LimitRange{
 		TypeMeta: unversioned.TypeMeta{
@@ -203,8 +203,8 @@ func (k *KubeHelper) CreateLimitRange(pid string, cpu string, mem string) (*api.
 				{
 					Type: api.LimitTypeContainer,
 					Default: api.ResourceList{
-						api.ResourceCPU:    resource.MustParse(cpu),
-						api.ResourceMemory: resource.MustParse(mem),
+						api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", cpu)),
+						api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", mem)),
 					},
 				},
 			},
@@ -422,8 +422,8 @@ func (k *KubeHelper) GetService(pid string, name string) (*api.Service, error) {
 			json.Unmarshal(data, &service)
 			return &service, nil
 		} else {
-			glog.Warningf("Failed to get Kubernetes service %s:%s: %s %d", pid, name,
-				resp.Status, resp.StatusCode)
+			//glog.Warningf("Failed to get Kubernetes service %s:%s: %s %d", pid, name,
+			//		resp.Status, resp.StatusCode)
 		}
 	}
 	return nil, nil
@@ -692,6 +692,10 @@ func (k *KubeHelper) generateStackName(stack string, service string, randomLengt
 	return fmt.Sprintf("%s-%s-%s", stack, service, utilrand.String(randomLength))
 }
 
+func (k *KubeHelper) RandomString(randomLength int) string {
+	return utilrand.String(randomLength)
+}
+
 func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsapi.ServiceSpec) *api.Service {
 
 	// Create the Kubernetes service definition
@@ -749,7 +753,6 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 
 	env := []api.EnvVar{}
 	env = append(env, api.EnvVar{Name: "NAMESPACE", Value: ns})
-	//env = append(env, api.EnvVar{Name: "TERM", Value: "vt100"})
 	env = append(env, api.EnvVar{Name: "TERM", Value: "linux"})
 	env = append(env, api.EnvVar{Name: "COLUMNS", Value: "100"})
 	env = append(env, api.EnvVar{Name: "LINES", Value: "30"})
@@ -781,14 +784,7 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 			})
 	}
 
-	for _, config := range spec.Config {
-		name := config.Name
-		value := config.Value
-		if config.CanOverride {
-			if val, ok := stackService.Config[name]; ok {
-				value = val
-			}
-		}
+	for name, value := range stackService.Config {
 		env = append(env, api.EnvVar{Name: name, Value: value})
 	}
 
@@ -797,6 +793,11 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	}
 
 	k8volMounts := []api.VolumeMount{}
+
+	// Mount the home directory
+	k8homeVol := api.VolumeMount{Name: "home", MountPath: "/home/" + ns}
+	k8volMounts = append(k8volMounts, k8homeVol)
+
 	if len(spec.VolumeMounts) > 0 {
 		for _, vol := range spec.VolumeMounts {
 			k8vol := api.VolumeMount{Name: vol.Name, MountPath: vol.MountPath}
@@ -814,19 +815,23 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	}
 
 	k8rq := api.ResourceRequirements{}
-	if len(spec.ResourceLimits.CPUMax) > 0 && len(spec.ResourceLimits.MemoryMax) > 0 {
+	if spec.ResourceLimits.CPUMax > 0 && spec.ResourceLimits.MemoryMax > 0 {
 		k8rq.Limits = api.ResourceList{
-			api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUMax),
-			api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryMax),
+			api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", spec.ResourceLimits.CPUMax)),
+			api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", spec.ResourceLimits.MemoryMax)),
 		}
 		k8rq.Requests = api.ResourceList{
-			api.ResourceCPU:    resource.MustParse(spec.ResourceLimits.CPUDefault),
-			api.ResourceMemory: resource.MustParse(spec.ResourceLimits.MemoryDefault),
+			api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", spec.ResourceLimits.CPUMax)),
+			api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", spec.ResourceLimits.MemoryMax)),
 		}
 	} else {
 		glog.Warningf("No resource requirements specified for service %s\n", spec.Label)
 	}
 
+	tag := spec.Image.Tags[0]
+	if stackService.ImageTag != "" {
+		tag = stackService.ImageTag
+	}
 	k8template := api.PodTemplateSpec{
 		ObjectMeta: api.ObjectMeta{
 			Labels: map[string]string{
@@ -839,7 +844,7 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 			Containers: []api.Container{
 				api.Container{
 					Name:         spec.Key,
-					Image:        spec.Image,
+					Image:        spec.Image.Name + ":" + tag,
 					Env:          env,
 					VolumeMounts: k8volMounts,
 					Ports:        k8cps,
@@ -917,7 +922,8 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 				for {
 					data, err := reader.ReadBytes('\n')
 					if err != nil {
-						glog.Error(err)
+						// EOF error location NDS-372 needs fixing
+						//glog.Error(err)
 						break
 					}
 

@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"os"
-	"strconv"
 	"strings"
 	"text/tabwriter"
 )
@@ -19,6 +18,7 @@ var (
 	file    string
 	dir     string
 	catalog string
+	update  bool
 )
 
 func init() {
@@ -26,7 +26,8 @@ func init() {
 	addCmd.AddCommand(addStackCmd)
 	addCmd.AddCommand(addAccountCmd)
 	addCmd.AddCommand(addServiceCmd)
-	addCmd.AddCommand(addVolumeCmd)
+	addCmd.AddCommand(addMountCmd)
+	addCmd.AddCommand(addTagCmd)
 
 	// add stack flags
 	addStackCmd.Flags().StringVar(&opts, "opt", "", "Comma-delimited list of optional services")
@@ -36,6 +37,7 @@ func init() {
 	addServiceCmd.Flags().StringVarP(&file, "file", "f", "", "Path to service definition (json)")
 	addServiceCmd.Flags().StringVar(&dir, "dir", "", "Path to directory of service definitions (json)")
 	addServiceCmd.Flags().StringVarP(&catalog, "catalog", "c", "user", "Catalog to use")
+	addServiceCmd.Flags().BoolVarP(&update, "update", "u", false, "Update existing service")
 
 }
 
@@ -141,44 +143,107 @@ var addStackCmd = &cobra.Command{
 	},
 }
 
-var addVolumeCmd = &cobra.Command{
-	Use:    "volume [name] [size] [stack service Id]",
-	Short:  "Create a volume",
+var addMountCmd = &cobra.Command{
+	Use:    "mount [stack service id] [from path] [to path]",
+	Short:  "Add stack service mount points",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 2 {
+		if len(args) < 3 {
 			cmd.Usage()
 			os.Exit(-1)
 		}
+		ssid := args[0]
+		fromPath := args[1]
+		toPath := args[2]
 
-		name := args[0]
-		size, err := strconv.Atoi(args[1])
-		if err != nil {
-			fmt.Printf("Error creating volume: %s\n", err.Error())
+		if strings.Index(ssid, "-") <= 0 {
+			fmt.Printf("Invalid stack service id (looks like a stack Id?): %s\n", ssid)
 			return
 		}
 
-		volume := api.Volume{}
-		volume.Name = name
-		volume.Size = size
-		volume.SizeUnit = "GB"
-		if len(args) == 3 {
-			ssid := args[2]
-			if strings.Index(ssid, "-") <= 0 {
-				fmt.Printf("Invalid stack service id (looks like a stack Id?): %s\n", ssid)
+		sid := ssid[0:strings.Index(ssid, "-")]
+		stack, err := client.GetStack(sid)
+		if err != nil {
+			fmt.Printf("Get stack failed: %s\n", err)
+			return
+		}
+
+		ssidFound := false
+		for _, stackService := range stack.Services {
+			if stackService.Id == ssid {
+				for existingFromPath, existingToPath := range stackService.VolumeMounts {
+					if existingToPath == toPath {
+						delete(stackService.VolumeMounts, existingFromPath)
+					}
+				}
+				if len(fromPath) > 0 {
+					stackService.VolumeMounts[fromPath] = toPath
+				}
+				ssidFound = true
+			}
+		}
+		if !ssidFound {
+			fmt.Printf("No such stack service id %s\n", ssid)
+		}
+		err = client.UpdateStack(stack)
+		if err != nil {
+			fmt.Printf("Error updating stack: %s\n", err)
+			return
+		}
+		if Verbose {
+			data, err := json.MarshalIndent(stack, "", "   ")
+			if err != nil {
+				fmt.Printf("Error marshalling stack %s\n", err.Error)
 				return
 			}
-			volume.Attached = ssid
+
+			fmt.Println(string(data))
 		}
 
-		vol, err := client.AddVolume(&volume)
-		if err != nil {
-			fmt.Printf("Error creating volume: %s\n", err.Error())
-			return
-		} else {
-			fmt.Printf("Created volume %s\n", vol.Name)
-		}
 	},
+	PostRun: RefreshToken,
+}
+
+var addTagCmd = &cobra.Command{
+	Use:    "tag [service id] [tag]",
+	Short:  "Add service tag",
+	PreRun: Connect,
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) < 3 {
+			cmd.Usage()
+			os.Exit(-1)
+		}
+		sid := args[0]
+		tagId := args[1]
+
+		spec, err := client.GetService(sid)
+		if err != nil {
+			fmt.Printf("Get service spec failed: %s\n", err)
+			return
+		}
+
+		if len(spec.Tags) == 0 {
+			spec.Tags = []string{}
+		}
+		spec.Tags = append(spec.Tags, tagId)
+
+		_, err = client.AddService(spec, client.Token, catalog, true)
+		if err != nil {
+			fmt.Printf("Error updating stack: %s\n", err)
+			return
+		}
+		if Verbose {
+			data, err := json.MarshalIndent(spec, "", "   ")
+			if err != nil {
+				fmt.Printf("Error marshalling spec %s\n", err.Error)
+				return
+			}
+
+			fmt.Println(string(data))
+		}
+
+	},
+	PostRun: RefreshToken,
 }
 
 func contains(s []string, e string) bool {
@@ -194,16 +259,20 @@ func addRequiredDependencies(stackKey string, stack *api.Stack) {
 
 	service, _ := client.GetService(stackKey)
 
-	for _, depends := range service.Dependencies {
-		if depends.Required {
-			stackService := api.StackService{}
-			stackService.Service = depends.DependencyKey
-			if !containsService(stack.Services, stackService) {
-				stack.Services = append(stack.Services, stackService)
-				//fmt.Printf("Adding required dependency %s\n", depends.DependencyKey)
-				addRequiredDependencies(depends.DependencyKey, stack)
+	if service != nil {
+		for _, depends := range service.Dependencies {
+			if depends.Required {
+				stackService := api.StackService{}
+				stackService.Service = depends.DependencyKey
+				if !containsService(stack.Services, stackService) {
+					stack.Services = append(stack.Services, stackService)
+					//fmt.Printf("Adding required dependency %s\n", depends.DependencyKey)
+					addRequiredDependencies(depends.DependencyKey, stack)
+				}
 			}
 		}
+	} else {
+		fmt.Printf("Warning: unable to find service with key %s\n", stackKey)
 	}
 }
 
@@ -221,6 +290,10 @@ func containsService(list []api.StackService, service api.StackService) bool {
 func addStack(serviceKey string, name string, opt string) {
 
 	service, _ := client.GetService(serviceKey)
+	if service == nil {
+		fmt.Println("Warning: unable to find service with key %s\n", serviceKey)
+		return
+	}
 	optional := strings.Split(opt, ",")
 
 	// Add this service
@@ -290,10 +363,24 @@ func addService(service api.ServiceSpec, catalog string) {
 		token = t
 	}
 
-	_, err := client.AddService(&service, token, catalog)
+	_, err := client.AddService(&service, token, catalog, update)
 	if err != nil {
-		fmt.Printf("Unable to add service %s: %s \n", service.Label, err)
+		fmt.Printf("Unable to add/update service %s: %s \n", service.Label, err)
 	} else {
-		fmt.Println("Added service " + service.Label)
+		fmt.Println("Added/updated service " + service.Label)
 	}
+}
+
+func stringToMap(str string) map[string]string {
+	nvMap := make(map[string]string)
+	if len(str) > 0 {
+		nvpairs := strings.Split(str, ",")
+		fmt.Println("%s\n", nvpairs)
+		for _, nvpair := range nvpairs {
+			nv := strings.Split(nvpair, "=")
+			fmt.Println("%s=%s\n", nv[0], nv[1])
+			nvMap[nv[0]] = nv[1]
+		}
+	}
+	return nvMap
 }
