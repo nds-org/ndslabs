@@ -25,7 +25,7 @@ angular
   });*/
   
   $scope.ok = function(project) {
-    NdsLabsApi.postRegister({ 'project': project }).then(function(data, xhr) {
+    NdsLabsApi.postRegister({ 'account': project }).then(function(data, xhr) {
       $uibModalInstance.close(data);
     }, function(headers) {
       $log.error('Failed to create account: ' + project.namespace);
