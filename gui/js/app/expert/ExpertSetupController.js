@@ -40,7 +40,6 @@ angular
   };
 
   // Accounting stuff
-  $scope.svcQuery = '';
   $scope.autoRefresh = AutoRefresh;
   
   // Watch for transitioning stacks (their status will end with "ing")
@@ -150,6 +149,24 @@ angular
       if (config) {
         newService.config = config;
       }
+      
+      
+      // Randomly generate any required passwords
+      angular.forEach(stack.services, function(svc) {
+        var configMap = {};
+        angular.forEach(svc.config, function(cfg) {
+          if (cfg.isPassword) {
+            // TODO: Generate random secure passwords here!
+            cfg.value = 'GENERATED_PASSWORD';
+          }
+          
+          configMap[cfg.name] = cfg.value;
+        });
+        
+        svc.config = configMap;
+      });
+    
+      
       stack.services.push(newService);
       
       // Then update the entire stack in etcd
@@ -167,7 +184,7 @@ angular
         Stacks.populate(projectId);
       });
     }
-    
+    debugger;
     var spec = _.find(Specs.all, [ 'key', svc.key ]);
     var mounts = _.filter(spec.volumeMounts, function(mnt) { return mnt.name != 'docker'; });
     var config = spec.config;
@@ -237,11 +254,10 @@ angular
       animation: true,
       templateUrl: 'app/expert/configWizard/configurationWizard.html',
       controller: 'ConfigurationWizardCtrl',
-      size: 'md',
+      size: 'lg',
       backdrop: 'static',
       keyboard: false,
       resolve: {
-        template: function() { return spec; },
         configuredVolumes: function() { return $scope.configuredVolumes; },
         configuredStacks: function() { return $scope.configuredStacks; }
       }
