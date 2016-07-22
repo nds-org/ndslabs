@@ -6,11 +6,11 @@
     "password": "12345",
 	"storageQuota": "10",
 	"resourceLimits": {
-		"cpuMax": "2",
-		"cpuDefault": "1",
-		"memMax": "8Gi",
-		"memDefault": "100Mi",
-		"storageQuota": "10"
+		"cpuMax": 2000,
+		"cpuDefault": 1000,
+		"memMax": 8196,
+		"memDefault": 100,
+		"storageQuota": 10
 	}
 }
 

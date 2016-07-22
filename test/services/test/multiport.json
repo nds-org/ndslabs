@@ -1,0 +1,33 @@
+{
+    "key": "multiport",
+    "label": "Test - Multiple ports",
+    "image": { 
+	    "name": "nginx",
+	    "tags": ["latest", "3.3", "3.1"]
+	},
+    "display": "stack",
+    "access": "external",
+    "description": "A test container for multiple ports",
+    "ports": [
+        {
+            "port": 27017,
+            "protocol": "tcp"
+        },
+        {
+            "port": 28017,
+            "protocol": "http"
+        }
+    ],
+	"volumeMounts": [ 
+		{
+			"name": "data",
+			"mountPath": "/data"
+		}
+	],
+    "resourceLimits": {
+        "cpuMax": 1000,
+        "cpuDefault": 1,
+        "memMax": 10,
+        "memDefault": 1
+    }
+}
