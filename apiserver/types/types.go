@@ -17,7 +17,7 @@ type ServiceSpec struct {
 	Command              []string            `json:"command"`
 	Args                 []string            `json:"args"`
 	Ports                []Port              `json:"ports"`
-	Repositories         []Repository        `json:"repository"`
+	Repositories         []Repository        `json:"repositories"`
 	CreatedTime          int                 `json:"createdTime"`
 	UpdatedTime          int                 `json:"updateTime"`
 	ReadyProbe           ReadyProbe          `json:"readinessProbe"`
