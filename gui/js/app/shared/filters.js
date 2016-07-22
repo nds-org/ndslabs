@@ -24,6 +24,30 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
   };
 }])
 
+.filter('jsonStringify', function() {
+  return function(input) {
+    return JSON.stringify(input);
+  };
+})
+
+/**
+ * Given a password strength (1 - 100), return an apprpriate label
+ * TODO: Replace this with i18n / i10n??
+ */
+.filter('passwordStrength', function() {
+  return function(strength) {
+    if (strength < 15) { 
+      return 'Weak...'; 
+    } else if (strength <= 50) {
+      return 'OK';
+    } else if (strength <= 84) {
+      return 'Good!';
+    } else {
+      return 'Strong!!!'
+    }
+  }
+})
+
 /**
  * Return the external IP of the API / GUI server 
  * appended with the port if one is provided.
@@ -363,7 +387,7 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
 .filter('formatDependencies', [ '_', 'Specs', function(_, Specs) {
   return function(deps) {
     var getLabel = function(specKey) {
-      return _.find(Specs.all, [ 'key', specKey]).label;
+      return _.find(Specs.all, [ 'key', specKey.key ]).label;
     }
     
     var ret = '';

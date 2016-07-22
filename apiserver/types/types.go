@@ -180,3 +180,14 @@ type Endpoint struct {
 	NodePort int32  `json:"nodePort"`
 	Protocol string `json:"protocol"`
 }
+
+type Vocabulary struct {
+	Name  string `json:"name"`
+	Terms []Term `json:"terms"`
+}
+
+type Term struct {
+	Id         string `json:"id"`
+	Name       string `json:"name"`
+	Definition string `json:"definition"`
+}

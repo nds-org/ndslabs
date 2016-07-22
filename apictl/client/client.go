@@ -755,3 +755,32 @@ func (c *Client) CheckConsole(ssid string) error {
 		}
 	}
 }
+
+func (c *Client) GetVocabulary(name string) (*api.Vocabulary, error) {
+
+	url := c.BasePath + "vocabulary/" + name
+
+	request, err := http.NewRequest("GET", url, nil)
+
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode == http.StatusOK {
+
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		vocab := api.Vocabulary{}
+		json.Unmarshal([]byte(body), &vocab)
+		return &vocab, nil
+	} else {
+		err := errors.New(resp.Status)
+		return nil, err
+	}
+}

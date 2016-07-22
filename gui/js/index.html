@@ -15,6 +15,7 @@
     <!-- External CSS -->
     <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="bower_components/font-awesome/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="asset/css/purple-primary.min.css" />
     <link rel="stylesheet" type="text/css" href="bower_components/font-awesome-animation/dist/font-awesome-animation.min.css">
     
     <!-- Google Fonts -->
@@ -57,6 +58,13 @@
     <!-- Password Gen -->
     <link rel="stylesheet" type="text/css" href="bower_components/angular-bootstrap-pwgen/angular-bootstrap-pwgen.css" />
     <script src="bower_components/angular-bootstrap-pwgen/angular-bootstrap-pwgen.js"></script>
+    
+    <!-- Password Strength -->
+    <script src="bower_components/ng-password-strength/dist/scripts/vendor.js" type="text/javascript"></script>
+    <script src="bower_components/ng-password-strength/dist/scripts/ng-password-strength.js"></script>
+    
+    <!-- Angular Clipboard -->
+    <script src="bower_components/angular-clipboard/angular-clipboard.js"></script>
 
     <!-- Load our own custom modules -->
     <script src="bower_components/angular-wizard/angular-wizard.js"></script>
@@ -76,18 +84,27 @@
     <script src="app/login/signUp/SignUpController.js"></script>
     <script src="app/login/LoginController.js"></script>
     
-    <!-- Expert Setup Main Controller(s) -->
-    <script src="app/expert/ExpertSetupController.js"></script>
-    <script src="app/expert/consoleViewer/ConsoleController.js"></script>
+    <!-- AppStore / AddOrEditSpec View Main Controller(s) -->
+    <script src="app/appStore/CatalogController.js"></script>
+    <script src="app/appStore/addOrEdit/AddOrEditSpecController.js"></script>
     
-    <!-- Expert Setup Modal Controllers -->
-    <script src="app/expert/configWizard/ConfigurationWizardController.js"></script>
-    <script src="app/expert/configViewer/ConfigViewerController.js"></script>
-    <script src="app/expert/addService/AddServiceController.js"></script>
-    <script src="app/expert/logViewer/LogViewerController.js"></script>
-    <script src="app/expert/stackStop/StackStopController.js"></script>
-    <script src="app/expert/stackDelete/StackDeleteController.js"></script>
-    <script src="app/expert/volumeDelete/VolumeDeleteController.js"></script>
+    <!-- Dashboard / AddOrEditService / Console View Main Controller(s) -->
+    <script src="app/dashboard/DashboardController.js"></script>
+    <script src="app/dashboard/console/ConsoleController.js"></script>
+    <script src="app/dashboard/service/EditServiceController.js"></script>
+    
+    <!-- AppStore Modals -->
+    <script src="app/appStore/modals/import/ImportSpecController.js"></script>
+    <script src="app/appStore/modals/export/ExportSpecController.js"></script>
+    <script src="app/appStore/modals/clone/CloneSpecController.js"></script>
+    <script src="app/appStore/modals/delete/DeleteSpecController.js"></script>
+    
+    <!-- Dashboard Modals -->
+    <script src="app/dashboard/modals/addService/AddServiceController.js"></script>
+    <script src="app/dashboard/modals/configViewer/ConfigViewerController.js"></script>
+    <script src="app/dashboard/modals/logViewer/LogViewerController.js"></script>
+    <script src="app/dashboard/modals/stackStop/StackStopController.js"></script>
+    <script src="app/dashboard/modals/stackDelete/StackDeleteController.js"></script>
   </head>
 
   <!-- Display the actual contents of the app down here -->
@@ -96,8 +113,22 @@
     <!-- NOTE: This method does not produce a navigatable route. For another full page/route, we need to add the route to app.js -->
     <div ng-include src="'app/shared/navbar/navbar.html'" ng-controller="NavbarController"></div> 
     
+    <!-- TODO: Source these images locally? Or just get rid of them? -->
+    <!--[if IE 6]>
+            <p class="browsehappy"><img height="64" width="64" src="http://vignette2.wikia.nocookie.net/logopedia/images/5/5d/IE9.png/revision/latest?cb=20121221232011" />You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+    <!--[if IE 7]>
+                <p class="browsehappy"><img height="64" width="64" src="https://upload.wikimedia.org/wikipedia/en/1/10/Internet_Explorer_7_Logo.png" />You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+    <!--[if IE 8]>
+                <p class="browsehappy"><img height="64" width="64" src="http://vignette3.wikia.nocookie.net/logopedia/images/d/d0/IE6.png/revision/latest?cb=20121221232621" />You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+    <!--[if IE 9]>
+                <p class="browsehappy"><img height="64" width="64" src="http://www.browser-watch.com/wp-content/uploads/2010/09/ie9-logo.png" />You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+    
     <!-- ng-view tells angular that we will swap in templates for the route specified by app.js (via ngRoute) -->
-    <div class="container-fluid" ng-view></div>
+    <div class="container" id="appContent" ng-view></div>
     
     <div ng-include src="'app/shared/footer/footer.html'" ng-controller="FooterController"></div>
   </body>

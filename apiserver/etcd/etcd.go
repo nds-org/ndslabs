@@ -327,3 +327,32 @@ func (s *EtcdHelper) GetStacks(uid string) (*[]api.Stack, error) {
 	}
 	return &stacks, nil
 }
+
+func (s *EtcdHelper) PutVocabulary(name string, vocabulary *api.Vocabulary) error {
+	data, err := json.Marshal(vocabulary)
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+	_, err = s.etcd.Set(context.Background(), etcdBasePath+"/vocabularies/"+name, string(data), nil)
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+	return nil
+}
+
+func (s *EtcdHelper) GetVocabulary(name string) (*api.Vocabulary, error) {
+	resp, err := s.etcd.Get(context.Background(), etcdBasePath+"/vocabularies/"+name, nil)
+	if err != nil {
+		if !client.IsKeyNotFound(err) {
+			glog.Error(err)
+			return nil, err
+		}
+	} else {
+		vocab := api.Vocabulary{}
+		json.Unmarshal([]byte(resp.Node.Value), &vocab)
+		return &vocab, nil
+	}
+	return nil, nil
+}
