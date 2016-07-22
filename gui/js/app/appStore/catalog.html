@@ -115,7 +115,7 @@
       
       <!-- Cards -->
       <div ng-if="showCards" class="panel-body">
-        <div class="row table-row" ng-repeat="set in chunkedSpecs">
+        <div id="cardRow" class="row" ng-repeat="set in chunkedSpecs">
           <div class="col-sm-{{ 12 / set.length }}" ng-repeat="spec in set">
             <div class="thumbnail" style="width:100%">
               <img class="pull-left" ng-if="spec.logo" height="44" width="200" ng-src="spec.logo" alt="{{ spec.key }}">
