@@ -8,10 +8,9 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('CatalogController', [ '$scope', '$filter', '$interval', '$uibModal', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stack', 'Stacks', 'Volume', 
-    'StackService', 'Grid', 'Wizard', 'WizardPage', 'Specs', 'Volumes', 'ServiceDiscovery', 'clipboard',
-    function($scope, $filter, $interval, $uibModal, $location, $log, _, NdsLabsApi, Project, Stack, Stacks, Volume, StackService, Grid, Wizard, WizardPage,
-    Specs, Volumes, ServiceDiscovery, clipboard) {
+.controller('CatalogController', [ '$scope', '$filter', '$interval', '$uibModal', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stack', 'Stacks', 
+    'StackService', 'Specs', 'clipboard',
+    function($scope, $filter, $interval, $uibModal, $location, $log, _, NdsLabsApi, Project, Stack, Stacks, StackService, Specs, clipboard) {
       
   var projectId = Project.project.namespace;
   
