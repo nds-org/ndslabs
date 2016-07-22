@@ -46,10 +46,10 @@ Domain=$DOMAIN
 
 
 [DefaultLimits]
-CpuMax=2
-CpuDefault=1
-MemMax=8Gi
-MemDefault=100Mi
+CpuMax=2000
+CpuDefault=1000
+MemMax=8196
+MemDefault=100
 StorageDefault=10
 
 [Etcd]

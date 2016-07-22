@@ -90,29 +90,6 @@ var listStacksCmd = &cobra.Command{
 	PostRun: RefreshToken,
 }
 
-var listVolumesCmd = &cobra.Command{
-	Use:    "volumes",
-	Short:  "List existing volumes",
-	PreRun: Connect,
-	Run: func(cmd *cobra.Command, args []string) {
-
-		volumes, err := client.ListVolumes()
-		if err != nil {
-			fmt.Printf("List failed: %s\n", err)
-			os.Exit(-1)
-		}
-
-		w := new(tabwriter.Writer)
-		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
-		fmt.Fprintln(w, "ID\tNAME\tATTACHED TO\tSIZE\tSTATUS")
-		for _, volume := range *volumes {
-			fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\n", volume.Id, volume.Name, volume.Attached, volume.Size, volume.Status)
-		}
-		w.Flush()
-	},
-	PostRun: RefreshToken,
-}
-
 var listAccountsCmd = &cobra.Command{
 	Use:    "accounts",
 	Short:  "List existing accounts (admin users only)",
@@ -185,7 +162,6 @@ func init() {
 
 	listCmd.AddCommand(listServicesCmd)
 	listCmd.AddCommand(listStacksCmd)
-	listCmd.AddCommand(listVolumesCmd)
 	listCmd.AddCommand(listAccountsCmd)
 	listCmd.AddCommand(listConfigsCmd)
 }

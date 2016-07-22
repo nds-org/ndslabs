@@ -12,9 +12,9 @@
         }
     ],
     "resourceLimits": {
-        "cpuMax": "10",
-        "cpuDefault": "10",
-        "memMax": "100Gi",
-        "memDefault": "100Gi"
+        "cpuMax": 10,
+        "cpuDefault": 10,
+        "memMax": 102400,
+        "memDefault": 102400
     }
 }

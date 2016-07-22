@@ -74,6 +74,9 @@ var getStackCmd = &cobra.Command{
 		fmt.Println("\nSID\tCONFIG")
 
 		for _, service := range stack.Services {
+			for name, value := range service.Config {
+				fmt.Printf("%s\t%s=%s\n", service.Id, name, value)
+			}
 
 			spec, _ := client.GetService(service.Service)
 			if len(spec.Config) > 0 {
@@ -81,10 +84,7 @@ var getStackCmd = &cobra.Command{
 				for _, config := range spec.Config {
 					name := config.Name
 					value := config.Value
-					if config.CanOverride {
-						if val, ok := service.Config[name]; ok {
-							value = val
-						}
+					if service.Config[name] == "" {
 						fmt.Printf("%s\t%s=%s\n", service.Id, name, value)
 					}
 				}
