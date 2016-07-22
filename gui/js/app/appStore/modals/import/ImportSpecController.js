@@ -16,13 +16,14 @@ angular
     try {
       $scope.spec = JSON.parse(newValue);
       $scope.validJson = true;
+      $scope.keyPresent = $scope.spec.key;
       $scope.validKey = /^[a-z0-9]+$/.test($scope.spec.key);
       $scope.keyUnique = !_.find(Specs.all, [ 'key', $scope.spec.key ]);
     } catch (e) {
       $scope.validJson = false;
       
       // Hide these other validation messages for now
-      $scope.keyUnique = $scope.validKey = true;
+      $scope.keyUnique = $scope.validKey = $scope.keyPresent = true;
     }
   });
 
