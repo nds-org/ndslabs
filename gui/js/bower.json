@@ -20,15 +20,25 @@
     "angular-wizard": "https://github.com/bodom0015/angular-wizard.git",
     "angular-grid": "https://github.com/bodom0015/angular-grid.git",
     "angular-alert": "https://github.com/bodom0015/angular-alert.git",
-    "lodash": "^4.5.1",
+    "ng-password-strength": "https://github.com/subarroca/ng-password-strength.git",
+    "lodash": "~4.5.1",
     "font-awesome-animation": "^0.0.8",
     "angular-gage": "^0.1.0",
     "angular-messages": "^1.5.0",
     "angular-bootstrap-pwgen": "^0.1.1",
     "term.js": "https://github.com/chjj/term.js.git#^0.0.7",
-	"angular-chart.js": "^0.10.2"
+    "angular-chart.js": "^0.10.2",
+    "angular-clipboard": "^1.4.2"
+  },
+  "overrides": {
+    "problem-library-name": {
+      "dependencies": {
+        "lodash": "4.5.1"
+      }
+    }
   },
   "resolutions": {
-    "angular": ">=1.5.0"
+    "angular": ">=1.5.0",
+    "lodash": "4.5.1"
   }
 }

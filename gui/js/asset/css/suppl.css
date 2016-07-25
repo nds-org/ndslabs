@@ -16,8 +16,35 @@
 /* Fix that silly blue border around accordion headers */
 .accordion-toggle:focus{outline: none;}
 
+/*change breadcrumb separator to raquo symbol*/
+.breadcrumb > li + li:before {
+     content: "\2215\00A0";
+     color: #aaa;
+}
+
 .btn {
   border-radius:5px;
+}
+
+@media (min-width: 768px) {
+  .table-row {
+    display: table;
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  .table-row [class^="col-"] {
+    display: table-cell;
+    float: none;
+  }
+}
+
+.caption {
+  min-height: 125px;
+}
+
+.thumbnail {
+  min-height: 175px;
 }
 
 .terminal {
@@ -32,14 +59,6 @@
 .terminal-cursor {
   color: #000;
   background: #f0f0f0;
-}
-
-.jumbotron {
-  margin-left:-15px;
-  margin-right:-15px;
-  padding-top:5px;
-  padding-left:15px;
-  padding-bottom:5px;
 }
 
 .modal-content {
@@ -62,7 +81,8 @@
 }
 
 .fill-height {
-  height:100%;
+  height:100% !important;
+  min-height: 100% !important;
 }
 
 .fill-width {
@@ -75,6 +95,11 @@
   padding:0;
 }
 
+.text-center {
+  text-align:center !important;
+  vertical-align: middle !important; 
+}
+
 .helper-text {
   border:dashed;
   text-align:center;
@@ -84,16 +109,14 @@
   height:100%;
 }
 
+html,body {
+    height:100%;
+}
+
 .margin-left-right-120 {
   display: block;
   margin-left: 120px;
   margin-right: 120px;
-}
-
-.modal-body-scrollable {
-   min-height:350px;
-   max-height:500px;
-   overflow: auto;
 }
 
 .top-margin {
@@ -105,8 +128,35 @@
   color:inherit !important;
 }
 
+/* Browse Happy styles
+-------------------------------------------------- */
+.browsehappy {
+	display:block;
+	width:100%;
+	height:100px;
+	background-color:#f2dede;
+	margin: 0 0 10px;
+	font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+	font-size: 22px;
+	line-height: 1.4;
+	color: #333;
+	vertical-align:middle;
+}
+.browsehappy span{
+	vertical-align:middle;
+	margin: 0 20px 0 20px;
+	background:url("https://cdn.rawgit.com/alrra/browser-logos/master/internet-explorer/internet-explorer_64x64.png") no-repeat;
+	height:64px;
+	width:64px;
+	display:inline-block;
+}
+
 /* Specific id styles
 -------------------------------------------------- */
+
+#appContent {
+  margin-bottom:100px;
+}
 
 #configWizard {
   min-height:400px;
@@ -118,13 +168,25 @@
   max-width:900px;
 }
 
+#dashHeader {
+  margin-left:-15px;
+  margin-right:-15px;
+  padding-top:5px;
+  padding-left:15px;
+  padding-bottom:5px;
+}
+
 #footer {
  position:fixed;
  left:0px;
  bottom:0px;
- height:50px;
+ height:60px;
  width:100%;
- background:#DDD;
+ background:#a8a8a1;
+}
+
+#logBody {
+  height: 400px;
 }
 
 #loginPanel {
@@ -141,12 +203,36 @@
 }
 
 #volumeTable {
-  border-radius:25px;
+  border-radius:10px;
   border:1px solid lightgray;
 }
+
 #addFieldBtn, #addFieldDropdown {
   cursor: pointer;
 }
 
+#catalogCardButtonBar {
+  margin-bottom:15px;
+}
 
+.border-nds-thin {
+  border: 1px solid #ccc !important;
+  border-radius: 16px !important;
+  margin:20px;
+  padding:10px;
+}
 
+.border-nds {
+  border: 3px solid #ccc !important;
+  border-radius: 16px !important;
+  margin: 15px 0 15px 0;
+  padding:10px;
+  width:auto !important;
+  height:100% !important;
+  border-bottom:none;
+}
+
+.legend-fix { 
+   border: none;
+   width:auto !important;
+}

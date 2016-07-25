@@ -24,8 +24,40 @@ angular.module('ndslabs-api', [])
                 this.cache = cache;
             }
 
+            ApiServer.prototype.request = function(method, url, parameters, body, headers, queryParameters, form, deferred) {
+                var options = {
+                    timeout: parameters.$timeout,
+                    method: method,
+                    url: url,
+                    params: queryParameters,
+                    data: body,
+                    headers: headers
+                };
+                if (Object.keys(form).length > 0) {
+                    options.data = form;
+                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+                    options.transformRequest = ApiServer.transformRequest;
+                }
+                $http(options)
+                    .success(function(data, status, headers, config) {
+                        deferred.resolve(data);
+                        if (parameters.$cache !== undefined) {
+                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
+                        }
+                    })
+                    .error(function(data, status, headers, config) {
+                        deferred.reject({
+                            status: status,
+                            headers: headers,
+                            config: config,
+                            body: data
+                        });
+                    });
+
+            };
+
             ApiServer.prototype.$on = function($scope, path, handler) {
-                var url = domain + path;
+                var url = this.domain + path;
                 $scope.$on(url, function() {
                     handler();
                 });
@@ -33,7 +65,7 @@ angular.module('ndslabs-api', [])
             };
 
             ApiServer.prototype.$broadcast = function(path) {
-                var url = domain + path;
+                var url = this.domain + path;
                 //cache.remove(url);
                 $rootScope.$broadcast(url);
                 return this;
@@ -76,6 +108,8 @@ angular.module('ndslabs-api', [])
                 var headers = {};
                 var form = {};
 
+                headers['Content-Type'] = ['application/json'];
+
                 if (parameters['auth'] !== undefined) {
                     body = parameters['auth'];
                 }
@@ -93,35 +127,7 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'POST',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('POST', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
@@ -146,6 +152,8 @@ angular.module('ndslabs-api', [])
                 var headers = {};
                 var form = {};
 
+                headers['Content-Type'] = ['application/json'];
+
                 if (parameters.$queryParameters) {
                     Object.keys(parameters.$queryParameters)
                         .forEach(function(parameterName) {
@@ -154,35 +162,7 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'DELETE',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('DELETE', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
@@ -207,6 +187,8 @@ angular.module('ndslabs-api', [])
                 var headers = {};
                 var form = {};
 
+                headers['Content-Type'] = ['application/json'];
+
                 if (parameters.$queryParameters) {
                     Object.keys(parameters.$queryParameters)
                         .forEach(function(parameterName) {
@@ -215,40 +197,7 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var cached = parameters.$cache && parameters.$cache.get(url);
-                if (cached !== undefined && parameters.$refresh !== true) {
-                    deferred.resolve(cached);
-                    return deferred.promise;
-                }
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'GET',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('GET', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
@@ -273,6 +222,8 @@ angular.module('ndslabs-api', [])
                 var headers = {};
                 var form = {};
 
+                headers['Content-Type'] = ['application/json'];
+
                 if (parameters.$queryParameters) {
                     Object.keys(parameters.$queryParameters)
                         .forEach(function(parameterName) {
@@ -281,40 +232,7 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var cached = parameters.$cache && parameters.$cache.get(url);
-                if (cached !== undefined && parameters.$refresh !== true) {
-                    deferred.resolve(cached);
-                    return deferred.promise;
-                }
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'GET',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('GET', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
@@ -323,7 +241,7 @@ angular.module('ndslabs-api', [])
 
              * @method
              * @name ApiServer#getServices
-             * @param {boolean} stack - Filter list for stacks (true or false)
+             * @param {string} catalog - Filter list for catalog (user, system, all)
              * 
              */
             ApiServer.prototype.getServices = function(parameters) {
@@ -340,8 +258,10 @@ angular.module('ndslabs-api', [])
                 var headers = {};
                 var form = {};
 
-                if (parameters['stack'] !== undefined) {
-                    queryParameters['stack'] = parameters['stack'];
+                headers['Content-Type'] = ['application/json'];
+
+                if (parameters['catalog'] !== undefined) {
+                    queryParameters['catalog'] = parameters['catalog'];
                 }
 
                 if (parameters.$queryParameters) {
@@ -352,40 +272,7 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var cached = parameters.$cache && parameters.$cache.get(url);
-                if (cached !== undefined && parameters.$refresh !== true) {
-                    deferred.resolve(cached);
-                    return deferred.promise;
-                }
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'GET',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('GET', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
@@ -411,6 +298,8 @@ angular.module('ndslabs-api', [])
                 var headers = {};
                 var form = {};
 
+                headers['Content-Type'] = ['application/json'];
+
                 if (parameters['service'] !== undefined) {
                     body = parameters['service'];
                 }
@@ -428,35 +317,7 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'POST',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('POST', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
@@ -482,6 +343,8 @@ angular.module('ndslabs-api', [])
                 var headers = {};
                 var form = {};
 
+                headers['Content-Type'] = ['application/json'];
+
                 path = path.replace('{service-id}', parameters['serviceId']);
 
                 if (parameters['serviceId'] === undefined) {
@@ -497,40 +360,7 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var cached = parameters.$cache && parameters.$cache.get(url);
-                if (cached !== undefined && parameters.$refresh !== true) {
-                    deferred.resolve(cached);
-                    return deferred.promise;
-                }
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'GET',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('GET', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
@@ -557,6 +387,8 @@ angular.module('ndslabs-api', [])
                 var headers = {};
                 var form = {};
 
+                headers['Content-Type'] = ['application/json'];
+
                 if (parameters['service'] !== undefined) {
                     body = parameters['service'];
                 }
@@ -581,35 +413,7 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'PUT',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('PUT', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
@@ -635,6 +439,8 @@ angular.module('ndslabs-api', [])
                 var headers = {};
                 var form = {};
 
+                headers['Content-Type'] = ['application/json'];
+
                 path = path.replace('{service-id}', parameters['serviceId']);
 
                 if (parameters['serviceId'] === undefined) {
@@ -650,58 +456,32 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'DELETE',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('DELETE', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
             /**
-             * Retrieves a site-wide list of NDSLabs projects.
+             * Retrieves a site-wide list of NDSLabs accounts.
 
              * @method
-             * @name ApiServer#getProjects
+             * @name ApiServer#getAccounts
              * 
              */
-            ApiServer.prototype.getProjects = function(parameters) {
+            ApiServer.prototype.getAccounts = function(parameters) {
                 if (parameters === undefined) {
                     parameters = {};
                 }
                 var deferred = $q.defer();
 
                 var domain = this.domain;
-                var path = '/projects';
+                var path = '/accounts';
 
                 var body;
                 var queryParameters = {};
                 var headers = {};
                 var form = {};
+
+                headers['Content-Type'] = ['application/json'];
 
                 if (parameters.$queryParameters) {
                     Object.keys(parameters.$queryParameters)
@@ -711,71 +491,40 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var cached = parameters.$cache && parameters.$cache.get(url);
-                if (cached !== undefined && parameters.$refresh !== true) {
-                    deferred.resolve(cached);
-                    return deferred.promise;
-                }
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'GET',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('GET', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
             /**
-             * Adds a new project
+             * Adds a new accounts
 
              * @method
-             * @name ApiServer#postProjects
-             * @param {} project - Project definition
+             * @name ApiServer#postAccounts
+             * @param {} accounts - Account definition
              * 
              */
-            ApiServer.prototype.postProjects = function(parameters) {
+            ApiServer.prototype.postAccounts = function(parameters) {
                 if (parameters === undefined) {
                     parameters = {};
                 }
                 var deferred = $q.defer();
 
                 var domain = this.domain;
-                var path = '/projects';
+                var path = '/accounts';
 
                 var body;
                 var queryParameters = {};
                 var headers = {};
                 var form = {};
 
-                if (parameters['project'] !== undefined) {
-                    body = parameters['project'];
+                headers['Content-Type'] = ['application/json'];
+
+                if (parameters['accounts'] !== undefined) {
+                    body = parameters['accounts'];
                 }
 
-                if (parameters['project'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: project'));
+                if (parameters['accounts'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: accounts'));
                     return deferred.promise;
                 }
 
@@ -787,64 +536,38 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'POST',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('POST', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
             /**
-             * Retrieves basic information about a project.
+             * Retrieves basic information about a account.
 
              * @method
-             * @name ApiServer#getProjectsByProjectId
-             * @param {string} projectId - The unique project identifier
+             * @name ApiServer#getAccountsByAccountId
+             * @param {string} accountId - The unique account identifier
              * 
              */
-            ApiServer.prototype.getProjectsByProjectId = function(parameters) {
+            ApiServer.prototype.getAccountsByAccountId = function(parameters) {
                 if (parameters === undefined) {
                     parameters = {};
                 }
                 var deferred = $q.defer();
 
                 var domain = this.domain;
-                var path = '/projects/{project-id}';
+                var path = '/accounts/{account-id}';
 
                 var body;
                 var queryParameters = {};
                 var headers = {};
                 var form = {};
 
-                path = path.replace('{project-id}', parameters['projectId']);
+                headers['Content-Type'] = ['application/json'];
 
-                if (parameters['projectId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: projectId'));
+                path = path.replace('{account-id}', parameters['accountId']);
+
+                if (parameters['accountId'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: accountId'));
                     return deferred.promise;
                 }
 
@@ -856,79 +579,48 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var cached = parameters.$cache && parameters.$cache.get(url);
-                if (cached !== undefined && parameters.$refresh !== true) {
-                    deferred.resolve(cached);
-                    return deferred.promise;
-                }
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'GET',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('GET', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
             /**
-             * Updates project information
+             * Updates account information
 
              * @method
-             * @name ApiServer#putProjectsByProjectId
-             * @param {} project - Project definition
-             * @param {string} projectId - The unique project identifier
+             * @name ApiServer#putAccountsByAccountId
+             * @param {} account - Account definition
+             * @param {string} accountId - The unique account identifier
              * 
              */
-            ApiServer.prototype.putProjectsByProjectId = function(parameters) {
+            ApiServer.prototype.putAccountsByAccountId = function(parameters) {
                 if (parameters === undefined) {
                     parameters = {};
                 }
                 var deferred = $q.defer();
 
                 var domain = this.domain;
-                var path = '/projects/{project-id}';
+                var path = '/accounts/{account-id}';
 
                 var body;
                 var queryParameters = {};
                 var headers = {};
                 var form = {};
 
-                if (parameters['project'] !== undefined) {
-                    body = parameters['project'];
+                headers['Content-Type'] = ['application/json'];
+
+                if (parameters['account'] !== undefined) {
+                    body = parameters['account'];
                 }
 
-                if (parameters['project'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: project'));
+                if (parameters['account'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: account'));
                     return deferred.promise;
                 }
 
-                path = path.replace('{project-id}', parameters['projectId']);
+                path = path.replace('{account-id}', parameters['accountId']);
 
-                if (parameters['projectId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: projectId'));
+                if (parameters['accountId'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: accountId'));
                     return deferred.promise;
                 }
 
@@ -940,64 +632,38 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'PUT',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('PUT', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
             /**
-             * Delete a project
+             * Delete a account
 
              * @method
-             * @name ApiServer#deleteProjectsByProjectId
-             * @param {string} projectId - The unique project identifier
+             * @name ApiServer#deleteAccountsByAccountId
+             * @param {string} accountId - The unique account identifier
              * 
              */
-            ApiServer.prototype.deleteProjectsByProjectId = function(parameters) {
+            ApiServer.prototype.deleteAccountsByAccountId = function(parameters) {
                 if (parameters === undefined) {
                     parameters = {};
                 }
                 var deferred = $q.defer();
 
                 var domain = this.domain;
-                var path = '/projects/{project-id}';
+                var path = '/accounts/{account-id}';
 
                 var body;
                 var queryParameters = {};
                 var headers = {};
                 var form = {};
 
-                path = path.replace('{project-id}', parameters['projectId']);
+                headers['Content-Type'] = ['application/json'];
 
-                if (parameters['projectId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: projectId'));
+                path = path.replace('{account-id}', parameters['accountId']);
+
+                if (parameters['accountId'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: accountId'));
                     return deferred.promise;
                 }
 
@@ -1009,66 +675,32 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'DELETE',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('DELETE', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
             /**
-             * Retrieves a list of stacks for this project.
+             * Retrieves a list of stacks for this account.
 
              * @method
-             * @name ApiServer#getProjectsByProjectIdStacks
-             * @param {string} projectId - The unique project identifier
+             * @name ApiServer#getStacks
              * 
              */
-            ApiServer.prototype.getProjectsByProjectIdStacks = function(parameters) {
+            ApiServer.prototype.getStacks = function(parameters) {
                 if (parameters === undefined) {
                     parameters = {};
                 }
                 var deferred = $q.defer();
 
                 var domain = this.domain;
-                var path = '/projects/{project-id}/stacks';
+                var path = '/stacks';
 
                 var body;
                 var queryParameters = {};
                 var headers = {};
                 var form = {};
 
-                path = path.replace('{project-id}', parameters['projectId']);
-
-                if (parameters['projectId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: projectId'));
-                    return deferred.promise;
-                }
+                headers['Content-Type'] = ['application/json'];
 
                 if (parameters.$queryParameters) {
                     Object.keys(parameters.$queryParameters)
@@ -1078,65 +710,33 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var cached = parameters.$cache && parameters.$cache.get(url);
-                if (cached !== undefined && parameters.$refresh !== true) {
-                    deferred.resolve(cached);
-                    return deferred.promise;
-                }
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'GET',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('GET', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
             /**
-             * Adds a new stack to this project
+             * Adds a new stack to this account
 
              * @method
-             * @name ApiServer#postProjectsByProjectIdStacks
+             * @name ApiServer#postStacks
              * @param {} stack - Stack definition
-             * @param {string} projectId - The unique project identifier
              * 
              */
-            ApiServer.prototype.postProjectsByProjectIdStacks = function(parameters) {
+            ApiServer.prototype.postStacks = function(parameters) {
                 if (parameters === undefined) {
                     parameters = {};
                 }
                 var deferred = $q.defer();
 
                 var domain = this.domain;
-                var path = '/projects/{project-id}/stacks';
+                var path = '/stacks';
 
                 var body;
                 var queryParameters = {};
                 var headers = {};
                 var form = {};
+
+                headers['Content-Type'] = ['application/json'];
 
                 if (parameters['stack'] !== undefined) {
                     body = parameters['stack'];
@@ -1147,13 +747,6 @@ angular.module('ndslabs-api', [])
                     return deferred.promise;
                 }
 
-                path = path.replace('{project-id}', parameters['projectId']);
-
-                if (parameters['projectId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: projectId'));
-                    return deferred.promise;
-                }
-
                 if (parameters.$queryParameters) {
                     Object.keys(parameters.$queryParameters)
                         .forEach(function(parameterName) {
@@ -1162,35 +755,7 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'POST',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('POST', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
@@ -1198,31 +763,25 @@ angular.module('ndslabs-api', [])
              * Retrieves the stack definition.
 
              * @method
-             * @name ApiServer#getProjectsByProjectIdStacksByStackId
-             * @param {string} projectId - The unique project identifier
+             * @name ApiServer#getStacksByStackId
              * @param {string} stackId - The unique stack identifier
              * 
              */
-            ApiServer.prototype.getProjectsByProjectIdStacksByStackId = function(parameters) {
+            ApiServer.prototype.getStacksByStackId = function(parameters) {
                 if (parameters === undefined) {
                     parameters = {};
                 }
                 var deferred = $q.defer();
 
                 var domain = this.domain;
-                var path = '/projects/{project-id}/stacks/{stack-id}';
+                var path = '/stacks/{stack-id}';
 
                 var body;
                 var queryParameters = {};
                 var headers = {};
                 var form = {};
 
-                path = path.replace('{project-id}', parameters['projectId']);
-
-                if (parameters['projectId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: projectId'));
-                    return deferred.promise;
-                }
+                headers['Content-Type'] = ['application/json'];
 
                 path = path.replace('{stack-id}', parameters['stackId']);
 
@@ -1239,40 +798,7 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var cached = parameters.$cache && parameters.$cache.get(url);
-                if (cached !== undefined && parameters.$refresh !== true) {
-                    deferred.resolve(cached);
-                    return deferred.promise;
-                }
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'GET',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('GET', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
@@ -1280,25 +806,26 @@ angular.module('ndslabs-api', [])
              * Updates stack information
 
              * @method
-             * @name ApiServer#putProjectsByProjectIdStacksByStackId
+             * @name ApiServer#putStacksByStackId
              * @param {} stack - Stack definition
-             * @param {string} projectId - The unique project identifier
              * @param {string} stackId - The unique stack identifier
              * 
              */
-            ApiServer.prototype.putProjectsByProjectIdStacksByStackId = function(parameters) {
+            ApiServer.prototype.putStacksByStackId = function(parameters) {
                 if (parameters === undefined) {
                     parameters = {};
                 }
                 var deferred = $q.defer();
 
                 var domain = this.domain;
-                var path = '/projects/{project-id}/stacks/{stack-id}';
+                var path = '/stacks/{stack-id}';
 
                 var body;
                 var queryParameters = {};
                 var headers = {};
                 var form = {};
+
+                headers['Content-Type'] = ['application/json'];
 
                 if (parameters['stack'] !== undefined) {
                     body = parameters['stack'];
@@ -1309,13 +836,6 @@ angular.module('ndslabs-api', [])
                     return deferred.promise;
                 }
 
-                path = path.replace('{project-id}', parameters['projectId']);
-
-                if (parameters['projectId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: projectId'));
-                    return deferred.promise;
-                }
-
                 path = path.replace('{stack-id}', parameters['stackId']);
 
                 if (parameters['stackId'] === undefined) {
@@ -1331,35 +851,7 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'PUT',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('PUT', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
@@ -1367,31 +859,25 @@ angular.module('ndslabs-api', [])
              * Delete a stack
 
              * @method
-             * @name ApiServer#deleteProjectsByProjectIdStacksByStackId
-             * @param {string} projectId - The unique project identifier
+             * @name ApiServer#deleteStacksByStackId
              * @param {string} stackId - The unique stack identifier
              * 
              */
-            ApiServer.prototype.deleteProjectsByProjectIdStacksByStackId = function(parameters) {
+            ApiServer.prototype.deleteStacksByStackId = function(parameters) {
                 if (parameters === undefined) {
                     parameters = {};
                 }
                 var deferred = $q.defer();
 
                 var domain = this.domain;
-                var path = '/projects/{project-id}/stacks/{stack-id}';
+                var path = '/stacks/{stack-id}';
 
                 var body;
                 var queryParameters = {};
                 var headers = {};
                 var form = {};
 
-                path = path.replace('{project-id}', parameters['projectId']);
-
-                if (parameters['projectId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: projectId'));
-                    return deferred.promise;
-                }
+                headers['Content-Type'] = ['application/json'];
 
                 path = path.replace('{stack-id}', parameters['stackId']);
 
@@ -1408,434 +894,7 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'DELETE',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
-
-                return deferred.promise;
-            };
-            /**
-             * Retrieves a list of volumes for this project.
-
-             * @method
-             * @name ApiServer#getProjectsByProjectIdVolumes
-             * @param {string} projectId - The unique project identifier
-             * 
-             */
-            ApiServer.prototype.getProjectsByProjectIdVolumes = function(parameters) {
-                if (parameters === undefined) {
-                    parameters = {};
-                }
-                var deferred = $q.defer();
-
-                var domain = this.domain;
-                var path = '/projects/{project-id}/volumes';
-
-                var body;
-                var queryParameters = {};
-                var headers = {};
-                var form = {};
-
-                path = path.replace('{project-id}', parameters['projectId']);
-
-                if (parameters['projectId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: projectId'));
-                    return deferred.promise;
-                }
-
-                if (parameters.$queryParameters) {
-                    Object.keys(parameters.$queryParameters)
-                        .forEach(function(parameterName) {
-                            var parameter = parameters.$queryParameters[parameterName];
-                            queryParameters[parameterName] = parameter;
-                        });
-                }
-
-                var url = domain + path;
-                var cached = parameters.$cache && parameters.$cache.get(url);
-                if (cached !== undefined && parameters.$refresh !== true) {
-                    deferred.resolve(cached);
-                    return deferred.promise;
-                }
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'GET',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
-
-                return deferred.promise;
-            };
-            /**
-             * Adds a new volume to this project
-
-             * @method
-             * @name ApiServer#postProjectsByProjectIdVolumes
-             * @param {} volume - Volume definition
-             * @param {string} projectId - The unique project identifier
-             * 
-             */
-            ApiServer.prototype.postProjectsByProjectIdVolumes = function(parameters) {
-                if (parameters === undefined) {
-                    parameters = {};
-                }
-                var deferred = $q.defer();
-
-                var domain = this.domain;
-                var path = '/projects/{project-id}/volumes';
-
-                var body;
-                var queryParameters = {};
-                var headers = {};
-                var form = {};
-
-                if (parameters['volume'] !== undefined) {
-                    body = parameters['volume'];
-                }
-
-                if (parameters['volume'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: volume'));
-                    return deferred.promise;
-                }
-
-                path = path.replace('{project-id}', parameters['projectId']);
-
-                if (parameters['projectId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: projectId'));
-                    return deferred.promise;
-                }
-
-                if (parameters.$queryParameters) {
-                    Object.keys(parameters.$queryParameters)
-                        .forEach(function(parameterName) {
-                            var parameter = parameters.$queryParameters[parameterName];
-                            queryParameters[parameterName] = parameter;
-                        });
-                }
-
-                var url = domain + path;
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'POST',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
-
-                return deferred.promise;
-            };
-            /**
-             * Retrieves the volume definition.
-
-             * @method
-             * @name ApiServer#getProjectsByProjectIdVolumesByVolumeId
-             * @param {string} projectId - The unique project identifier
-             * @param {string} volumeId - The unique volume identifier
-             * 
-             */
-            ApiServer.prototype.getProjectsByProjectIdVolumesByVolumeId = function(parameters) {
-                if (parameters === undefined) {
-                    parameters = {};
-                }
-                var deferred = $q.defer();
-
-                var domain = this.domain;
-                var path = '/projects/{project-id}/volumes/{volume-id}';
-
-                var body;
-                var queryParameters = {};
-                var headers = {};
-                var form = {};
-
-                path = path.replace('{project-id}', parameters['projectId']);
-
-                if (parameters['projectId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: projectId'));
-                    return deferred.promise;
-                }
-
-                path = path.replace('{volume-id}', parameters['volumeId']);
-
-                if (parameters['volumeId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: volumeId'));
-                    return deferred.promise;
-                }
-
-                if (parameters.$queryParameters) {
-                    Object.keys(parameters.$queryParameters)
-                        .forEach(function(parameterName) {
-                            var parameter = parameters.$queryParameters[parameterName];
-                            queryParameters[parameterName] = parameter;
-                        });
-                }
-
-                var url = domain + path;
-                var cached = parameters.$cache && parameters.$cache.get(url);
-                if (cached !== undefined && parameters.$refresh !== true) {
-                    deferred.resolve(cached);
-                    return deferred.promise;
-                }
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'GET',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
-
-                return deferred.promise;
-            };
-            /**
-             * Updates volume information
-
-             * @method
-             * @name ApiServer#putProjectsByProjectIdVolumesByVolumeId
-             * @param {} volume - Volume definition
-             * @param {string} projectId - The unique project identifier
-             * @param {string} volumeId - The unique volume identifier
-             * 
-             */
-            ApiServer.prototype.putProjectsByProjectIdVolumesByVolumeId = function(parameters) {
-                if (parameters === undefined) {
-                    parameters = {};
-                }
-                var deferred = $q.defer();
-
-                var domain = this.domain;
-                var path = '/projects/{project-id}/volumes/{volume-id}';
-
-                var body;
-                var queryParameters = {};
-                var headers = {};
-                var form = {};
-
-                if (parameters['volume'] !== undefined) {
-                    body = parameters['volume'];
-                }
-
-                if (parameters['volume'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: volume'));
-                    return deferred.promise;
-                }
-
-                path = path.replace('{project-id}', parameters['projectId']);
-
-                if (parameters['projectId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: projectId'));
-                    return deferred.promise;
-                }
-
-                path = path.replace('{volume-id}', parameters['volumeId']);
-
-                if (parameters['volumeId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: volumeId'));
-                    return deferred.promise;
-                }
-
-                if (parameters.$queryParameters) {
-                    Object.keys(parameters.$queryParameters)
-                        .forEach(function(parameterName) {
-                            var parameter = parameters.$queryParameters[parameterName];
-                            queryParameters[parameterName] = parameter;
-                        });
-                }
-
-                var url = domain + path;
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'PUT',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
-
-                return deferred.promise;
-            };
-            /**
-             * Delete a volume
-
-             * @method
-             * @name ApiServer#deleteProjectsByProjectIdVolumesByVolumeId
-             * @param {string} projectId - The unique project identifier
-             * @param {string} volumeId - The unique volume identifier
-             * 
-             */
-            ApiServer.prototype.deleteProjectsByProjectIdVolumesByVolumeId = function(parameters) {
-                if (parameters === undefined) {
-                    parameters = {};
-                }
-                var deferred = $q.defer();
-
-                var domain = this.domain;
-                var path = '/projects/{project-id}/volumes/{volume-id}';
-
-                var body;
-                var queryParameters = {};
-                var headers = {};
-                var form = {};
-
-                path = path.replace('{project-id}', parameters['projectId']);
-
-                if (parameters['projectId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: projectId'));
-                    return deferred.promise;
-                }
-
-                path = path.replace('{volume-id}', parameters['volumeId']);
-
-                if (parameters['volumeId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: volumeId'));
-                    return deferred.promise;
-                }
-
-                if (parameters.$queryParameters) {
-                    Object.keys(parameters.$queryParameters)
-                        .forEach(function(parameterName) {
-                            var parameter = parameters.$queryParameters[parameterName];
-                            queryParameters[parameterName] = parameter;
-                        });
-                }
-
-                var url = domain + path;
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'DELETE',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('DELETE', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
@@ -1843,31 +902,25 @@ angular.module('ndslabs-api', [])
              * Retrieves the stack service log.
 
              * @method
-             * @name ApiServer#getProjectsByProjectIdLogsByStackServiceId
-             * @param {string} projectId - The unique project identifier
+             * @name ApiServer#getLogsByStackServiceId
              * @param {string} stackServiceId - The unique stack service identifier
              * 
              */
-            ApiServer.prototype.getProjectsByProjectIdLogsByStackServiceId = function(parameters) {
+            ApiServer.prototype.getLogsByStackServiceId = function(parameters) {
                 if (parameters === undefined) {
                     parameters = {};
                 }
                 var deferred = $q.defer();
 
                 var domain = this.domain;
-                var path = '/projects/{project-id}/logs/{stack-service-id}';
+                var path = '/logs/{stack-service-id}';
 
                 var body;
                 var queryParameters = {};
                 var headers = {};
                 var form = {};
 
-                path = path.replace('{project-id}', parameters['projectId']);
-
-                if (parameters['projectId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: projectId'));
-                    return deferred.promise;
-                }
+                headers['Content-Type'] = ['application/json'];
 
                 path = path.replace('{stack-service-id}', parameters['stackServiceId']);
 
@@ -1884,40 +937,7 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var cached = parameters.$cache && parameters.$cache.get(url);
-                if (cached !== undefined && parameters.$refresh !== true) {
-                    deferred.resolve(cached);
-                    return deferred.promise;
-                }
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'GET',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('GET', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
@@ -1925,31 +945,25 @@ angular.module('ndslabs-api', [])
              * Starts the specified stack
 
              * @method
-             * @name ApiServer#getProjectsByProjectIdStartByStackId
-             * @param {string} projectId - The unique project identifier
+             * @name ApiServer#getStartByStackId
              * @param {string} stackId - The unique stack identifier
              * 
              */
-            ApiServer.prototype.getProjectsByProjectIdStartByStackId = function(parameters) {
+            ApiServer.prototype.getStartByStackId = function(parameters) {
                 if (parameters === undefined) {
                     parameters = {};
                 }
                 var deferred = $q.defer();
 
                 var domain = this.domain;
-                var path = '/projects/{project-id}/start/{stack-id}';
+                var path = '/start/{stack-id}';
 
                 var body;
                 var queryParameters = {};
                 var headers = {};
                 var form = {};
 
-                path = path.replace('{project-id}', parameters['projectId']);
-
-                if (parameters['projectId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: projectId'));
-                    return deferred.promise;
-                }
+                headers['Content-Type'] = ['application/json'];
 
                 path = path.replace('{stack-id}', parameters['stackId']);
 
@@ -1966,40 +980,7 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var cached = parameters.$cache && parameters.$cache.get(url);
-                if (cached !== undefined && parameters.$refresh !== true) {
-                    deferred.resolve(cached);
-                    return deferred.promise;
-                }
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'GET',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('GET', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
@@ -2007,31 +988,25 @@ angular.module('ndslabs-api', [])
              * Stops the specified stack
 
              * @method
-             * @name ApiServer#getProjectsByProjectIdStopByStackId
-             * @param {string} projectId - The unique project identifier
+             * @name ApiServer#getStopByStackId
              * @param {string} stackId - The unique stack identifier
              * 
              */
-            ApiServer.prototype.getProjectsByProjectIdStopByStackId = function(parameters) {
+            ApiServer.prototype.getStopByStackId = function(parameters) {
                 if (parameters === undefined) {
                     parameters = {};
                 }
                 var deferred = $q.defer();
 
                 var domain = this.domain;
-                var path = '/projects/{project-id}/stop/{stack-id}';
+                var path = '/stop/{stack-id}';
 
                 var body;
                 var queryParameters = {};
                 var headers = {};
                 var form = {};
 
-                path = path.replace('{project-id}', parameters['projectId']);
-
-                if (parameters['projectId'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: projectId'));
-                    return deferred.promise;
-                }
+                headers['Content-Type'] = ['application/json'];
 
                 path = path.replace('{stack-id}', parameters['stackId']);
 
@@ -2048,40 +1023,7 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var cached = parameters.$cache && parameters.$cache.get(url);
-                if (cached !== undefined && parameters.$refresh !== true) {
-                    deferred.resolve(cached);
-                    return deferred.promise;
-                }
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'GET',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('GET', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
@@ -2107,6 +1049,8 @@ angular.module('ndslabs-api', [])
                 var headers = {};
                 var form = {};
 
+                headers['Content-Type'] = ['application/json'];
+
                 if (parameters['services'] !== undefined) {
                     queryParameters['services'] = parameters['services'];
                 }
@@ -2119,40 +1063,7 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var cached = parameters.$cache && parameters.$cache.get(url);
-                if (cached !== undefined && parameters.$refresh !== true) {
-                    deferred.resolve(cached);
-                    return deferred.promise;
-                }
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'GET',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('GET', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
@@ -2177,6 +1088,8 @@ angular.module('ndslabs-api', [])
                 var headers = {};
                 var form = {};
 
+                headers['Content-Type'] = ['application/json'];
+
                 if (parameters.$queryParameters) {
                     Object.keys(parameters.$queryParameters)
                         .forEach(function(parameterName) {
@@ -2185,40 +1098,7 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var cached = parameters.$cache && parameters.$cache.get(url);
-                if (cached !== undefined && parameters.$refresh !== true) {
-                    deferred.resolve(cached);
-                    return deferred.promise;
-                }
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'GET',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('GET', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };
@@ -2227,7 +1107,7 @@ angular.module('ndslabs-api', [])
 
              * @method
              * @name ApiServer#postRegister
-             * @param {} project - Project definition
+             * @param {} account - Account definition
              * 
              */
             ApiServer.prototype.postRegister = function(parameters) {
@@ -2244,12 +1124,14 @@ angular.module('ndslabs-api', [])
                 var headers = {};
                 var form = {};
 
-                if (parameters['project'] !== undefined) {
-                    body = parameters['project'];
+                headers['Content-Type'] = ['application/json'];
+
+                if (parameters['account'] !== undefined) {
+                    body = parameters['account'];
                 }
 
-                if (parameters['project'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: project'));
+                if (parameters['account'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: account'));
                     return deferred.promise;
                 }
 
@@ -2261,35 +1143,7 @@ angular.module('ndslabs-api', [])
                         });
                 }
 
-                var url = domain + path;
-                var options = {
-                    timeout: parameters.$timeout,
-                    method: 'POST',
-                    url: url,
-                    params: queryParameters,
-                    data: body,
-                    headers: headers
-                };
-                if (Object.keys(form).length > 0) {
-                    options.data = form;
-                    options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-                    options.transformRequest = ApiServer.transformRequest;
-                }
-                $http(options)
-                    .success(function(data, status, headers, config) {
-                        deferred.resolve(data);
-                        if (parameters.$cache !== undefined) {
-                            parameters.$cache.put(url, data, parameters.$cacheItemOpts ? parameters.$cacheItemOpts : {});
-                        }
-                    })
-                    .error(function(data, status, headers, config) {
-                        deferred.reject({
-                            status: status,
-                            headers: headers,
-                            config: config,
-                            body: data
-                        });
-                    });
+                this.request('POST', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };

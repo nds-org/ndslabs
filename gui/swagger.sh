@@ -4,22 +4,22 @@
 
 DOWNLOADURL=$1
 SWAGGERFILE=ndslabs.json
-OUTPUTFILE=js/app/shared/api.js
+OUTPUTFILE=`pwd`/js/app/shared/api.js
 
 # Install swagger-js-codegen
 docker run --rm -it -v `pwd`/api:/data bodom0015/nodejs-bower-grunt npm install swagger-js-codegen
 
 # Download newest swagger-spec.json
-if [[ "${@/-u/ }" != "$@" ]]; then
-	echo "Downloading newest Swagger Spec..."
-	sudo curl -L ${DOWNLOADURL} > ${SWAGGERFILE}
+if [[ "$1" != "" ]]; then
+	echo "Downloading swagger spec from ${DOWNLOADURL}"
+	sudo curl -L ${DOWNLOADURL} > api/${SWAGGERFILE}
 else
-	echo "Rebuilding swagger spec from ../apis/swagger-spec/ndslabs.json"
-	sudo cp ../apis/swagger-spec/ndslabs.json api/ndslabs.json
+	echo "Rebuilding swagger spec from ../apis/swagger-spec/${SWAGGERFILE}"
+	sudo cp ../apis/swagger-spec/${SWAGGERFILE} api/${SWAGGERFILE}
 fi
 
 # Finally, generate AngularJS source
 echo "Generating AngularJS source code..."
-docker run --rm -it -v `pwd`/api:/data bodom0015/nodejs-bower-grunt node generate-angular.js > ${OUTPUTFILE} || cat ${OUTPUTFILE}
+docker run --rm -it -v `pwd`/api:/data -w /data bodom0015/nodejs-bower-grunt node generate-angular.js > ${OUTPUTFILE} || cat ${OUTPUTFILE}
 
 echo "Done!"

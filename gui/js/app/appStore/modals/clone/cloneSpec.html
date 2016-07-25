@@ -1,0 +1,34 @@
+<!-- The "Clone Spec" Modal -->
+<section>
+  <div class="modal-header">
+    <button type="button" class="btn btn-default pull-right btn-xs" data-dismiss="modal" aria-label="Close" ng-click="cancel()"><i class="fa fa-fw fa-times"></i></button>
+    <h4 class="modal-title">Clone Application</h4>
+  </div>
+  <div class="modal-body">
+    <p>Cloning an application allows you to make changes to it without affecting the existing catalog entry.</p>
+    <p>Enter a new short name for the cloned application (for example "mongo" or "clowder"):</p>
+    <form name="cloneKey">
+      <input class="form-control" type="text" name="keyField" ng-model="spec.key" required ng-pattern="/^[a-z0-9]+$/" />
+                                        
+      
+    </form>
+  </div>
+  <div class="modal-footer">
+    <div class="col-sm-2">
+      <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="cancel()"><i class="fa fa-fw fa-times"></i> Cancel</button>
+    </div>
+    
+    <div class="col-sm-8 text-center">
+      <p class="text-success" ng-if="nameIsValid && cloneKey.keyField.$valid">Desired name is unique.</p>
+      <p class="text-danger" ng-if="!nameIsValid">Desired name is in use.</p>
+      <ng-messages class="text-danger" for="cloneKey.keyField.$error" role="alert">
+        <ng-message when="required">This field is required</ng-message>
+        <ng-message when="pattern">This field may only contain lowercase alphanumeric characters</ng-message>
+      </ng-messages>
+    </div>
+    
+    <div class="col-sm-2">
+      <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="clone()" ng-disabled="!nameIsValid"><i class="fa fa-fw fa-clone"></i> Clone</button>
+    </div>
+  </div>
+</section>
