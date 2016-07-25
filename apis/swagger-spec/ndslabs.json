@@ -42,6 +42,13 @@
             "description": "The unique stack service identifier",
             "type": "string",
             "required": true
+        },
+        "vocab-name": {
+            "name": "vocab-name",
+            "in": "path",
+            "description": "Vocabulary name",
+            "type": "string",
+            "required": true
         }
     },
     "paths": {
@@ -538,15 +545,11 @@
                 }
             }
         },
-        "/vocabulary": {
+        "/vocabulary/{vocab-name}": {
             "get": {
                 "parameters": [
                     {
-                        "name": "name",
-                        "in": "query",
-                        "description": "vocabulary name",
-                        "required": true,
-                        "type": "string"
+                        "$ref": "#/parameters/vocab-name"
                     }
                 ],
                 "description": "Retrieves a vocabulary\n",
