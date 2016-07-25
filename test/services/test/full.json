@@ -1,0 +1,65 @@
+{
+	"logo": "http://www.somehost.org/mylogo.jpg",
+	"key": "fulltest",
+	"label": "Full spec test",
+	"description": "Spec to exercise all fields",
+	"image": {
+		"registry": "docker.io",
+		"name": "ndslabs/cowsay",
+		"tags": ["latest", "v1", "v2", "v3"]
+	},
+	"display": "stack",
+	"access": "external",
+	"depends": [{
+		"key": "mongo",
+		"required": true,
+		"sharedConfig": false
+	}],
+	"config": [{
+		"name": "ENV_VAR",
+		"value": "value",
+		"label": "Label",
+		"canOverride": true,
+		"isPassword": true
+	}],
+	"command": ["somecommand"],
+	"args": [
+		"-someargument"
+	],
+	"ports": [{
+		"port": 80,
+		"protocol": "http"
+	}, {
+		"port": 8000,
+		"protocol": "http"
+	}],
+	"repositories": [{
+		"url": "https://github.com/golang/example",
+		"type": "git"
+	}],
+	"developerEnvironment": "idOfDevEnv",
+	"volumeMounts": [{
+		"name": "data",
+		"mountPath": "/data"
+	}, {
+		"name": "other",
+		"mountPath": "/other"
+	}],
+	"readinessProbe": {
+		"type": "http",
+		"path": "/favicon.ico",
+		"port": 80,
+		"initialDelay": 10,
+		"timeout": 600
+	},
+	"resourceLimits": {
+		"cpuMax": 1000,
+		"cpuDefault": 100,
+		"memMax": 1024,
+		"memDefault": 512
+	},
+	"tags": [
+		"tagId1",
+		"tagId2"
+	]
+}
