@@ -866,13 +866,18 @@ func (s *Server) DeleteService(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) serviceInUse(sid string) int {
 	inUse := 0
-	accounts, _ := s.etcd.GetAccounts()
-	for _, account := range *accounts {
-		stacks, _ := s.etcd.GetStacks(account.Namespace)
-		for _, stack := range *stacks {
-			for _, service := range stack.Services {
-				if service.Service == sid {
-					inUse++
+	accounts, err := s.etcd.GetAccounts()
+	if err != nil {
+		glog.Errorf("Error getting accounts\n")
+	}
+	if accounts != nil {
+		for _, account := range *accounts {
+			stacks, _ := s.etcd.GetStacks(account.Namespace)
+			for _, stack := range *stacks {
+				for _, service := range stack.Services {
+					if service.Service == sid {
+						inUse++
+					}
 				}
 			}
 		}
