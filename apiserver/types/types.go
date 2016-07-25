@@ -191,3 +191,14 @@ type Term struct {
 	Name       string `json:"name"`
 	Definition string `json:"definition"`
 }
+
+type Vocabulary struct {
+	Name  string `json:"name"`
+	Terms []Term `json:"terms"`
+}
+
+type Term struct {
+	Id         string `json:"id"`
+	Name       string `json:"name"`
+	Definition string `json:"definition"`
+}
