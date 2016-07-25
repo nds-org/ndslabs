@@ -537,6 +537,36 @@
                     }
                 }
             }
+        },
+        "/vocabulary": {
+            "get": {
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "vocabulary name",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "description": "Retrieves a vocabulary\n",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/definitions/Vocabulary"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -911,6 +941,31 @@
                 },
                 "memDefault": {
                     "type": "string"
+                }
+            }
+        },
+        "Vocabulary": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "terms": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "definition": {
+                                "type": "string"
+                            }
+                        }
+                    }
                 }
             }
         }

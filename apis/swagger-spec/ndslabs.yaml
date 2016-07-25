@@ -361,6 +361,26 @@ paths:
       responses:
         '201':
           description: Created
+  /vocabulary:
+    get:
+      parameters:
+        - name: name
+          in: query
+          description: vocabulary name
+          required: true
+          type: string
+      description: |
+        Retrieves a vocabulary
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/Vocabulary'          
 definitions:
   Auth:
     type: object
@@ -605,3 +625,19 @@ definitions:
         type: string
       memDefault:
         type: string
+  Vocabulary:
+    type: object
+    properties:
+      name: 
+        type: string
+      terms: 
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+            name: 
+              type: string
+            definition:
+              type: string
