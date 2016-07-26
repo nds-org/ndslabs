@@ -27,13 +27,13 @@
 }
 
 @media (min-width: 768px) {
-  .table-row {
+  #cardRow {
     display: table;
     table-layout: fixed;
     width: 100%;
   }
 
-  .table-row [class^="col-"] {
+  #cardRow [class^="col-"] {
     display: table-cell;
     float: none;
   }
@@ -59,10 +59,6 @@
 .terminal-cursor {
   color: #000;
   background: #f0f0f0;
-}
-
-.modal-content {
-  margin:auto;
 }
 
 .popover {

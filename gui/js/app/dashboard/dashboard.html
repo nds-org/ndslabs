@@ -22,7 +22,7 @@
     </div>
   </div>
   
-  <!-- Applications / Volumes Area -->
+  <!-- Applications Area -->
   <div class="row">
     <div class="col-sm-12 fill-height">
       <div class="well well-lg fill-height">
@@ -46,15 +46,22 @@
               <!-- Stack Status Indicator -->
               <div class="row">
                 <div class="col-xs-3 col-md-1 pull-left">
-                  <i class="fa fa-fw fa-2x" 
+                  <i class="fa fa-fw fa-2x"
                     ng-class="{ 'fa-check-circle-o text-success': stack.status === 'started', 
                         'fa-times-circle-o text-danger': stack.status === 'stopped',
                         'fa-warning text-danger animated faa-flash faa-fast': stack.status === 'error',
                         'fa-spinner fa-spin fa-pulse text-primary': stack.status !== 'error' && stack.status !== 'started' && stack.status !== 'stopped' }"></i>
                 </div>
+                
                 <div class="col-xs-6 col-md-10">
-                  <h4><strong>{{ stack.name | capitalize }}</strong></h4>
+                  <h4>
+                    <strong >{{ stack.name | capitalize }}</strong>
+                    <a type="button" class="btn btn-xs btn-link" href ng-click="$event.stopPropagation();renameStack(stack)">
+                      <i class="fa fa-fw fa-pencil"></i>
+                    </a>
+                  </h4>
                 </div>
+                
                 <div class="col-xs-3 col-md-1">
                   <i class="pull-right fa fa-2x fa-fw" ng-class="{'fa-caret-down': expandedStacks[stack.id], 'fa-caret-right': !expandedStacks[stack.id]}"></i>
                 </div>
@@ -70,8 +77,7 @@
                     <thead>
                       <tr>
                         <td width="15%" class="text-center"><strong>Status</strong></td>
-                        <td width="10%" class="text-center"><strong>Volumes</strong></td>
-                        <td width="30%"><strong>Name</strong></td>
+                        <td width="40%"><strong>Name</strong></td>
                         <td width="15%" class="text-center"><strong>Console</strong></td>
                         <td width="15%" class="text-center">
                           <strong ng-if="stack.status !== 'stopped'">Config</strong>
@@ -97,18 +103,6 @@
                             'text-danger  fa-power-off': svc.status !== 'ready' && svc.status !== 'waiting' && svc.status !== 'starting' && svc.status !== 'stopping' && svc.status !== 'error'
                           }"></i>
                           {{  (svc.status | capitalize) || 'Stopped' }}
-                        </td>
-                        
-                        <!-- Volume details for this service -->
-                        <td class="text-center">
-                          <button class="btn btn-link btn-xs" tooltip-placement="left" 
-                              uib-tooltip='Click here for details regarding "{{ volume.name }}"'                                          
-                              ng-click="selectVolume(volume);" class="cursor-pointer"
-                              ng-repeat="volume in svc.id | stackSvcVolumes track by volume.id"
-                              >
-                            <!-- show volume details if we find a volume -->
-                            <i class="fa fa-fw fa-database"></i>
-                          </button>
                         </td>
                         
                         <!-- The Name of the Running Service and link to endpoint, if applicable -->
@@ -172,7 +166,6 @@
                           ng-if="stack.status === 'stopped' && !_.find(stack.services, [ 'service', option.key ])">
 
                         <td class="text-center">
-                          <!-- ng-click="addStackSvc(stack, option)" -->
                           <a type="button" class="btn btn-xs btn-block btn-default" ng-href="#/home/{{ stack.id }}/add/{{ option.key }}"
                             uib-tooltip="Add {{ option.key | specProperty:'label' }} to this stack"
                             tooltip-placement="right">
