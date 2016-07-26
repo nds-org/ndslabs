@@ -7,19 +7,16 @@ APP="ndslabsctl"
 
 if [ "$1" = "build" ] || [ -z $1 ]; then
 	echo Building $APP
-	rm -f $VERSIONFILE
+	if [ -e "$VERSIONFILE" ]; then
+		rm -f $VERSIONFILE
+	fi
 	echo "package cmd" > $VERSIONFILE
 	echo "const (" >> $VERSIONFILE
 	echo "  VERSION = \"1.0-alpha\"" >> $VERSIONFILE
 	echo "  BUILD_DATE = \"$BUILD_DATE\"" >> $VERSIONFILE
 	echo ")" >> $VERSIONFILE
-	rm -f build/bin/$APP-linux-amd64 build/$APP-darwin-amd64
-	mkdir -p build/bin build/bin build/pkg
-	go get
-	echo Building Darwin
-	GOOS=darwin GOARCH=amd64 go build -o build/bin/$APP-darwin-amd64
-	echo Building Linux
-	docker run --rm -it -v `pwd`/../apiserver:/go/src/github.com/ndslabs/apiserver -v `pwd`:/go/src/github.com/ndslabs/apictl -v `pwd`/build/bin:/go/bin -v `pwd`/build/pkg:/go/pkg -v `pwd`/gobuild.sh:/gobuild.sh golang /gobuild.sh
+	docker run --rm -it -v `pwd`/../apiserver:/go/src/github.com/ndslabs/apiserver -v `pwd`:/go/src/github.com/ndslabs/apictl -v `pwd`/build/bin:/go/bin -v `pwd`/build/pkg:/go/pkg -v `pwd`/gobuild.sh:/gobuild.sh golang:1.6 /gobuild.sh
+	rm $VERSIONFILE
 elif [ "$1" = "clean" ]; then
 	echo Cleaning
 	rm -rf build

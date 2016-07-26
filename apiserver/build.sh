@@ -7,7 +7,9 @@ APP="apiserver"
 
 if [ "$1" = "build" ] || [ -z $1 ]; then
 	echo Building $APP
-	rm $VERSIONFILE
+	if [ -e "$VERSIONFILE" ]; then 
+		rm $VERSIONFILE
+	fi
 	echo "package main" > $VERSIONFILE
 	echo "const (" >> $VERSIONFILE
 	echo "  VERSION = \"$VERSION\"" >> $VERSIONFILE
