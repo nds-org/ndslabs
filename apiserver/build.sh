@@ -5,7 +5,7 @@ VERSIONFILE="version.go"
 VERSION="1.0.1-alpha"
 APP="apiserver"
 
-if [ "$1" = "build" ] || [ -z $1 ]; then
+if [ "$1" = "local" ] || [ "$1" = "docker" ]; then
 	echo Building $APP
 	if [ -e "$VERSIONFILE" ]; then 
 		rm $VERSIONFILE
@@ -15,7 +15,14 @@ if [ "$1" = "build" ] || [ -z $1 ]; then
 	echo "  VERSION = \"$VERSION\"" >> $VERSIONFILE
 	echo "  BUILD_DATE = \"$BUILD_DATE\"" >> $VERSIONFILE
 	echo ")" >> $VERSIONFILE
-	docker run --rm -it -v `pwd`:/go/src/github.com/ndslabs/apiserver -v `pwd`/build/bin:/go/bin -v `pwd`/build/pkg:/go/pkg -v `pwd`/gobuild.sh:/gobuild.sh golang:1.6  /gobuild.sh
+	if [ "$1" = "local" ]; then 
+		glide install 
+		go build
+	fi
+	if [ "$1" = "docker" ]; then 
+		docker run --rm -it -v `pwd`:/go/src/github.com/ndslabs/apiserver -v `pwd`/build/bin:/go/bin -v `pwd`/build/pkg:/go/pkg -v `pwd`/gobuild.sh:/gobuild.sh golang:1.6  /gobuild.sh
+	fi
+
 	rm $VERSIONFILE
 
 elif [ "$1" = "dev" ]; then
