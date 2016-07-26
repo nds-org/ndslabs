@@ -2,6 +2,8 @@ language: go
 go:
   - 1.6.3
 
+go_import_path: github.com/ndslabs
+
 install:
   - go get github.com/Masterminds/glide
 
