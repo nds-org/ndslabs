@@ -141,13 +141,6 @@ func main() {
 		glog.Fatal(err)
 	}
 
-	/*
-		str, err := kube.ExecCommand("default", "nginx", []string{"ls", "/var/log"})
-		fmt.Println(str)
-
-		os.Exit(1)
-	*/
-
 	server := Server{}
 	server.hostname = hostname
 	if cfg.Server.Ingress == IngressTypeLoadBalancer {
