@@ -8,10 +8,16 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
+<<<<<<< HEAD
 .controller('CatalogController', [ '$scope', '$filter', '$interval', '$uibModal', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stack', 'Stacks', 'Volume', 
     'StackService', 'Grid', 'Wizard', 'WizardPage', 'Specs', 'Volumes', 'ServiceDiscovery', 'clipboard', 'Vocabulary',
     function($scope, $filter, $interval, $uibModal, $location, $log, _, NdsLabsApi, Project, Stack, Stacks, Volume, StackService, Grid, Wizard, WizardPage,
     Specs, Volumes, ServiceDiscovery, clipboard, Vocabulary) {
+=======
+.controller('CatalogController', [ '$scope', '$filter', '$interval', '$uibModal', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stack', 'Stacks', 
+    'StackService', 'Specs', 'clipboard', 'Vocabulary',
+    function($scope, $filter, $interval, $uibModal, $location, $log, _, NdsLabsApi, Project, Stack, Stacks, StackService, Specs, clipboard, Vocabulary) {
+>>>>>>> 589d130f527707f997c8d8fdb6277c41497c142c
       
   $scope.tags = { all: [], selected: [] };
   Vocabulary.populate("tags").then(function(data) {

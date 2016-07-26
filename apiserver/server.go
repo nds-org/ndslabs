@@ -1971,3 +1971,34 @@ func (s *Server) GetVocabulary(w rest.ResponseWriter, r *rest.Request) {
 		w.WriteJson(&vocab)
 	}
 }
+
+func (s *Server) addVocabulary(path string) error {
+	if path[len(path)-4:len(path)] != "json" {
+		return nil
+	}
+	glog.V(4).Infof("Adding vocabulary %s", path)
+	vocab := api.Vocabulary{}
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	err = json.Unmarshal(data, &vocab)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	s.etcd.PutVocabulary(vocab.Name, &vocab)
+	return nil
+}
+
+func (s *Server) GetVocabulary(w rest.ResponseWriter, r *rest.Request) {
+	name := r.PathParam("name")
+	vocab, err := s.etcd.GetVocabulary(name)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	} else {
+		w.WriteJson(&vocab)
+	}
+}
