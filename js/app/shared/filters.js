@@ -35,12 +35,16 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
     }
     
     var ret = _.filter(input, function(spec) {
-      if (!spec.tags) {
-        return false;
-      }
-      
       return _.every(tags, function(tag) {
-        return spec.tags.indexOf(tag.id) !== -1;
+        if (tag.id) {
+          if (!spec.tags) {
+            return false;
+          }
+          return spec.tags.indexOf(tag.id) !== -1;
+        } else {
+          var json = JSON.stringify(spec);
+          return _.includes(json.toLowerCase(), tag.name);
+        }
       });
     });
     

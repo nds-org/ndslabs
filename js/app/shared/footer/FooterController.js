@@ -8,10 +8,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('FooterController', [ '$scope', '$log', 'DEBUG', 'NdsLabsApi', 'BuildDate', 'BuildVersion', 'Layout',  
-    function($scope, $log, DEBUG, NdsLabsApi, BuildDate, BuildVersion, Layout) {
-  $scope.DEBUG = DEBUG;
-  $scope.layout = Layout;
+.controller('FooterController', [ '$scope', '$log', 'NdsLabsApi', 'BuildDate', 'BuildVersion',  
+    function($scope, $log, NdsLabsApi, BuildDate, BuildVersion) {
   $scope.guiVersion = BuildVersion;
   $scope.guiBuildDate = BuildDate;
   
