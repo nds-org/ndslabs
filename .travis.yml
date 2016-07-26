@@ -2,18 +2,13 @@ language: go
 go:
 - 1.6.3
 go_import_path: github.com/ndslabs
+env:
+  global:
+  - secure: xc1HoUaq7B3NdtpZn9U9ld3sY+IJa3/SOurv2PESILJqONO501qzwIzekWb9X5cCKmn2IXdnE2JK/RCh71zqIqMUh0ngNvwFjoWeyS9lI/Llbs59XQu9idVgvd6LHGvULxTzOvqWsERydW40z+xfZnCmG3Vvf0NPe1+fi+l5FmtW0U6vuIPHbFcYhLDLD6X9sKO1cSPiGir6iLDFLVTX+t/zr1Z259igv3oupsqp3CXIp4A/eARETR+p5T/kH/0HU2EgennrnxA5azn2uTQmFcu2NyseU4UPuGgr0lcHCF1r35o2nweXg4JQj0f1t88hNcb4qCym7VmVwEO8OUyp3CmGPaA/eP7QNhj2F/2V8bphov79j+lq+Y7CoOjeVpO5r4wJ9XFD81T3wX1e3fqyPLdIwSKxFAUCQpGSjNvBWMfStYrpu4En62YZLab+PTItF2Uq+FSldFW9HLPjZ+nyv5qSehYW35GWrmvxVqhxW5YJHc+bXHxYA4Ob5wJL3KBdyBSWKVftU+zX3wt2IZEfFrUTtZkv4Gr/Y/bmCmp6ZwEx6KLL2WJdsdS0DYvLXYIiO8zmRUmVGAvHEEWe44FoOFx8pHleRVAXrxM69qsSyriE0U8PScZ667SmZV8k/dVeF4fyH+cVuXhY3eYfYI8JssAM3NYuGaRZfPPWxl0g3mM=
+  - secure: roRL6MnN0QvrmmlJnpJ+6gHLN9XQH9Qm132HeFPRMiIV4bqERAhQtNydoNEeRofFnPmDagSPTw5jHwwi1pj9bXO+/R94T4hGUAscYoRe5IAlmBidsJSH8MNvJs042ygEy9fFvND5fJCNj8bYi19iQkbJu7bqIW26Og9s/AtaKzdIC+92iYfmYJ5ZknLL/GjfAZ7juBB60f9EVvos0Z1qxAfhYgyRjlwf0Sx5IKw+/G2H4csFTKTbSeXYuiL1CDmmk6iHqqKHKwtLrxAbgVzqDwAVvcy5YyK84Oh/GCUHdluOY3FNt4mYwptQMEF/dBOTPRX16cjPwQ8Gto+n0UYO6V//rHRd86wn4UB0mimb54aieuTrYK3W6KaK42uSo0io6pmp8s1OUanSuFN1IUQCp6JEvgHrJHrvDNlXvp4sme0qU95x6D+9SM0525hGmuzDEsO5HJV9SOhThbUIcRvd7gI5i14PWMBrwhuof9h+gi5uuNC9cN74qEe4ldR4XVowa0lTE3sqYEXwDh97dmrR4RS7NmI1qqhRP8JQtgPqFsKpPLv2Nvten5buPlnSQBycHUQOaZluB0hL6xf3NtfwMAoTF7yFSzsrnJiUxwMcW5yDC5Mw3fWx0z+dyQ8YN8g757iN5tLKiO+3KtlnnMY2jweops1XCZ1jM0qMpEOcqX8=
 install:
 - go get github.com/Masterminds/glide
 script:
-- cd apiserver && ./build.sh local
 - cd ../apictl && ./build.sh local
-deploy:
-  provider: releases
-  file_glob: true
-  file: "apiserver/build/bin/*amd64"
-  skip_cleanup: true
-  on:
-    tags: true
-    all_branches: true
-  api-key:
-    secure: S7oFvIRa146Egor073zolInQDTOFJzllrEkQDin7VuZLU5ydr1INFavrwimaAg1xQUDvl/U8bzUlTfoGF29Vft3pjcjZPQpZiy5J+k0QMUSpu01aDhGTGXNW5eAHMCxHxovi42Vei55bJv2jS5sy5JSenptVoE3E4QORvoo0eHVQoeeYyY26+Tg/dd+/Jdn9wgZf6ds3G2lXUtyEzGrD4rF/fqTPU7yFcLPCKrnWO430LDDSAGg9GSH5zvftENP0R3Gr4QgGe7wpPOqepv0CxRhH6JrQh9/HMqjTFMMv6tyGH5AT/LSSrXQ0fKEh1BYd0sceMSAMHxjBLuwxJbJXI9QCemxAcvGPZl89ng+O6vE12wE3CSoW0NRQErlN79xuqAlZxwH0F/LSu7VgtBlsiv7WgKhZvp3Z0IQRfEFb1eoROD7rnn84fKZUgA74Ep81x/8zd/Vbhpd+jOVFsm/Op5QgRhEui+tqYN4/z6lNial6hqG7ba+t5x/P3h0iHP6YHtawh9XgSVQetGZ1vkN2oCoDihkPChL6beqePBV4wJvnVqFYYjyawkwD9+qxHZfI1fG9IAbGafn3VB5g5VSxUl4CIi/gBC0PPnfnc0B3pUGQk9Mey9WVy4sJmm5wulxSb/m0HElbGBXJvJ0NtLmuIyfn5M0CwGNjQhL0/KeTA18=
+after_success:
+- curl --ftp-create-dirs -T apictl/build/bin/*amd64 -u $FTP_USER:$FTP_PASSWORD sftp://141.142.208.183/releases/$TRAVIS_BRANCH
