@@ -3,7 +3,7 @@
 angular
 .module('ndslabs')
 /**
- * The Controller for our "Configuration Wizard" Modal Window
+ * The Controller for our "Edit Application Service" Modal Window
  * 
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
@@ -14,7 +14,7 @@ angular
   var path = $location.path();
   $scope.editingService = (path.indexOf('/edit/') !== -1);
   
-  var projectId = Project.project.namespace;
+  var projectId = null
   $scope.$watch(function () { return Project.project; }, function(newValue, oldValue) { projectId = newValue.namespace; });
   
   
@@ -33,7 +33,7 @@ angular
       return;
     }
       
-    $scope.service = _.find($scope.stack.services, [ 'service', $routeParams.service ]) || new StackService($scope.stack, $scope.spec, false);
+    $scope.service = _.find($scope.stack.services, [ 'service', $routeParams.service ]) || new StackService($scope.stack, $scope.spec);
     
     if (!$scope.service) {
       $log.error('Failed to' + ($scope.editingService ? 'find' : 'create') + $routeParams.service + ' in stack ' + $routeParams.stackId);
@@ -77,9 +77,9 @@ angular
   
   $scope.$watch(function () { return Project.project; }, function(newValue, oldValue) { $scope.project = newValue; });
   
-  $scope.save = function() {
+  var prepareService = function(service) {
     // Parse environment vars into config map
-    $scope.service.config = {};
+    service.config = {};
     angular.forEach($scope.configs, function(cfg) {
       // Do not allow for empty passwords
       if (cfg.isPassword && cfg.value === '') {
@@ -87,24 +87,33 @@ angular
         cfg.value = 'GENERATED_PASSWORD';
       }
       
-      $scope.service.config[cfg.name] = cfg.value;
+      service.config[cfg.name] = cfg.value;
     });
-    
-    $scope.service.volumeMounts = {};
+  };
+  
+  $scope.save = function() {
+    service.volumeMounts = {};
     angular.forEach($scope.volumes, function(mnt) {
       $scope.service.volumeMounts[mnt.from] = mnt.to;
     });
     
     //$scope.service.ports = $scope.ports;
-    $scope.service.endpoints = [];
+    service.endpoints = [];
     angular.forEach($scope.ports, function(port) {
       $scope.service.endpoints.push({ port: port.port, protocol: port.protocol, access: port.access} );
     });
     
+    var service = prepareService($scope.service);
     
     if (!$scope.editingService && $scope.stack.services.indexOf($scope.service) === -1) {
+      angular.forEach($scope.spec.depends, function(dep) {
+        if (dep.required) {
+      $scope.stack.services.push(service);
+        }
+      });
+      
       // Push the new service onto the stack
-      $scope.stack.services.push($scope.service);
+      $scope.stack.services.push(service);
     }
     
     // Save the stack to etcd

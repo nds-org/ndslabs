@@ -244,13 +244,13 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
     
     // Add our base service to the stack
     var base = _.find(Specs.all, [ 'key', key ]);
-    stack.services.push(new StackService(stack, base, true));
+    stack.services.push(new StackService(stack, base));
     
     // Add required services to this stack
     angular.forEach(spec.depends, function(dep) {
       if (dep.required) {
         var svc = _.find(Specs.all, [ 'key', dep.key ]);
-        stack.services.push(new StackService(stack, svc, dep.required));
+        stack.services.push(new StackService(stack, svc));
       }
     });
     
@@ -265,7 +265,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  * @param {} spec - The service spec off of which to base this service
  */
 .service('StackService', [ function() {
-  return function(stack, spec, required) {
+  return function(stack, spec) {
     var svc = {
       id: "",
       stack: stack.key,
@@ -274,9 +274,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       depends: angular.copy(spec.depends),
       config: angular.copy(spec.config),
       volumes: angular.copy(spec.volumeMounts),
-      ports: angular.copy(spec.ports),
-      required: required,
-      selected: required ? true : false
+      ports: angular.copy(spec.ports)
     };
     
     // Assign default values (for "Use Default" option)

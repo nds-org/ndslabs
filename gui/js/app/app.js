@@ -86,7 +86,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  * 
  * TODO: We assume this is running on the same machine as the apiserver.
  */ 
-.constant('ApiHost', '192.168.99.100')
+.constant('ApiHost', '141.142.208.180')
 .constant('ApiPort', '30001')
 .constant('ApiPath', '/api')
 .constant('ApiSecure', false) 
@@ -258,13 +258,13 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   })
   .when(AddServiceRoute, {
     title: 'Add Application Service',
-    controller: 'EditServiceController',
-    templateUrl: 'app/dashboard/service/editService.html'
+    controller: 'AddOrEditServiceController',
+    templateUrl: 'app/dashboard/service/addOrEditService.html'
   })
   .when(EditServiceRoute, {
     title: 'Edit Application Service',
-    controller: 'EditServiceController',
-    templateUrl: 'app/dashboard/service/editService.html'
+    controller: 'AddOrEditServiceController',
+    templateUrl: 'app/dashboard/service/addOrEditService.html'
   })
   .when(ConsoleRoute, {
     title: 'Application Service Console',
