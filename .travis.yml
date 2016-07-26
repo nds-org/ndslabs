@@ -9,7 +9,7 @@ script:
 - cd ../apictl && ./build.sh local
 deploy:
   provider: releases
-  file: "build/bin/apiserver-linux-amd64"
+  file: "apiserver/build/bin/apiserver-linux-amd64"
   skip_cleanup: true
   on:
     tags: true
