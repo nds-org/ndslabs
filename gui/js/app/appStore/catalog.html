@@ -12,8 +12,21 @@
       <!-- Application Search / Filter -->
       <div class="input-group">
         <span class="input-group-addon" id="searchHeader"><i class="fa fa-search"></i></span>
-        <input type="text" class="form-control" placeholder="Filter applications..." ng-model="svcQuery" 
-            aria-describedby="searchHeader" />
+        <!--<input type="text" class="form-control" placeholder="Filter applications..." ng-model="svcQuery" 
+             /> -->
+        <tags-input class="form-control" ng-model="tags.selected" style="padding:0;margin-top:0"
+                display-property="name" 
+                placeholder="Add a filter..." 
+                replace-spaces-with-dashes="false"
+                aria-describedby="searchHeader"
+                template="tag-template">
+            <auto-complete source="loadTags($query)"
+                           min-length="1"
+                           load-on-focus="true"
+                           load-on-empty="false"
+                           max-results-to-show="32"
+                           template="autocomplete-template"></auto-complete>
+          </tags-input>
             
         <span class="input-group-addon">
           <input type="checkbox" ng-model="showStandalones" uib-tooltip="Show standalone services" tooltip-placement="top-right">
@@ -36,7 +49,7 @@
           </a>
         </div>
       </div>
-      <div class="row">
+      <!--<div class="row">
         <div class="col-sm-12">
           <tags-input ng-model="tags.selected" 
                 display-property="name" 
@@ -44,17 +57,17 @@
                 replace-spaces-with-dashes="false"
                 template="tag-template">
             <auto-complete source="loadTags($query)"
-                           min-length="0"
+                           min-length="1"
                            load-on-focus="true"
-                           load-on-empty="true"
+                           load-on-empty="false"
                            max-results-to-show="32"
                            template="autocomplete-template"></auto-complete>
-          </tags-input>
+          </tags-input>-->
           
           <script type="text/ng-template" id="tag-template">
             <div class="tag-template">
-              <span>{{$getDisplayText()}}</span>
               <a class="remove-button" ng-click="$removeTag()"><i class="fa fa-fw fa-times"></i></a>
+              <span>{{$getDisplayText()}}</span>
             </div>
           </script>
           
@@ -202,7 +215,7 @@
               
               <div class="row">
                 <div class="text-center" id="catalogCardButtonBar">
-                  <small><button class="btn btn-xs btn-default" ng-repeat="tag in spec.tags" style="margin-left:8px;margin-right:8px;" ng-click="addFilterTag(tag)">{{ tag | tagProperty:'name' }}</button></small>
+                  <small><span class="label label-info cursor-pointer" ng-repeat="tag in spec.tags" style="margin-left:4px;margin-right:4px;" ng-click="addFilterTag(tag)">{{ tag | tagProperty:'name' }}</span></small>
                 </div>
               </div>
             </div>
