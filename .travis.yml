@@ -9,9 +9,11 @@ script:
 - cd ../apictl && ./build.sh local
 deploy:
   provider: releases
-  file: "apiserver/build/bin/apiserver-linux-amd64"
+  file_glob: true
+  file: "apiserver/build/bin/*amd64"
   skip_cleanup: true
   on:
     tags: true
+    all_branches: true
   api-key:
     secure: S7oFvIRa146Egor073zolInQDTOFJzllrEkQDin7VuZLU5ydr1INFavrwimaAg1xQUDvl/U8bzUlTfoGF29Vft3pjcjZPQpZiy5J+k0QMUSpu01aDhGTGXNW5eAHMCxHxovi42Vei55bJv2jS5sy5JSenptVoE3E4QORvoo0eHVQoeeYyY26+Tg/dd+/Jdn9wgZf6ds3G2lXUtyEzGrD4rF/fqTPU7yFcLPCKrnWO430LDDSAGg9GSH5zvftENP0R3Gr4QgGe7wpPOqepv0CxRhH6JrQh9/HMqjTFMMv6tyGH5AT/LSSrXQ0fKEh1BYd0sceMSAMHxjBLuwxJbJXI9QCemxAcvGPZl89ng+O6vE12wE3CSoW0NRQErlN79xuqAlZxwH0F/LSu7VgtBlsiv7WgKhZvp3Z0IQRfEFb1eoROD7rnn84fKZUgA74Ep81x/8zd/Vbhpd+jOVFsm/Op5QgRhEui+tqYN4/z6lNial6hqG7ba+t5x/P3h0iHP6YHtawh9XgSVQetGZ1vkN2oCoDihkPChL6beqePBV4wJvnVqFYYjyawkwD9+qxHZfI1fG9IAbGafn3VB5g5VSxUl4CIi/gBC0PPnfnc0B3pUGQk9Mey9WVy4sJmm5wulxSb/m0HElbGBXJvJ0NtLmuIyfn5M0CwGNjQhL0/KeTA18=
