@@ -8,22 +8,13 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('StackDeleteCtrl', [ '$scope', '$log', '$uibModalInstance', '_', 'stack', 'Volumes',
-    function($scope, $log, $uibModalInstance, _, stack, Volumes) {
+.controller('StackDeleteCtrl', [ '$scope', '$log', '$uibModalInstance', '_', 'stack',
+    function($scope, $log, $uibModalInstance, _, stack) {
   $scope.stack = stack;
-  
-  $scope.affectedVolumes = [];
-  angular.forEach(stack.services, function(service) {
-    angular.forEach(Volumes.all, function(volume) {
-      if (volume.attached === service.id) {
-        $scope.affectedVolumes.push(volume);
-      }
-    });
-  });
 
-  $scope.ok = function(removeVolumes) {
+  $scope.ok = function() {
     $log.debug("Closing modal with success!");
-    $uibModalInstance.close(removeVolumes);
+    $uibModalInstance.close();
   };
 
   $scope.close = function() {

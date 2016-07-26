@@ -13,17 +13,13 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  */ 
 .constant('_', window._)
 
-.factory('SoftRefresh', [ 'Stacks', 'Volumes', 'Project', 'Specs', function(Stacks, Volumes, Project, Specs) {
+.factory('SoftRefresh', [ 'Stacks', 'Project', 'Specs', function(Stacks, Project, Specs) {
  var refresh = {
+    /**
+     * Perform a partial "soft-refresh" - refresh the stack data without fully re-rendering the page
+     */ 
    stacks: function() {
     Stacks.populate(Project.project.namespace);
-   },
-    /**
-     * Perform a partial "soft-refresh" - refresh the stack/volume data without fully re-rendering the page
-     */ 
-   partial: function() {
-    Stacks.populate(Project.project.namespace);
-    Volumes.populate(Project.project.namespace);
    },
     /**
      * Perform a full "soft-refresh" - refresh all data without fully re-rendering the page
@@ -31,7 +27,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
    full: function() {
     Specs.populate();
     Project.populate(Project.project.namespace).then(function() {
-      refresh.partial();
+      refresh.stacks();
     });
    }
  }
@@ -163,40 +159,6 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 }])
 
 /**
- * A shared store for volumes pulled from /projects/{namespace}/volumes
- */
-.factory('Volumes', [ '$log', '_', 'NdsLabsApi', function($log, _, NdsLabsApi) {
-  var volumes = {
-    purge: function() {
-      volumes.all = volumes.orphans = volumes.attached = [];
-    },
-    /**
-     * Grab the list of configured volumes in our project
-     */ 
-    populate: function(projectId) {
-      // Grab the list of configured volumes in our namespace
-      /*return NdsLabsApi.getProjectsByProjectIdVolumes({ 
-        "projectId": projectId
-      }).then(function(data, xhr) {
-        $log.debug("successfully grabbed from /projects/" + projectId + "/volumes!");
-        
-        volumes.all = angular.copy(data) || [];
-        volumes.orphans = _.remove(volumes.orphans, [ 'serviceId', null]);
-        volumes.attached = angular.copy(data) || [];
-      }, function(headers) {
-        $log.error("error grabbing from /projects/" + projectId + "/volumes!");
-      });*/
-      return false;
-    }, 
-    all: [],
-    attached: [],
-    orphans: []
-  };
-  
-  return volumes;
-}])
-
-/**
  * A shared store for stacks pulled from /projects/{namespace}/stacks
  */
 .factory('Vocabulary', [ '$log', 'NdsLabsApi', function($log, NdsLabsApi) {
@@ -237,7 +199,6 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       "description": "",
       "logo": "",
       "maintainer": "",
-      "requiresVolume": false,
       "image": {
         "registry": "",
         "name": "",
@@ -298,33 +259,6 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 }])
 
 /**
- * Represents a volume.
- * @constructor
- * @param {} stack - The stack of the attached service -- TODO: unused
- * @param {} service - The service to attach to this volume
- */
-.service('Volume', [ 'Volumes', '_', function(Volumes, _) {
-  return function(stack, service) { 
-    var key = service.key;
-    
-    var volume = {
-      id: '',
-      defaultName: key,   // This is used only in the UI
-      name: key,
-      size: 1,
-      sizeUnit: 'GB',
-      format: 'Raw',
-      attached: service.id,
-      service: key,
-      status: '',
-      formatted: false
-    };
-    
-    return volume;
-  };
-}])
-
-/**
  * Represents a stack service.
  * @constructor
  * @param {} stack - The stack to which this service should attach
@@ -359,7 +293,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 /**
  * 
  */
-.factory('ServerData', [ '$log', '$q', 'Specs', 'Stacks', 'Volumes', 'Project', 'Vocabulary', function($log, $q, Specs, Stacks, Volumes, Project, Vocabulary) {
+.factory('ServerData', [ '$log', '$q', 'Specs', 'Stacks', 'Project', 'Vocabulary', function($log, $q, Specs, Stacks,  Project, Vocabulary) {
   var data = {
     /**
      * Purges all shared data from the server
@@ -368,7 +302,6 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       Specs.purge();
       Project.purge();
       Stacks.purge();
-      Volumes.purge();
       Vocabulary.purge();
     },
       
@@ -379,105 +312,15 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       Vocabulary.populate("tags");
       return Specs.populate().then(function() {
         Project.populate(projectId).then(function() {
-          Stacks.populate(projectId).then(function() {
-            Volumes.populate(projectId);
-          })
+          Stacks.populate();
         })
       });
     },
     specs: Specs,
     stacks: Stacks,
-    volumes: Volumes,
     vocab: Vocabulary,
     project: Project
   };
   
   return data;
-}])
-
-/**
- * Abstracted logic for discovering service requirements.
- */
-.factory('ServiceDiscovery', [ '_', 'Specs', 'Volumes', 'Volume', function(_, Specs, Volumes, Volume) {
-  var factory = {
-    discoverConfigRequirements: function(stack) {
-      var configs = {};
-      angular.forEach(stack.services, function(svc) {
-        var svcConfig = factory.discoverConfigSingle(svc.service);
-        if (svcConfig) {
-          _.merge(configs, svcConfig);
-        }
-      });
-      
-      return configs;
-    },
-    discoverConfigSingle: function(key) {
-      var spec = _.find(Specs.all, [ 'key', key ]);
-      var ret = {};
-      var svcConfig = {
-        list: [],  
-        defaults: []
-      };
-      
-      // Don't modify specs in-place... make a copy
-      if (spec.config) {
-        svcConfig.list = angular.copy(spec.config) || [];
-        svcConfig.defaults = angular.copy(spec.config) || [];
-        ret[key] = svcConfig;
-      }
-      
-      return ret;
-    },
-    discoverOrphanVolumes: function(stack) {
-      var orphanVolumes = [];
-      
-      angular.forEach(stack.services, function(requestedSvc) {
-        var key = requestedSvc.service;
-        var orphans = factory.discoverOrphansSingle(key);
-        orphanVolumes = _.concat(orphanVolumes, orphans);
-      });
-      
-      return orphanVolumes;
-    },
-    discoverOrphansSingle: function(key) {
-      // Grab all orphaned volumes from this service to prompt the user to reuse it
-      return _.filter(Volumes.all, function(volume) {
-        if (!volume.attached && key === volume.service) {
-          return volume;
-        }
-      });
-    },
-    discoverRequiredVolumes: function(stack) {
-      var requiredVolumes = [];
-      
-      angular.forEach(stack.services, function(requestedSvc) {
-        var key = requestedSvc.service;
-        var required = factory.discoverRequiredSingle(stack, key);
-        if (required !== null) {
-          requiredVolumes.push(required);
-        }
-      });
-      
-      return requiredVolumes;
-    },
-    discoverRequiredSingle: function(stack, key) {
-      var svcSpec = _.find(Specs.all, function(svc) { return svc.key === key });
-        
-      if (!svcSpec.volumeMounts) {
-        return null;
-      }  
-      
-      // Ignore docker mount
-      var mounts = _.filter(svcSpec.volumeMounts, function(mnt) {
-        return mnt.name !== 'docker';
-      });
-      
-      // If any non-docker mounts exist, return an empty Volume object for them
-      if (mounts.length > 0) {
-        return new Volume(stack, svcSpec);
-      }
-    }
-  };
-  
-  return factory;
 }]);
