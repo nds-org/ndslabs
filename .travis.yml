@@ -4,4 +4,4 @@ go:
 
 script:
   - go get github.com/Masterminds/glide
-  - cd apiserver && glide install && go build
+  - cd apiserver && ./build.sh local
