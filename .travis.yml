@@ -2,6 +2,8 @@ language: go
 go:
   - 1.6.3
 
-script:
+install:
   - go get github.com/Masterminds/glide
+
+script:
   - cd apiserver && ./build.sh local
