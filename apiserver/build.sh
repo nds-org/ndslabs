@@ -13,13 +13,8 @@ if [ "$1" = "build" ] || [ -z $1 ]; then
 	echo "  VERSION = \"$VERSION\"" >> $VERSIONFILE
 	echo "  BUILD_DATE = \"$BUILD_DATE\"" >> $VERSIONFILE
 	echo ")" >> $VERSIONFILE
-	rm -f build/bin/$APP-linux-amd64 build/$APP-darwin-amd64
-	mkdir -p build/bin build/bin build/pkg
-	echo Building Darwin
-	godep restore
-	GOOS=darwin GOARCH=amd64 godep go build -o build/bin/$APP-darwin-amd64
-	echo Building Linux
-	docker run --rm -it -v `pwd`:/go/src/github.com/ndslabs/apiserver -v `pwd`/build/bin:/go/bin -v `pwd`/build/pkg:/go/pkg -v `pwd`/gobuild.sh:/gobuild.sh golang:1.5  /gobuild.sh
+	docker run --rm -it -v `pwd`:/go/src/github.com/ndslabs/apiserver -v `pwd`/build/bin:/go/bin -v `pwd`/build/pkg:/go/pkg -v `pwd`/gobuild.sh:/gobuild.sh golang:1.6  /gobuild.sh
+	rm $VERSIONFILE
 
 elif [ "$1" = "dev" ]; then
 	echo Building dev image
