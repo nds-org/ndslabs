@@ -309,7 +309,6 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 	}
 	api.SetApp(router)
 
-	s.validator = validate.NewValidator(cfg.Server.SpecsDir + "/schemas/spec-schema.json")
 	if len(cfg.Server.SpecsDir) > 0 {
 		glog.Infof("Loading service specs from %s\n", cfg.Server.SpecsDir)
 		err = s.loadSpecs(cfg.Server.SpecsDir)
@@ -317,6 +316,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 			glog.Warningf("Error loading specs: %s\n", err)
 		}
 		s.addVocabulary(cfg.Server.SpecsDir + "/vocab/tags.json")
+		s.validator = validate.NewValidator(cfg.Server.SpecsDir + "/schemas/spec-schema.json")
 	}
 
 	go s.initExistingAccounts()
@@ -719,7 +719,7 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 	ok, err := s.validator.ValidateSpec(&service)
 	if !ok {
 		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusConflict)
+		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -770,7 +770,7 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 	ok, err := s.validator.ValidateSpec(&service)
 	if !ok {
 		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusConflict)
+		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 

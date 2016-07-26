@@ -35,7 +35,7 @@ func (v *Validator) ValidateSpec(spec *api.ServiceSpec) (bool, error) {
 			msg += fmt.Sprintf("- %s\n", desc)
 		}
 		glog.V(4).Infof("%s\n", msg)
-		return false, fmt.Errorf("The document is not valid:\n %s", msg)
+		return false, fmt.Errorf("The spec is not valid:\n %s", msg)
 	}
 	return false, nil
 }
