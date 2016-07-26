@@ -43,7 +43,6 @@ angular
   
   $scope.installMax = 40;
       
-  $scope.svcQuery = '';
   $scope.showStandalones = false;
   $scope.mode = 'cards';
   
@@ -66,7 +65,6 @@ angular
     $scope.filteredSpecs = $filter('isStack')(specs, $scope.showStandalones);
     $scope.filteredSpecs = $filter('showTags')($scope.filteredSpecs, tags);
     $scope.filteredSpecs = $filter('orderBy')($scope.filteredSpecs, 'label');
-    $scope.filteredSpecs = $filter('filter')($scope.filteredSpecs, $scope.svcQuery);
     $scope.chunkedSpecs = _.chunk($scope.filteredSpecs, perRow);
   };
 
@@ -88,7 +86,6 @@ angular
     });
   });
   $scope.$watch(function () { return Project.project; }, function(newValue, oldValue) { projectId = newValue.namespace; });
-  $scope.$watch('svcQuery', function() { refilter($scope.specs, $scope.tags.selected); });
   $scope.$watch('tags.selected', function(newValue, oldValue) { refilter($scope.specs, newValue); }, true);
   $scope.$watch('showStandalones', function() { refilter($scope.specs, $scope.tags.selected); });
   

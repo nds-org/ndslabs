@@ -12,9 +12,7 @@
       <!-- Application Search / Filter -->
       <div class="input-group">
         <span class="input-group-addon" id="searchHeader"><i class="fa fa-search"></i></span>
-        <!--<input type="text" class="form-control" placeholder="Filter applications..." ng-model="svcQuery" 
-             /> -->
-        <tags-input class="form-control" ng-model="tags.selected" style="padding:0;margin-top:0"
+        <tags-input class="form-control" ng-model="tags.selected" style="border:none;padding:0;margin-top:0"
                 display-property="name" 
                 placeholder="Filter applications..." 
                 replace-spaces-with-dashes="false"
@@ -80,15 +78,15 @@
         </div>
       </div>
       
-      <p class="text-center text-danger" ng-show="(specs | isStack:showStandalones | showTags:tags.selected | filter : svcQuery).length === 0">
+      <p class="text-center text-danger" ng-show="(specs | isStack:showStandalones | showTags:tags.selected).length === 0">
         <small>No applications matched your search</small>
       </p>
-      <p class="text-center text-success" ng-show="(specs | isStack:showStandalones | showTags:tags.selected | filter : svcQuery).length !== 0">
+      <p class="text-center text-success" ng-show="(specs | isStack:showStandalones | showTags:tags.selected).length !== 0">
         <small>Choose an application below to configure</small>
       </p>
       
       <!-- Table -->
-      <table ng-if="!showCards" class="table table-hover table-striped" ng-hide="(specs | isStack:showStandalones | showTags:tags.selected | filter : svcQuery).length === 0">
+      <table ng-if="!showCards" class="table table-hover table-striped" ng-hide="(specs | isStack:showStandalones | showTags:tags.selected).length === 0">
         <thead>
           <tr>
             <th><label>Name</label></th>
@@ -98,7 +96,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="spec in specs | isStack:showStandalones | showTags:tags.selected | orderBy:'label' | filter : svcQuery track by spec.key">
+          <tr ng-repeat="spec in specs | isStack:showStandalones | showTags:tags.selected | orderBy:'label' track by spec.key">
             <th width="20%">
               {{ spec.label }}
             </th>
