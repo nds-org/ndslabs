@@ -8,7 +8,7 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('EditServiceController', [ '$scope', '$routeParams', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stacks', 'StackService', 'Specs', 
+.controller('AddOrEditServiceController', [ '$scope', '$routeParams', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stacks', 'StackService', 'Specs', 
     function($scope, $routeParams, $location, $log, _, NdsLabsApi, Project, Stacks, StackService, Specs) {
       
   var path = $location.path();
@@ -77,9 +77,20 @@ angular
   
   $scope.$watch(function () { return Project.project; }, function(newValue, oldValue) { $scope.project = newValue; });
   
-  var prepareService = function(service) {
+  $scope.save = function() {
+    $scope.service.volumeMounts = {};
+    angular.forEach($scope.volumes, function(mnt) {
+      $scope.service.volumeMounts[mnt.from] = mnt.to;
+    });
+    
+    //$scope.service.ports = $scope.ports;
+    $scope.service.endpoints = [];
+    angular.forEach($scope.ports, function(port) {
+      $scope.service.endpoints.push({ port: port.port, protocol: port.protocol, access: port.access} );
+    });
+    
     // Parse environment vars into config map
-    service.config = {};
+    $scope.service.config = {};
     angular.forEach($scope.configs, function(cfg) {
       // Do not allow for empty passwords
       if (cfg.isPassword && cfg.value === '') {
@@ -87,33 +98,20 @@ angular
         cfg.value = 'GENERATED_PASSWORD';
       }
       
-      service.config[cfg.name] = cfg.value;
+      $scope.service.config[cfg.name] = cfg.value;
     });
-  };
-  
-  $scope.save = function() {
-    service.volumeMounts = {};
-    angular.forEach($scope.volumes, function(mnt) {
-      $scope.service.volumeMounts[mnt.from] = mnt.to;
-    });
-    
-    //$scope.service.ports = $scope.ports;
-    service.endpoints = [];
-    angular.forEach($scope.ports, function(port) {
-      $scope.service.endpoints.push({ port: port.port, protocol: port.protocol, access: port.access} );
-    });
-    
-    var service = prepareService($scope.service);
     
     if (!$scope.editingService && $scope.stack.services.indexOf($scope.service) === -1) {
       angular.forEach($scope.spec.depends, function(dep) {
-        if (dep.required) {
-      $scope.stack.services.push(service);
+        var exists = _.find($scope.stack.services, function(svc) { return svc.service === dep.key });
+        if (dep.required && !exists) {
+          var spec = _.find(Specs.all, [ 'key', dep.key ]);
+          $scope.stack.services.push(new StackService($scope.stack, spec));
         }
       });
       
       // Push the new service onto the stack
-      $scope.stack.services.push(service);
+      $scope.stack.services.push($scope.service);
     }
     
     // Save the stack to etcd
