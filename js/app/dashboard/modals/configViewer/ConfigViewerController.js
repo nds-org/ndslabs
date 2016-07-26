@@ -31,7 +31,6 @@ angular
   });
   
   $scope.close = function() {
-    $log.debug("Closing modal with dismissal!");
     $uibModalInstance.dismiss('cancel');
   };
 }]);
