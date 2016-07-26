@@ -47,11 +47,19 @@ angular
     
     $scope.configs = [];
     angular.forEach($scope.service.config, function(value, key) {
-      var cfg = _.find($scope.spec.config, [ 'name', key ]);
-      if (cfg) {
-        $scope.configs.push({ 'name': key, 'label': cfg.label, 'value': value, 'def': cfg.value, 'spec': cfg, 'isPassword':cfg.isPassword });
+      var cfg = null;
+      if (angular.isNumber(key)) {
+        cfg = _.find($scope.spec.config, [ 'name', value.name ]);
+        // "Add service" case: Array of objects
+        $scope.configs.push({ 'name': cfg.name, 'label': cfg.label, 'value': cfg.value, 'def': cfg.value, 'spec': cfg, 'isPassword':cfg.isPassword, 'canOverride':cfg.canOverride });
       } else {
-        $scope.configs.push({ 'name': key, 'value': value, 'def': '', 'isPassword':false, canEdit: true });
+        // "Edit service" case: map of strings
+        cfg = _.find($scope.spec.config, [ 'name', key ]);
+        if (!cfg) {
+          $scope.configs.push({ 'name': key, 'value': value, 'def': '', 'isPassword':false, canEdit: true });
+        } else {
+          $scope.configs.push({ 'name': key, 'label': cfg.label, 'value': value, 'def': cfg.value, 'spec': cfg, 'isPassword':cfg.isPassword });
+        }
       }
     });
     

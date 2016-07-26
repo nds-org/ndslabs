@@ -28,7 +28,8 @@
     "angular-bootstrap-pwgen": "^0.1.1",
     "term.js": "https://github.com/chjj/term.js.git#^0.0.7",
     "angular-chart.js": "^0.10.2",
-    "angular-clipboard": "^1.4.2"
+    "angular-clipboard": "^1.4.2",
+    "ng-tags-input": "3.1.1"
   },
   "overrides": {
     "problem-library-name": {

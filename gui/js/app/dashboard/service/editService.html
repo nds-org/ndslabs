@@ -69,7 +69,7 @@
                         </div>
               
                       </td>
-                      <td class="text-center"><button class="btn btn-xs btn-default" ng-click="cfg.value = cfg.spec.value"><i class="fa fa-fw fa-asterisk"></i></button></td>
+                      <td class="text-center"><button class="btn btn-xs btn-default" ng-if="cfg.canEdit" ng-click="cfg.value = cfg.spec.value"><i class="fa fa-fw fa-asterisk"></i></button></td>
                       <td class="text-center"><button class="btn btn-xs btn-default" ng-if="cfg.canEdit" ng-click="configs.splice(configs.indexOf(cfg), 1)"><i class="fa fa-fw fa-trash"></i></button></td>
                   </tr>
                   
@@ -88,7 +88,7 @@
                       <p class="text-success" ng-if="newCfgName && newCfgValue && !_.find(configs, ['name', newCfgName])">New variable is valid!</p>
                     </td>
                     <td class="text-center">
-                      <button class="btn btn-xs btn-primary" ng-click="configs.push({ 'name': newCfgName, 'value': newCfgValue, 'spec': { 'default': '', canOverride: true, isPassword: false } })" 
+                      <button class="btn btn-xs btn-primary" ng-click="configs.push({ 'name': newCfgName, 'value': newCfgValue, 'spec': { 'default': '', canOverride: true, isPassword: false }, canEdit: true });newCfgName=newCfgValue=''" 
                       ng-disabled="!newCfgName || !newCfgValue || _.find(configs, ['name', newCfgName])">
                         <i class="fa fa-fw fa-plus"></i>
                       </button>

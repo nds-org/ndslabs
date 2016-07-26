@@ -83,7 +83,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
         "accountId": projectId 
       }).then(function(data, xhr) {
         $log.debug("successfully grabbed from /projects/" + projectId + "!");
-        project.project = data;
+        return project.project = data;
       }, function(headers) {
         $log.debug("error!");
       });
@@ -111,7 +111,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       // Grab the list of available services at our site
       return NdsLabsApi.getServices({ catalog: 'all' }).then(function(data, xhr) {
         $log.debug("successfully grabbed from /services!");
-        specs.all = angular.copy(data);
+        return specs.all = angular.copy(data);
         
         // Split out display === 'stack' vs 'standalone'
         specs.deps = angular.copy(data);
@@ -151,7 +151,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       return NdsLabsApi.getStacks().then(function(data, xhr) {
         $log.debug("successfully grabbed from /projects/" + projectId + "/stacks!");
         
-        stacks.all = data || [];
+        return stacks.all = data || [];
       }, function(headers) {
         $log.error("error grabbing from /projects/" + projectId + "/stacks!");
       });
@@ -194,6 +194,33 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
   };
   
   return volumes;
+}])
+
+/**
+ * A shared store for stacks pulled from /projects/{namespace}/stacks
+ */
+.factory('Vocabulary', [ '$log', 'NdsLabsApi', function($log, NdsLabsApi) {
+  // An empty place-holder for our deployed stacks
+  var vocab = {
+    purge: function() {
+      vocab.all = [];
+    },
+     /**
+      * Grab the list of configured stacks in our project
+      */
+    populate: function(name) {
+      return NdsLabsApi.getVocabularyByVocabName({ vocabName: name }).then(function(data, xhr) {
+        $log.debug("successfully grabbed vacob list for " + name + "!");
+        
+        return vocab.all = data || [];
+      }, function(response) {
+        $log.error("error grabbing vocab list!");
+      });
+    },
+    all: []
+  };
+  
+  return vocab;
 }])
 
 /**
@@ -332,7 +359,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 /**
  * 
  */
-.factory('ServerData', [ '$log', '$q', 'Specs', 'Stacks', 'Volumes', 'Project', function($log, $q, Specs, Stacks, Volumes, Project) {
+.factory('ServerData', [ '$log', '$q', 'Specs', 'Stacks', 'Volumes', 'Project', 'Vocabulary', function($log, $q, Specs, Stacks, Volumes, Project, Vocabulary) {
   var data = {
     /**
      * Purges all shared data from the server
@@ -342,12 +369,14 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       Project.purge();
       Stacks.purge();
       Volumes.purge();
+      Vocabulary.purge();
     },
       
     /**
      * Populate all shared data from the server into our scope
      */
     populateAll: function(projectId) {
+      Vocabulary.populate("tags");
       return Specs.populate().then(function() {
         Project.populate(projectId).then(function() {
           Stacks.populate(projectId).then(function() {
@@ -359,6 +388,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
     specs: Specs,
     stacks: Stacks,
     volumes: Volumes,
+    vocab: Vocabulary,
     project: Project
   };
   
