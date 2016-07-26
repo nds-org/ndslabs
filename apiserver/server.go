@@ -16,6 +16,7 @@ import (
 	kube "github.com/ndslabs/apiserver/kube"
 	mw "github.com/ndslabs/apiserver/middleware"
 	api "github.com/ndslabs/apiserver/types"
+	validate "github.com/ndslabs/apiserver/validate"
 	gcfg "gopkg.in/gcfg.v1"
 	k8api "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/watch"
@@ -28,6 +29,7 @@ import (
 type Server struct {
 	etcd           *etcd.EtcdHelper
 	kube           *kube.KubeHelper
+	validator      *validate.Validator
 	Namespace      string
 	local          bool
 	volDir         string
@@ -307,6 +309,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 	}
 	api.SetApp(router)
 
+	s.validator = validate.NewValidator(cfg.Server.SpecsDir + "/schemas/spec-schema.json")
 	if len(cfg.Server.SpecsDir) > 0 {
 		glog.Infof("Loading service specs from %s\n", cfg.Server.SpecsDir)
 		err = s.loadSpecs(cfg.Server.SpecsDir)
@@ -713,6 +716,13 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
+	ok, err := s.validator.ValidateSpec(&service)
+	if !ok {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusConflict)
+		return
+	}
+
 	if s.serviceExists(userId, service.Key) {
 		rest.Error(w, "Service exists with key", http.StatusConflict)
 		return
@@ -754,6 +764,13 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	ok, err := s.validator.ValidateSpec(&service)
+	if !ok {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusConflict)
 		return
 	}
 
@@ -1811,7 +1828,7 @@ func (s *Server) loadSpecs(path string) error {
 
 	for _, file := range files {
 		if file.IsDir() {
-			if file.Name() != "vocab" {
+			if file.Name() != "vocab" && file.Name() != "schemas" {
 				s.loadSpecs(fmt.Sprintf("%s/%s", path, file.Name()))
 			}
 		} else {
