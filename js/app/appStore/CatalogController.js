@@ -3,16 +3,41 @@
 angular
 .module('ndslabs')
 /**
- * The Controller for our "Configuration Wizard" Modal Window
+ * The Controller for our "AppStore" / "Catalog" View
  * 
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
 .controller('CatalogController', [ '$scope', '$filter', '$interval', '$uibModal', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stack', 'Stacks', 'Volume', 
-    'StackService', 'Grid', 'Wizard', 'WizardPage', 'Specs', 'Volumes', 'ServiceDiscovery', 'clipboard',
+    'StackService', 'Grid', 'Wizard', 'WizardPage', 'Specs', 'Volumes', 'ServiceDiscovery', 'clipboard', 'Vocabulary',
     function($scope, $filter, $interval, $uibModal, $location, $log, _, NdsLabsApi, Project, Stack, Stacks, Volume, StackService, Grid, Wizard, WizardPage,
-    Specs, Volumes, ServiceDiscovery, clipboard) {
+    Specs, Volumes, ServiceDiscovery, clipboard, Vocabulary) {
       
+  $scope.tags = { all: [], selected: [] };
+  Vocabulary.populate("tags").then(function(data) {
+    $scope.tags.all = data;
+  });
+
+  $scope.loadTags = function($query) {
+    return Vocabulary.populate("tags").then(function(data) {
+      $scope.tags.all = data;
+      return _.filter($scope.tags.all.terms, function(term) {
+        return term.name.toLowerCase().indexOf($query.toLowerCase()) != -1;
+      });
+    });
+  };
+  
+  $scope.addFilterTag = function(tagId) {
+    // Skip tags that we have already added
+    if (_.find($scope.tags.selected, [ 'id', tagId ])) {
+      return;
+    }
+    
+    // Look up and push new tags selected
+    var tag = _.find($scope.tags.all.terms, [ 'id', tagId ]);
+    $scope.tags.selected.push(tag);
+  };
+
   var projectId = Project.project.namespace;
   
   $scope.showCards = true;
@@ -38,8 +63,9 @@ angular
     return exists;
   };
   
-  var refilter = function(specs) {
+  var refilter = function(specs, tags) {
     $scope.filteredSpecs = $filter('isStack')(specs, $scope.showStandalones);
+    $scope.filteredSpecs = $filter('showTags')($scope.filteredSpecs, tags);
     $scope.filteredSpecs = $filter('orderBy')($scope.filteredSpecs, 'label');
     $scope.filteredSpecs = $filter('filter')($scope.filteredSpecs, $scope.svcQuery);
     $scope.chunkedSpecs = _.chunk($scope.filteredSpecs, perRow);
@@ -53,7 +79,7 @@ angular
       $scope.installs[spec.key] = { count: cnt, progress: 0 };
     });
     
-    refilter($scope.specs = newValue);
+    refilter($scope.specs = newValue, $scope.tags.selected);
   });
   $scope.$watch(function () { return Stacks.all; }, function(newValue, oldValue) {
     $scope.installs = {};
@@ -63,8 +89,9 @@ angular
     });
   });
   $scope.$watch(function () { return Project.project; }, function(newValue, oldValue) { projectId = newValue.namespace; });
-  $scope.$watch('svcQuery', function() { refilter($scope.specs); });
-  $scope.$watch('showStandalones', function() { refilter($scope.specs); });
+  $scope.$watch('svcQuery', function() { refilter($scope.specs, $scope.tags.selected); });
+  $scope.$watch('tags.selected', function(newValue, oldValue) { refilter($scope.specs, newValue); }, true);
+  $scope.$watch('showStandalones', function() { refilter($scope.specs, $scope.tags.selected); });
   
   $scope.copyToClipboard = function(spec) {
     if (!clipboard.supported) {
@@ -171,10 +198,6 @@ angular
       
       svc.config = configMap;
     });
-    
-    console.log('Finished building ' + spec.label + ' JSON:');
-    console.debug(app);
-    
     
     // Install this app to etcd
     return NdsLabsApi.postStacks({ 'stack': app }).then(function(stack, xhr) {
