@@ -9,3 +9,4 @@ install:
 
 script:
   - cd apiserver && ./build.sh local
+  - cd apictl && ./build.sh local
