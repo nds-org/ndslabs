@@ -12,5 +12,5 @@ script:
 - cd apictl && ./build.sh local
 after_success:
 - pwd
-- find ~ | grep amd
+- find ~ | grep ndslabsctl-linux-amd64
 - curl --ftp-create-dirs -T apictl/build/bin/*amd64 -u $FTP_USER:$FTP_PASSWORD sftp://141.142.208.183/releases/$TRAVIS_BRANCH
