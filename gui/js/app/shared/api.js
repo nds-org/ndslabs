@@ -1147,6 +1147,49 @@ angular.module('ndslabs-api', [])
 
                 return deferred.promise;
             };
+            /**
+             * Retrieves a vocabulary
+
+             * @method
+             * @name ApiServer#getVocabularyByVocabName
+             * @param {string} vocabName - Vocabulary name
+             * 
+             */
+            ApiServer.prototype.getVocabularyByVocabName = function(parameters) {
+                if (parameters === undefined) {
+                    parameters = {};
+                }
+                var deferred = $q.defer();
+
+                var domain = this.domain;
+                var path = '/vocabulary/{vocab-name}';
+
+                var body;
+                var queryParameters = {};
+                var headers = {};
+                var form = {};
+
+                headers['Content-Type'] = ['application/json'];
+
+                path = path.replace('{vocab-name}', parameters['vocabName']);
+
+                if (parameters['vocabName'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: vocabName'));
+                    return deferred.promise;
+                }
+
+                if (parameters.$queryParameters) {
+                    Object.keys(parameters.$queryParameters)
+                        .forEach(function(parameterName) {
+                            var parameter = parameters.$queryParameters[parameterName];
+                            queryParameters[parameterName] = parameter;
+                        });
+                }
+
+                this.request('GET', domain + path, parameters, body, headers, queryParameters, form, deferred);
+
+                return deferred.promise;
+            };
 
             return ApiServer;
         })();

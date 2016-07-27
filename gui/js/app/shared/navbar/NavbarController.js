@@ -25,17 +25,13 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'DEBUG', 'Layout',
-    function($scope, $location, LoginRoute, AppStoreRoute, HomeRoute, DEBUG, Layout) {
-  $scope.layout = Layout;    
-      
+.controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'AppStoreRoute', 'HomeRoute',
+    function($scope, $location, LoginRoute, AppStoreRoute, HomeRoute) {
   $scope.$on('$routeChangeSuccess', function(event, current, previous){
     if (current.$$route) {
       $scope.path = current.$$route.originalPath;
     }
   });
-
-  $scope.DEBUG = DEBUG;
 
   // TODO: This is probably horrible, performance-wise
   $scope.isArray = angular.isArray;

@@ -79,7 +79,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
         "accountId": projectId 
       }).then(function(data, xhr) {
         $log.debug("successfully grabbed from /projects/" + projectId + "!");
-        project.project = data;
+        return project.project = data;
       }, function(headers) {
         $log.debug("error!");
       });
@@ -107,7 +107,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       // Grab the list of available services at our site
       return NdsLabsApi.getServices({ catalog: 'all' }).then(function(data, xhr) {
         $log.debug("successfully grabbed from /services!");
-        specs.all = angular.copy(data);
+        return specs.all = angular.copy(data);
         
         // Split out display === 'stack' vs 'standalone'
         specs.deps = angular.copy(data);
@@ -147,7 +147,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       return NdsLabsApi.getStacks().then(function(data, xhr) {
         $log.debug("successfully grabbed from /projects/" + projectId + "/stacks!");
         
-        stacks.all = data || [];
+        return stacks.all = data || [];
       }, function(headers) {
         $log.error("error grabbing from /projects/" + projectId + "/stacks!");
       });
@@ -156,6 +156,33 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
   };
   
   return stacks;
+}])
+
+/**
+ * A shared store for stacks pulled from /projects/{namespace}/stacks
+ */
+.factory('Vocabulary', [ '$log', 'NdsLabsApi', function($log, NdsLabsApi) {
+  // An empty place-holder for our deployed stacks
+  var vocab = {
+    purge: function() {
+      vocab.all = [];
+    },
+     /**
+      * Grab the list of configured stacks in our project
+      */
+    populate: function(name) {
+      return NdsLabsApi.getVocabularyByVocabName({ vocabName: name }).then(function(data, xhr) {
+        $log.debug("successfully grabbed vacob list for " + name + "!");
+        
+        return vocab.all = data || [];
+      }, function(response) {
+        $log.error("error grabbing vocab list!");
+      });
+    },
+    all: []
+  };
+  
+  return vocab;
 }])
 
 /**
@@ -217,13 +244,13 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
     
     // Add our base service to the stack
     var base = _.find(Specs.all, [ 'key', key ]);
-    stack.services.push(new StackService(stack, base, true));
+    stack.services.push(new StackService(stack, base));
     
     // Add required services to this stack
     angular.forEach(spec.depends, function(dep) {
       if (dep.required) {
         var svc = _.find(Specs.all, [ 'key', dep.key ]);
-        stack.services.push(new StackService(stack, svc, dep.required));
+        stack.services.push(new StackService(stack, svc));
       }
     });
     
@@ -238,7 +265,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  * @param {} spec - The service spec off of which to base this service
  */
 .service('StackService', [ function() {
-  return function(stack, spec, required) {
+  return function(stack, spec) {
     var svc = {
       id: "",
       stack: stack.key,
@@ -247,9 +274,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       depends: angular.copy(spec.depends),
       config: angular.copy(spec.config),
       volumes: angular.copy(spec.volumeMounts),
-      ports: angular.copy(spec.ports),
-      required: required,
-      selected: required ? true : false
+      ports: angular.copy(spec.ports)
     };
     
     // Assign default values (for "Use Default" option)
@@ -266,7 +291,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 /**
  * 
  */
-.factory('ServerData', [ '$log', '$q', 'Specs', 'Stacks', 'Project', function($log, $q, Specs, Stacks,  Project) {
+.factory('ServerData', [ '$log', '$q', 'Specs', 'Stacks', 'Project', 'Vocabulary', function($log, $q, Specs, Stacks,  Project, Vocabulary) {
   var data = {
     /**
      * Purges all shared data from the server
@@ -275,12 +300,14 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       Specs.purge();
       Project.purge();
       Stacks.purge();
+      Vocabulary.purge();
     },
       
     /**
      * Populate all shared data from the server into our scope
      */
     populateAll: function(projectId) {
+      Vocabulary.populate("tags");
       return Specs.populate().then(function() {
         Project.populate(projectId).then(function() {
           Stacks.populate();
@@ -289,6 +316,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
     },
     specs: Specs,
     stacks: Stacks,
+    vocab: Vocabulary,
     project: Project
   };
   

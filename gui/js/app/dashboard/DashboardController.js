@@ -4,17 +4,15 @@ angular
 .module('ndslabs')
 /**
  * The main view of our app, this controller houses the
- * "Deploy" and "Manage" portions of the interface
+ * "Dashboard" portion of the interface
  * 
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('DashboardController', [ '$scope', '$log', '$routeParams', '$location', '$interval', '$q', '$uibModal', '_', 'AuthInfo', 'Project', 'Stacks', 'Specs', 'AutoRefresh', 'SoftRefresh',
-    'StackService', 'NdsLabsApi', function($scope, $log, $routeParams, $location, $interval, $q, $uibModal, _, AuthInfo, Project, Stacks, Specs, AutoRefresh, SoftRefresh, 
+.controller('DashboardController', [ '$scope', '$log', '$routeParams', '$location', '$interval', '$q', '$uibModal', '_', 'Project', 'Stacks', 'Specs', 'AutoRefresh',
+    'StackService', 'NdsLabsApi', function($scope, $log, $routeParams, $location, $interval, $q, $uibModal, _, Project, Stacks, Specs, AutoRefresh,
     StackService, NdsLabsApi) {
   
-  // Grab our projectId from the login page
-  var projectId = AuthInfo.get().namespace;
   $scope.expandedStacks = {};
   
   /** 
@@ -149,7 +147,7 @@ angular
       $log.error('failed to remove service ' + svc.service + ' from stack ' + stack.name);
       
       // Restore our state from etcd
-      Stacks.populate(projectId);
+      Stacks.populate();
     });
   };
   
@@ -168,8 +166,7 @@ angular
       keyboard: false,      // Force the user to explicitly click "Close"
       backdrop: 'static',   // Force the user to explicitly click "Close"
       resolve: {
-        service: function() { return service; },
-        projectId: function() { return projectId; }
+        service: function() { return service; }
       }
     });
   };

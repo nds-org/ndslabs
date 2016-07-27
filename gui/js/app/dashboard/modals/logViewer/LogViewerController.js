@@ -8,8 +8,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('LogViewerCtrl', [ '$scope', '$log', '$uibModalInstance', '$interval', '$location', '$anchorScroll', '_', 'NdsLabsApi', 'projectId', 'service',
-    function($scope, $log, $uibModalInstance, $interval, $location, $anchorScroll, _,  NdsLabsApi, projectId, service) {
+.controller('LogViewerCtrl', [ '$scope', '$log', '$uibModalInstance', '$interval', '$location', '$anchorScroll', 'NdsLabsApi', 'service',
+    function($scope, $log, $uibModalInstance, $interval, $location, $anchorScroll,  NdsLabsApi, service) {
   $scope.service = service;
   $scope.serviceLog = '';
   
@@ -32,7 +32,7 @@ angular
     }).then(function(data, xhr) {
       $log.debug('successfully grabbed logs for serviceId ' + service.id);
       $scope.serviceLog = data;
-      $scope.gotoAnchor('bottom');
+      //$scope.gotoAnchor('bottom');
     }, function(headers) {
       $log.error('error grabbing logs for service ' + service.id);
     });

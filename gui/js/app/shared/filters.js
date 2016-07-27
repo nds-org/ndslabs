@@ -25,6 +25,34 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
 }])
 
 /**
+ * Given a list of applications and a list of tags, return only 
+ * the services with one or more of those tags
+ */
+.filter('showTags', [ '_', function(_) {
+  return function(input, tags) {
+    if (!tags || tags.length === 0) {
+      return input;
+    }
+    
+    var ret = _.filter(input, function(spec) {
+      return _.every(tags, function(tag) {
+        if (tag.id) {
+          if (!spec.tags) {
+            return false;
+          }
+          return spec.tags.indexOf(tag.id) !== -1;
+        } else {
+          var json = JSON.stringify(spec);
+          return _.includes(json.toLowerCase(), tag.name);
+        }
+      });
+    });
+    
+    return ret;
+  };
+}])
+
+/**
  * Given a password strength (1 - 100), return an apprpriate label
  * TODO: Replace this with i18n / i10n??
  */
@@ -88,6 +116,24 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
   };
 }])
 
+/**
+ * Given a tag id, retrieve the given property
+ */
+.filter('tagProperty', ['$log', 'Vocabulary', '_', function($log, Vocabulary, _) {
+  return function(tagId, propertyName) {
+    if (!tagId) {
+      return '';
+    }
+    
+    propertyName = propertyName || 'name';
+    var tag = _.find(Vocabulary.all.terms, [ 'id', tagId ]);
+    if (!tag || !angular.isDefined(tag[propertyName])) {
+      return '';
+    }
+    
+    return tag[propertyName];
+  };
+}])
 /**
  * Given a service spec key, retrieve its label
  */

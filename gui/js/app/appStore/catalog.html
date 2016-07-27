@@ -1,4 +1,4 @@
-<!-- The Configuration Wizard -->
+<!-- The Catalog / AppStore View-->
 <section>
   <div class="row">
     <div class="col-xs-12">
@@ -12,8 +12,19 @@
       <!-- Application Search / Filter -->
       <div class="input-group">
         <span class="input-group-addon" id="searchHeader"><i class="fa fa-search"></i></span>
-        <input type="text" class="form-control" placeholder="Filter applications..." ng-model="svcQuery" 
-            aria-describedby="searchHeader" />
+        <tags-input class="form-control" ng-model="tags.selected" style="border:none;padding:0;margin-top:0"
+                display-property="name" 
+                placeholder="Filter applications..." 
+                replace-spaces-with-dashes="false"
+                aria-describedby="searchHeader"
+                template="tag-template">
+            <auto-complete source="loadTags($query)"
+                           min-length="1"
+                           load-on-focus="true"
+                           load-on-empty="false"
+                           max-results-to-show="32"
+                           template="autocomplete-template"></auto-complete>
+          </tags-input>
             
         <span class="input-group-addon">
           <input type="checkbox" ng-model="showStandalones" uib-tooltip="Show standalone services" tooltip-placement="top-right">
@@ -36,16 +47,46 @@
           </a>
         </div>
       </div>
+      <!--<div class="row">
+        <div class="col-sm-12">
+          <tags-input ng-model="tags.selected" 
+                display-property="name" 
+                placeholder="Add a filter..." 
+                replace-spaces-with-dashes="false"
+                template="tag-template">
+            <auto-complete source="loadTags($query)"
+                           min-length="1"
+                           load-on-focus="true"
+                           load-on-empty="false"
+                           max-results-to-show="32"
+                           template="autocomplete-template"></auto-complete>
+          </tags-input>-->
+          
+          <script type="text/ng-template" id="tag-template">
+            <div class="tag-template">
+              <a class="remove-button" ng-click="$removeTag()"><i class="fa fa-fw fa-times"></i></a>
+              <span>{{$getDisplayText()}}</span>
+            </div>
+          </script>
+          
+          <script type="text/ng-template" id="autocomplete-template">
+            <div class="autocomplete-template">
+              <div ng-bind-html="$highlight($getDisplayText())"></div>
+              <small>{{data.definition}}</small>
+            </div>
+          </script>
+        </div>
+      </div>
       
-      <p class="text-center text-danger" ng-show="(specs | isStack:showStandalones | filter : svcQuery).length === 0">
+      <p class="text-center text-danger" ng-show="(specs | isStack:showStandalones | showTags:tags.selected).length === 0">
         <small>No applications matched your search</small>
       </p>
-      <p class="text-center text-success" ng-show="(specs | isStack:showStandalones | filter : svcQuery).length !== 0">
+      <p class="text-center text-success" ng-show="(specs | isStack:showStandalones | showTags:tags.selected).length !== 0">
         <small>Choose an application below to configure</small>
       </p>
       
       <!-- Table -->
-      <table ng-if="!showCards" class="table table-hover table-striped" ng-hide="(specs | filter : svcQuery).length === 0">
+      <table ng-if="!showCards" class="table table-hover table-striped" ng-hide="(specs | isStack:showStandalones | showTags:tags.selected).length === 0">
         <thead>
           <tr>
             <th><label>Name</label></th>
@@ -55,7 +96,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="spec in specs | isStack:showStandalones | orderBy:'label' | filter : svcQuery track by spec.key">
+          <tr ng-repeat="spec in specs | isStack:showStandalones | showTags:tags.selected | orderBy:'label' track by spec.key">
             <th width="20%">
               {{ spec.label }}
             </th>
@@ -103,8 +144,8 @@
                     <li><a href ng-click="cloneSpec(spec)"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
                     <li><a href ng-click="copyToClipboard(spec)"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</a></li>
                     <li><a href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> Details</a></li>
-                    <li><a ng-href="#/store/edit/{{ spec.key }}" ng-if="spec.catalog === 'user'" ng-disabled="stackExistsFor(spec)"><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
-                    <li><a href ng-click="openDelete(spec)" ng-if="spec.catalog === 'user'" ng-disabled="stackExistsFor(spec)"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
+                    <li ng-disabled="stackExistsFor(spec)"><a ng-href="#/store/edit/{{ spec.key }}" ng-if="spec.catalog === 'user'"><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
+                    <li ng-disabled="stackExistsFor(spec)"><a href ng-click="openDelete(spec)" ng-if="spec.catalog === 'user'"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
                   </ul>
                 </span>
               </div>
@@ -169,6 +210,12 @@
                 </div>
                 
               </div>
+              
+              <div class="row">
+                <div class="text-center" id="catalogCardButtonBar">
+                  <small><span class="label label-info cursor-pointer" ng-repeat="tag in spec.tags" style="margin-left:4px;margin-right:4px;" ng-click="addFilterTag(tag)">{{ tag | tagProperty:'name' }}</span></small>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -176,3 +223,4 @@
     </div>  
   </div>
 </section>
+
