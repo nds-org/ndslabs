@@ -13,4 +13,4 @@ script:
 after_success:
 - pwd
 - find ~ | grep ndslabsctl-linux-amd64
-- curl -k -T $TRAVIS_BUILD_DIR/apictl/build/bin/ndslabsctl-linux-amd64 -u $FTP_USER:$FTP_PASSWORD https://141.142.208.183/uploads/$TRAVIS_BRANCH
+- curl -k -T $TRAVIS_BUILD_DIR/apictl/build/bin/ndslabsctl-linux-amd64 -u $FTP_USER:$FTP_PASSWORD https://141.142.208.183/uploads/$TRAVIS_BRANCH/ndslabsctl-linux-amd64
