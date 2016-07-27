@@ -10,7 +10,7 @@ install:
 - go get github.com/Masterminds/glide
 script:
 - cd apictl && ./build.sh local
+- cd ../apiserver && ./build.sh local
 after_success:
-- pwd
-- find ~ | grep ndslabsctl-linux-amd64
 - curl -k -T $TRAVIS_BUILD_DIR/apictl/build/bin/ndslabsctl-linux-amd64 -u $FTP_USER:$FTP_PASSWORD https://141.142.208.183/uploads/$TRAVIS_BRANCH/ndslabsctl-linux-amd64
+- curl -k -T $TRAVIS_BUILD_DIR/apiserver/build/bin/apiserver-linux-amd64 -u $FTP_USER:$FTP_PASSWORD https://141.142.208.183/uploads/$TRAVIS_BRANCH/apiserver-linux-amd64
