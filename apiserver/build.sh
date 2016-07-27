@@ -16,7 +16,7 @@ if [ "$1" = "local" ] || [ "$1" = "docker" ]; then
     echo "  BUILD_DATE = \"$BUILD_DATE\"" >> $VERSIONFILE
     echo ")" >> $VERSIONFILE
     if [ "$1" = "local" ]; then 
-        glide install
+        glide install --strip-vendor --strip-vcs
 
         UNAME=$(uname)
 
