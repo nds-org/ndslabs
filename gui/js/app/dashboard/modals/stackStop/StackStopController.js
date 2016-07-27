@@ -12,6 +12,6 @@ angular
     function($scope, $log, $uibModalInstance, _, stack) {
   $scope.stack = stack;
 
-  $scope.ok = function() { $uibModalInstance.close(); };
+  $scope.ok = function() { $uibModalInstance.close(stack); };
   $scope.close = function() { $uibModalInstance.dismiss('cancel'); };
 }]);
