@@ -15,10 +15,28 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('AddOrEditSpecController', [ '$scope', '$log', '$location', '$routeParams', '_', 'NdsLabsApi', 'Specs', 'Spec', function($scope, $log, $location, $routeParams, _, NdsLabsApi, Specs, Spec) {
+.controller('AddOrEditSpecController', [ '$scope', '$log', '$location', '$routeParams', '_', 'NdsLabsApi', 'Specs', 'Spec', 'Vocabulary',  function($scope, $log, $location, $routeParams, _, NdsLabsApi, Specs, Spec, Vocabulary) {
   var path = $location.path();
   //$scope.editingSpec = (path.indexOf('edit') !== -1);
   $scope.editingSpec = (path.indexOf('/edit/') !== -1);
+  
+  
+  Vocabulary.populate("tags").then(function(data) {
+    $scope.tags = data.terms;
+  });
+  
+  $scope.addKeyword = function(keyword) {
+    if ($scope.spec.tags.indexOf(keyword) === -1) { 
+      $scope.spec.tags.push(keyword);
+    }
+  };
+  
+  $scope.deleteKeyword = function(keyword) {
+    var index = $scope.spec.tags.indexOf(keyword);
+    if (index !== -1) {
+      $scope.spec.tags.splice(index, 1);
+    }
+  };
   
   $scope.forms = {};
   
@@ -50,10 +68,8 @@ angular
       $scope.key = $routeParams.specKey;
       NdsLabsApi.getServicesByServiceId({ serviceId: $scope.key }).then(function(data) {
         $scope.spec = data;
-        
-        if (!$scope.spec.image.tags) {
-          $scope.spec.image.tags = [];
-        }
+        $scope.spec.tags = $scope.spec.tags || [];
+        $scope.spec.image.tags = $scope.spec.image.tags || [];
       });
     } else {
       $scope.spec = new Spec();
