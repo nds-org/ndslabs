@@ -1,6 +1,5 @@
 #!/bin/bash
 
-BRANCH=`git rev-parse --abbrev-ref HEAD`
 BUILD_DATE=`date +%Y-%m-%d\ %H:%M`
 VERSIONFILE="version.go"
 VERSION="1.0.1-alpha"
@@ -13,7 +12,7 @@ if [ "$1" = "local" ] || [ "$1" = "docker" ]; then
     fi
     echo "package main" > $VERSIONFILE
     echo "const (" >> $VERSIONFILE
-	echo "  VERSION = \"$VERSION ($BRANCH) \"" >> $VERSIONFILE
+	echo "  VERSION = \"$VERSION \"" >> $VERSIONFILE
     echo "  BUILD_DATE = \"$BUILD_DATE\"" >> $VERSIONFILE
     echo ")" >> $VERSIONFILE
     if [ "$1" = "local" ]; then 

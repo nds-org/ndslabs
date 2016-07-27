@@ -1,6 +1,5 @@
-FROM ubuntu:wily
+FROM ubuntu:xenial
 MAINTAINER willis8@illinois.edu
-
 
 COPY . /go/src/github.com/ndslabs/apiserver
 
