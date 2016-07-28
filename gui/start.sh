@@ -34,6 +34,6 @@ docker run --name ndslabs-gui -it -d -p ${WEBSERVER_PORT}:8080 -e APISERVER_HOST
 
 # If -d or --dev specified, run a Cloud 9 Docker container
 if [[ "$OPTS" != "" ]]; then
-	docker run --name cloud9 -it -d -p ${CLOUD9_PORT}:80 -v `pwd`:/workspace bodom0015/cloud9-nodejs && \
+	docker run --name cloud9 -it -d -p ${CLOUD9_PORT}:80 -v `pwd`:/workspace ndslabs/cloud9-nodejs && \
 	echo "You should now be able to access Cloud 9 by navigating to http://{YOUR_FLOATING_IP}:${CLOUD9_PORT}."
 fi
