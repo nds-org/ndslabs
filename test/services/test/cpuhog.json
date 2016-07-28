@@ -1,7 +1,10 @@
 {
     "key": "cpuhogtest",
     "label": "Test - CPU Hog ",
-    "image": "ndslabs/stress",
+    "image": {
+		"name": "ndslabs/stress",
+		"tags": ["latest"]
+	},
     "display": "stack",
     "description": "A test container for resource limits",
 	"command": [ "stress", "--cpu", "100" ],

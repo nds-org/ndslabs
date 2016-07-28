@@ -1,16 +1,11 @@
 {
-    "key": "toobigtest",
-    "label": "Test - Too Big",
-    "image": {
-        "name": "nginx",
-        "tags": ["latest"]
-    },
+    "key": "badspectest",
+    "label": "Test - Invalid Spec",
     "display": "stack",
     "access": "external",
     "description": "A test container for resource limits",
     "ports": [
         {
-            "port": 8080,
             "protocol": "http"
         }
     ],
