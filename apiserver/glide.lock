@@ -1,5 +1,5 @@
 hash: 3fa3398842e581cebddd55812dfda99958805af953aee5d51ba4857189c192eb
-updated: 2016-07-26T14:19:44.916262096-05:00
+updated: 2016-07-28T15:57:39.810187605-05:00
 imports:
 - name: github.com/ant0ine/go-json-rest
   version: 37ad7dc626602a8355801da6acd85155655520f8
@@ -141,6 +141,12 @@ imports:
   subpackages:
   - codec
   - codec/codecgen
+- name: github.com/xeipuuv/gojsonpointer
+  version: e0fe6f68307607d540ed8eac07a342c33fa1b54a
+- name: github.com/xeipuuv/gojsonreference
+  version: e02fc20de94c78484cd5ffb007f8af96be030a45
+- name: github.com/xeipuuv/gojsonschema
+  version: 0a98b2bd93655a563d1f23c4407e8f01791b6b31
 - name: golang.org/x/net
   version: 62685c2d7ca23c807425dca88b11a3e2323dab41
   subpackages:

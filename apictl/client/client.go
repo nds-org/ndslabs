@@ -352,18 +352,20 @@ func (c *Client) AddService(service *api.ServiceSpec, token string, catalog stri
 	if err != nil {
 		return nil, err
 	} else {
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
 		if resp.StatusCode == http.StatusOK {
-			defer resp.Body.Close()
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
-			}
-
 			service := api.ServiceSpec{}
 			json.Unmarshal([]byte(body), &service)
 			return &service, nil
 		} else {
-			return nil, errors.New(resp.Status)
+
+			errs := map[string]string{}
+			json.Unmarshal([]byte(body), &errs)
+			return nil, errors.New(resp.Status + "\n" + errs["Error"])
 		}
 	}
 }

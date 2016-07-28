@@ -1,7 +1,10 @@
 {
     "key": "smalltest",
     "label": "Test - Small container",
-    "image": "nginx",
+    "image": {
+        "name": "nginx",
+        "tags": ["latest"]
+    },
     "display": "stack",
     "access": "external",
     "description": "A test container for resource limits",

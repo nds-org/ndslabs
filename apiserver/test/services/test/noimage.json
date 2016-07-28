@@ -1,7 +1,10 @@
 {
     "key": "noimagetest",
     "label": "Test -  No such image",
-    "image": "xyzzy",
+    "image": {
+        "name": "ndslabs/xyzzy",
+        "tags": ["latest"]
+    },
     "display": "stack",
     "description": "A test container for missing image",
     "ports": [

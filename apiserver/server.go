@@ -16,6 +16,7 @@ import (
 	kube "github.com/ndslabs/apiserver/kube"
 	mw "github.com/ndslabs/apiserver/middleware"
 	api "github.com/ndslabs/apiserver/types"
+	validate "github.com/ndslabs/apiserver/validate"
 	gcfg "gopkg.in/gcfg.v1"
 	k8api "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/watch"
@@ -28,6 +29,7 @@ import (
 type Server struct {
 	etcd           *etcd.EtcdHelper
 	kube           *kube.KubeHelper
+	validator      *validate.Validator
 	Namespace      string
 	local          bool
 	volDir         string
@@ -317,6 +319,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 			glog.Warningf("Error loading specs: %s\n", err)
 		}
 		s.addVocabulary(cfg.Server.SpecsDir + "/vocab/tags.json")
+		s.validator = validate.NewValidator(cfg.Server.SpecsDir + "/schemas/spec-schema.json")
 	}
 
 	go s.initExistingAccounts()
@@ -587,7 +590,7 @@ func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
 		return false, err
 	}
 	if len(gfs) > 0 {
-		cmd := []string{"gluster", "volume", "quota", s.volName, "limit-usage", "/" + account.Namespace, account.ResourceLimits.StorageQuota + "GB"}
+		cmd := []string{"gluster", "volume", "quota", s.volName, "limit-usage", "/" + account.Namespace, fmt.Sprintf("%dGB", account.ResourceLimits.StorageQuota)}
 		_, err := s.kube.ExecCommand("default", gfs[0].Name, cmd)
 		if err != nil {
 			return false, err
@@ -748,6 +751,13 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
+	ok, err := s.validator.ValidateSpec(&service)
+	if !ok {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	if s.serviceExists(userId, service.Key) {
 		rest.Error(w, "Service exists with key", http.StatusConflict)
 		return
@@ -789,6 +799,13 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	ok, err := s.validator.ValidateSpec(&service)
+	if !ok {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -901,13 +918,18 @@ func (s *Server) DeleteService(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) serviceInUse(sid string) int {
 	inUse := 0
-	accounts, _ := s.etcd.GetAccounts()
-	for _, account := range *accounts {
-		stacks, _ := s.etcd.GetStacks(account.Namespace)
-		for _, stack := range *stacks {
-			for _, service := range stack.Services {
-				if service.Service == sid {
-					inUse++
+	accounts, err := s.etcd.GetAccounts()
+	if err != nil {
+		glog.Errorf("Error getting accounts\n")
+	}
+	if accounts != nil {
+		for _, account := range *accounts {
+			stacks, _ := s.etcd.GetStacks(account.Namespace)
+			for _, stack := range *stacks {
+				for _, service := range stack.Services {
+					if service.Service == sid {
+						inUse++
+					}
 				}
 			}
 		}
@@ -1841,7 +1863,7 @@ func (s *Server) loadSpecs(path string) error {
 
 	for _, file := range files {
 		if file.IsDir() {
-			if file.Name() != "vocab" {
+			if file.Name() != "vocab" && file.Name() != "schemas" {
 				s.loadSpecs(fmt.Sprintf("%s/%s", path, file.Name()))
 			}
 		} else {

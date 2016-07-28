@@ -1,7 +1,10 @@
 {
     "key": "memhogtest",
     "label": "Test - Memory Hog ",
-    "image": "ndslabs/stress",
+    "image": {
+        "name": "ndslabs/stress",
+        "tags": ["latest"]
+    },
     "display": "stack",
     "description": "A test container for resource limits",
 	"command": [ "stress", "--vm", "100" ],
