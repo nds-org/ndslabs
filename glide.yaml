@@ -1,0 +1,34 @@
+package: github.com/ndslabs/apiserver
+import:
+- package: github.com/dgrijalva/jwt-go
+  version: f164e17f59b82642a3895ba065c385db6c547344
+- package: github.com/StephanDollberg/go-json-rest-middleware-jwt
+  version: ff6ad319595d78f039df9a91bbac8b8bd120a764
+- package: github.com/ant0ine/go-json-rest
+  version: 37ad7dc626602a8355801da6acd85155655520f8
+  subpackages:
+  - rest
+- package: github.com/coreos/etcd
+  version: 2.3.0
+  subpackages:
+  - client
+- package: github.com/golang/glog
+- package: golang.org/x/net
+  subpackages:
+  - context
+  - websocket
+- package: gopkg.in/gcfg.v1
+- package: k8s.io/kubernetes
+  version: 1.3
+  subpackages:
+  - pkg/api
+  - pkg/api/resource
+  - pkg/api/unversioned
+  - pkg/apis/extensions
+  - pkg/client/restclient
+  - pkg/client/unversioned/remotecommand
+  - pkg/kubelet/server/remotecommand
+  - pkg/util/intstr
+  - pkg/util/rand
+  - pkg/watch
+  - pkg/watch/json
