@@ -5,17 +5,13 @@
  * Define our ndslabs module here. All other files will 
  * use the single-argument notation for angular.module()
  */
-angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-filters', 'ndslabs-directives',  'ndslabs-api', 'ngWizard', 'ngGrid', 'ngAlert', 
+angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-filters', 'ndslabs-directives',  'ndslabs-api', 'ngWizard', 'ngGrid', 'ngAlert', 'ngTagsInput',
     'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ngMessages', 'ui.bootstrap', 'ngPasswordStrength', 'angular-clipboard', 'ui.pwgen', 'frapontillo.gage', 'chart.js' ])
 
 /**
  * If true, display verbose debug data as JSON
  */ 
 .constant('DEBUG', false)
-
-.constant('Layout', 'container')
-
-.value('InitialRedirect', true)
 
 /**
  *TODO: Whether or not to use mock data (false if talking to live etcd)
@@ -55,7 +51,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * The route to our "Dashboard" View
  */
-.constant('HomeRoute', '/home:query?')
+.constant('HomeRoute', '/home')
 
 /**
  * The route to the "Add Application Service" view
@@ -258,13 +254,13 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   })
   .when(AddServiceRoute, {
     title: 'Add Application Service',
-    controller: 'EditServiceController',
-    templateUrl: 'app/dashboard/service/editService.html'
+    controller: 'AddOrEditServiceController',
+    templateUrl: 'app/dashboard/service/addOrEditService.html'
   })
   .when(EditServiceRoute, {
     title: 'Edit Application Service',
-    controller: 'EditServiceController',
-    templateUrl: 'app/dashboard/service/editService.html'
+    controller: 'AddOrEditServiceController',
+    templateUrl: 'app/dashboard/service/addOrEditService.html'
   })
   .when(ConsoleRoute, {
     title: 'Application Service Console',
@@ -277,8 +273,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', 'InitialRedirect', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData',
-    function($rootScope, $window, $location, $log, $interval, $cookies, $uibModalStack, Stacks, InitialRedirect, _, authInfo, LoginRoute, AppStoreRoute, HomeRoute, NdsLabsApi, AutoRefresh, ServerData) {
+.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData',
+    function($rootScope, $window, $location, $log, $interval, $cookies, $uibModalStack, Stacks, _, authInfo, LoginRoute, AppStoreRoute, HomeRoute, NdsLabsApi, AutoRefresh, ServerData) {
   
   // Grab saved auth data from cookies and attempt to use the leftover session
   var token = $cookies.get('token');

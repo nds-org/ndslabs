@@ -3,7 +3,7 @@
 angular
 .module('ndslabs')
 /**
- * The Controller for our "Delete Spec" Confirmation Modal Window
+ * The Controller for our "Clone Spec" Modal Window
  * 
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views

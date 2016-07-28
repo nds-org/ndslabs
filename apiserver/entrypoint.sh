@@ -32,12 +32,16 @@ if [ "$1" = 'apiserver' ]; then
 		VOLUME_PATH="/volumes"
 	fi
 
+	if [ -z "$VOLUME_NAME" ]; then 
+		VOLUME_PATH="global"
+	fi
+
 cat << EOF > /apiserver.conf
 [Server]
 Port=30001
 Origin=$CORS_ORIGIN_ADDR
 VolDir=$VOLUME_PATH
-VolumeSource=local
+VolName=$VOLUME_NAME
 SpecsDir=/specs
 Timeout=$TIMEOUT
 Prefix=$PREFIX

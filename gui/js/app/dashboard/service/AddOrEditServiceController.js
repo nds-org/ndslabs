@@ -3,18 +3,18 @@
 angular
 .module('ndslabs')
 /**
- * The Controller for our "Configuration Wizard" Modal Window
+ * The Controller for our "Edit Application Service" Modal Window
  * 
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('EditServiceController', [ '$scope', '$routeParams', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stacks', 'StackService', 'Specs', 
+.controller('AddOrEditServiceController', [ '$scope', '$routeParams', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stacks', 'StackService', 'Specs', 
     function($scope, $routeParams, $location, $log, _, NdsLabsApi, Project, Stacks, StackService, Specs) {
       
   var path = $location.path();
   $scope.editingService = (path.indexOf('/edit/') !== -1);
   
-  var projectId = Project.project.namespace;
+  var projectId = null
   $scope.$watch(function () { return Project.project; }, function(newValue, oldValue) { projectId = newValue.namespace; });
   
   
@@ -33,7 +33,7 @@ angular
       return;
     }
       
-    $scope.service = _.find($scope.stack.services, [ 'service', $routeParams.service ]) || new StackService($scope.stack, $scope.spec, false);
+    $scope.service = _.find($scope.stack.services, [ 'service', $routeParams.service ]) || new StackService($scope.stack, $scope.spec);
     
     if (!$scope.service) {
       $log.error('Failed to' + ($scope.editingService ? 'find' : 'create') + $routeParams.service + ' in stack ' + $routeParams.stackId);
@@ -47,11 +47,19 @@ angular
     
     $scope.configs = [];
     angular.forEach($scope.service.config, function(value, key) {
-      var cfg = _.find($scope.spec.config, [ 'name', key ]);
-      if (cfg) {
-        $scope.configs.push({ 'name': key, 'label': cfg.label, 'value': value, 'def': cfg.value, 'spec': cfg, 'isPassword':cfg.isPassword });
+      var cfg = null;
+      if (angular.isNumber(key)) {
+        cfg = _.find($scope.spec.config, [ 'name', value.name ]);
+        // "Add service" case: Array of objects
+        $scope.configs.push({ 'name': cfg.name, 'label': cfg.label, 'value': cfg.value, 'def': cfg.value, 'spec': cfg, 'isPassword':cfg.isPassword, 'canOverride':cfg.canOverride });
       } else {
-        $scope.configs.push({ 'name': key, 'value': value, 'def': '', 'isPassword':false, canEdit: true });
+        // "Edit service" case: map of strings
+        cfg = _.find($scope.spec.config, [ 'name', key ]);
+        if (!cfg) {
+          $scope.configs.push({ 'name': key, 'value': value, 'def': '', 'isPassword':false, canEdit: true });
+        } else {
+          $scope.configs.push({ 'name': key, 'label': cfg.label, 'value': value, 'def': cfg.value, 'spec': cfg, 'isPassword':cfg.isPassword });
+        }
       }
     });
     
@@ -70,6 +78,17 @@ angular
   $scope.$watch(function () { return Project.project; }, function(newValue, oldValue) { $scope.project = newValue; });
   
   $scope.save = function() {
+    $scope.service.volumeMounts = {};
+    angular.forEach($scope.volumes, function(mnt) {
+      $scope.service.volumeMounts[mnt.from] = mnt.to;
+    });
+    
+    //$scope.service.ports = $scope.ports;
+    $scope.service.endpoints = [];
+    angular.forEach($scope.ports, function(port) {
+      $scope.service.endpoints.push({ port: port.port, protocol: port.protocol, access: port.access} );
+    });
+    
     // Parse environment vars into config map
     $scope.service.config = {};
     angular.forEach($scope.configs, function(cfg) {
@@ -82,19 +101,15 @@ angular
       $scope.service.config[cfg.name] = cfg.value;
     });
     
-    $scope.service.volumeMounts = {};
-    angular.forEach($scope.volumes, function(mnt) {
-      $scope.service.volumeMounts[mnt.from] = mnt.to;
-    });
-    
-    //$scope.service.ports = $scope.ports;
-    $scope.service.endpoints = [];
-    angular.forEach($scope.ports, function(port) {
-      $scope.service.endpoints.push({ port: port.port, protocol: port.protocol, access: port.access} );
-    });
-    
-    
     if (!$scope.editingService && $scope.stack.services.indexOf($scope.service) === -1) {
+      angular.forEach($scope.spec.depends, function(dep) {
+        var exists = _.find($scope.stack.services, function(svc) { return svc.service === dep.key });
+        if (dep.required && !exists) {
+          var spec = _.find(Specs.all, [ 'key', dep.key ]);
+          $scope.stack.services.push(new StackService($scope.stack, spec));
+        }
+      });
+      
       // Push the new service onto the stack
       $scope.stack.services.push($scope.service);
     }

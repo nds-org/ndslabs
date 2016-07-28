@@ -2,6 +2,12 @@
 
 angular
 .module('ndslabs')
+/**
+ * The controller for our "Sign-Up" Modal Window
+ * 
+ * @author lambert8
+ * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
+ */
 .controller('SignUpController', [ '$scope', '$uibModalInstance', '$log', 'NdsLabsApi', function($scope, $uibModalInstance, $log, NdsLabsApi) {
   $scope.newProject = {
     name: '',
@@ -10,19 +16,6 @@ angular
     password: '',
     passwordConfirmation: ''
   };
-  
-  // Check username availability when user changes input?
-  //
-  // FIXME: This won't work unless we're logged in, 
-  //   but there is no need to sign-up if we're logged in...
-  /*$scope.$watch('newProject.namespace', function(oldValue, newValue) {
-    $scope.namespaceExists = null;
-    NdsLabsApi.getProjectsByProjectId({ 'projectId': newValue }).then(function() {
-      $scope.namespaceExists = true;
-    }, function() {
-      $scope.namespaceExists = false;
-    });
-  });*/
   
   $scope.ok = function(project) {
     NdsLabsApi.postRegister({ 'account': project }).then(function(data, xhr) {

@@ -15,8 +15,9 @@
     <!-- External CSS -->
     <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="bower_components/font-awesome/css/font-awesome.min.css" />
-    <link rel="stylesheet" type="text/css" href="asset/css/purple-primary.min.css" />
     <link rel="stylesheet" type="text/css" href="bower_components/font-awesome-animation/dist/font-awesome-animation.min.css">
+    <link rel="stylesheet" href="bower_components/ng-tags-input/ng-tags-input.min.css"> 
+    <link rel="stylesheet" type="text/css" href="asset/css/purple-primary.min.css" />
     
     <!-- Google Fonts -->
     <link href="//fonts.googleapis.com/css?family=Roboto:400,300" rel="stylesheet" type="text/css">
@@ -65,7 +66,10 @@
     
     <!-- Angular Clipboard -->
     <script src="bower_components/angular-clipboard/angular-clipboard.js"></script>
-
+    
+    <!-- ngTagsInput -->
+    <script type="text/javascript" src="bower_components/ng-tags-input/ng-tags-input.min.js"></script>
+    
     <!-- Load our own custom modules -->
     <script src="bower_components/angular-wizard/angular-wizard.js"></script>
     <script src="bower_components/angular-grid/angular-grid.js"></script>
@@ -80,29 +84,25 @@
     <!-- Then load the config for our app -->
     <script src="app/app.js"></script>
     
-    <!-- Login View -->
+    <!-- Login View and Modals -->
     <script src="app/login/signUp/SignUpController.js"></script>
     <script src="app/login/LoginController.js"></script>
     
-    <!-- AppStore / AddOrEditSpec View Main Controller(s) -->
+    <!-- AppStore / AddOrEditSpec View and Modals -->
     <script src="app/appStore/CatalogController.js"></script>
     <script src="app/appStore/addOrEdit/AddOrEditSpecController.js"></script>
-    
-    <!-- Dashboard / AddOrEditService / Console View Main Controller(s) -->
-    <script src="app/dashboard/DashboardController.js"></script>
-    <script src="app/dashboard/console/ConsoleController.js"></script>
-    <script src="app/dashboard/service/EditServiceController.js"></script>
-    
-    <!-- AppStore Modals -->
     <script src="app/appStore/modals/import/ImportSpecController.js"></script>
     <script src="app/appStore/modals/export/ExportSpecController.js"></script>
     <script src="app/appStore/modals/clone/CloneSpecController.js"></script>
     <script src="app/appStore/modals/delete/DeleteSpecController.js"></script>
     
-    <!-- Dashboard Modals -->
-    <script src="app/dashboard/modals/addService/AddServiceController.js"></script>
+    <!-- Dashboard / AddOrEditService / Console View and Modals -->
+    <script src="app/dashboard/DashboardController.js"></script>
+    <script src="app/dashboard/console/ConsoleController.js"></script>
+    <script src="app/dashboard/service/AddOrEditServiceController.js"></script>
     <script src="app/dashboard/modals/configViewer/ConfigViewerController.js"></script>
     <script src="app/dashboard/modals/logViewer/LogViewerController.js"></script>
+    <script src="app/dashboard/modals/stackRename/StackRenameController.js"></script>
     <script src="app/dashboard/modals/stackStop/StackStopController.js"></script>
     <script src="app/dashboard/modals/stackDelete/StackDeleteController.js"></script>
   </head>

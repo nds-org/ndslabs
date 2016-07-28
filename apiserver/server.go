@@ -33,6 +33,7 @@ type Server struct {
 	Namespace      string
 	local          bool
 	volDir         string
+	volName        string
 	hostname       string
 	jwt            *jwt.JWTMiddleware
 	prefix         string
@@ -50,6 +51,7 @@ type Config struct {
 		Port         string
 		Origin       string
 		VolDir       string
+		VolName      string
 		SpecsDir     string
 		VolumeSource string
 		Timeout      int
@@ -153,6 +155,7 @@ func main() {
 	server.etcd = etcd
 	server.kube = kube
 	server.volDir = cfg.Server.VolDir
+	server.volName = cfg.Server.VolName
 	server.cpuMax = cfg.DefaultLimits.CpuMax
 	server.cpuDefault = cfg.DefaultLimits.CpuDefault
 	server.memMax = cfg.DefaultLimits.MemMax
@@ -357,6 +360,7 @@ func (s *Server) GetConsole(w rest.ResponseWriter, r *rest.Request) {
 	container := pods[0].Spec.Containers[0].Name
 	glog.V(4).Infof("exec called for %s %s %s\n", userId, ssid, pod)
 	s.kube.Exec(userId, pod, container, s.kube).ServeHTTP(w.(http.ResponseWriter), r.Request)
+
 }
 
 func (s *Server) initExistingAccounts() {
@@ -498,13 +502,6 @@ func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 
-	/*
-		if !s.IsAdmin(r) {
-			rest.Error(w, "", http.StatusUnauthorized)
-			return
-		}
-	*/
-
 	account := api.Account{}
 	err := r.DecodeJsonPayload(&account)
 	if err != nil {
@@ -563,6 +560,13 @@ func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 		}
 	}
 
+	_, err = s.updateStorageQuota(&account)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	err = s.etcd.PutAccount(account.Namespace, &account)
 	if err != nil {
 		glog.Error(err)
@@ -571,6 +575,30 @@ func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	w.WriteJson(&account)
+}
+
+func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
+
+	err := os.MkdirAll(s.volDir+"/"+account.Namespace, 0755)
+	if err != nil {
+		return false, err
+	}
+
+	// Get the GFS server pods
+	gfs, err := s.kube.GetPods("default", "name", "glusterfs-server-globalfs")
+	if err != nil {
+		return false, err
+	}
+	if len(gfs) > 0 {
+		cmd := []string{"gluster", "volume", "quota", s.volName, "limit-usage", "/" + account.Namespace, fmt.Sprintf("%dGB", account.ResourceLimits.StorageQuota)}
+		_, err := s.kube.ExecCommand("default", gfs[0].Name, cmd)
+		if err != nil {
+			return false, err
+		}
+	} else {
+		glog.V(2).Info("No GFS servers found, cannot set account quota")
+	}
+	return true, nil
 }
 
 func (s *Server) PutAccount(w rest.ResponseWriter, r *rest.Request) {
@@ -584,6 +612,13 @@ func (s *Server) PutAccount(w rest.ResponseWriter, r *rest.Request) {
 
 	account := api.Account{}
 	err := r.DecodeJsonPayload(&account)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	_, err = s.updateStorageQuota(&account)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
