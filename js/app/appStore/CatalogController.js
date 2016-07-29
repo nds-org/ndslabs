@@ -28,17 +28,12 @@ angular
   
   $scope.addFilterTag = function(tagId) {
     // Skip tags that we have already added
-    if (_.find($scope.tags.selected, function(tag) {
-      return tag.id === tagId;
-    })) {
+    if (_.find($scope.tags.selected, ['id', tagId ])) {
       return '';
     }
     
     // Look up and push new tags selected
-    var tag = _.find($scope.tags.all.terms, function(tag) {
-      return tag.id === tagId;
-    });
-    
+    var tag = _.find($scope.tags.all.terms, [ 'id', tagId ]);
     $scope.tags.selected.push(tag);
   };
 

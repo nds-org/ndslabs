@@ -94,10 +94,7 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
 .filter('isStack', [ '_', function(_) {
   return function(input, showStandalones) {
     if (!showStandalones) {
-      //return _.filter(input, ['display', 'stack']);
-      return _.filter(input, function(o) {
-        return o.display === 'stack';
-      }); 
+      return _.filter(input, ['display', 'stack']);
     }
 
     // Return stacks and standalones
@@ -129,9 +126,7 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
     }
     
     propertyName = propertyName || 'name';
-    var tag = _.find(Vocabulary.all.terms, function(t) {
-      return t.id === tagId;
-    });
+    var tag = _.find(Vocabulary.all.terms, [ 'id', tagId ]);
     if (!tag || !angular.isDefined(tag[propertyName])) {
       return '';
     }
