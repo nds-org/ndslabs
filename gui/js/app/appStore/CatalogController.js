@@ -163,8 +163,6 @@ angular
     var specDetails = $scope.installs[spec.key] || ($scope.installs[spec.key] = { count: 0, progress: 0, interval: null });
     specDetails.progress = 1;
     
-    console.log('Installing ' + spec.label + '...');
-    
     var increment = 5;
     
   	specDetails.interval = $interval(function() {
