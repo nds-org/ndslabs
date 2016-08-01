@@ -2,6 +2,18 @@
 
 angular
 .module('ndslabs')
+.filter('stackExistsFromSpec', [ '_', 'Stacks', function(_, Stacks) {
+  return function(input) {
+    var exists = false;
+    angular.forEach(Stacks.all, function(stack) {
+      var check = _.find(stack.services, [ 'service', input ]);
+      if (check) {
+        exists = true;
+      }
+    });
+    return exists;
+  }
+}])
 /**
  * The Controller for our "AppStore" / "Catalog" View
  * 
@@ -9,8 +21,8 @@ angular
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
 .controller('CatalogController', [ '$scope', '$filter', '$interval', '$uibModal', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stack', 'Stacks', 
-    'StackService', 'Specs', 'clipboard', 'Vocabulary',
-    function($scope, $filter, $interval, $uibModal, $location, $log, _, NdsLabsApi, Project, Stack, Stacks, StackService, Specs, clipboard, Vocabulary) {
+    'StackService', 'Specs', 'clipboard', 'Vocabulary', 'RandomPassword', 
+    function($scope, $filter, $interval, $uibModal, $location, $log, _, NdsLabsApi, Project, Stack, Stacks, StackService, Specs, clipboard, Vocabulary, RandomPassword) {
       
   $scope.tags = { all: [], selected: [] };
   Vocabulary.populate("tags").then(function(data) {
@@ -49,17 +61,6 @@ angular
   $scope.installs = {};
   
   var perRow = 4;
-  
-  $scope.stackExistsFor = function(spec) {
-    var exists = false;
-    angular.forEach(Stacks.all, function(stack) {
-      var check = _.find(stack.services, [ 'service', spec.key ]);
-      if (check) {
-        exists = true;
-      }
-    });
-    return exists;
-  };
   
   var refilter = function(specs, tags) {
     $scope.filteredSpecs = $filter('isStack')(specs, $scope.showStandalones);
@@ -184,7 +185,7 @@ angular
       angular.forEach(svc.config, function(cfg) {
         if (cfg.isPassword) {
           // TODO: Generate random secure passwords here!
-          cfg.value = 'GENERATED_PASSWORD';
+          cfg.value = RandomPassword.generate();
         }
         
         configMap[cfg.name] = cfg.value;

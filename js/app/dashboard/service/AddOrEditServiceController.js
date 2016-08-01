@@ -8,8 +8,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('AddOrEditServiceController', [ '$scope', '$routeParams', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stacks', 'StackService', 'Specs', 
-    function($scope, $routeParams, $location, $log, _, NdsLabsApi, Project, Stacks, StackService, Specs) {
+.controller('AddOrEditServiceController', [ '$scope', '$routeParams', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stacks', 'StackService', 'Specs', 'RandomPassword',
+    function($scope, $routeParams, $location, $log, _, NdsLabsApi, Project, Stacks, StackService, Specs, RandomPassword) {
       
   var path = $location.path();
   $scope.editingService = (path.indexOf('/edit/') !== -1);
@@ -95,7 +95,7 @@ angular
       // Do not allow for empty passwords
       if (cfg.isPassword && cfg.value === '') {
         // TODO: Generate random secure passwords here!
-        cfg.value = 'GENERATED_PASSWORD';
+        cfg.value = RandomPassword.generate();
       }
       
       $scope.service.config[cfg.name] = cfg.value;
