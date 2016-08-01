@@ -1,12 +1,12 @@
 #
-# Build: docker build -t ndslabs-gui -f Dockerfile.ndslabs-gui .
+# Build: docker build -t ndslabs-gui .
 #
 # Single-node Usage: docker run -it -d -p 30000:8080 -e APISERVER_HOST=<ExternalIp> -e APISERVER_PORT=30000 ndslabs-gui
 # Multi-node Usage: docker run -it -d -p 8080:8080 -e APISERVER_HOST=<ClusterIP> -e APISERVER_PATH="/api" ndslabs-gui
 #
 
 # This image will be based on the official nodejs docker image
-FROM node:latest
+FROM node:6.3.1
 
 # Tell Docker we plan to use this port (http-server's default)
 EXPOSE 8080
