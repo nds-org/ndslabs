@@ -178,17 +178,7 @@ html,body {
 -------------------------------------------------- */
 
 #appContent {
-  margin-bottom:100px;
-}
-
-#configWizard {
-  min-height:400px;
-  max-height:600px;
-}
-
-#consolePanel {
-  margin: 2% auto;
-  max-width:900px;
+  margin-bottom:70px;
 }
 
 #dashHeader {
@@ -203,7 +193,7 @@ html,body {
  position:fixed;
  left:0px;
  bottom:0px;
- height:60px;
+ height:70px;
  width:100%;
  background:#a8a8a1;
 }
@@ -223,15 +213,6 @@ html,body {
 
 #navBrandLogo {
   margin-top:-5px;
-}
-
-#volumeTable {
-  border-radius:10px;
-  border:1px solid lightgray;
-}
-
-#addFieldBtn, #addFieldDropdown {
-  cursor: pointer;
 }
 
 #catalogCardButtonBar {
