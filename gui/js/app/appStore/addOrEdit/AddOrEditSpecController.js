@@ -5,7 +5,7 @@ angular
 .filter('invertSpecList', [ '$filter', 'Specs', '_', function($filter, Specs, _) {
   return function(input) {
     return _.remove(angular.copy(Specs.all), function(spec) {
-      return spec.display !== '' && spec.display !== 'none' && !_.find(input, [ 'key', spec.key ]);
+      return !_.find(input, [ 'key', spec.key ]);
     });
   };
 }])
