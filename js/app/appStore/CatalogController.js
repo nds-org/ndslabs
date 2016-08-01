@@ -2,6 +2,18 @@
 
 angular
 .module('ndslabs')
+.filter('stackExistsFromSpec', [ '_', 'Stacks', function(_, Stacks) {
+  return function(input) {
+    var exists = false;
+    angular.forEach(Stacks.all, function(stack) {
+      var check = _.find(stack.services, [ 'service', input ]);
+      if (check) {
+        exists = true;
+      }
+    });
+    return exists;
+  }
+}])
 /**
  * The Controller for our "AppStore" / "Catalog" View
  * 
@@ -49,17 +61,6 @@ angular
   $scope.installs = {};
   
   var perRow = 4;
-  
-  $scope.stackExistsFor = function(spec) {
-    var exists = false;
-    angular.forEach(Stacks.all, function(stack) {
-      var check = _.find(stack.services, [ 'service', spec.key ]);
-      if (check) {
-        exists = true;
-      }
-    });
-    return exists;
-  };
   
   var refilter = function(specs, tags) {
     $scope.filteredSpecs = $filter('isStack')(specs, $scope.showStandalones);
