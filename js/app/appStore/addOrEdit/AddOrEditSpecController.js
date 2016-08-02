@@ -150,12 +150,12 @@ angular
     }
     
     console.debug(spec);
-   /* return NdsLabsApi[method]({ service: spec, serviceId: spec.key }).then(function(data) {
+    return NdsLabsApi[method]({ service: spec, serviceId: spec.key }).then(function(data) {
       // TODO: Only populate changed spec?
       Specs.populate().then(function() {
         $location.path('/store');
       });
-    });*/
+    });
   };
   
   $scope.cancel = function() {
