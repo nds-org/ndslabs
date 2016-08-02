@@ -7,15 +7,15 @@
         <div class="row">
             <div class="col-sm-12">
                 <uib-tabset active="activeTab">
-                    <uib-tab heading="Basic" index="0">
+                    <uib-tab heading="Details" index="0">
                         <!-- Application Spec Details -->
                         <div class="row">
-                            <div class="col-sm-4">
+                            <div class="col-sm-6">
                                 <fieldset class="border-nds">
-                                    <legend class="legend-fix">Basic Information</legend>
+                                    <legend class="legend-fix">Application Details <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="bottom-right" uib-tooltip="Some details about the application itself"></i></sup></legend>
                                     <!-- Short Name (Key) -->
                                     <div class="form-group" >
-                                        <label for="keyField">Short Name</label>
+                                        <label for="keyField">Short Name <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="The database key for this application (must be lowercase with no special characters)"></i></sup></label>
                                         <input type="text" class="form-control" id="keyField" name="keyField" placeholder="Short Name"
                                             ng-model="spec.key" ng-disabled="editingSpec" required ng-pattern="/^[a-z0-9]+$/" />
                                         
@@ -28,7 +28,7 @@
                                     
                                     <!-- Display Name -->
                                     <div class="form-group">
-                                        <label for="nameField">Display Name</label>
+                                        <label for="nameField">Display Name <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="A common, human-readable display name for your service"></i></sup></label>
                                         <input type="text" class="form-control" id="nameField" name="nameField" placeholder="Display Name" 
                                             ng-model="spec.label" required>
                                         
@@ -37,15 +37,76 @@
                                         </ng-messages>
                                     </div>
                                     
+                                    <!-- Logo URL (optional) -->
+                                    <div class="form-group">
+                                        <label for="logoField">Logo <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="A URL to a small logo for this service"></i></sup></label>
+                                        <input type="url" class="form-control" id="logoField" name="logoField" placeholder="Enter Logo URL..." ng-model="spec.logo">
+                                        
+                                        <ng-messages class="text-danger" for="modifySpec.logoField.$error" role="alert">
+                                          <ng-message when="url">Please enter a valid URL</ng-message>
+                                        </ng-messages>
+                                    </div>
+                                    
+                                    <!-- Maintainer E-mail (optional) -->
+                                    <div class="form-group">
+                                        <label for="maintainerField">Maintainer <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="Who is in charge of updating this application/image when new releases occur?"></i></sup></label>
+                                        <input type="email" class="form-control" id="maintainerField" name="maintainerField" placeholder="Enter Maintainer E-mail..." ng-model="spec.maintainer">
+                                        
+                                        <ng-messages class="text-danger" for="modifySpec.maintainerField.$error" role="alert">
+                                          <ng-message when="email">Please enter a valid e-mail address</ng-message>
+                                        </ng-messages>
+                                    </div>
+                                    
                                     <!-- Description (optional) -->
                                     <div class="form-group">
-                                        <label for="descriptionField">Description</label>
+                                        <label for="descriptionField">Description <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="Catalog description of the application"></i></sup></label>
                                         <textarea type="text" class="form-control" id="descriptionField" placeholder="Enter a description of this application (optional)" ng-model="spec.description"></textarea>
+                                    </div>
+                                
+                                    <div class="row">
+                                        <div class="col-xs-12">
+                                            <!-- Display this spec in the NDS Labs AppStore? -->
+                                            <div class="checkbox pull-right">
+                                                <label ng-click="toggleDisplay()">
+                                                    <input ng-checked="spec.display === 'stack'" type="checkbox"> Present this application in the UI?
+                                                </label>
+                                            </div>
+                                            
+                                            <!-- Default Access -->
+                                            <div class="form-group">
+                                                <div><label>Default Access <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="Who can access this application by default (can be overridden on a per-instance basis)"></i></sup></label></div>
+                                                <div class="btn-group" role="group">
+                                                    <!-- Access: External -->
+                                                    <button type="button" class="btn" ng-click="spec.access='external'" ng-class="{ 'btn-default':spec.access !== 'external', 'btn-primary':spec.access === 'external' }" uib-tooltip="Publicly-accessible">
+                                                        <span class="fa-stack">
+                                                          <i class="fa fa-globe fa-stack-2x text-muted"></i>
+                                                          <i class="fa fa-eye fa-stack-1x"></i>
+                                                        </span>
+                                                    </button>
+                                                    
+                                                    <!-- Access: Internal  -->
+                                                    <button type="button" class="btn" ng-click="spec.access='internal'" ng-class="{ 'btn-default':spec.access !== 'internal', 'btn-primary':spec.access === 'internal' }" uib-tooltip="Accessible to other service within the cluster">
+                                                        <span class="fa-stack">
+                                                          <i class="fa fa-cloud fa-stack-2x text-muted"></i>
+                                                          <i class="fa fa-eye fa-stack-1x"></i>
+                                                        </span>
+                                                    </button>
+                                                    
+                                                    <!-- Access: None -->
+                                                    <button type="button" class="btn" ng-click="spec.access='none'" ng-class="{ 'btn-default':spec.access !== 'none', 'btn-primary':spec.access === 'none' }" uib-tooltip="Completely isolated">
+                                                       <span class="fa-stack">
+                                                          <i class="fa fa-eye fa-stack-1x"></i>
+                                                          <i class="fa fa-ban fa-stack-2x text-danger"></i>
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     
                                     <!-- Tags (optional) -->
-                                    <div class="form-group">
-                                        <label for="keywordsField">Keywords</label>
+                                    <div class="form-group" ng-if="spec.display === 'stack'">
+                                        <label for="keywordsField">Keywords <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="Choose search filter keywords that would allow users to easily discover this application"></i></sup></label>
                                         <ul class="fa-ul">
                                             <li ng-repeat="tagId in spec.tags" class="item">
                                                 <i class="fa-li fa fa-search"></i>
@@ -74,105 +135,33 @@
                                     </div>
                                 </fieldset>
                             </div>
-                            
-                            
-                             <!-- List / edit resource limits -->
-                            <div class="col-sm-4">
-                                <fieldset class="border-nds">
-                                    <legend class="legend-fix">Resource Limits</legend>
-                                            <!-- TODO - Validation:
-                                                -Ensure valid resource limits -->
-                                                
-                                    <!-- CPU Default -->
-                                    <div class="form-group">
-                                        <label for="limitCpuDefaultField">CPU Default</label>
-                                        <div class="input-group">
-                                          <input type="number" class="form-control" id="limitCpuDefaultField" name="limitCpuDefaultField" 
-                                                ng-model="spec.resourceLimits.cpuDefault" aria-describedby="cpudefault-addon" ng-min="10" ng-max="{{ spec.resourceLimits.cpuMax }}" required />
-                                          <span class="input-group-addon" id="cpudefault-addon">m</span>
-                                        </div>
-                                        
-                                        <ng-messages class="text-danger" for="modifySpec.limitCpuDefaultField.$error" role="alert">
-                                          <ng-message when="required">This field is required</ng-message>
-                                          <ng-message when="min">This field must be above the minimum (10)</ng-message>
-                                          <ng-message when="max">This field must be below the maximum ({{ spec.resourceLimits.cpuMax }})</ng-message>
-                                        </ng-messages>
-                                    </div>
-                                    
-                                    <!-- CPU Max -->
-                                    <div class="form-group">
-                                        <label for="limitCpuMaxField">CPU Max</label>
-                                        <div class="input-group">
-                                          <input type="number" class="form-control" id="limitCpuMaxField" name="limitCpuMaxField" 
-                                                ng-model="spec.resourceLimits.cpuMax" aria-describedby="cpumax-addon" ng-min="10" required />
-                                          <span class="input-group-addon" id="cpumax-addon">m</span>
-                                        </div>
-                                        
-                                        <ng-messages class="text-danger" for="modifySpec.limitCpuMaxField.$error" role="alert">
-                                          <ng-message when="required">This field is required</ng-message>
-                                          <ng-message when="min">This field must be above the minimum (10)</ng-message>
-                                        </ng-messages>
-                                    </div>
-                                    
-                                    <!-- Memory Default -->
-                                    <div class="form-group">
-                                        <label for="limitMemDefaultField">Memory Default</label>
-                                        <div class="input-group">
-                                          <input type="number" class="form-control" id="limitMemDefaultField" name="limitMemDefaultField" 
-                                                ng-model="spec.resourceLimits.memDefault" aria-describedby="memdefault-addon" ng-min="10" ng-max="{{ spec.resourceLimits.memMax }}" required />
-                                          <span class="input-group-addon" id="memdefault-addon">M</span>
-                                        </div>
-                                        
-                                        <ng-messages class="text-danger" for="modifySpec.limitMemDefaultField.$error" role="alert">
-                                          <ng-message when="required">This field is required</ng-message>
-                                          <ng-message when="min">This field must be above the minimum (10)</ng-message>
-                                          <ng-message when="max">This field must be below the maximum ({{ spec.resourceLimits.memMax }})</ng-message>
-                                        </ng-messages>
-                                    </div>
-                                    
-                                    <!-- Memory Max -->
-                                    <div class="form-group">
-                                        <label for="limitMemMaxField">Memory Max</label>
-                                        <div class="input-group">
-                                          <input type="number" class="form-control" id="limitMemMaxField" name="limitMemMaxField" 
-                                                ng-model="spec.resourceLimits.memMax" aria-describedby="memmax-addon" ng-min="10" required />
-                                          <span class="input-group-addon" id="memmax-addon">M</span>
-                                        </div>
-                                        
-                                        <ng-messages class="text-danger" for="modifySpec.limitMemMaxField.$error" role="alert">
-                                          <ng-message when="required">This field is required</ng-message>
-                                          <ng-message when="min">This field must be above the minimum (10)</ng-message>
-                                        </ng-messages>
-                                    </div>
-                                </fieldset>
-                            </div>
                         
                             <!-- Docker Image Details -->
-                            <div class="col-sm-4" style="height:100% !important;">
+                            <div class="col-sm-6" style="height:100% !important;">
                                 <fieldset class="border-nds">
-                                    <legend class="legend-fix">Docker</legend>
+                                    <legend class="legend-fix">Docker Details <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="bottom-right" uib-tooltip="Some details about the underlying Docker image for this application"></i></sup></legend>
                                     
                                     <!-- Docker Registry -->
                                     <!-- TODO: Do we support different registries? -->
                                     <div class="form-group">
-                                        <label for="registryField">Registry</label> <small class="pull-right">Coming soon!</small>
+                                        <label for="registryField">Registry <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="Coming Soon!"></i></sup></label>
                                         <input type="text" class="form-control" id="registryField" placeholder="Docker Registry" value="docker.io" ng-disabled="true">
                                     </div>
                                     
                                     <!-- Docker Image -->
                                     <div class="form-group">
-                                        <label for="imageNameField">Image Name</label>
+                                        <label for="imageNameField">Image Name <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="The main Docker image for this application"></i></sup></label>
                                         <input type="text" class="form-control" id="imageNameField" name="imageNameField" placeholder="Enter a Docker image name..." 
                                             ng-model="spec.image.name" required ng-pattern="/^([a-z0-9]+\/)?[0-9a-z]+(-?[0-9a-z]+)*$/">
                                         <ng-messages class="text-danger" for="modifySpec.imageNameField.$error" role="alert">
                                           <ng-message when="required">This field is required</ng-message>
-                                          <ng-message when="pattern">This field must reference a valid Docker image</ng-message>
+                                          <ng-message when="pattern">This field must be formatted as "image-name" or "user/image-name"</ng-message>
                                         </ng-messages>
                                     </div>
                                     
                                     <!-- Docker Tags -->
                                     <div class="form-group">
-                                        <label for="imageTagField">Image Tags</label>
+                                        <label for="imageTagField">Image Tags <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="Accessible Docker version tags for {{ spec.image.name || 'this image' }}"></i></sup></label>
                                         <ul class="fa-ul">
                                             <li ng-repeat="tag in spec.image.tags" class="item">
                                                 <i class="fa-li fa fa-tag"></i>
@@ -202,7 +191,91 @@
                                         
                                         <!-- TODO: Manual validation here kind of sucks... -->
                                         <div class="text-info" ng-if="!spec.image.tags || spec.image.tags.length === 0">If no tags are specified, "latest" will be assumed</div>
+                                    </div>
+                                    
+                                    <!-- Container Commands -->
+                                    <div class="form-group">
+                                        <label for="cmdField">Command <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="The command to run when starting a Docker container from the above image"></i></sup></label>
+                                        <input type="text" class="form-control" id="cmdField" name="cmdField" placeholder="Command (optional)..." ng-model="spec.command">
+                                    </div>
+                                    
+                                    <!-- Container Command Args -->
+                                    <div class="form-group">
+                                        <label for="argsField">Arguments <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="Any arguments that should be passed in to the command above"></i></sup></label>
+                                        <input type="text" class="form-control" id="argsField" name="argsField" placeholder="Command arguments (optional)..." ng-model="spec.args">
+                                    </div>
+                                    
+                                    <!-- Container Readiness Type -->
+                                    <div class="form-group">
+                                        <label for="readinessProbeType">Readiness Probe  <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="How will we know that the container has successfully started?"></i></sup></label>
+                                        <select class="form-control" ng-model="probe.type">
+                                            <option value="">None</option>
+                                            <option value="http">HTTP GET</option>
+                                            <option value="tcp">TCP Socket</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Readiness Probe Parameters -->
+                                    <div ng-if="probe.type !== ''">
+                                        <!-- HTTP GET options -->
+                                        <div class="row" ng-if="probe.type === 'http'">
+                                            <div class="col-xs-8">
+                                                <div class="form-group">
+                                                    <label for="readinessProbePath">Probe Path <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="What is the path we should hit to check if the container is ready?"></i></sup></label>
+                                                    <input class="form-control" type="text" required ng-pattern="/^\/[^\s]*$/" name="readinessProbePath" id="readinessProbePath" ng-model="probe.path" placeholder="Path..." />
+                                                    
+                                                    <ng-messages role="alert" class="text-danger" for="modifySpec.readinessProbePath.$error">
+                                                        <ng-message when="required">You must enter a path to use HTTP GET probe</ng-message>
+                                                        <ng-message when="pattern">This value must be a valid path (i.e. /favicon.ico)</ng-message>
+                                                    </ng-messages>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-xs-4">
+                                                <div class="checkbox">
+                                                    <label ng-click="toggleHttps()">
+                                                        <input type="checkbox" ng-checked="probe.port === 443" /> Use HTTPS?
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
                                         
+                                        <div class="form-group">
+                                            <label for="readinessProbePort">Probe Port <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="Which port should we hit to check if the container is ready?"></i></sup></label>
+                                            <input class="form-control" type="number" required min="1" max="65535" name="readinessProbePort" id="readinessProbePort" ng-model="probe.port" placeholder="Port..." />
+                                            
+                                            <ng-messages role="alert" class="text-danger" for="modifySpec.readinessProbePort.$error">
+                                                <ng-message when="required">You must enter a port number for the probe</ng-message>
+                                                <ng-message when="min,max">This value must be a valid port number (1 - 65535)</ng-message>
+                                            </ng-messages>
+                                        </div>
+                                        
+                                        <!-- Timing options -->
+                                        <div class="row">
+                                            <div class="col-xs-6">
+                                                <div class="form-group" ng-if="probe.type !== ''">
+                                                    <label for="readinessProbeDelay">Initial Delay <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="How many seconds should we wait before beginning the ready check?"></i></sup></label>
+                                                    <input class="form-control" type="number" required min="0" max="500" name="readinessProbeDelay" id="readinessProbeDelay" ng-model="probe.initialDelay" placeholder="Initial Delay..." />
+                                                    
+                                                    <ng-messages role="alert" class="text-danger" for="modifySpec.readinessProbeDelay.$error">
+                                                        <ng-message when="required">You must choose an initial delay</ng-message>
+                                                        <ng-message when="min,max">This value must be between 0 and 500 (10 minutes)</ng-message>
+                                                    </ng-messages>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-xs-6">
+                                                <div class="form-group" ng-if="probe.type !== ''">
+                                                    <label for="readinessProbeTimeout">Timeout <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="How many seconds should we probe after starting the ready check?"></i></sup></label>
+                                                    <input class="form-control" type="number" required min="0" max="500" name="readinessProbeTimeout" id="readinessProbeTimeout" ng-model="probe.timeout" placeholder="Timeout..." />
+                                                    
+                                                    <ng-messages role="alert" class="text-danger" for="modifySpec.readinessProbeTimeout.$error">
+                                                        <ng-message when="required">You must choose a timeout period</ng-message>
+                                                        <ng-message when="min,max">This value must be between 0 and 500 (10 minutes)</ng-message>
+                                                    </ng-messages>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </fieldset>
                             </div>
@@ -214,7 +287,7 @@
                         <div class="row">
                             <div class="col-sm-12">
                                 <fieldset class="border-nds">
-                                    <legend class="legend-fix">Dependencies</legend>
+                                    <legend class="legend-fix">Dependencies <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="bottom-right" uib-tooltip="Should any other services be started with this application?"></i></sup></legend>
                                     <div class="table-responsive">
                                         <table class="table table-striped table-condensed table-hover">
                                             <thead>
@@ -253,12 +326,14 @@
                             </div>
                         </div>
                     </uib-tab>
-                    <uib-tab heading="Environment" index="1">
-                        <!-- List / edit mapped environment variables -->    
+                    
+                    <!-- Environment Tab -->
+                    <uib-tab heading="Environment" index="4">
+                        <!-- List / edit mapped environment variables -->
                         <div class="row">
                             <div class="col-sm-12">
                                 <fieldset class="border-nds">
-                                    <legend class="legend-fix">Environment</legend>
+                                    <legend class="legend-fix">Environment Variables <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="bottom-right" uib-tooltip="You can access these values inside of your container using the syntax: ${VAR_NAME}"></i></sup></legend>
                                     <div class="table-responsive">
                                         <table class="table table-striped table-condensed table-hover">
                                             <thead>
@@ -306,14 +381,15 @@
                                 </fieldset>
                             </div>
                         </div>
-             
                     </uib-tab>
-                    <uib-tab heading="Data" index="3">
+                    
+                    <!-- Data Tab -->
+                    <uib-tab heading="Data" index="5">
                         <!-- List / edit mapped volumes -->
                         <div class="row">
                             <div class="col-sm-12">
                                 <fieldset class="border-nds">
-                                    <legend class="legend-fix">Volumes</legend>
+                                    <legend class="legend-fix">Volumes <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="bottom-right" uib-tooltip="Here you can map in any directory from your /home folder"></i></sup></legend>
                                     <div class="table-responsive">
                                         <table class="table table-striped table-condensed table-hover">
                                             <thead>
@@ -369,13 +445,13 @@
                             </div>
                         </div>
                     </uib-tab>
-                    <uib-tab heading="Ports" index="4">
                     
+                    <uib-tab heading="Ports" index="6">
                         <!-- List / edit mapped ports -->
                         <div class="row">
                             <div class="col-sm-12">
                               <fieldset class="border-nds">
-                                <legend class="legend-fix">Ports</legend>
+                                <legend class="legend-fix">Ports <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="bottom-right" uib-tooltip="Should this application expose any ports externally?"></i></sup></legend>
                                 <div class="table-responsive">
                                   <table class="table table-condensed table-hover table-striped">
                                     <thead>
@@ -433,12 +509,152 @@
                                             </button>
                                           </div>
                                         </td>-->
-                                        <td><button class="btn btn-xs btn-primary" ng-click="spec.ports.push({ protocol: portProtocol, port: portNumber, access: portExposure });portNumber=0" 
-                                        ng-disabled="_.find(spec.ports, { protocol:portProtocol, port:portNumber })" ><i class="fa fa-fw fa-plus"></i></button></td>
+                                        <td><button class="btn btn-xs btn-primary" ng-click="spec.ports.push({ protocol: portProtocol, port: portNumber });portNumber=0" 
+                                            ng-disabled="_.find(spec.ports, { protocol:portProtocol, port:portNumber })" ><i class="fa fa-fw fa-plus"></i></button></td>
                                       </tr>
                                   </table>
                                 </div>
                               </fieldset>
+                            </div>
+                        </div>
+                    </uib-tab>
+                    
+                    <uib-tab heading="Resource Limits" index="9">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                 <fieldset class="border-nds">
+                                    <legend class="legend-fix">Resource Limits <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="bottom-right" uib-tooltip="How much of your total allocation would you like to grant this application?"></i></sup></legend>
+                                            <!-- TODO - Validation:
+                                                -Ensure valid resource limits -->
+                                                
+                                    <!-- CPU Default -->
+                                    <div class="form-group">
+                                        <label for="limitCpuDefaultField">CPU Default <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="The minimum amount of CPU to allocate"></i></sup></label>
+                                        <div class="input-group">
+                                          <input type="number" class="form-control" id="limitCpuDefaultField" name="limitCpuDefaultField" 
+                                                ng-model="spec.resourceLimits.cpuDefault" aria-describedby="cpudefault-addon" ng-min="10" ng-max="{{ spec.resourceLimits.cpuMax }}" required />
+                                          <span class="input-group-addon" id="cpudefault-addon">m</span>
+                                        </div>
+                                        
+                                        <ng-messages class="text-danger" for="modifySpec.limitCpuDefaultField.$error" role="alert">
+                                          <ng-message when="required">This field is required</ng-message>
+                                          <ng-message when="min">This field must be above the minimum (10)</ng-message>
+                                          <ng-message when="max">This field must be below the maximum ({{ spec.resourceLimits.cpuMax }})</ng-message>
+                                        </ng-messages>
+                                    </div>
+                                    
+                                    <!-- CPU Max -->
+                                    <div class="form-group">
+                                        <label for="limitCpuMaxField">CPU Max <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="The maximum CPU this application is allowed to consume"></i></sup></label>
+                                        <div class="input-group">
+                                          <input type="number" class="form-control" id="limitCpuMaxField" name="limitCpuMaxField" 
+                                                ng-model="spec.resourceLimits.cpuMax" aria-describedby="cpumax-addon" ng-min="10" required />
+                                          <span class="input-group-addon" id="cpumax-addon">m</span>
+                                        </div>
+                                        
+                                        <ng-messages class="text-danger" for="modifySpec.limitCpuMaxField.$error" role="alert">
+                                          <ng-message when="required">This field is required</ng-message>
+                                          <ng-message when="min">This field must be above the minimum (10)</ng-message>
+                                        </ng-messages>
+                                    </div>
+                                    
+                                    <!-- Memory Default -->
+                                    <div class="form-group">
+                                        <label for="limitMemDefaultField">Memory Default <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="The minimum amount of memory to allocate"></i></sup></label>
+                                        <div class="input-group">
+                                          <input type="number" class="form-control" id="limitMemDefaultField" name="limitMemDefaultField" 
+                                                ng-model="spec.resourceLimits.memDefault" aria-describedby="memdefault-addon" ng-min="10" ng-max="{{ spec.resourceLimits.memMax }}" required />
+                                          <span class="input-group-addon" id="memdefault-addon">M</span>
+                                        </div>
+                                        
+                                        <ng-messages class="text-danger" for="modifySpec.limitMemDefaultField.$error" role="alert">
+                                          <ng-message when="required">This field is required</ng-message>
+                                          <ng-message when="min">This field must be above the minimum (10)</ng-message>
+                                          <ng-message when="max">This field must be below the maximum ({{ spec.resourceLimits.memMax }})</ng-message>
+                                        </ng-messages>
+                                    </div>
+                                    
+                                    <!-- Memory Max -->
+                                    <div class="form-group">
+                                        <label for="limitMemMaxField">Memory Max <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="The maximum amount of memory this application is allowed to consume"></i></sup></label>
+                                        <div class="input-group">
+                                          <input type="number" class="form-control" id="limitMemMaxField" name="limitMemMaxField" 
+                                                ng-model="spec.resourceLimits.memMax" aria-describedby="memmax-addon" ng-min="10" required />
+                                          <span class="input-group-addon" id="memmax-addon">M</span>
+                                        </div>
+                                        
+                                        <ng-messages class="text-danger" for="modifySpec.limitMemMaxField.$error" role="alert">
+                                          <ng-message when="required">This field is required</ng-message>
+                                          <ng-message when="min">This field must be above the minimum (10)</ng-message>
+                                        </ng-messages>
+                                    </div>
+                                </fieldset>
+                            </div>
+                        </div>
+                    </uib-tab>
+                    
+                    <!-- Development Tab -->
+                    <uib-tab heading="Development" index="3">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <fieldset class="border-nds">
+                                    <legend class="legend-fix">Source Repositories <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="bottom-right" uib-tooltip="Links to any related source repositories (if applicable)"></i></sup></legend>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover table-condensed">
+                                            <thead>
+                                                <tr>
+                                                    <th width="40%">Repository Type</th>
+                                                    <th width="40%">URL</th>
+                                                    <th width="20%"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="repo in spec.repositories">
+                                                    <td>
+                                                        <span ng-if="repo.type === 'git'">Git / Bitbucket</span>
+                                                        <span ng-if="repo.type === 'hg'">Mercurial</span>
+                                                        <span ng-if="repo.type === 'svn'">SVN</span>
+                                                        <span ng-if="repo.type === 'cvs'">CVS</span>
+                                                    </td>
+                                                    <td>{{ repo.url }}</td>
+                                                    <td class="text-center"><button class="btn btn-xs btn-default" ng-click="spec.repositories.splice(spec.repositories.indexOf(repo))"><i class="fa fa-fw fa-trash"></i></button></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-xs-5">
+                                            <select class="form-control" ng-model="newRepoType">
+                                                <option value="git">Git / Bitbucket</option>
+                                                <option value="hg">Mercurial</option>
+                                                <option value="svn">Subversion</option>
+                                                <option value="cvs">CVS</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-xs-5">
+                                            <input type="url" class="form-control" ng-model="newRepoUrl" name="repoUrlField" placeholder="Enter a repository URL..." />
+                                        </div>
+                                        <div class="col-xs-2">
+                                            <button class="btn btn-primary" ng-disabled="!newRepoType || !newRepoUrl" ng-click="addItem('repositories', { type: newRepoType, url: newRepoUrl });newRepoUrl=''">
+                                                <i class="fa fa-fw fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <fieldset class="border-nds">
+                                    <legend class="legend-fix">Developer Environment <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="bottom-right" uib-tooltip="Choose an application that can be used to develop {{ spec.label }} (if applicable)"></i></sup></legend>
+                                    <select class="form-control" ng-model="spec.developerEnvironment">
+                                        <option ng-repeat="devEnv in specs | hasTag:'Development environment'" ng-value="{{ devEnv.key }}">
+                                            {{ devEnv.label }} <span class="pull-right"><{{ devEnv.key }}></span>
+                                        </option>
+                                    </select>
+                                </fieldset>
                             </div>
                         </div>
                     </uib-tab>
