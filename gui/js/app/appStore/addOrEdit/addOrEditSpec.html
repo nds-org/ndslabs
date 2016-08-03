@@ -2,6 +2,8 @@
 <section class="container">
     <h3>{{ editingSpec ? 'Edit' : 'Add' }} Application<span ng-if="spec.label">: {{ spec.label }}</span></h3>
     
+    <div ng-if="spec.key | stackExistsFromSpec" uib-alert class="text-center alert-danger">You must remove any <a ng-href="#/home?expand={{ spec.key }}">existing application instances</a> before you can edit the spec</div>
+    
     <form name="modifySpec">
         
         <div class="row">
@@ -452,7 +454,7 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="pull-right">
-                <button class="btn btn-success" ng-click="save()" ng-disabled="!keyUnique || modifySpec.$invalid"><i class="fa fa-fw fa-save"></i> Save</button>
+                <button class="btn btn-success" ng-click="save()" ng-disabled="(spec.key | stackExistsFromSpec) || !keyUnique || modifySpec.$invalid"><i class="fa fa-fw fa-save"></i> Save</button>
                 <button class="btn btn-danger" ng-click="cancel()"><i class="fa fa-fw fa-times"></i> Cancel</button>
             </div>    
         </div>
