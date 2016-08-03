@@ -65,13 +65,6 @@
                                 
                                     <div class="row">
                                         <div class="col-xs-12">
-                                            <!-- Display this spec in the NDS Labs AppStore? -->
-                                            <div class="checkbox pull-right">
-                                                <label ng-click="toggleDisplay()">
-                                                    <input ng-checked="spec.display === 'stack'" type="checkbox"> Present this application in the UI?
-                                                </label>
-                                            </div>
-                                            
                                             <!-- Default Access -->
                                             <div class="form-group">
                                                 <div><label>Default Access <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="Who can access this application by default (can be overridden on a per-instance basis)"></i></sup></label></div>
@@ -105,7 +98,7 @@
                                     </div>
                                     
                                     <!-- Tags (optional) -->
-                                    <div class="form-group" ng-if="spec.display === 'stack'">
+                                    <div class="form-group">
                                         <label for="keywordsField">Keywords <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="Choose search filter keywords that would allow users to easily discover this application"></i></sup></label>
                                         <ul class="fa-ul">
                                             <li ng-repeat="tagId in spec.tags" class="item">

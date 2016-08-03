@@ -41,10 +41,6 @@ angular
     $scope.probe.port = newPort;
   };
   
-  $scope.toggleDisplay = function() {
-    $scope.spec.display = $scope.spec.display === 'stack' ? '' : 'stack';
-  };
-  
   $scope.addKeyword = function(keyword) {
     if ($scope.spec.tags.indexOf(keyword) === -1) { 
       $scope.spec.tags.push(keyword);
@@ -135,11 +131,21 @@ angular
   // Save the changes made on this page
   $scope.save = function(display) {
     var method = $scope.editingSpec ? 'putServicesByServiceId' : 'postServices';
-  
+    
+    spec.display = 'stack';
   
     var spec = angular.copy($scope.spec);
-    spec.command = _.split($scope.spec.command, ' ');
-    spec.args = _.split($scope.spec.args, ' ');
+    if ($scope.spec.command.replace(/ /g,'') !== '') {
+      spec.command = _.split($scope.spec.command, ' ');
+    } else {
+      spec.command = null;
+    }
+    
+    if ($scope.spec.args.replace(/ /g,'') !== '') {
+      spec.args = _.split($scope.spec.args, ' ');
+    } else {
+      spec.args = null;
+    }
     
     // Parse readinessProbe back into the spec
     if ($scope.probe.type === '') {
