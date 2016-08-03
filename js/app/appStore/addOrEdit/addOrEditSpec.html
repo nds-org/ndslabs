@@ -238,7 +238,9 @@
                                                 
                                                 <!-- Add new dependency -->
                                                 <tr>
-                                                    <td><select class="form-control" ng-model="newDep" ng-options="dep as dep.key for dep in spec.depends | invertSpecList | orderBy:'key' track by dep.key"></select></td>
+                                                    <td><select class="form-control" ng-model="newDep">
+                                                        <option ng-repeat="dep in spec.depends | invertSpecList | orderBy:'label' track by dep.key" value="{{ dep.key }}">{{ dep.label }} <{{ dep.key }}></option>
+                                                    </select></td>
                                                     <td><input type="checkbox" class="checkbox" ng-model="newDepReq" /></td>
                                                     <td>
                                                         <button class="btn btn-primary btn-xs" ng-disabled="!newDep" ng-click="addItem('depends', { key: newDep.key, required: newDepReq });newDepName=''">
