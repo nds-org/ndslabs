@@ -33,7 +33,7 @@ if [ "$1" = 'apiserver' ]; then
 	fi
 
 	if [ -z "$VOLUME_NAME" ]; then 
-		VOLUME_PATH="global"
+		VOLUME_NAME="global"
 	fi
 
 cat << EOF > /apiserver.conf
