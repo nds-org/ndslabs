@@ -13,6 +13,20 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  */ 
 .constant('_', window._)
 
+.factory('RandomPassword', [ function() {
+  return {
+    generate: function(len) {
+      var length = len || 10,
+          charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+          retVal = "";
+      for (var i = 0, n = charset.length; i < length; ++i) {
+          retVal += charset.charAt(Math.random() * n);
+      }
+      return retVal;
+    }
+  };
+}])
+
 .factory('SoftRefresh', [ 'Stacks', 'Project', 'Specs', function(Stacks, Project, Specs) {
  var refresh = {
     /**
@@ -264,7 +278,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  * @param {} stack - The stack to which this service should attach
  * @param {} spec - The service spec off of which to base this service
  */
-.service('StackService', [ function() {
+.service('StackService', [ 'RandomPassword', function(RandomPassword) {
   return function(stack, spec) {
     var svc = {
       id: "",
@@ -280,7 +294,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
     // Assign default values (for "Use Default" option)
     angular.forEach(svc.config, function(cfg) {
       if (cfg.isPassword) {
-        cfg.value = 'GENERATED_PASSWORD';
+        cfg.value = RandomPassword.generate();
       }
     });
     
