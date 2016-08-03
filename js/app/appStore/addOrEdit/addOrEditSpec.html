@@ -255,11 +255,11 @@
                                             <div class="col-xs-6">
                                                 <div class="form-group" ng-if="probe.type !== ''">
                                                     <label for="readinessProbeDelay">Initial Delay <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="How many seconds should we wait before beginning the ready check?"></i></sup></label>
-                                                    <input class="form-control" type="number" required min="0" max="500" name="readinessProbeDelay" id="readinessProbeDelay" ng-model="probe.initialDelay" placeholder="Initial Delay..." />
+                                                    <input class="form-control" type="number" required min="0" max="600" name="readinessProbeDelay" id="readinessProbeDelay" ng-model="probe.initialDelay" placeholder="Initial Delay..." />
                                                     
                                                     <ng-messages role="alert" class="text-danger" for="modifySpec.readinessProbeDelay.$error">
                                                         <ng-message when="required">You must choose an initial delay</ng-message>
-                                                        <ng-message when="min,max">This value must be between 0 and 500 (10 minutes)</ng-message>
+                                                        <ng-message when="min,max">This value must be between 0 and 600 (10 minutes)</ng-message>
                                                     </ng-messages>
                                                 </div>
                                             </div>
@@ -267,11 +267,11 @@
                                             <div class="col-xs-6">
                                                 <div class="form-group" ng-if="probe.type !== ''">
                                                     <label for="readinessProbeTimeout">Timeout <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="How many seconds should we probe after starting the ready check?"></i></sup></label>
-                                                    <input class="form-control" type="number" required min="0" max="500" name="readinessProbeTimeout" id="readinessProbeTimeout" ng-model="probe.timeout" placeholder="Timeout..." />
+                                                    <input class="form-control" type="number" required min="0" max="600" name="readinessProbeTimeout" id="readinessProbeTimeout" ng-model="probe.timeout" placeholder="Timeout..." />
                                                     
                                                     <ng-messages role="alert" class="text-danger" for="modifySpec.readinessProbeTimeout.$error">
                                                         <ng-message when="required">You must choose a timeout period</ng-message>
-                                                        <ng-message when="min,max">This value must be between 0 and 500 (10 minutes)</ng-message>
+                                                        <ng-message when="min,max">This value must be between 0 and 600 (10 minutes)</ng-message>
                                                     </ng-messages>
                                                 </div>
                                             </div>
