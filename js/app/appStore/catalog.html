@@ -47,20 +47,6 @@
           </a>
         </div>
       </div>
-      <!--<div class="row">
-        <div class="col-sm-12">
-          <tags-input ng-model="tags.selected" 
-                display-property="name" 
-                placeholder="Add a filter..." 
-                replace-spaces-with-dashes="false"
-                template="tag-template">
-            <auto-complete source="loadTags($query)"
-                           min-length="1"
-                           load-on-focus="true"
-                           load-on-empty="false"
-                           max-results-to-show="32"
-                           template="autocomplete-template"></auto-complete>
-          </tags-input>-->
           
           <script type="text/ng-template" id="tag-template">
             <div class="tag-template">
@@ -159,7 +145,7 @@
         <div id="cardRow" class="row" ng-repeat="set in chunkedSpecs">
           <div class="col-sm-{{ 12 / set.length }}" ng-repeat="spec in set">
             <div class="thumbnail" style="width:100%">
-              <img class="pull-left" ng-if="spec.logo" height="44" width="200" ng-src="spec.logo" alt="{{ spec.key }}">
+              <img class="pull-left" ng-if="spec.logo" height="44" width="200" ng-src="{{ spec.logo }}" alt="{{ spec.key }}">
               <div class="pull-right" uib-tooltip="Source: {{ spec.catalog | capitalize }}" tooltip-placement="left">
                  <i class="fa fa-fw" ng-class="{ 'fa-user': spec.catalog === 'user', 'fa-server': spec.catalog === 'system' }" ></i>
                  <small>{{ spec.key }}</small>
