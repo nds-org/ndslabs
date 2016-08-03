@@ -140,7 +140,6 @@ angular
     var spec = angular.copy($scope.spec);
     spec.command = _.split($scope.spec.command, ' ');
     spec.args = _.split($scope.spec.args, ' ');
-    spec.display = display ? 'stack' : '';
     
     // Parse readinessProbe back into the spec
     if ($scope.probe.type === '') {
