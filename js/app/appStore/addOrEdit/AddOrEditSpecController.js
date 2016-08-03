@@ -2,10 +2,10 @@
 
 angular
 .module('ndslabs')
-.filter('invertSpecList', [ '$filter', 'Specs', '_', function($filter, Specs, _) {
+.filter('invertSpecList', [ 'Specs', '_', function(Specs, _) {
   return function(input) {
-    return _.remove(angular.copy(Specs.all), function(spec) {
-      return spec.display !== '' && spec.display !== 'none' && !_.find(input, [ 'key', spec.key ]);
+    return _.filter(Specs.all, function(spec) {
+      return !_.find(input, [ 'key', spec.key ]);
     });
   };
 }])
