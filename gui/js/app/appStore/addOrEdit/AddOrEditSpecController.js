@@ -132,9 +132,9 @@ angular
   $scope.save = function(display) {
     var method = $scope.editingSpec ? 'putServicesByServiceId' : 'postServices';
     
-    spec.display = 'stack';
   
     var spec = angular.copy($scope.spec);
+    spec.display = 'stack';
     if ($scope.spec.command.replace(/ /g,'') !== '') {
       spec.command = _.split($scope.spec.command, ' ');
     } else {
