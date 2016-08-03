@@ -15,6 +15,25 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  */ 
 .constant('_', window._)
 
+
+/**
+ * Given a list of specs, return only those associated with the given tag name
+ */ 
+.filter('hasTag', [ '_', 'Vocabulary', function(_, Vocabulary) {
+  return function(input, tagName) {
+    var tag = _.find(Vocabulary.all.terms, ['name', tagName]);
+    
+    if (!tag || !tag.id) {
+      return '';
+    }
+    
+    return _.filter(input, function(spec) {
+      return spec.tags && spec.tags.indexOf(tag.id) !== -1
+    });
+  };
+}])
+
+
 /**
  * Given a string, capitalize it
  */ 
@@ -134,6 +153,7 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
     return tag[propertyName];
   };
 }])
+
 /**
  * Given a service spec key, retrieve its label
  */
