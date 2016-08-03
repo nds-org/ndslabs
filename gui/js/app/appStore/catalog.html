@@ -145,13 +145,13 @@
         <div id="cardRow" class="row" ng-repeat="set in chunkedSpecs">
           <div class="col-sm-{{ 12 / set.length }}" ng-repeat="spec in set">
             <div class="thumbnail" style="width:100%">
-              <img class="pull-left" ng-if="spec.logo" height="44" width="200" ng-src="{{ spec.logo }}" alt="{{ spec.key }}">
               <div class="pull-right" uib-tooltip="Source: {{ spec.catalog | capitalize }}" tooltip-placement="left">
                  <i class="fa fa-fw" ng-class="{ 'fa-user': spec.catalog === 'user', 'fa-server': spec.catalog === 'system' }" ></i>
                  <small>{{ spec.key }}</small>
               </div>
               
               <div class="caption">
+                <img ng-if="spec.logo" style="height:44px;" ng-src="{{ spec.logo }}" alt="{{ spec.key }}">
                 <h4>{{ spec.label }}</h4>
                 <p>{{ spec.description }}</p>
               </div>
