@@ -108,7 +108,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 /**
  * A shared store for service specs pulled from /services
  */
-.factory('Specs', [ '$log', '_', 'NdsLabsApi', function($log, _, NdsLabsApi) {
+.factory('Specs', [ '$log', '_', 'Vocabulary', 'NdsLabsApi', function($log, _, Vocabulary, NdsLabsApi) {
   // An empty place-holder for our service/stack specs
   var specs = {
     purge: function() {
@@ -121,7 +121,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       // Grab the list of available services at our site
       return NdsLabsApi.getServices({ catalog: 'all' }).then(function(data, xhr) {
         $log.debug("successfully grabbed from /services!");
-        return specs.all = angular.copy(data);
+        specs.all = angular.copy(data);
         
         // Split out display === 'stack' vs 'standalone'
         specs.deps = angular.copy(data);
@@ -130,13 +130,23 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
         // Split out catalog === 'system' vs 'user'
         specs.system = _.filter(angular.copy(data), [ 'catalog', 'system']);
         specs.user = _.filter(angular.copy(data), [ 'catalog', 'user']);
+        
+        var devEnvTag = _.find(Vocabulary.all.terms, ['name', 'Development environment']);
+        specs.devEnvs = _.filter(data, function(spec) {
+          return spec.tags && spec.tags.indexOf(devEnvTag.id) !== -1;
+        });
+        
+        return data;
       }, function (headers) {
         $log.error("error grabbing from /services!");
       });
     },
     all: [],
+    system: [],
+    user: [],
     stacks: [],
-    deps: []
+    deps: [],
+    devEnvs: []
   };
   
     // TODO: Populate this automatically? Seems like a bad idea...
@@ -233,6 +243,13 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
         "memMax": 1000,
         "memDefault": 50
       },
+      "readinessProbe": {
+          "type": '',
+          "path": '',
+          "port": 80,
+          "initialDelay": 15,
+          "timeout":45,
+        },
       "developerEnvironment": "",
       "tags": []
     };
@@ -321,10 +338,11 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
      * Populate all shared data from the server into our scope
      */
     populateAll: function(projectId) {
-      Vocabulary.populate("tags");
-      return Specs.populate().then(function() {
-        Project.populate(projectId).then(function() {
-          Stacks.populate();
+      return Vocabulary.populate("tags").then(function() {
+        Specs.populate().then(function() {
+          Project.populate(projectId).then(function() {
+            Stacks.populate();
+          })
         })
       });
     },
