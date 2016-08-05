@@ -197,7 +197,6 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
     populate: function(name) {
       return NdsLabsApi.getVocabularyByVocabName({ vocabName: name }).then(function(data, xhr) {
         $log.debug("successfully grabbed vacob list for " + name + "!");
-        
         return vocab.all = data || [];
       }, function(response) {
         $log.error("error grabbing vocab list!");

@@ -66,28 +66,4 @@ angular.module('ndslabs-directives', [])
             $log.debug('Connected: ' + target);
         }
     }
-}])
-.directive('absPath', function() {
-  return {
-    restrict: 'A',
-    require: 'ngModel',
-    link: function(scope, element, attr, ngModel) {
-      ngModel.$validators.startsWith = function(modelValue, viewValue) {
-        var value = modelValue || viewValue;
-        return value && value.length > 0 && value.indexOf(attr.startsWith) == 0;
-      }
-    }
-  }
-})
-.directive('unique', function() {
-  return {
-    restrict: 'A',
-    require: 'ngModel',
-    link: function(scope, element, attr, ngModel) {
-      ngModel.$validators.startsWith = function(modelValue, viewValue) {
-        var value = modelValue || viewValue;
-        return value && value.length > 0 && value.indexOf(attr.startsWith) == 0;
-      }
-    }
-  }
-});
+}]);

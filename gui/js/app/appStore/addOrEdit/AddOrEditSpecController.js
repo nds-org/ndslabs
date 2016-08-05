@@ -3,9 +3,10 @@
 angular
 .module('ndslabs')
 .filter('invertSpecList', [ 'Specs', '_', function(Specs, _) {
-  return function(input) {
+  return function(input, myKey) {
     return _.filter(Specs.all, function(spec) {
-      return !_.find(input, [ 'key', spec.key ]);
+      return !_.find(input, [ 'key', spec.key ])
+        && !_.find(input, [ 'key', myKey ]);
     });
   };
 }])
@@ -58,8 +59,7 @@ angular
   
   // Set up some common defaults
   $scope.portProtocol = 'http';
-  $scope.portNumber = 0;
-  $scope.portExposure = 'external';
+  $scope.portNumber = 1;
   
   $scope.probe = {
     type: 'none',
@@ -92,6 +92,8 @@ angular
         $scope.spec = data;
         $scope.spec.tags = $scope.spec.tags || [];
         $scope.spec.image.tags = $scope.spec.image.tags || [];
+        $scope.spec.config = $scope.spec.config || [];
+        $scope.spec.depends = $scope.spec.depends || [];
         $scope.spec.command = _.join($scope.spec.command, ' ');
         $scope.spec.args = _.join($scope.spec.args, ' ');
         
@@ -135,16 +137,16 @@ angular
   
     var spec = angular.copy($scope.spec);
     spec.display = 'stack';
-    if ($scope.spec.command.replace(/ /g,'') !== '') {
-      spec.command = _.split($scope.spec.command, ' ');
-    } else {
+    if (!$scope.spec.command || $scope.spec.command.replace(/ /g,'') === '') {
       spec.command = null;
+    } else {
+      spec.command = _.split($scope.spec.command, ' ');
     }
     
-    if ($scope.spec.args.replace(/ /g,'') !== '') {
-      spec.args = _.split($scope.spec.args, ' ');
-    } else {
+    if (!$scope.spec.args || $scope.spec.args.replace(/ /g,'') === '') {
       spec.args = null;
+    } else {
+      spec.args = _.split($scope.spec.args, ' ');
     }
     
     // Parse readinessProbe back into the spec
