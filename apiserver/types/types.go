@@ -26,7 +26,7 @@ type ServiceSpec struct {
 	Catalog              string              `json:"catalog"`
 	DeveloperEnvironment string              `json:"developerEnvironment"`
 	Tags                 []string            `json:"tags"`
-	Info                 sintr               `json:"info"`
+	Info                 string              `json:"info"`
 }
 
 type ServiceImage struct {
