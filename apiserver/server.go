@@ -2042,10 +2042,10 @@ func (s *Server) GetVocabulary(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-func (s *Server) useNodePort() {
+func (s *Server) useNodePort() bool {
 	return s.ingress == IngressTypeNodePort
 }
 
-func (s *Server) useLoadBalancer() {
+func (s *Server) useLoadBalancer() bool {
 	return s.ingress == IngressTypeLoadBalancer
 }
