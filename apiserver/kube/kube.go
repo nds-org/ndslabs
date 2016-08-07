@@ -845,14 +845,15 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 		Spec: api.PodSpec{
 			Containers: []api.Container{
 				api.Container{
-					Name:         spec.Key,
-					Image:        spec.Image.Name + ":" + tag,
-					Env:          env,
-					VolumeMounts: k8volMounts,
-					Ports:        k8cps,
-					Args:         spec.Args,
-					Command:      spec.Command,
-					Resources:    k8rq,
+					Name:            spec.Key,
+					Image:           spec.Image.Name + ":" + tag,
+					Env:             env,
+					VolumeMounts:    k8volMounts,
+					Ports:           k8cps,
+					Args:            spec.Args,
+					Command:         spec.Command,
+					Resources:       k8rq,
+					ImagePullPolicy: api.PullAlways,
 				},
 			},
 			NodeSelector: map[string]string{
