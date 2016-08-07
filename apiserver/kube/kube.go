@@ -696,7 +696,8 @@ func (k *KubeHelper) RandomString(randomLength int) string {
 	return utilrand.String(randomLength)
 }
 
-func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsapi.ServiceSpec) *api.Service {
+func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsapi.ServiceSpec,
+	useNodePort bool) *api.Service {
 
 	// Create the Kubernetes service definition
 	k8svc := api.Service{
@@ -719,7 +720,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 		},
 	}
 
-	if spec.Access == ndsapi.AccessExternal {
+	if useNodePort && spec.Access == ndsapi.AccessExternal {
 		k8svc.Spec.Type = api.ServiceTypeNodePort
 	}
 
