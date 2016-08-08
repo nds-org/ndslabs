@@ -801,6 +801,9 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	if len(spec.VolumeMounts) > 0 {
 		for i, vol := range spec.VolumeMounts {
 			volName := fmt.Sprintf("vol%d", i)
+			if vol.Type == ndsapi.MountTypeDocker {
+				volName = "docker"
+			}
 			k8vol := api.VolumeMount{Name: volName, MountPath: vol.MountPath}
 			k8volMounts = append(k8volMounts, k8vol)
 		}
