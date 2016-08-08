@@ -799,8 +799,9 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	k8volMounts = append(k8volMounts, k8homeVol)
 
 	if len(spec.VolumeMounts) > 0 {
-		for _, vol := range spec.VolumeMounts {
-			k8vol := api.VolumeMount{Name: vol.Name, MountPath: vol.MountPath}
+		for i, vol := range spec.VolumeMounts {
+			volName := fmt.Sprintf("vol%d", i)
+			k8vol := api.VolumeMount{Name: volName, MountPath: vol.MountPath}
 			k8volMounts = append(k8volMounts, k8vol)
 		}
 	}
