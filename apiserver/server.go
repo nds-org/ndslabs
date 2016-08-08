@@ -1885,76 +1885,79 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 		ssid := pod.ObjectMeta.Labels["name"]
 		//phase := pod.Status.Phase
 
-		// Get stack service from Pod name
-		stack, err := s.etcd.GetStack(userId, sid)
-		if err != nil {
-			glog.Errorf("Error getting stack: %s\n", err)
-			return
-		}
+		if len(sid) > 0 {
 
-		var stackService *api.StackService
-		for i := range stack.Services {
-			if stack.Services[i].Id == ssid {
-				stackService = &stack.Services[i]
-			}
-		}
-
-		if event != nil {
-			// This is a general Event
-			if event.Reason == "MissingClusterDNS" || event.Reason == "FailedSync" {
-				// Ignore these for now
+			// Get stack service from Pod name
+			stack, err := s.etcd.GetStack(userId, sid)
+			if err != nil {
+				glog.Errorf("Error getting stack: %s\n", err)
 				return
 			}
-			if event.Type == "Warning" && event.Reason != "Unhealthy" {
-				// This is an error
-				stackService.Status = "error"
+
+			var stackService *api.StackService
+			for i := range stack.Services {
+				if stack.Services[i].Id == ssid {
+					stackService = &stack.Services[i]
+				}
 			}
 
-			stackService.StatusMessages = append(stackService.StatusMessages,
-				fmt.Sprintf("Reason=%s, Message=%s", event.Reason, event.Message))
-		} else {
-			// This is a Pod event
-			ready := false
-			if len(pod.Status.Conditions) > 0 {
-				if pod.Status.Conditions[0].Type == "Ready" {
-					ready = (pod.Status.Conditions[0].Status == "True")
+			if event != nil {
+				// This is a general Event
+				if event.Reason == "MissingClusterDNS" || event.Reason == "FailedSync" {
+					// Ignore these for now
+					return
+				}
+				if event.Type == "Warning" && event.Reason != "Unhealthy" {
+					// This is an error
+					stackService.Status = "error"
 				}
 
-				if len(pod.Status.ContainerStatuses) > 0 {
-					// The pod was terminated, this is an error
-					if pod.Status.ContainerStatuses[0].State.Terminated != nil {
-						reason := pod.Status.ContainerStatuses[0].State.Terminated.Reason
-						message := pod.Status.ContainerStatuses[0].State.Terminated.Message
-						stackService.Status = "error"
+				stackService.StatusMessages = append(stackService.StatusMessages,
+					fmt.Sprintf("Reason=%s, Message=%s", event.Reason, event.Message))
+			} else {
+				// This is a Pod event
+				ready := false
+				if len(pod.Status.Conditions) > 0 {
+					if pod.Status.Conditions[0].Type == "Ready" {
+						ready = (pod.Status.Conditions[0].Status == "True")
+					}
+
+					if len(pod.Status.ContainerStatuses) > 0 {
+						// The pod was terminated, this is an error
+						if pod.Status.ContainerStatuses[0].State.Terminated != nil {
+							reason := pod.Status.ContainerStatuses[0].State.Terminated.Reason
+							message := pod.Status.ContainerStatuses[0].State.Terminated.Message
+							stackService.Status = "error"
+							stackService.StatusMessages = append(stackService.StatusMessages,
+								fmt.Sprintf("Reason=%s, Message=%s", reason, message))
+						}
+					} else {
+						reason := pod.Status.Conditions[0].Reason
+						message := pod.Status.Conditions[0].Message
 						stackService.StatusMessages = append(stackService.StatusMessages,
 							fmt.Sprintf("Reason=%s, Message=%s", reason, message))
 					}
+
+				}
+
+				if ready {
+					stackService.Status = "ready"
 				} else {
-					reason := pod.Status.Conditions[0].Reason
-					message := pod.Status.Conditions[0].Message
-					stackService.StatusMessages = append(stackService.StatusMessages,
-						fmt.Sprintf("Reason=%s, Message=%s", reason, message))
-				}
-
-			}
-
-			if ready {
-				stackService.Status = "ready"
-			} else {
-				if eventType == "ADDED" {
-					stackService.Status = "starting"
-				} else if eventType == "DELETED" {
-					stackService.Status = "stopped"
+					if eventType == "ADDED" {
+						stackService.Status = "starting"
+					} else if eventType == "DELETED" {
+						stackService.Status = "stopped"
+					}
 				}
 			}
+			message := ""
+			if len(stackService.StatusMessages) > 0 {
+				message = stackService.StatusMessages[len(stackService.StatusMessages)-1]
+			}
+			glog.V(4).Infof("Namespace: %s, Pod: %s, Status: %s, StatusMessage: %s\n", userId, pod.Name,
+				stackService.Status, message)
+			s.etcd.PutStack(userId, sid, stack)
 		}
-		message := ""
-		if len(stackService.StatusMessages) > 0 {
-			message = stackService.StatusMessages[len(stackService.StatusMessages)-1]
-		}
-		glog.V(4).Infof("Namespace: %s, Pod: %s, Status: %s, StatusMessage: %s\n", userId, pod.Name,
-			stackService.Status, message)
-		s.etcd.PutStack(userId, sid, stack)
 	}
 }
 
