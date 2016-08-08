@@ -298,11 +298,6 @@
                                                     <td><input type="checkbox" class="checkbox" ng-model="dep.required" /></td>
                                                     <td><button class="btn btn-xs btn-default" ng-click="removeItem(spec.depends, dep)"><i class="fa fa-fw fa-trash"></i></button></td>
                                                 </tr>
-                                        
-                                                <!-- TODO - Validation:
-                                                    -Ensure spec exists
-                                                    -Ensure no duplicates
-                                                -->
                                                 
                                                 <!-- Add new dependency -->
                                                 <tr>
@@ -353,17 +348,12 @@
                                                     <td><button class="btn btn-xs btn-default" ng-click="removeItem(spec.config, cfg)"><i class="fa fa-fw fa-trash"></i></button></td>
                                                 </tr>
                                         
-                                                <!-- TODO - Validation:
-                                                    -Ensure name is all uppercase with no spaces
-                                                    -Ensure that if value is blank, canOverride is true
-                                                    -Ensure that canOverride is marked true when isPassword is marked as true
-                                                -->
-                                        
                                                 <!-- Add new environment variable -->
                                                 <tr>
                                                     <td>
-                                                        <input class="form-control" ng-model="newCfgName" id="newCfgNameField" name="newCfgNameField" placeholder="Variable name..." minlength="0" maxlength="80" />
+                                                        <input class="form-control" ng-model="newCfgName" id="newCfgNameField" name="newCfgNameField" placeholder="Variable name..." minlength="0" maxlength="80" ng-pattern="/^[A-Z][_A-Z]*[A-Z]$/" />
                                                         <ng-messages role="alert" class="text-danger" for="modifySpec.newCfgName.$error">
+                                                            <ng-message when="pattern">This value may only contain uppercase letters and underscore</ng-message>
                                                             <ng-message when="minlength,maxlength">This value must be between 1 and 80 characters</ng-message>
                                                         </ng-messages>
                                                     </td>
@@ -379,7 +369,7 @@
                                                             <ng-message when="minlength,maxlength">This value must be between 1 and 4096 characters</ng-message>
                                                         </ng-messages>
                                                     </td>
-                                                    <td><input type="checkbox" class="checkbox" ng-model="newCfgCanOverride" /></td>
+                                                    <td><input type="checkbox" class="checkbox" ng-model="newCfgCanOverride" ng-disabled="newCfgIsPassword" /></td>
                                                     <td><input type="checkbox" class="checkbox" ng-model="newCfgIsPassword" /></td>
                                                     <td>
                                                         <button class="btn btn-xs btn-primary" ng-disabled="!newCfgName" ng-click="addItem('config', { name: newCfgName, label: newCfgLbl, value: newCfgValue, canOverride: newCfgCanOverride, isPassword: newCfgIsPassword });newCfgName=newCfgValue=''">
@@ -422,20 +412,17 @@
                                                     </td>
                                                 </tr>
                                                 
-                                                <!-- TODO - Validation:
-                                                    -Ensure no duplicates
-                                                -->
-                                                
                                                 <!-- Add new volume -->
                                                 <tr>
                                                     <td>
-                                                        <input class="form-control" ng-model="newVolName" id="volNameField" name="volNameField" placeholder="Enter a new volume name..." ng-pattern="/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/" /> 
+                                                        <input class="form-control" ng-model="newVolName" id="volNameField" name="volNameField" placeholder="Enter a new volume name..." ng-pattern="/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/" maxlength="63" /> 
                                                         <ng-messages class="text-danger" role="alert" for="modifySpec.volNameField.$error">
                                                             <ng-message when="pattern">This field may only contain dashes and lowercase alphanumeric characters</ng-message>
+                                                            <ng-message when="maxlength">This field must be between 1 - 63 characters in length</ng-message>
                                                         </ng-messages>
                                                     </td>
                                                     <td>
-                                                        <input class="form-control" ng-model="newVolPath" id="volPathField" name="volPathField" placeholder="Enter a container mount path..." ng-pattern="/^\/[-.a-z0-9A-Z]+$/" />
+                                                        <input class="form-control" ng-model="newVolPath" id="volPathField" name="volPathField" placeholder="Enter a container mount path..." ng-pattern="/^\/[-\/.a-z0-9A-Z]+$/" />
                                                         <ng-messages class="text-danger" role="alert" for="modifySpec.volPathField.$error">
                                                             <ng-message when="pattern">This field must be an absolute path (i.e. <i>/volume/path</i>)</li>
                                                         </ng-messages>

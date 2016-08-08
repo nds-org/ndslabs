@@ -33,6 +33,13 @@ angular
     }
   });
   
+  $scope.$watch('newCfgIsPassword', function(newValue, oldValue) {
+    if (newValue) {
+      $scope.newCfgCanOverride = true;
+      $scope.newCfgValue = '';
+    }
+  });
+  
   Vocabulary.populate("tags").then(function(data) {
     $scope.tags = data.terms;
   });
