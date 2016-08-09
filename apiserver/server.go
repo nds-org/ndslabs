@@ -1127,7 +1127,7 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 		spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
 		if spec != nil {
 			for _, mount := range spec.VolumeMounts {
-				if mount.Name == "docker" {
+				if mount.Type == api.MountTypeDocker {
 					continue
 				}
 
@@ -1390,9 +1390,9 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 			k8vol := k8api.Volume{}
 			k8hostPath := k8api.HostPathVolumeSource{}
 			found := false
-			for _, mount := range spec.VolumeMounts {
+			for i, mount := range spec.VolumeMounts {
 				if mount.MountPath == toPath {
-					k8vol.Name = mount.Name
+					k8vol.Name = fmt.Sprintf("vol%d", i)
 					k8hostPath.Path = s.volDir + "/" + userId + "/" + fromPath
 					found = true
 				}
@@ -1419,10 +1419,9 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 			// Go back through the spec volume mounts and create emptyDirs where needed
 			for _, mount := range spec.VolumeMounts {
 				k8vol := k8api.Volume{}
-				k8vol.Name = mount.Name
 
 				glog.V(4).Infof("Need volume for %s \n", stackService.Service)
-				if mount.Name == "docker" {
+				if mount.Type == api.MountTypeDocker {
 					// TODO: Need to prevent non-NDS services from mounting the Docker socket
 					k8vol := k8api.Volume{}
 					k8vol.Name = "docker"
@@ -1441,6 +1440,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 					if !found {
 						glog.Warningf("Required volume not found, using emptyDir\n")
 						k8empty := k8api.EmptyDirVolumeSource{}
+						k8vol.Name = fmt.Sprintf("empty%d", idx)
 						k8vol.EmptyDir = &k8empty
 						k8vols = append(k8vols, k8vol)
 					}
