@@ -696,7 +696,8 @@ func (k *KubeHelper) RandomString(randomLength int) string {
 	return utilrand.String(randomLength)
 }
 
-func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsapi.ServiceSpec) *api.Service {
+func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsapi.ServiceSpec,
+	useNodePort bool) *api.Service {
 
 	// Create the Kubernetes service definition
 	k8svc := api.Service{
@@ -719,7 +720,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 		},
 	}
 
-	if spec.Access == ndsapi.AccessExternal {
+	if useNodePort && spec.Access == ndsapi.AccessExternal {
 		k8svc.Spec.Type = api.ServiceTypeNodePort
 	}
 
@@ -751,8 +752,10 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 		"service": spec.Key,
 	}
 
+	homeDir := "/home/" + ns
 	env := []api.EnvVar{}
 	env = append(env, api.EnvVar{Name: "NAMESPACE", Value: ns})
+	env = append(env, api.EnvVar{Name: "NDSLABS_HOME", Value: homeDir})
 	env = append(env, api.EnvVar{Name: "TERM", Value: "linux"})
 	env = append(env, api.EnvVar{Name: "COLUMNS", Value: "100"})
 	env = append(env, api.EnvVar{Name: "LINES", Value: "30"})
@@ -795,7 +798,7 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	k8volMounts := []api.VolumeMount{}
 
 	// Mount the home directory
-	k8homeVol := api.VolumeMount{Name: "home", MountPath: "/home/" + ns}
+	k8homeVol := api.VolumeMount{Name: "home", MountPath: homeDir}
 	k8volMounts = append(k8volMounts, k8homeVol)
 
 	if len(spec.VolumeMounts) > 0 {
@@ -843,14 +846,15 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 		Spec: api.PodSpec{
 			Containers: []api.Container{
 				api.Container{
-					Name:         spec.Key,
-					Image:        spec.Image.Name + ":" + tag,
-					Env:          env,
-					VolumeMounts: k8volMounts,
-					Ports:        k8cps,
-					Args:         spec.Args,
-					Command:      spec.Command,
-					Resources:    k8rq,
+					Name:            spec.Key,
+					Image:           spec.Image.Name + ":" + tag,
+					Env:             env,
+					VolumeMounts:    k8volMounts,
+					Ports:           k8cps,
+					Args:            spec.Args,
+					Command:         spec.Command,
+					Resources:       k8rq,
+					ImagePullPolicy: api.PullAlways,
 				},
 			},
 			NodeSelector: map[string]string{
