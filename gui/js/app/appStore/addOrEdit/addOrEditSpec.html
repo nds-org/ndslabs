@@ -352,8 +352,8 @@
                                                 <tr>
                                                     <td>
                                                         <input class="form-control" ng-model="newCfgName" id="newCfgNameField" name="newCfgNameField" placeholder="Variable name..." minlength="0" maxlength="80" ng-pattern="/^[a-zA-Z_]+[a-zA-Z0-9_]*$/" />
-                                                        <ng-messages role="alert" class="text-danger" for="modifySpec.newCfgName.$error">
-                                                            <ng-message when="pattern">This value may only contain uppercase letters and underscore</ng-message>
+                                                        <ng-messages role="alert" class="text-danger" for="modifySpec.newCfgNameField.$error">
+                                                            <ng-message when="pattern">This value may only contain letters and underscore</ng-message>
                                                             <ng-message when="minlength,maxlength">This value must be between 1 and 80 characters</ng-message>
                                                         </ng-messages>
                                                     </td>
