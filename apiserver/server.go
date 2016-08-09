@@ -1149,6 +1149,45 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 					stackService.VolumeMounts[volPath] = mount.MountPath
 				}
 			}
+
+			// Start the Kubernetes service and ingress
+			if len(spec.Ports) > 0 {
+				name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
+				template := s.kube.CreateServiceTemplate(name, stack.Id, spec, s.useNodePort())
+
+				svc, err := s.kube.GetService(userId, name)
+				if svc == nil {
+					glog.V(4).Infof("Starting Kubernetes service %s\n", name)
+					svc, err = s.kube.StartService(userId, template)
+					if err != nil {
+						glog.Errorf("Error starting service %s\n", name)
+						glog.Error(err)
+						rest.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					}
+
+					if s.useLoadBalancer() &&
+						spec.Access == api.AccessExternal {
+
+						secretName := fmt.Sprintf("%s-tls-secret", userId)
+
+						host := fmt.Sprintf("%s.%s", svc.Name, s.domain)
+						_, err := s.kube.CreateIngress(userId, host, svc.Name,
+							int(svc.Spec.Ports[0].Port), secretName)
+						if err != nil {
+							glog.Errorf("Error creating ingress %s\n", name)
+							glog.Error(err)
+							rest.Error(w, err.Error(), http.StatusInternalServerError)
+							return
+						}
+						glog.V(4).Infof("Started ingress %s for service %s\n", host, svc.Name)
+					}
+				}
+				if svc == nil {
+					glog.V(4).Infof("Failed to start service service %s\n", name)
+					continue
+				}
+			}
 		}
 	}
 
@@ -1234,10 +1273,29 @@ func (s *Server) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 
 	if stack.Status == stackStatus[Started] ||
 		stack.Status == stackStatus[Starting] {
-		// Can't stop a running stack
+		// Can't delete a running stack
 		w.WriteHeader(http.StatusConflict)
-		//	s.stopStack(userId, sid)
 		return
+	}
+
+	// Delete the running kubernetes service and ingress rule
+	for i := range stack.Services {
+		stackService := &stack.Services[i]
+		stackService.Id = fmt.Sprintf("%s-%s", sid, stackService.Service)
+		name := fmt.Sprintf("%s-%s", stack.Id, stackService.Service)
+		glog.V(4).Infof("Stopping service %s\n", name)
+		spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
+		if len(spec.Ports) > 0 {
+			err := s.kube.StopService(userId, name)
+			// Log and continue
+			if err != nil {
+				glog.Error(err)
+			}
+		}
+		if s.useLoadBalancer() {
+			s.kube.DeleteIngress(userId, stackService.Id)
+			glog.V(4).Infof("Deleted ingress for service %s\n", stackService.Id)
+		}
 	}
 
 	err = s.etcd.DeleteStack(userId, sid)
@@ -1463,44 +1521,13 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 
 	stackServices := stack.Services
 
-	// Start all Kubernetes services
+	// Get the service/port mappinggs
 	addrPortMap := make(map[string]kube.ServiceAddrPort)
 	for _, stackService := range stackServices {
 		spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
-
-		if len(spec.Ports) > 0 {
-			name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
-			template := s.kube.CreateServiceTemplate(name, stack.Id, spec)
-
-			svc, err := s.kube.GetService(userId, name)
-			if svc == nil {
-				glog.V(4).Infof("Starting Kubernetes service %s\n", name)
-				svc, err = s.kube.StartService(userId, template)
-				if err != nil {
-					glog.Errorf("Error starting service %s\n", name)
-					return nil, err
-				}
-
-				if s.ingress == IngressTypeLoadBalancer &&
-					spec.Access == api.AccessExternal {
-
-					secretName := fmt.Sprintf("%s-tls-secret", userId)
-
-					host := fmt.Sprintf("%s.%s", svc.Name, s.domain)
-					_, err := s.kube.CreateIngress(userId, host, svc.Name,
-						int(svc.Spec.Ports[0].Port), secretName)
-					if err != nil {
-						glog.Errorf("Error creating ingress %s\n", name)
-						return nil, err
-					}
-					glog.V(4).Infof("Started ingress %s for service %s\n", host, svc.Name)
-				}
-			}
-			if svc == nil {
-				glog.V(4).Infof("Failed to start service service %s\n", name)
-				continue
-			}
-			glog.V(4).Infof("Started service %s\n", name)
+		name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
+		svc, _ := s.kube.GetService(userId, name)
+		if svc != nil {
 			addrPort := kube.ServiceAddrPort{
 				Name:     stackService.Service,
 				Host:     svc.Spec.ClusterIP,
@@ -1615,7 +1642,7 @@ func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, erro
 					endpoint.Port = specPort.Port
 					endpoint.Protocol = specPort.Protocol
 					endpoint.NodePort = k8port.NodePort
-					if s.ingress == IngressTypeLoadBalancer && spec.Access == api.AccessExternal {
+					if s.useLoadBalancer() && spec.Access == api.AccessExternal {
 						endpoint.Host = fmt.Sprintf("%s.%s", stackService.Id, s.domain)
 					}
 
@@ -1678,6 +1705,8 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 	for len(stopped) < len(stack.Services) {
 		stack, _ = s.getStackWithStatus(userId, sid)
 		for _, stackService := range stack.Services {
+			spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
+			name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
 			if stopped[stackService.Service] == 1 {
 				continue
 			}
@@ -1698,22 +1727,6 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 			}
 			if numDeps == 0 || stoppedDeps == numDeps {
 				stopped[stackService.Service] = 1
-				name := fmt.Sprintf("%s-%s", stack.Id, stackService.Service)
-				glog.V(4).Infof("Stopping service %s\n", name)
-
-				spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
-				if len(spec.Ports) > 0 {
-					err := s.kube.StopService(userId, name)
-					// Log and continue
-					if err != nil {
-						glog.Error(err)
-					}
-				}
-				if s.ingress == IngressTypeLoadBalancer {
-
-					s.kube.DeleteIngress(userId, stackService.Id)
-					glog.V(4).Infof("Deleted ingress for service %s\n", stackService.Id)
-				}
 
 				glog.V(4).Infof("Stopping controller %s\n", name)
 				err := s.kube.StopController(userId, name)
@@ -1885,76 +1898,79 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 		ssid := pod.ObjectMeta.Labels["name"]
 		//phase := pod.Status.Phase
 
-		// Get stack service from Pod name
-		stack, err := s.etcd.GetStack(userId, sid)
-		if err != nil {
-			glog.Errorf("Error getting stack: %s\n", err)
-			return
-		}
+		if len(sid) > 0 {
 
-		var stackService *api.StackService
-		for i := range stack.Services {
-			if stack.Services[i].Id == ssid {
-				stackService = &stack.Services[i]
-			}
-		}
-
-		if event != nil {
-			// This is a general Event
-			if event.Reason == "MissingClusterDNS" || event.Reason == "FailedSync" {
-				// Ignore these for now
+			// Get stack service from Pod name
+			stack, err := s.etcd.GetStack(userId, sid)
+			if err != nil {
+				glog.Errorf("Error getting stack: %s\n", err)
 				return
 			}
-			if event.Type == "Warning" && event.Reason != "Unhealthy" {
-				// This is an error
-				stackService.Status = "error"
+
+			var stackService *api.StackService
+			for i := range stack.Services {
+				if stack.Services[i].Id == ssid {
+					stackService = &stack.Services[i]
+				}
 			}
 
-			stackService.StatusMessages = append(stackService.StatusMessages,
-				fmt.Sprintf("Reason=%s, Message=%s", event.Reason, event.Message))
-		} else {
-			// This is a Pod event
-			ready := false
-			if len(pod.Status.Conditions) > 0 {
-				if pod.Status.Conditions[0].Type == "Ready" {
-					ready = (pod.Status.Conditions[0].Status == "True")
+			if event != nil {
+				// This is a general Event
+				if event.Reason == "MissingClusterDNS" || event.Reason == "FailedSync" {
+					// Ignore these for now
+					return
+				}
+				if event.Type == "Warning" && event.Reason != "Unhealthy" {
+					// This is an error
+					stackService.Status = "error"
 				}
 
-				if len(pod.Status.ContainerStatuses) > 0 {
-					// The pod was terminated, this is an error
-					if pod.Status.ContainerStatuses[0].State.Terminated != nil {
-						reason := pod.Status.ContainerStatuses[0].State.Terminated.Reason
-						message := pod.Status.ContainerStatuses[0].State.Terminated.Message
-						stackService.Status = "error"
+				stackService.StatusMessages = append(stackService.StatusMessages,
+					fmt.Sprintf("Reason=%s, Message=%s", event.Reason, event.Message))
+			} else {
+				// This is a Pod event
+				ready := false
+				if len(pod.Status.Conditions) > 0 {
+					if pod.Status.Conditions[0].Type == "Ready" {
+						ready = (pod.Status.Conditions[0].Status == "True")
+					}
+
+					if len(pod.Status.ContainerStatuses) > 0 {
+						// The pod was terminated, this is an error
+						if pod.Status.ContainerStatuses[0].State.Terminated != nil {
+							reason := pod.Status.ContainerStatuses[0].State.Terminated.Reason
+							message := pod.Status.ContainerStatuses[0].State.Terminated.Message
+							stackService.Status = "error"
+							stackService.StatusMessages = append(stackService.StatusMessages,
+								fmt.Sprintf("Reason=%s, Message=%s", reason, message))
+						}
+					} else {
+						reason := pod.Status.Conditions[0].Reason
+						message := pod.Status.Conditions[0].Message
 						stackService.StatusMessages = append(stackService.StatusMessages,
 							fmt.Sprintf("Reason=%s, Message=%s", reason, message))
 					}
+
+				}
+
+				if ready {
+					stackService.Status = "ready"
 				} else {
-					reason := pod.Status.Conditions[0].Reason
-					message := pod.Status.Conditions[0].Message
-					stackService.StatusMessages = append(stackService.StatusMessages,
-						fmt.Sprintf("Reason=%s, Message=%s", reason, message))
-				}
-
-			}
-
-			if ready {
-				stackService.Status = "ready"
-			} else {
-				if eventType == "ADDED" {
-					stackService.Status = "starting"
-				} else if eventType == "DELETED" {
-					stackService.Status = "stopped"
+					if eventType == "ADDED" {
+						stackService.Status = "starting"
+					} else if eventType == "DELETED" {
+						stackService.Status = "stopped"
+					}
 				}
 			}
+			message := ""
+			if len(stackService.StatusMessages) > 0 {
+				message = stackService.StatusMessages[len(stackService.StatusMessages)-1]
+			}
+			glog.V(4).Infof("Namespace: %s, Pod: %s, Status: %s, StatusMessage: %s\n", userId, pod.Name,
+				stackService.Status, message)
+			s.etcd.PutStack(userId, sid, stack)
 		}
-		message := ""
-		if len(stackService.StatusMessages) > 0 {
-			message = stackService.StatusMessages[len(stackService.StatusMessages)-1]
-		}
-		glog.V(4).Infof("Namespace: %s, Pod: %s, Status: %s, StatusMessage: %s\n", userId, pod.Name,
-			stackService.Status, message)
-		s.etcd.PutStack(userId, sid, stack)
 	}
 }
 
@@ -2027,4 +2043,12 @@ func (s *Server) GetVocabulary(w rest.ResponseWriter, r *rest.Request) {
 	} else {
 		w.WriteJson(&vocab)
 	}
+}
+
+func (s *Server) useNodePort() bool {
+	return s.ingress == IngressTypeNodePort
+}
+
+func (s *Server) useLoadBalancer() bool {
+	return s.ingress == IngressTypeLoadBalancer
 }
