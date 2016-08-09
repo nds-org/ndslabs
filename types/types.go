@@ -75,9 +75,15 @@ type Port struct {
 }
 
 type VolumeMount struct {
-	MountPath string `json:"mountPath"`
-	Name      string `json:"name"`
+	Type      MountType `json:"type"`
+	MountPath string    `json:"mountPath"`
 }
+
+type MountType string
+
+const (
+	MountTypeDocker MountType = "docker"
+)
 
 type ReadyProbe struct {
 	Type         string `json:"type"`
