@@ -353,7 +353,7 @@ func addAccount(account api.Account) {
 func addService(service api.ServiceSpec, catalog string) {
 
 	token := client.Token
-	if catalog == "system" {
+	if catalog == "system" || service.Privileged {
 		password := credentials("Admin password: ")
 		t, err := client.Login("admin", password)
 		if err != nil {
