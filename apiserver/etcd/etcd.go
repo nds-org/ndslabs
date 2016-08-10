@@ -3,7 +3,6 @@ package etcd
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/ndslabs/apiserver/crypto"
@@ -54,7 +53,6 @@ func (s *EtcdHelper) ChangePassword(uid string, oldPassword string, newPassword 
 			glog.Error(err)
 			return false, err
 		}
-		fmt.Printf("Changing password %s to %s\n", oldPassword, newPassword)
 		account.Password = newPassword
 
 		err = s.PutAccount(uid, account)
