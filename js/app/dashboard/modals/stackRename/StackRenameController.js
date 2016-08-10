@@ -13,7 +13,7 @@ angular
   $scope.stack = angular.copy(stack);
 
   $scope.confirm = function() {
-    NdsLabsApi.putStacksByStackId({ 'stack': $scope.stack, 'stackId': $scope.stack.id }).then(function() {
+    NdsLabsApi.putStacksByStackIdRename({ 'name':{ 'name': $scope.stack.name }, 'stackId': $scope.stack.id }).then(function() {
       Stacks.populate().then(function() {
         $uibModalInstance.close();
       });
