@@ -777,6 +777,9 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 		}
 		glog.V(1).Infof("Added system service %s\n", service.Key)
 	} else {
+		// Don't allow privileged services in user catalogs
+		service.Privileged = false
+
 		err = s.etcd.PutService(userId, service.Key, &service)
 		if err != nil {
 			glog.Error(err)
