@@ -419,6 +419,21 @@
                 }
             }
         },
+        "/stacks/{stack-id}/rename": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/stack-id"
+                }
+            ],
+            "put": {
+                "description": "Rename the stack\n",
+                "responses": {
+                    "201": {
+                        "description": "Updated"
+                    }
+                }
+            }
+        },
         "/logs/{stack-service-id}": {
             "parameters": [
                 {
