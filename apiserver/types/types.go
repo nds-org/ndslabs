@@ -8,7 +8,6 @@ type ServiceSpec struct {
 	Description          string              `json:"description"`
 	Logo                 string              `json:"logo"`
 	Maintainer           string              `json:"maintainer"`
-	RequiresVolume       bool                `json:"requiresVolume"`
 	Image                ServiceImage        `json:"image"`
 	Display              string              `json:"display"`
 	Access               AccessType          `json:"access"`
@@ -27,6 +26,7 @@ type ServiceSpec struct {
 	DeveloperEnvironment string              `json:"developerEnvironment"`
 	Tags                 []string            `json:"tags"`
 	Info                 string              `json:"info"`
+	Privileged           bool                `json:"privileged"`
 }
 
 type ServiceImage struct {
