@@ -286,6 +286,15 @@ paths:
       responses:
         '200':
           description: OK
+  '/stacks/{stack-id}/rename':
+    parameters:
+      - $ref: '#/parameters/stack-id'  
+    put:
+      description: |
+        Rename the stack
+      responses:
+        '201':
+          description: Updated
   '/logs/{stack-service-id}':
     parameters:
       - $ref: '#/parameters/stack-service-id'
