@@ -838,6 +838,8 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 			rest.Error(w, "Service is in use", http.StatusConflict)
 			return
 		}
+		// Don't allow privileged services in user catalogs
+		service.Privileged = false
 
 		err = s.etcd.PutService(userId, key, &service)
 		if err != nil {
