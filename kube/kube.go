@@ -859,6 +859,9 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 					Command:         spec.Command,
 					Resources:       k8rq,
 					ImagePullPolicy: api.PullAlways,
+					SecurityContext: &api.SecurityContext{
+						Privileged: &spec.Privileged,
+					},
 				},
 			},
 			NodeSelector: map[string]string{
