@@ -899,6 +899,59 @@ angular.module('ndslabs-api', [])
                 return deferred.promise;
             };
             /**
+             * Rename the stack
+
+             * @method
+             * @name ApiServer#putStacksByStackIdRename
+             * @param {} name - Stack name
+             * @param {string} stackId - The unique stack identifier
+             * 
+             */
+            ApiServer.prototype.putStacksByStackIdRename = function(parameters) {
+                if (parameters === undefined) {
+                    parameters = {};
+                }
+                var deferred = $q.defer();
+
+                var domain = this.domain;
+                var path = '/stacks/{stack-id}/rename';
+
+                var body;
+                var queryParameters = {};
+                var headers = {};
+                var form = {};
+
+                headers['Content-Type'] = ['application/json'];
+
+                if (parameters['name'] !== undefined) {
+                    body = parameters['name'];
+                }
+
+                if (parameters['name'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: name'));
+                    return deferred.promise;
+                }
+
+                path = path.replace('{stack-id}', parameters['stackId']);
+
+                if (parameters['stackId'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: stackId'));
+                    return deferred.promise;
+                }
+
+                if (parameters.$queryParameters) {
+                    Object.keys(parameters.$queryParameters)
+                        .forEach(function(parameterName) {
+                            var parameter = parameters.$queryParameters[parameterName];
+                            queryParameters[parameterName] = parameter;
+                        });
+                }
+
+                this.request('PUT', domain + path, parameters, body, headers, queryParameters, form, deferred);
+
+                return deferred.promise;
+            };
+            /**
              * Retrieves the stack service log.
 
              * @method
