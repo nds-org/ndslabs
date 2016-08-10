@@ -9,8 +9,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('DashboardController', [ '$scope', '$log', '$routeParams', '$location', '$interval', '$q', '$uibModal', '_', 'Project', 'Stacks', 'Specs', 'AutoRefresh',
-    'StackService', 'NdsLabsApi', function($scope, $log, $routeParams, $location, $interval, $q, $uibModal, _, Project, Stacks, Specs, AutoRefresh,
+.controller('DashboardController', [ '$scope', '$log', '$routeParams', '$location', '$interval', '$q', '$window', '$filter', '$uibModal', '_', 'Project', 'RandomPassword', 'Stack', 'Stacks', 'Specs', 'AutoRefresh',
+    'StackService', 'NdsLabsApi', function($scope, $log, $routeParams, $location, $interval, $q, $window, $filter, $uibModal, _, Project, RandomPassword, Stack, Stacks, Specs, AutoRefresh,
     StackService, NdsLabsApi) {
   
   $scope.expandedStacks = {};
@@ -48,7 +48,11 @@ angular
     
     if (!transient && AutoRefresh.interval) {
       AutoRefresh.stop();
+      $scope.launchingFileManager = false;
     } else if (transient && !AutoRefresh.interval) {
+      if (transient.key === 'cloudcmd') {
+        $scope.launchingFileManager = true;
+      }
       AutoRefresh.start();
     }
   });
@@ -65,7 +69,7 @@ angular
     $scope.starting[stack.id] = true;
     
     // Then send the "start" command to the API server
-    NdsLabsApi.getStartByStackId({
+    return NdsLabsApi.getStartByStackId({
       'stackId': stack.id
     }).then(function(data, xhr) {
       $log.debug('successfully started ' + stack.name);
@@ -115,7 +119,7 @@ angular
       $scope.stopping[stack.id] = true;
     
       // Then send the "stop" command to the API server
-      NdsLabsApi.getStopByStackId({
+      return NdsLabsApi.getStopByStackId({
         'stackId': stack.id
       }).then(function(data, xhr) {
         $log.debug('successfully stopped ' + stack.name);
@@ -138,7 +142,7 @@ angular
     stack.services.splice(stack.services.indexOf(svc), 1);
     
     // Then update the entire stack in etcd
-    NdsLabsApi.putStacksByStackId({
+    return NdsLabsApi.putStacksByStackId({
       'stack': stack,
       'stackId': stack.id
     }).then(function(data, xhr) {
@@ -211,7 +215,7 @@ angular
     // Define what we should do when the modal is closed
     modalInstance.result.then(function() {
       // Delete the stack
-      NdsLabsApi.deleteStacksByStackId({
+      return NdsLabsApi.deleteStacksByStackId({
         'stackId': stack.id
       }).then(function(data, xhr) {
         $log.debug('successfully deleted stack: ' + stack.name);
@@ -220,5 +224,85 @@ angular
         $log.error('failed to delete stack: ' + stack.name);
       });
     });
+  };
+  
+  $scope.launchFileManager = function() {
+    var fileMgrKey = 'cloudcmd';
+    
+    var navigate = function(stack) {
+      var cc = _.find(stack.services, [ 'service', fileMgrKey ]);
+      var ep = _.head(cc.endpoints);
+      if (ep) {
+        //$window.location.href = $filter('externalHostPort')(ep);
+        $window.open($filter('externalHostPort')(ep), '_blank');
+      }
+    };
+    
+    var startAndNavigate = function(stack) {
+      $scope.launchingFileManager = $scope.stopping[stack.id] = true;
+      if (stack.status !== 'started') {
+        return NdsLabsApi.getStartByStackId({
+            'stackId': stack.id
+          }).then(function(started, xhr) {
+            $log.debug('successfully started file manager: ' + stack.id);
+            navigate(started);
+          }, function(headers) {
+            $log.error('failed to start file manager: ' + stack.id);
+          }).finally(function() {
+            $scope.launchingFileManager = $scope.starting[stack.id] = false;
+          });
+      } else {
+        $scope.launchingFileManager = $scope.starting[stack.id] = false;
+        navigate(stack);
+      }
+    };
+    
+    // Make sure we have ALL of our stacks first
+    return Stacks.populate().then(function(stacks) {
+      // Search for CloudCmd stack
+      var stack = _.find(stacks, [ 'key', 'cloudcmd' ]);
+      if (stack) {
+        // If found, start it up
+        startAndNavigate(stack);
+      } else {
+        // No Cloud Commander found.. install one
+        var spec = _.find(Specs.all, [ 'key', 'cloudcmd' ]);
+        
+        if (!spec) {
+          $log.error("No file manager found... aborting...");
+          return;
+        }
+        
+        var app = new Stack(spec);
+        
+        // Randomly generate any required passwords
+        angular.forEach(app.services, function(svc) {
+          var configMap = {};
+          angular.forEach(svc.config, function(cfg) {
+            if (cfg.isPassword) {
+              // TODO: Generate random secure passwords here!
+              cfg.value = RandomPassword.generate();
+            }
+            
+            configMap[cfg.name] = cfg.value;
+          });
+          
+          svc.config = configMap;
+        });
+        
+        // Install this app to etcd
+        return NdsLabsApi.postStacks({ 'stack': app }).then(function(stack, xhr) {
+          $log.debug("successfully posted to /stacks!");
+          
+          startAndNavigate(stack);
+          
+          // Add /the new stack to the UI
+          //Stacks.all.push(stack);
+        }, function(headers) {
+          $log.error("error posting to /stacks!");
+        });
+      }
+    });
+    
   };
 }]);

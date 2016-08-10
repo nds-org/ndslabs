@@ -37,6 +37,13 @@
               </ul>
             </li>
             
+  	        <!-- Then draw our Manage Files button -->
+            <li ng-if="navFilter === 'left'" ng-controller="DashboardController">
+              <a id="dropDownButton" type="button" ng-click="launchFileManager()">
+                 <i class="fa fa-fw" ng-class="{ 'fa-spinner fa-spin': launchingFileManager, 'fa-files-o': !launchingFileManager }"></i> Manage Files
+              </a>
+            </li>
+            
             <li ng-if="navFilter === 'right'">
               <a href="#/home"><i class="fa fa-fw fa-user"></i> {{ settings.namespace }}</a>
             </li>
