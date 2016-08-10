@@ -252,6 +252,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		Condition: func(request *rest.Request) bool {
 			return strings.HasPrefix(request.URL.Path, s.prefix+"accounts") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"services") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"change_password") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"stacks") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"start") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"stop") ||
@@ -298,6 +299,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Get(s.prefix+"check_console", s.CheckConsole),
 		rest.Get(s.prefix+"vocabulary/:name", s.GetVocabulary),
 		rest.Put(s.prefix+"stacks/:sid/rename", s.RenameStack),
+		rest.Put(s.prefix+"change_password", s.ChangePassword),
 	)
 
 	router, err := rest.MakeRouter(routes...)
@@ -2077,4 +2079,23 @@ func (s *Server) useNodePort() bool {
 
 func (s *Server) useLoadBalancer() bool {
 	return s.ingress == IngressTypeLoadBalancer
+}
+
+func (s *Server) ChangePassword(w rest.ResponseWriter, r *rest.Request) {
+	userId := s.getUser(r)
+
+	data := make(map[string]string)
+	err := r.DecodeJsonPayload(&data)
+	ok, err := s.etcd.ChangePassword(userId, data["oldPassword"], data["newPassword"])
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if ok {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusConflict)
+	}
+
 }
