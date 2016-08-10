@@ -303,6 +303,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Get(s.prefix+"console", s.GetConsole),
 		rest.Get(s.prefix+"check_console", s.CheckConsole),
 		rest.Get(s.prefix+"vocabulary/:name", s.GetVocabulary),
+		rest.Put(s.prefix+"stacks/:sid/rename", s.RenameStack),
 	)
 
 	router, err := rest.MakeRouter(routes...)
@@ -777,6 +778,9 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 		}
 		glog.V(1).Infof("Added system service %s\n", service.Key)
 	} else {
+		// Don't allow privileged services in user catalogs
+		service.Privileged = false
+
 		err = s.etcd.PutService(userId, service.Key, &service)
 		if err != nil {
 			glog.Error(err)
@@ -835,6 +839,8 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 			rest.Error(w, "Service is in use", http.StatusConflict)
 			return
 		}
+		// Don't allow privileged services in user catalogs
+		service.Privileged = false
 
 		err = s.etcd.PutService(userId, key, &service)
 		if err != nil {
@@ -1251,6 +1257,30 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 
 	stack.Status = stackStatus[Stopped]
 	err = s.etcd.PutStack(userId, sid, &stack)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteJson(&stack)
+}
+
+func (s *Server) RenameStack(w rest.ResponseWriter, r *rest.Request) {
+	userId := s.getUser(r)
+	sid := r.PathParam("sid")
+
+	data := make(map[string]string)
+	err := r.DecodeJsonPayload(&data)
+	stack, err := s.etcd.GetStack(userId, sid)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	stack.Name = data["name"]
+
+	err = s.etcd.PutStack(userId, sid, stack)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
