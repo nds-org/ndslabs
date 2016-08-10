@@ -399,6 +399,26 @@ paths:
                 type: array
                 items:
                   $ref: '#/definitions/Vocabulary'
+                  
+  '/change_password':
+    put:
+      parameters:
+        - name: password
+          description: Change password
+          schema:
+            type: object
+            properties:
+              oldPassword:
+                type: string
+              newPassword:
+                type: string
+          in: body
+          required: true
+      description: |
+        Rename the stack
+      responses:
+        '201':
+          description: Updated                  
 definitions:
   Auth:
     type: object
