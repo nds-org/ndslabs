@@ -24,16 +24,15 @@ var renameCmd = &cobra.Command{
 		sid := args[0]
 		name := args[1]
 
-		stack, err := client.GetStack(sid)
+		_, err := client.GetStack(sid)
 		if err != nil {
 			fmt.Printf("Get stack failed: %s\n", err)
 			return
 		}
 
-		stack.Name = name
-		err = client.UpdateStack(stack)
+		err = client.RenameStack(sid, name)
 		if err != nil {
-			fmt.Printf("Get stack failed: %s\n", err)
+			fmt.Printf("Rename stack failed: %s\n", err)
 			return
 		}
 
