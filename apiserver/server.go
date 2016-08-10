@@ -224,13 +224,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 			if userId == "admin" && password == adminPasswd {
 				return true
 			} else {
-				account, err := s.etcd.GetAccount(userId)
-				if err != nil {
-					glog.Error(err)
-					return false
-				} else {
-					return account.Namespace == userId && account.Password == password
-				}
+				return s.etcd.CheckPassword(userId, password)
 			}
 		},
 		Authorizator: func(userId string, request *rest.Request) bool {
@@ -497,6 +491,8 @@ func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 				MemoryPct: fmt.Sprintf("%f", float64(quota.Items[0].Status.Used.Memory().Value())/float64(quota.Items[0].Status.Hard.Memory().Value())),
 			}
 		}
+		account.Password = ""
+		account.Salt = ""
 		w.WriteJson(account)
 	}
 }
