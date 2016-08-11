@@ -113,7 +113,7 @@ var listAccountsCmd = &cobra.Command{
 		w.Init(os.Stdout, 10, 4, 3, ' ', 0)
 		fmt.Fprintln(w, "NAMESPACE\tSTORAGE\tCPU (Max)\tCPU (Default)\tMEMORY (Max)\tMEMORY (Default)\tDESCRIPTION")
 		for _, account := range *accounts {
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", account.Namespace,
+			fmt.Fprintf(w, "%s\t%d\t%d\t%d\t%d\t%d\t%s\n", account.Namespace,
 				account.ResourceLimits.StorageQuota,
 				account.ResourceLimits.CPUMax,
 				account.ResourceLimits.CPUDefault,

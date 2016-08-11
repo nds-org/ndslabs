@@ -799,16 +799,26 @@ func (c *Client) RenameStack(sid string, name string) error {
 		return err
 	} else {
 		if resp.StatusCode == http.StatusOK {
-			defer resp.Body.Close()
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return err
-			}
-
-			stack := api.Stack{}
-			json.Unmarshal([]byte(body), &stack)
 			return nil
+		} else {
+			return errors.New(resp.Status)
+		}
+	}
+}
 
+func (c *Client) ChangePassword(oldPassword string, newPassword string) error {
+
+	url := c.BasePath + "change_password"
+
+	request, err := http.NewRequest("PUT", url, bytes.NewBuffer([]byte("{\"oldPassword\":\""+oldPassword+"\", \"newPassword\":\""+newPassword+"\"}")))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			return nil
 		} else {
 			return errors.New(resp.Status)
 		}
