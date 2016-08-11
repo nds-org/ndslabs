@@ -98,6 +98,15 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
         $log.debug("error!");
       });
     },
+    create: function() {
+      return {
+        name: '',
+        description: '',
+        namespace: '',
+        password: '',
+        passwordConfirmation: ''
+      }
+    },
     // An empty place-holder for our project data
     project: {}
   };
