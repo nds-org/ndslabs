@@ -3,7 +3,7 @@
 #export DOWNLOADURL=https://raw.githubusercontent.com/nds-org/nds-labs/v2/apis/swagger-spec/ndslabs.json
 
 DOWNLOADURL=$1
-SWAGGERFILE=ndslabs.json
+SWAGGERFILE=ndslabs
 OUTPUTFILE=`pwd`/js/app/shared/api.js
 
 # Install swagger-js-codegen
@@ -15,7 +15,7 @@ if [[ "$1" != "" ]]; then
 	sudo curl -L ${DOWNLOADURL} > api/${SWAGGERFILE}
 else
 	echo "Rebuilding swagger spec from ../apis/swagger-spec/${SWAGGERFILE}"
-	sudo cp ../apis/swagger-spec/${SWAGGERFILE} api/${SWAGGERFILE}
+#	sudo cp ../apis/swagger-spec/${SWAGGERFILE}.json api/${SWAGGERFILE}.json
 fi
 
 # Finally, generate AngularJS source

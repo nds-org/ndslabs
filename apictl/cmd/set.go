@@ -10,7 +10,6 @@ import (
 	"strings"
 )
 
-// listCmd represents the list command
 var setCmd = &cobra.Command{
 	Use:   "set",
 	Short: "Set optional stack values",
@@ -19,6 +18,7 @@ var setCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(setCmd)
 	setCmd.AddCommand(setEnvCmd)
+	setCmd.AddCommand(setPasswordCmd)
 }
 
 var setEnvCmd = &cobra.Command{
@@ -93,6 +93,33 @@ var setEnvCmd = &cobra.Command{
 			}
 
 			fmt.Println(string(data))
+		}
+
+	},
+	PostRun: RefreshToken,
+}
+
+var setPasswordCmd = &cobra.Command{
+	Use:    "passwd",
+	Short:  "Set the password for this account",
+	PreRun: Connect,
+	Run: func(cmd *cobra.Command, args []string) {
+
+		oldPassword := credentials("Enter current password: ")
+		newPassword := credentials("Enter new password: ")
+		confirm := credentials("Enter again: ")
+
+		if newPassword != confirm {
+			fmt.Printf("Passwords do not match\n")
+			return
+		}
+
+		err := client.ChangePassword(oldPassword, newPassword)
+		if err != nil {
+			fmt.Printf("Error changing password %s\n", err)
+			return
+		} else {
+			fmt.Printf("Password changed\n")
 		}
 
 	},

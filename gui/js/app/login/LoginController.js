@@ -87,12 +87,12 @@ angular
       });
       
       // Define what we should do when the modal is closed
-      modalInstance.result.then(function(project) {
-        $log.debug('User has successfully created a new project: ' + project.namespace);
+      modalInstance.result.then(function(account) {
+        $log.debug('User has successfully created a new account: ' + account.username);
         
         // Now log in to the new account
-        $scope.settings.namespace = project.namespace;
-        $scope.settings.password = project.password;
+        $scope.settings.namespace = account.username;
+        $scope.settings.password = account.password;
         $scope.login();
       });
   };

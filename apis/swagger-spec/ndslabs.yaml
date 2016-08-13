@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
   title: ndslabs
-  version: '1.0.1-alpha'
+  version: 1.0.1-alpha
 basePath: /v1
 schemes:
   - https
@@ -39,7 +39,7 @@ parameters:
     in: path
     description: Vocabulary name
     type: string
-    required: true    
+    required: true
 paths:
   /authenticate:
     post:
@@ -103,7 +103,7 @@ paths:
       parameters:
         - name: catalog
           in: query
-          description: Filter list for catalog (user, system, all)
+          description: 'Filter list for catalog (user, system, all)'
           required: false
           type: string
       responses:
@@ -288,8 +288,15 @@ paths:
           description: OK
   '/stacks/{stack-id}/rename':
     parameters:
-      - $ref: '#/parameters/stack-id'  
+      - $ref: '#/parameters/stack-id'
     put:
+      parameters:
+        - name: name
+          description: Stack name
+          schema:
+            type: string
+          in: body
+          required: true
       description: |
         Rename the stack
       responses:
@@ -379,7 +386,7 @@ paths:
   '/vocabulary/{vocab-name}':
     get:
       parameters:
-      - $ref: '#/parameters/vocab-name'  
+        - $ref: '#/parameters/vocab-name'
       description: |
         Retrieves a vocabulary
       responses:
@@ -391,7 +398,27 @@ paths:
               data:
                 type: array
                 items:
-                  $ref: '#/definitions/Vocabulary'          
+                  $ref: '#/definitions/Vocabulary'
+                  
+  '/change_password':
+    put:
+      parameters:
+        - name: password
+          description: Change password
+          schema:
+            type: object
+            properties:
+              oldPassword:
+                type: string
+              newPassword:
+                type: string
+          in: body
+          required: true
+      description: |
+        Rename the stack
+      responses:
+        '201':
+          description: Updated                  
 definitions:
   Auth:
     type: object
@@ -432,7 +459,7 @@ definitions:
       access:
         type: string
       developerEnvironment:
-        type: string        
+        type: string
       config:
         $ref: '#/definitions/Config'
       readinessProbe:
@@ -440,15 +467,15 @@ definitions:
       image:
         $ref: '#/definitions/ServiceImage'
       resourceLimits:
-        $ref: '#/definitions/ResourceLimits'        
+        $ref: '#/definitions/ResourceLimits'
       depends:
         type: array
         items:
-          $ref: '#/definitions/ServiceDependency'   
+          $ref: '#/definitions/ServiceDependency'
       ports:
         type: array
         items:
-          $ref: '#/definitions/Port'  
+          $ref: '#/definitions/Port'
       volumeMounts:
         type: array
         items:
@@ -468,11 +495,11 @@ definitions:
       tags:
         type: array
         items:
-          type: string          
+          type: string
       createdTime:
         type: integer
       updatedTime:
-        type: integer          
+        type: integer
   ReadyProbe:
     type: object
     properties:
@@ -497,7 +524,7 @@ definitions:
       port:
         type: string
       url:
-        type: string        
+        type: string
   ServiceDependency:
     type: object
     properties:
@@ -573,7 +600,7 @@ definitions:
       status:
         type: string
       imageTag:
-        type: string    
+        type: string
       statusMessage:
         type: array
         items:
@@ -586,13 +613,13 @@ definitions:
             internalIP:
               type: string
             host:
-              type: string     
+              type: string
             ports:
               type: array
               items:
                 type: object
               properties:
-                port: 
+                port:
                   type: integer
                 nodePort:
                   type: integer
@@ -632,23 +659,23 @@ definitions:
         type: string
       cpuDefault:
         type: string
-      memMax: 
+      memMax:
         type: string
       memDefault:
         type: string
   Vocabulary:
     type: object
     properties:
-      name: 
+      name:
         type: string
-      terms: 
+      terms:
         type: array
         items:
           type: object
           properties:
             id:
               type: string
-            name: 
+            name:
               type: string
             definition:
               type: string
