@@ -29,20 +29,11 @@ WORKDIR /home
 COPY . /home/
     
 # Set build information here before building
-ENV BUILD_VERSION="1.0.1-alpha" \
-    BUILD_DATE="Wed Aug  3 21:02:59 UTC 2016" \
-    APISERVER_HOST="192.168.99.100" \
-    APISERVER_PORT="30001" \
-    APISERVER_PATH="" \
-    APISERVER_SECURE="false"
+ARG version="1.0.1-alpha"
 
-# Set build numberi/date inside the container, as well as our default API server/port
-RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${BUILD_VERSION}')#" "/home/js/app/app.js" && \
-    /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('${BUILD_DATE}'))#" "/home/js/app/app.js" && \
-    /bin/sed -i -e "s#^\.constant('ApiHost', '.*')#.constant('ApiHost', '${APISERVER_HOST}')#" "/home/js/app/app.js" && \
-    /bin/sed -i -e "s#^\.constant('ApiPort', '.*')#.constant('ApiPort', '${APISERVER_PORT}')#" "/home/js/app/app.js" && \
-    /bin/sed -i -e "s#^\.constant('ApiPath', '.*')#.constant('ApiPath', '${APISERVER_PATH}')#" "/home/js/app/app.js" && \
-    /bin/sed -i -e "s#^\.constant('ApiSecure', .*)#.constant('ApiSecure', ${APISERVER_SECURE})#" "/home/js/app/app.js"
+# Set build number/date inside the container, as well as our default API server/port
+RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${version}')#" "/home/js/app/app.js" && \
+    /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('$(date)'))#" "/home/js/app/app.js"
 
 # The command to run our app when the container is run
 CMD [ "./entrypoint.sh" ]
