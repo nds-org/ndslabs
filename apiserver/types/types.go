@@ -104,6 +104,7 @@ type Account struct {
 	Namespace      string                `json:"namespace"`
 	EmailAddress   string                `json:"email"`
 	Password       string                `json:"password"`
+	Salt           string                `json:"salt"`
 	ResourceLimits AccountResourceLimits `json:"resourceLimits"`
 	ResourceUsage  ResourceUsage         `json:"resourceUsage"`
 }

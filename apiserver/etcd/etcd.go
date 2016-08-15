@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/ndslabs/apiserver/crypto"
 	api "github.com/ndslabs/apiserver/types"
 	"golang.org/x/net/context"
 
@@ -15,7 +16,8 @@ import (
 var etcdBasePath = "/ndslabs/"
 
 type EtcdHelper struct {
-	etcd client.KeysAPI
+	etcd   client.KeysAPI
+	crypto *crypto.CryptoHelper
 }
 
 func NewEtcdHelper(address string) (*EtcdHelper, error) {
@@ -23,7 +25,8 @@ func NewEtcdHelper(address string) (*EtcdHelper, error) {
 	etcd, err := GetEtcdClient(address)
 
 	return &EtcdHelper{
-		etcd: etcd,
+		etcd:   etcd,
+		crypto: crypto.NewCryptoHelper(),
 	}, err
 }
 
@@ -43,12 +46,53 @@ func (s *EtcdHelper) GetAccount(uid string) (*api.Account, error) {
 	}
 }
 
+func (s *EtcdHelper) ChangePassword(uid string, oldPassword string, newPassword string) (bool, error) {
+	if s.CheckPassword(uid, oldPassword) {
+		account, err := s.GetAccount(uid)
+		if err != nil {
+			glog.Error(err)
+			return false, err
+		}
+		account.Password = newPassword
+
+		err = s.PutAccount(uid, account)
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+	}
+	return false, nil
+}
+
+func (s *EtcdHelper) CheckPassword(uid string, password string) bool {
+	account, err := s.GetAccount(uid)
+	if err != nil {
+		glog.Error(err)
+		return false
+	}
+
+	checkPasswd := s.crypto.HashString(account.Salt + password)
+	if checkPasswd == account.Password {
+		return true
+	} else {
+		return false
+	}
+}
+
 func (s *EtcdHelper) PutAccount(uid string, account *api.Account) error {
+
+	salt, err := s.crypto.GenerateRandomString(32)
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+	account.Password = s.crypto.HashString(salt + account.Password)
+	account.Salt = salt
 
 	data, _ := json.Marshal(account)
 	opts := client.SetOptions{Dir: true}
 	s.etcd.Set(context.Background(), etcdBasePath+"/accounts/"+uid, "", &opts)
-	_, err := s.etcd.Set(context.Background(), etcdBasePath+"/accounts/"+uid+"/account", string(data), nil)
+	_, err = s.etcd.Set(context.Background(), etcdBasePath+"/accounts/"+uid+"/account", string(data), nil)
 	if err != nil {
 		glog.Error(err)
 		return err
@@ -239,6 +283,8 @@ func (s *EtcdHelper) GetAccounts() (*[]api.Account, error) {
 				glog.Error(err)
 				return nil, err
 			}
+			account.Password = ""
+			account.Salt = ""
 			accounts = append(accounts, account)
 		}
 	}
