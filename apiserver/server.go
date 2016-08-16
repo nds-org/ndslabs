@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	email "github.com/ndslabs/apiserver/email"
 	etcd "github.com/ndslabs/apiserver/etcd"
 	kube "github.com/ndslabs/apiserver/kube"
 	mw "github.com/ndslabs/apiserver/middleware"
@@ -30,6 +31,7 @@ type Server struct {
 	etcd           *etcd.EtcdHelper
 	kube           *kube.KubeHelper
 	validator      *validate.Validator
+	email          *email.EmailHelper
 	Namespace      string
 	local          bool
 	volDir         string
@@ -74,6 +76,11 @@ type Config struct {
 		TokenPath string
 		Username  string
 		Password  string
+	}
+	Email struct {
+		Host       string
+		Port       int
+		AdminEmail string
 	}
 }
 
@@ -143,6 +150,12 @@ func main() {
 		glog.Fatal(err)
 	}
 
+	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.AdminEmail)
+	if err != nil {
+		glog.Errorf("Error in email server configuration\n")
+		glog.Fatal(err)
+	}
+
 	server := Server{}
 	server.hostname = hostname
 	if cfg.Server.Ingress == IngressTypeLoadBalancer {
@@ -154,6 +167,7 @@ func main() {
 	}
 	server.etcd = etcd
 	server.kube = kube
+	server.email = email
 	server.volDir = cfg.Server.VolDir
 	server.volName = cfg.Server.VolName
 	server.cpuMax = cfg.DefaultLimits.CpuMax
@@ -224,7 +238,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 			if userId == "admin" && password == adminPasswd {
 				return true
 			} else {
-				return s.etcd.CheckPassword(userId, password)
+				return s.etcd.CheckPassword(userId, password) && s.etcd.CheckAccess(userId)
 			}
 		},
 		Authorizator: func(userId string, request *rest.Request) bool {
@@ -277,7 +291,10 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Get(s.prefix+"refresh_token", jwt.RefreshHandler),
 		rest.Get(s.prefix+"accounts", s.GetAllAccounts),
 		rest.Post(s.prefix+"accounts", s.PostAccount),
-		rest.Post(s.prefix+"register", s.PostAccount),
+		rest.Post(s.prefix+"register", s.RegisterAccount),
+		rest.Put(s.prefix+"register/verify", s.VerifyAccount),
+		rest.Put(s.prefix+"register/approve", s.ApproveAccount),
+		//rest.Put(s.prefix+"register/deny", s.DenyAccount),
 		rest.Put(s.prefix+"accounts/:userId", s.PutAccount),
 		rest.Get(s.prefix+"accounts/:userId", s.GetAccount),
 		rest.Delete(s.prefix+"accounts/:userId", s.DeleteAccount),
@@ -501,6 +518,11 @@ func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 
+	if !s.IsAdmin(r) {
+		rest.Error(w, "", http.StatusUnauthorized)
+		return
+	}
+
 	account := api.Account{}
 	err := r.DecodeJsonPayload(&account)
 	if err != nil {
@@ -514,11 +536,27 @@ func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	_, err = s.kube.CreateNamespace(account.Namespace)
+	err = s.setupAccount(&account)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	err = s.etcd.PutAccount(account.Namespace, &account, true)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteJson(&account)
+}
+
+func (s *Server) setupAccount(account *api.Account) error {
+	_, err := s.kube.CreateNamespace(account.Namespace)
+	if err != nil {
+		return err
 	}
 
 	if account.ResourceLimits == (api.AccountResourceLimits{}) {
@@ -535,18 +573,14 @@ func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 		account.ResourceLimits.CPUMax,
 		account.ResourceLimits.MemoryMax)
 	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return err
 	}
 
 	_, err = s.kube.CreateLimitRange(account.Namespace,
 		account.ResourceLimits.CPUDefault,
 		account.ResourceLimits.MemoryDefault)
 	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return err
 	}
 
 	secret, err := s.kube.GetSecret("default", "ndslabs-tls-secret")
@@ -554,26 +588,134 @@ func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 		secretName := fmt.Sprintf("%s-tls-secret", account.Namespace)
 		_, err := s.kube.CreateTLSSecret(account.Namespace, secretName, secret.Data["tls.crt"], secret.Data["tls.key"])
 		if err != nil {
-			glog.Error(err)
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return err
 		}
 	}
 
-	_, err = s.updateStorageQuota(&account)
+	_, err = s.updateStorageQuota(account)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Registers an account for this user and sends a verification email message
+func (s *Server) RegisterAccount(w rest.ResponseWriter, r *rest.Request) {
+
+	account := api.Account{}
+	err := r.DecodeJsonPayload(&account)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = s.etcd.PutAccount(account.Namespace, &account)
+	if s.accountExists(account.Namespace) {
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+
+	// Set the account status to unverified
+	account.Status = api.AccountStatusUnverified
+
+	// Put account generates the registration token
+	err = s.etcd.PutAccount(account.Namespace, &account, true)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	verifyUrl := "http://192.168.99.100/verify?t=" + account.Token + "&u=" + account.Namespace
+	err = s.email.SendVerificationEmail(account.Name, account.EmailAddress, verifyUrl)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	w.WriteJson(&account)
+}
+
+func (s *Server) VerifyAccount(w rest.ResponseWriter, r *rest.Request) {
+	data := make(map[string]string)
+	err := r.DecodeJsonPayload(&data)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	userId := data["u"]
+	token := data["t"]
+	account, err := s.etcd.GetAccount(userId)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if account.Status == api.AccountStatusUnverified &&
+		account.Token == token {
+		account.Status = api.AccountStatusUnapproved
+		err = s.etcd.PutAccount(userId, account, false)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		approveUrl := "http://192.168.99.100/register/approve?t=" + account.Token + "&u=" + account.Namespace
+		denyUrl := "http://192.168.99.100/register/deny?t=" + account.Token + "&u=" + account.Namespace
+		err = s.email.SendNewAccountEmail(account.Name, account.EmailAddress, account.Description, approveUrl, denyUrl)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusConflict)
+	}
+}
+
+func (s *Server) ApproveAccount(w rest.ResponseWriter, r *rest.Request) {
+	data := make(map[string]string)
+	err := r.DecodeJsonPayload(&data)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	userId := data["u"]
+	token := data["t"]
+	account, err := s.etcd.GetAccount(userId)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if account.Status == api.AccountStatusUnapproved &&
+		account.Token == token {
+		account.Status = api.AccountStatusApproved
+		err = s.etcd.PutAccount(userId, account, false)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		err = s.setupAccount(account)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		err = s.email.SendStatusEmail(account.Name, account.EmailAddress, "", true)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusConflict)
+	}
 }
 
 func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
@@ -624,7 +766,7 @@ func (s *Server) PutAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	err = s.etcd.PutAccount(userId, &account)
+	err = s.etcd.PutAccount(userId, &account, true)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -649,14 +791,16 @@ func (s *Server) DeleteAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	_, err := s.kube.DeleteNamespace(userId)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if s.kube.NamespaceExists(userId) {
+		_, err := s.kube.DeleteNamespace(userId)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
-	err = s.etcd.DeleteAccount(userId)
+	err := s.etcd.DeleteAccount(userId)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -2097,5 +2241,4 @@ func (s *Server) ChangePassword(w rest.ResponseWriter, r *rest.Request) {
 	} else {
 		w.WriteHeader(http.StatusConflict)
 	}
-
 }

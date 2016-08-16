@@ -93,6 +93,15 @@ type ReadyProbe struct {
 	Timeout      int32  `json:"timeout"`
 }
 
+type AccountStatus string
+
+const (
+	AccountStatusUnverified AccountStatus = "unverified"
+	AccountStatusUnapproved AccountStatus = "unapproved"
+	AccountStatusApproved   AccountStatus = "approved"
+	AccountStatusDenied     AccountStatus = "denied"
+)
+
 type AccountList struct {
 	Items []Account `json:"items"`
 }
@@ -107,6 +116,8 @@ type Account struct {
 	Salt           string                `json:"salt"`
 	ResourceLimits AccountResourceLimits `json:"resourceLimits"`
 	ResourceUsage  ResourceUsage         `json:"resourceUsage"`
+	Status         AccountStatus         `json:"status"`
+	Token          string                `json:"token"`
 }
 
 type ResourceLimits struct {

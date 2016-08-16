@@ -824,3 +824,84 @@ func (c *Client) ChangePassword(oldPassword string, newPassword string) error {
 		}
 	}
 }
+
+func (c *Client) Register(account *api.Account) error {
+	url := c.BasePath + "register"
+
+	data, err := json.Marshal(account)
+	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			defer resp.Body.Close()
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return err
+			}
+
+			account := api.Account{}
+			json.Unmarshal([]byte(body), &account)
+			return nil
+
+		} else {
+			return errors.New(resp.Status)
+		}
+	}
+}
+
+func (c *Client) Verify(username string, token string) error {
+	url := c.BasePath + "register/verify"
+
+	request, err := http.NewRequest("PUT", url,
+		bytes.NewBuffer([]byte("{\"t\":\""+token+"\",\"u\":\""+username+"\"}")))
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			return nil
+		} else {
+			return errors.New(resp.Status)
+		}
+	}
+}
+
+func (c *Client) Approve(username string, token string) error {
+	url := c.BasePath + "register/approve"
+
+	request, err := http.NewRequest("PUT", url,
+		bytes.NewBuffer([]byte("{\"t\":\""+token+"\",\"u\":\""+username+"\"}")))
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			return nil
+		} else {
+			return errors.New(resp.Status)
+		}
+	}
+}
+
+func (c *Client) Deny(username string, token string) error {
+	url := c.BasePath + "register/deny"
+
+	request, err := http.NewRequest("PUT", url,
+		bytes.NewBuffer([]byte("{\"t\":\""+token+"\",\"u\":\""+username+"\"}")))
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			return nil
+		} else {
+			return errors.New(resp.Status)
+		}
+	}
+}

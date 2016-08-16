@@ -29,8 +29,9 @@ var passwdCmd = &cobra.Command{
 		fmt.Print("Current password: ")
 		currentPassword := getPassword()
 		fmt.Print("\n")
-		if currentPassword != account.Password {
-			fmt.Println("Invalid password")
+		token, err := client.Login(apiUser.username, currentPassword)
+		if token == "" {
+			fmt.Println("Password is invalid")
 			return
 		}
 
@@ -50,7 +51,7 @@ var passwdCmd = &cobra.Command{
 			return
 		}
 
-		if newPassword == confirmPassword && currentPassword == account.Password {
+		if newPassword == confirmPassword && token != "" {
 			account.Password = newPassword
 			err := client.UpdateAccount(account)
 			if err != nil {
