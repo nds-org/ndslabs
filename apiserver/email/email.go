@@ -11,18 +11,18 @@ import (
 )
 
 type EmailHelper struct {
-	server string
-	port   int
-	admin  string
+	server       string
+	port         int
+	supportEmail string
 }
 
-func NewEmailHelper(server string, port int, admin string) (*EmailHelper, error) {
+func NewEmailHelper(server string, port int, supportEmail string) (*EmailHelper, error) {
 
 	//auth = smtp.PlainAuth("", "dhanush@geektrust.in", "password", "smtp.gmail.com")
 	return &EmailHelper{
-		server: server,
-		port:   port,
-		admin:  admin,
+		server:       server,
+		port:         port,
+		supportEmail: supportEmail,
 	}, nil
 }
 
@@ -30,11 +30,13 @@ func NewEmailHelper(server string, port int, admin string) (*EmailHelper, error)
 func (s *EmailHelper) SendVerificationEmail(name string, address string, url string) error {
 
 	data := struct {
-		Name string
-		Link string
+		Name         string
+		Link         string
+		SupportEmail string
 	}{
-		Name: name,
-		Link: url,
+		Name:         name,
+		Link:         url,
+		SupportEmail: s.supportEmail,
 	}
 
 	subject := "Email address verification"
@@ -52,17 +54,19 @@ func (s *EmailHelper) SendVerificationEmail(name string, address string, url str
 func (s *EmailHelper) SendNewAccountEmail(name string, email string, desc string, approveUrl string, denyUrl string) error {
 
 	data := struct {
-		Name        string
-		Email       string
-		Description string
-		ApproveLink string
-		DenyLink    string
+		Name         string
+		Email        string
+		Description  string
+		ApproveLink  string
+		DenyLink     string
+		SupportEmail string
 	}{
-		Name:        name,
-		Email:       email,
-		Description: desc,
-		ApproveLink: approveUrl,
-		DenyLink:    denyUrl,
+		Name:         name,
+		Email:        email,
+		Description:  desc,
+		ApproveLink:  approveUrl,
+		DenyLink:     denyUrl,
+		SupportEmail: s.supportEmail,
 	}
 
 	subject := "New account request"
@@ -70,7 +74,7 @@ func (s *EmailHelper) SendNewAccountEmail(name string, email string, desc string
 	if err != nil {
 		return err
 	}
-	_, err = s.sendEmail(s.admin, subject, msg)
+	_, err = s.sendEmail(s.supportEmail, subject, msg)
 	if err != nil {
 		return err
 	}
@@ -79,11 +83,13 @@ func (s *EmailHelper) SendNewAccountEmail(name string, email string, desc string
 
 func (s *EmailHelper) SendStatusEmail(name string, address string, url string, approved bool) error {
 	data := struct {
-		Name string
-		Link string
+		Name         string
+		Link         string
+		SupportEmail string
 	}{
-		Name: name,
-		Link: url,
+		Name:         name,
+		Link:         url,
+		SupportEmail: s.supportEmail,
 	}
 
 	var subject string
@@ -104,7 +110,32 @@ func (s *EmailHelper) SendStatusEmail(name string, address string, url string, a
 	if err != nil {
 		return err
 	}
+	return nil
+}
 
+func (s *EmailHelper) SendRecoveryEmail(name string, email string, recoveryUrl string) error {
+
+	data := struct {
+		Name         string
+		Email        string
+		Link         string
+		SupportEmail string
+	}{
+		Name:         name,
+		Email:        email,
+		Link:         recoveryUrl,
+		SupportEmail: s.supportEmail,
+	}
+
+	subject := "NDS Labs password recovery request"
+	msg, err := s.parseTemplate("templates/recovery-request.html", data)
+	if err != nil {
+		return err
+	}
+	_, err = s.sendEmail(s.supportEmail, subject, msg)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -131,7 +162,7 @@ func (s *EmailHelper) sendEmail(to string, subject string, body string) (bool, e
 	if err != nil {
 		return false, err
 	}
-	c.Mail(s.admin)
+	c.Mail(s.supportEmail)
 	c.Rcpt(to)
 	wc, err := c.Data()
 	if err != nil {

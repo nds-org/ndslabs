@@ -905,3 +905,20 @@ func (c *Client) Deny(username string, token string) error {
 		}
 	}
 }
+
+func (c *Client) Recover(username string) error {
+	url := c.BasePath + "reset/" + username
+
+	request, err := http.NewRequest("POST", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			return nil
+		} else {
+			return errors.New(resp.Status)
+		}
+	}
+}

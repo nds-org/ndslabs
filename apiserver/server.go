@@ -24,6 +24,7 @@ import (
 
 	"github.com/StephanDollberg/go-json-rest-middleware-jwt"
 	"github.com/ant0ine/go-json-rest/rest"
+	jwtbase "github.com/dgrijalva/jwt-go"
 	"github.com/golang/glog"
 )
 
@@ -46,6 +47,7 @@ type Server struct {
 	memMax         int
 	memDefault     int
 	storageDefault int
+	origin         string
 }
 
 type Config struct {
@@ -78,9 +80,9 @@ type Config struct {
 		Password  string
 	}
 	Email struct {
-		Host       string
-		Port       int
-		AdminEmail string
+		Host         string
+		Port         int
+		SupportEmail string
 	}
 }
 
@@ -150,7 +152,7 @@ func main() {
 		glog.Fatal(err)
 	}
 
-	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.AdminEmail)
+	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.SupportEmail)
 	if err != nil {
 		glog.Errorf("Error in email server configuration\n")
 		glog.Fatal(err)
@@ -207,6 +209,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 
 	if len(cfg.Server.Origin) > 0 {
 		glog.Infof("CORS origin %s\n", cfg.Server.Origin)
+		s.origin = cfg.Server.Origin
 
 		api.Use(&rest.CorsMiddleware{
 			RejectNonCorsRequests: false,
@@ -294,9 +297,10 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Post(s.prefix+"register", s.RegisterAccount),
 		rest.Put(s.prefix+"register/verify", s.VerifyAccount),
 		rest.Put(s.prefix+"register/approve", s.ApproveAccount),
-		//rest.Put(s.prefix+"register/deny", s.DenyAccount),
+		rest.Put(s.prefix+"register/deny", s.DenyAccount),
 		rest.Put(s.prefix+"accounts/:userId", s.PutAccount),
 		rest.Get(s.prefix+"accounts/:userId", s.GetAccount),
+		rest.Post(s.prefix+"reset/:userId", s.ResetPassword),
 		rest.Delete(s.prefix+"accounts/:userId", s.DeleteAccount),
 		rest.Get(s.prefix+"services", s.GetAllServices),
 		rest.Post(s.prefix+"services", s.PostService),
@@ -626,7 +630,7 @@ func (s *Server) RegisterAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	verifyUrl := "http://192.168.99.100/verify?t=" + account.Token + "&u=" + account.Namespace
+	verifyUrl := s.origin + "/verify?t=" + account.Token + "&u=" + account.Namespace
 	err = s.email.SendVerificationEmail(account.Name, account.EmailAddress, verifyUrl)
 	if err != nil {
 		glog.Error(err)
@@ -661,9 +665,10 @@ func (s *Server) VerifyAccount(w rest.ResponseWriter, r *rest.Request) {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		approveUrl := "http://192.168.99.100/register/approve?t=" + account.Token + "&u=" + account.Namespace
-		denyUrl := "http://192.168.99.100/register/deny?t=" + account.Token + "&u=" + account.Namespace
-		err = s.email.SendNewAccountEmail(account.Name, account.EmailAddress, account.Description, approveUrl, denyUrl)
+		approveUrl := s.origin + "/register/approve?t=" + account.Token + "&u=" + account.Namespace
+		denyUrl := s.origin + "/register/deny?t=" + account.Token + "&u=" + account.Namespace
+		err = s.email.SendNewAccountEmail(account.Name, account.EmailAddress, account.Description,
+			approveUrl, denyUrl)
 		if err != nil {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -671,7 +676,7 @@ func (s *Server) VerifyAccount(w rest.ResponseWriter, r *rest.Request) {
 		}
 		w.WriteHeader(http.StatusOK)
 	} else {
-		w.WriteHeader(http.StatusConflict)
+		w.WriteHeader(http.StatusNotFound)
 	}
 }
 
@@ -714,7 +719,44 @@ func (s *Server) ApproveAccount(w rest.ResponseWriter, r *rest.Request) {
 		}
 		w.WriteHeader(http.StatusOK)
 	} else {
-		w.WriteHeader(http.StatusConflict)
+		w.WriteHeader(http.StatusNotFound)
+	}
+}
+
+func (s *Server) DenyAccount(w rest.ResponseWriter, r *rest.Request) {
+	data := make(map[string]string)
+	err := r.DecodeJsonPayload(&data)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	userId := data["u"]
+	token := data["t"]
+	account, err := s.etcd.GetAccount(userId)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if account.Status == api.AccountStatusUnapproved &&
+		account.Token == token {
+		account.Status = api.AccountStatusDenied
+		err = s.etcd.PutAccount(userId, account, false)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		err = s.email.SendStatusEmail(account.Name, account.EmailAddress, "", false)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusNotFound)
 	}
 }
 
@@ -2241,4 +2283,50 @@ func (s *Server) ChangePassword(w rest.ResponseWriter, r *rest.Request) {
 	} else {
 		w.WriteHeader(http.StatusConflict)
 	}
+}
+
+func (s *Server) ResetPassword(w rest.ResponseWriter, r *rest.Request) {
+	userId := r.PathParam("userId")
+
+	token, err := s.getTemporaryToken(userId)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	account, err := s.etcd.GetAccount(userId)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resetUrl := s.origin + "/reset?t=" + token
+	err = s.email.SendRecoveryEmail(account.Name, account.EmailAddress, resetUrl)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) getTemporaryToken(userId string) (string, error) {
+
+	token := jwtbase.New(jwtbase.GetSigningMethod(s.jwt.SigningAlgorithm))
+
+	if s.jwt.PayloadFunc != nil {
+		for key, value := range s.jwt.PayloadFunc(userId) {
+			token.Claims[key] = value
+		}
+	}
+
+	token.Claims["id"] = userId
+	token.Claims["exp"] = time.Now().Add(time.Hour).Unix()
+	tokenString, err := token.SignedString(s.jwt.Key)
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
+
 }
