@@ -1,0 +1,77 @@
+<!-- The Login View -->
+<section>
+  <div class="row" style="margin-top:50px;">
+    
+    <form name="sendPassResetForm" ng-submit="sendResetLink()" ng-if="!token && !resetSendSuccessful">
+      <!-- Enter E-mail -->
+      <div class="form-group">
+        <label for="namespace">Username</label>
+        <input type="text" class="form-control" name="namespace" id="namespace"
+            ng-model="newPassword.username" placeholder="Username" required>
+        
+        <div class="alert-danger" ng-if="!sendPassResetForm.namespace.$pristine" ng-messages="sendPassResetForm.namespace.$error">
+          <div ng-message="required">You must enter a username.</div>
+        </div>
+      </div>
+      
+      <button type="submit" class="btn btn-primary btn-sm" ng-disabled="!newPassword.username" ng-click="sendResetLink()">Reset Password</button>
+    </form>
+    
+    <div class="row" ng-if="!token && resetSendSuccessful">
+      <div class="col-sm-12">
+        <div class="helper-text">
+          <h2><i class="fa fa-fw fa-square-o text-warning"></i>An e-mail has been sent to the owner of this account</h2>
+          <h4>Follow the link in the e-mail to reset your password</h4>
+        </div>
+      </div>
+    </div>
+    
+    <form name="resetPassForm" ng-if="token && !resetSuccessful" ng-submit="resetPassword()">
+      <!-- Choose a password -->
+      <div class="form-group" ng-class="{ 
+          'has-error has-feedback': !resetPassForm.password.$pristine && resetPassForm.password.$invalid, 
+          'has-success has-feedback': !resetPassForm.password.$pristine && resetPassForm.password.$valid }">
+        <label for="password">New Password</label>
+        <input type="password" class="form-control" name="password" id="password"
+            ng-model="newPassword.password" placeholder="Password" required minlength="6">
+        <span class="form-control-feedback glyphicon" ng-if="!resetPassForm.password.$pristine"
+            ng-class="{ 'glyphicon-remove': resetPassForm.password.$invalid, 'glyphicon-ok': resetPassForm.password.$valid }"></span>
+                
+        <div class="alert-danger" ng-if="!resetPassForm.password.$pristine" ng-messages="resetPassForm.password.$error">
+          <div ng-message="required">You must enter a password.</div>
+          <div ng-message="pattern">Password may not contain spaces.</div>
+          <div ng-message="minlength,maxlength">Password must be at least 6 characters.</div>
+        </div>
+      </div>
+      
+      <!-- Confirm password -->
+      <div class="form-group" ng-class="{ 
+          'has-error has-feedback': !resetPassForm.passwordConf.$pristine && resetPassForm.passwordConf.$invalid, 
+          'has-success has-feedback': !resetPassForm.passwordConf.$pristine && resetPassForm.passwordConf.$valid }">
+        <label for="passwordConf">Confirm</label>
+        <input type="password" class="form-control" name="passwordConf" id="passwordConf"
+            ng-model="newPassword.confirmation" placeholder="Confirm Password" required minlength="6" pattern="{{ newPassword.password }}">
+        <span class="form-control-feedback glyphicon" ng-if="!resetPassForm.passwordConf.$pristine"
+            ng-class="{ 'glyphicon-remove': resetPassForm.passwordConf.$invalid, 'glyphicon-ok': resetPassForm.passwordConf.$valid }"></span>
+            
+            
+        <div class="alert-danger" ng-if="!resetPassForm.passwordConf.$pristine" ng-messages="resetPassForm.passwordConf.$error">
+          <div ng-message="required">You must enter a password.</div>
+          <div ng-message="pattern">Passwords do not match.</div>
+          <div ng-message="minlength,maxlength">Password must be at least 6 characters.</div>
+        </div>
+      </div>
+      
+      <button type="submit" class="btn btn-primary btn-sm" ng-disabled="!newPassword.password || !newPassword.confirmation" ng-click="resetPassword()">Change Password</button>
+    </form>
+    
+    <div class="row" ng-if="token && resetSuccessful">
+      <div class="col-sm-12">
+        <div class="helper-text">
+          <h2><i class="fa fa-fw fa-check-square-o text-success"></i>Your password has been successfully changed!</h2>
+          <h4>The next time you log into this account, you should use the password you've just specified</h4>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

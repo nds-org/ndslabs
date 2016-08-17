@@ -8,13 +8,16 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('LoginController', [ '$scope', '$cookies', '$location', '$log', '$uibModal', 'AuthInfo', 'NdsLabsApi', 'LoginRoute', 'HomeRoute', '$uibModalStack', 'ServerData',
-    function($scope, $cookies, $location, $log, $uibModal, authInfo, NdsLabsApi, LoginRoute, HomeRoute, $uibModalStack, ServerData) {
+.controller('LoginController', [ '$scope', '$cookies', '$location', '$log', '$uibModal', 'AuthInfo', 'NdsLabsApi', 'LoginRoute', 'HomeRoute', 'VerifyAccountRoute', 'ResetPasswordRoute', '$uibModalStack', 'ServerData',
+    function($scope, $cookies, $location, $log, $uibModal, authInfo, NdsLabsApi, LoginRoute, HomeRoute, VerifyAccountRoute, ResetPasswordRoute, $uibModalStack, ServerData) {
   // Grab our injected AuthInfo from the provider
   $scope.settings = authInfo.get();
+  $scope.showVerify = false;
   
   // If we found a token, the user should be sent to the HomePage to check its validity
-  if (!$scope.settings.token) {
+  if (!$scope.settings.token 
+      && $location.path() !== VerifyAccountRoute 
+      && $location.path() !== ResetPasswordRoute) {
     $location.path(LoginRoute);
   }
   
@@ -90,10 +93,7 @@ angular
       modalInstance.result.then(function(account) {
         $log.debug('User has successfully created a new account: ' + account.username);
         
-        // Now log in to the new account
-        $scope.settings.namespace = account.username;
-        $scope.settings.password = account.password;
-        $scope.login();
+        $scope.showVerify = true;
       });
   };
 }]);
