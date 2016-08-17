@@ -404,7 +404,7 @@ paths:
     put:
       parameters:
         - name: password
-          description: Change password
+          description: Change password object
           schema:
             type: object
             properties:
@@ -415,10 +415,38 @@ paths:
           in: body
           required: true
       description: |
-        Rename the stack
+        Change the user's password
       responses:
         '201':
-          description: Updated                  
+          description: Updated
+  '/register/verify':
+    put:
+      parameters:
+        - name: verify
+          description: Verification object
+          schema:
+            type: object
+            properties:
+              u:
+                type: string
+              t:
+                type: string
+          in: body
+          required: true
+      description: |
+        Verify registered email address
+      responses:
+        '200':
+          description: Verified
+  '/reset/{account-id}':
+    parameters:
+      - $ref: '#/parameters/account-id'
+    post:
+      description: |
+        Request password reset email.
+      responses:
+        '200':
+          description: OK
 definitions:
   Auth:
     type: object
