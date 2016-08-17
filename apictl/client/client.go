@@ -871,10 +871,9 @@ func (c *Client) Verify(username string, token string) error {
 }
 
 func (c *Client) Approve(username string, token string) error {
-	url := c.BasePath + "register/approve"
+	url := c.BasePath + "register/approve?t=" + token + "&u=" + username
 
-	request, err := http.NewRequest("PUT", url,
-		bytes.NewBuffer([]byte("{\"t\":\""+token+"\",\"u\":\""+username+"\"}")))
+	request, err := http.NewRequest("GET", url, nil)
 	request.Header.Set("Content-Type", "application/json")
 	resp, err := c.HttpClient.Do(request)
 	if err != nil {
@@ -889,10 +888,9 @@ func (c *Client) Approve(username string, token string) error {
 }
 
 func (c *Client) Deny(username string, token string) error {
-	url := c.BasePath + "register/deny"
+	url := c.BasePath + "register/deny?t=" + token + "&u=" + username
 
-	request, err := http.NewRequest("PUT", url,
-		bytes.NewBuffer([]byte("{\"t\":\""+token+"\",\"u\":\""+username+"\"}")))
+	request, err := http.NewRequest("GET", url, nil)
 	request.Header.Set("Content-Type", "application/json")
 	resp, err := c.HttpClient.Do(request)
 	if err != nil {
