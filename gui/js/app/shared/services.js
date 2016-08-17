@@ -102,7 +102,9 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       return {
         name: '',
         description: '',
+        organization: '',
         namespace: '',
+        email: '',
         password: '',
         passwordConfirmation: ''
       }
