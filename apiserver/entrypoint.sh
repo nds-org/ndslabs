@@ -44,7 +44,7 @@ if [ "$1" = 'apiserver' ]; then
 		SMTP_PORT=25
 	fi
 	if [ -z "$SUPPORT_EMAIL" ]; then 
-		SUPPORT_EMAIL=labs@ndslabs.org
+		SUPPORT_EMAIL=support@ndslabs.org
 	fi
 
 cat << EOF > /apiserver.conf
