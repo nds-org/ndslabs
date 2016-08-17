@@ -45,6 +45,10 @@
             </li>
             
             <li ng-if="navFilter === 'right'">
+              <a ng-href="#/recover?t={{ settings.token }}"><i class="fa fa-fw fa-lock"></i> Change Password</a>
+            </li>
+            
+            <li ng-if="navFilter === 'right'">
               <a href="#/home"><i class="fa fa-fw fa-user"></i> {{ settings.namespace }}</a>
             </li>
             

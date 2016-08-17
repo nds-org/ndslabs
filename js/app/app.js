@@ -34,6 +34,16 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 .constant('SignUpRoute', '/register')
 
 /**
+ * The route to our "Verify Account" View
+ */
+.constant('VerifyAccountRoute', '/register/verify')
+
+/**
+ * The route to our "Recover Password" View
+ */
+.constant('ResetPasswordRoute', '/recover')
+
+/**
  * The route to the "AppStore" view
  */
 .constant('AppStoreRoute', '/store')
@@ -153,8 +163,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ConsoleRoute', 'AddServiceRoute', 'EditServiceRoute', 'AddSpecRoute', 'EditSpecRoute',
-    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, HomeRoute, ConsoleRoute, AddServiceRoute, EditServiceRoute, AddSpecRoute, EditSpecRoute) {
+.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ConsoleRoute', 'AddServiceRoute', 'EditServiceRoute', 'AddSpecRoute', 'EditSpecRoute', 'VerifyAccountRoute', 'ResetPasswordRoute',
+    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, HomeRoute, ConsoleRoute, AddServiceRoute, EditServiceRoute, AddSpecRoute, EditSpecRoute, VerifyAccountRoute, ResetPasswordRoute) {
   // Squelch debug-level log messages
   $logProvider.debugEnabled(DEBUG);
       
@@ -232,6 +242,16 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     controller: 'LoginController',
     templateUrl: 'app/login/login.html'
   })
+  .when(VerifyAccountRoute, {
+    title: 'E-mail verified!',
+    controller: 'VerifyAccountController',
+    templateUrl: 'app/login/verify/verify.html'
+  })
+  .when(ResetPasswordRoute, {
+    title: 'Reset Password',
+    controller: 'ResetPasswordController',
+    templateUrl: 'app/login/reset/reset.html'
+  })
   .when(AppStoreRoute, {
     title: 'NDS Labs Catalog',
     controller: 'CatalogController',
@@ -300,29 +320,36 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   
   // When user changes routes, check that they are still authed
   $rootScope.$on( "$routeChangeStart", function(event, next, current) {
+    // Skip token checking for the "Verify Account" View
+    if (next.$$route.templateUrl === 'app/login/verify/verify.html') {
+      return;
+    }
+    
     // Define the logic for ending a user's session in the browser
     var terminateSession = function() {
-      // Purge current session data
-      authInfo.get().token = null;
-      $cookies.remove('token');
-      $cookies.remove('namespace');
-      
-      // Close any open modals
-      $uibModalStack.dismissAll();
-      
-      // Stop any running auto-refresh interval
-      AutoRefresh.stop();
-      
-      // Purge any server data
-      ServerData.purgeAll();
-      
-      // Cancel the auth check interval
-      $interval.cancel(checkTokenInterval);
-      checkTokenInterval = null;
-            
-      // user needs to log in, redirect to /login
-      if (!_.includes(next.templateUrl, "app/login/login.html")) {
-        $location.path(LoginRoute);
+      if (authInfo.get().token) {
+        // Purge current session data
+        authInfo.get().token = null;
+        $cookies.remove('token');
+        $cookies.remove('namespace');
+        
+        // Close any open modals
+        $uibModalStack.dismissAll();
+        
+        // Stop any running auto-refresh interval
+        AutoRefresh.stop();
+        
+        // Purge any server data
+        ServerData.purgeAll();
+        
+        // Cancel the auth check interval
+        $interval.cancel(checkTokenInterval);
+        checkTokenInterval = null;
+              
+        // user needs to log in, redirect to /login
+        if (!_.includes(next.templateUrl, "app/login/login.html")) {
+          $location.path(LoginRoute);
+        }
       }
     };
     
@@ -332,7 +359,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     // Every so often, check that our token is still valid
     var checkTokenInterval = null;
     var checkToken = function() {
-      NdsLabsApi.getCheck_token().then(function() { $log.debug('Token is still valid.'); }, function() {
+      NdsLabsApi.getCheckToken().then(function() { $log.debug('Token is still valid.'); }, function() {
         $log.error('Token expired, redirecting to login.');
         terminateSession();
       });
@@ -343,7 +370,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     if (token) {
       authInfo.get().token = token;
       authInfo.get().namespace = $cookies.get('namespace');
-      NdsLabsApi.getRefresh_token().then(function() {
+      NdsLabsApi.getRefreshToken().then(function() {
         $log.debug('Token refreshed: ' + authInfo.get().token);
         
         // Populate all displayed data here from etcd

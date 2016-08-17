@@ -27,8 +27,7 @@ angular
       $uibModalInstance.close({ 'username': user, 'password': pass });
     }, function(response) {
       $log.error('Failed to create account: ' + account.namespace);
-      $scope.errorMessage = 'Username or e-mail address already in use';
-      $log.error("Error logging in!");
+      $scope.errorMessage = response.body.Error || 'Username or e-mail address already in use';
     }).finally(function() {
       $scope.progressMessage = '';
     });

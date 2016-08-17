@@ -1,14 +1,14 @@
 <!-- The Login View -->
 <section>
-   <!-- Main Panel -->
-  <div class="panel panel-primary" id="loginPanel">
+  <!-- Main Panel -->
+  <div class="panel panel-primary" id="loginPanel" ng-if="!showVerify">
     <div class="panel-heading">
       <h3 class="panel-title"><i class="fa fa-fw fa-lock"></i> Sign In</h3>
     </div>
     
     <!-- Login form -->
     <div class="panel-body">
-      <form class="form-horizontal">
+      <form class="form-horizontal" ng-submit="login()">
 
         <!-- Namespace Field -->
         <div class="form-group">
@@ -25,7 +25,7 @@
             <input type="password" class="form-control" id="inputPassword" placeholder="Password" ng-model="settings.password">
           </div>
         </div>
-
+        
         <!-- Login Button -->
         <div class="row">
           <div class="col-md-offset-4 col-sm-4 col-xs-8">
@@ -35,6 +35,12 @@
           </div>
           <div class="col-xs-4">
             <button type="submit" class="btn btn-primary pull-right" ng-click="login()">Sign in <i class="fa fa-fw fa-sign-in"></i></button>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-offset-4 col-xs-8 text-center">
+            <small><a class="btn btn-link btn-xs" ng-href="#/recover">Forgot your password? Click here to reset!</a></small>
           </div>
         </div>
 
@@ -47,6 +53,14 @@
           </p>
         </div>
       </form>
+    </div>
+  </div>
+  
+  <div class="row" style="margin-top:50px;">
+    <div class="helper-text" ng-if="showVerify">
+      <h2 class="text-warning"><i class="fa fa-fw fa-square-o"></i>&nbsp;&nbsp;Almost there!</h2>
+      <!--<h4>&nbsp;&nbsp;Thank you for registering for NDS Labs</h4>-->
+      <h4>Your request is not submitted until you confirm your e-mail address</h4>
     </div>
   </div>
 </section>
