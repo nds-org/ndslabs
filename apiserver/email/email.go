@@ -18,7 +18,6 @@ type EmailHelper struct {
 
 func NewEmailHelper(server string, port int, supportEmail string) (*EmailHelper, error) {
 
-	//auth = smtp.PlainAuth("", "dhanush@geektrust.in", "password", "smtp.gmail.com")
 	return &EmailHelper{
 		server:       server,
 		port:         port,
@@ -51,6 +50,7 @@ func (s *EmailHelper) SendVerificationEmail(name string, address string, url str
 	return nil
 }
 
+// Send new account request email
 func (s *EmailHelper) SendNewAccountEmail(name string, email string, desc string, approveUrl string, denyUrl string) error {
 
 	data := struct {
@@ -81,6 +81,7 @@ func (s *EmailHelper) SendNewAccountEmail(name string, email string, desc string
 	return nil
 }
 
+// Send approve/deny status email
 func (s *EmailHelper) SendStatusEmail(name string, address string, url string, approved bool) error {
 	data := struct {
 		Name         string
@@ -113,6 +114,7 @@ func (s *EmailHelper) SendStatusEmail(name string, address string, url string, a
 	return nil
 }
 
+// Send password recovery email
 func (s *EmailHelper) SendRecoveryEmail(name string, email string, recoveryUrl string) error {
 
 	data := struct {
