@@ -635,7 +635,7 @@ func (s *Server) RegisterAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	verifyUrl := s.origin + "#/register/verify?t=" + account.Token + "&u=" + account.Namespace
+	verifyUrl := s.origin + "/#/register/verify?t=" + account.Token + "&u=" + account.Namespace
 	err = s.email.SendVerificationEmail(account.Name, account.EmailAddress, verifyUrl)
 	if err != nil {
 		glog.Error(err)
@@ -2310,7 +2310,7 @@ func (s *Server) ResetPassword(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	resetUrl := s.origin + "#/recover?t=" + token
+	resetUrl := s.origin + "/#/recover?t=" + token
 	err = s.email.SendRecoveryEmail(account.Name, account.EmailAddress, resetUrl)
 	if err != nil {
 		glog.Error(err)
