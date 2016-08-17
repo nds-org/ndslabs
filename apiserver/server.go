@@ -615,7 +615,12 @@ func (s *Server) RegisterAccount(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	if s.accountExists(account.Namespace) {
-		w.WriteHeader(http.StatusConflict)
+		rest.Error(w, "Username is in use", http.StatusConflict)
+		return
+	}
+
+	if s.emailExists(account.EmailAddress) {
+		rest.Error(w, "Email address is already associated with another account", http.StatusConflict)
 		return
 	}
 
@@ -1179,6 +1184,22 @@ func (s *Server) accountExists(userId string) bool {
 	exists := false
 	for _, account := range *accounts {
 		if account.Namespace == userId {
+			exists = true
+			break
+		}
+	}
+	return exists
+}
+
+func (s *Server) emailExists(email string) bool {
+	accounts, _ := s.etcd.GetAccounts()
+	if accounts == nil {
+		return false
+	}
+
+	exists := false
+	for _, account := range *accounts {
+		if account.EmailAddress == email {
 			exists = true
 			break
 		}
