@@ -5,9 +5,11 @@ import (
 	"bytes"
 	"crypto/tls"
 	"fmt"
-	"github.com/golang/glog"
 	"html/template"
 	"net/smtp"
+
+	"github.com/golang/glog"
+	api "github.com/ndslabs/apiserver/types"
 )
 
 type EmailHelper struct {
@@ -51,19 +53,21 @@ func (s *EmailHelper) SendVerificationEmail(name string, address string, url str
 }
 
 // Send new account request email
-func (s *EmailHelper) SendNewAccountEmail(name string, email string, desc string, approveUrl string, denyUrl string) error {
+func (s *EmailHelper) SendNewAccountEmail(account *api.Account, approveUrl string, denyUrl string) error {
 
 	data := struct {
 		Name         string
 		Email        string
 		Description  string
+		Organization string
 		ApproveLink  string
 		DenyLink     string
 		SupportEmail string
 	}{
-		Name:         name,
-		Email:        email,
-		Description:  desc,
+		Name:         account.Name,
+		Email:        account.EmailAddress,
+		Description:  account.Description,
+		Organization: account.Organization,
 		ApproveLink:  approveUrl,
 		DenyLink:     denyUrl,
 		SupportEmail: s.supportEmail,
