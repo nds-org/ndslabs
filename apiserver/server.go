@@ -711,8 +711,9 @@ func (s *Server) ApproveAccount(w rest.ResponseWriter, r *rest.Request) {
 			return
 		}
 		w.WriteHeader(http.StatusOK)
+		w.WriteJson(map[string]string{"message": "Account has been approved."})
 	} else {
-		w.WriteHeader(http.StatusNotFound)
+		rest.Error(w, "Token not found", http.StatusNotFound)
 	}
 }
 
@@ -741,8 +742,9 @@ func (s *Server) DenyAccount(w rest.ResponseWriter, r *rest.Request) {
 			return
 		}
 		w.WriteHeader(http.StatusOK)
+		w.WriteJson(map[string]string{"message": "Account has been denied."})
 	} else {
-		w.WriteHeader(http.StatusNotFound)
+		rest.Error(w, "Token not found", http.StatusNotFound)
 	}
 }
 
