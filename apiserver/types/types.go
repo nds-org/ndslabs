@@ -118,6 +118,7 @@ type Account struct {
 	ResourceUsage  ResourceUsage         `json:"resourceUsage"`
 	Status         AccountStatus         `json:"status"`
 	Token          string                `json:"token"`
+	Organization   string                `json:"organization"`
 }
 
 type ResourceLimits struct {

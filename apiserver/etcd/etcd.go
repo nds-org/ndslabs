@@ -64,6 +64,7 @@ func (s *EtcdHelper) ChangePassword(uid string, oldPassword string, newPassword 
 	return false, nil
 }
 
+// Determine whether the current account can login. For now, whether the status is approved.
 func (s *EtcdHelper) CheckAccess(uid string) bool {
 	account, err := s.GetAccount(uid)
 	if err != nil {
@@ -72,6 +73,8 @@ func (s *EtcdHelper) CheckAccess(uid string) bool {
 	}
 	return account.Status == api.AccountStatusApproved
 }
+
+// Check the hashed password against the submitted password
 func (s *EtcdHelper) CheckPassword(uid string, password string) bool {
 	account, err := s.GetAccount(uid)
 	if err != nil {
@@ -87,6 +90,7 @@ func (s *EtcdHelper) CheckPassword(uid string, password string) bool {
 	}
 }
 
+// Set the account object in etd.  newsalt flag determines whether to generate a new salt (i.e., password has changed)
 func (s *EtcdHelper) PutAccount(uid string, account *api.Account, newsalt bool) error {
 
 	if newsalt {
@@ -98,6 +102,8 @@ func (s *EtcdHelper) PutAccount(uid string, account *api.Account, newsalt bool) 
 		account.Salt = salt
 		account.Password = s.crypto.HashString(salt + account.Password)
 	}
+
+	// Access token used for account registration and approval
 	account.Token = s.crypto.HashString(account.Salt + account.EmailAddress + string(account.Status))
 
 	data, _ := json.Marshal(account)
