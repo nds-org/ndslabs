@@ -18,10 +18,11 @@ angular
   $scope.resetSendSuccessful = false;
   $scope.resetSuccessful = false;
   
-  $scope.newPassword = {
+  $scope.password = {
     username: '',
+    oldPassword: '',   // we don't know this password, so we can't send it
     password: '',
-    confirmation: ''
+    confirm: ''
   };
   
   /**
@@ -41,7 +42,12 @@ angular
    * Reset the password of the account associated with the token attached to the request headers
    */
   $scope.resetPassword = function() {
-    NdsLabsApi.putChangePassword({ password: { password: $scope.newPassword.password } }).then(function(data) {
+    if ($scope.password.password !== $scope.password.confirm) {
+      return;
+    }
+    
+    // TODO: What is the correct API call here?
+    NdsLabsApi.putChangePassword({ password: { oldPassword: $scope.password.oldPassword, newPassword: $scope.password.password } }).then(function(data) {
       console.debug(data);
       $scope.resetSuccessful = true;
     }, function(response) {

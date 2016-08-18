@@ -27,11 +27,11 @@
     </div>
     
     <form name="resetPassForm" ng-if="token && !resetSuccessful" ng-submit="resetPassword()">
-      <!-- Choose a password -->
+      <!-- Choose a new password -->
       <div class="form-group" ng-class="{ 
           'has-error has-feedback': !resetPassForm.password.$pristine && resetPassForm.password.$invalid, 
           'has-success has-feedback': !resetPassForm.password.$pristine && resetPassForm.password.$valid }">
-        <label for="password">New Password</label>
+        <label for="password">Choose a New Password</label>
         <input type="password" class="form-control" name="password" id="password"
             ng-model="newPassword.password" placeholder="Password" required minlength="6">
         <span class="form-control-feedback glyphicon" ng-if="!resetPassForm.password.$pristine"
@@ -44,11 +44,11 @@
         </div>
       </div>
       
-      <!-- Confirm password -->
+      <!-- Confirm new password -->
       <div class="form-group" ng-class="{ 
           'has-error has-feedback': !resetPassForm.passwordConf.$pristine && resetPassForm.passwordConf.$invalid, 
           'has-success has-feedback': !resetPassForm.passwordConf.$pristine && resetPassForm.passwordConf.$valid }">
-        <label for="passwordConf">Confirm</label>
+        <label for="passwordConf">Confirm New Password</label>
         <input type="password" class="form-control" name="passwordConf" id="passwordConf"
             ng-model="newPassword.confirmation" placeholder="Confirm Password" required minlength="6" pattern="{{ newPassword.password }}">
         <span class="form-control-feedback glyphicon" ng-if="!resetPassForm.passwordConf.$pristine"

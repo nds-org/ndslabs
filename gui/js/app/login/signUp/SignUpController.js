@@ -8,9 +8,17 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('SignUpController', [ '$scope', '$uibModalInstance', '$log', 'NdsLabsApi', 'Project', function($scope, $uibModalInstance, $log, NdsLabsApi, Project) {
+.controller('SignUpController', [ '$scope', '$uibModalInstance', '$log', 'NdsLabsApi', 'Project', 'username', 'password', function($scope, $uibModalInstance, $log, NdsLabsApi, Project, username, password) {
   $scope.newProject = Project.create();
   $scope.progressMessage = '';
+  
+  if (username) {
+    $scope.newProject.username = username;
+  }
+  
+  if (password) {
+    $scope.newProject.password = password;
+  }
   
   $scope.ok = function(account) {
     $scope.progressMessage = 'Please wait...';
