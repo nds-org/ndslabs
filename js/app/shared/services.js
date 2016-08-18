@@ -95,7 +95,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
         $log.debug("successfully grabbed from /projects/" + projectId + "!");
         return project.project = data;
       }, function(headers) {
-        $log.debug("error!");
+        $log.debug("Error pulling account information: " + projectId);
       });
     },
     create: function() {

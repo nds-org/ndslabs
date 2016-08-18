@@ -14,11 +14,19 @@ angular
   $scope.settings = authInfo.get();
   $scope.showVerify = false;
   
+  var getProject = function() {
+    ServerData.project.populate($scope.settings.namespace).then(function(data) {
+      $scope.settings.project = data;
+    });
+  };
+  
   // If we found a token, the user should be sent to the HomePage to check its validity
-  if (!$scope.settings.token 
-      && $location.path() !== VerifyAccountRoute 
-      && $location.path() !== ResetPasswordRoute) {
-    $location.path(LoginRoute);
+  if ($location.path() !== VerifyAccountRoute && $location.path() !== ResetPasswordRoute) {
+    if (!$scope.settings.token) {
+      $location.path(LoginRoute);
+    } else {
+      getProject();
+    }
   }
   
   /**
@@ -39,6 +47,7 @@ angular
       $scope.errorMessage = '';
       $cookies.put('namespace', $scope.settings.namespace);
       $log.debug("Logged in!");
+      getProject();
       $location.path(HomeRoute);
     }, function(response) {
       var body = response.body || { 'Error': 'Something went wrong. Is the server running?' };
@@ -86,7 +95,10 @@ angular
         size: 'md',
         keyboard: false,
         backdrop: 'static',
-        resolve: {  }
+        resolve: { 
+          username: $scope.settings.namespace, 
+          password: $scope.settings.password
+        }
       });
       
       // Define what we should do when the modal is closed
