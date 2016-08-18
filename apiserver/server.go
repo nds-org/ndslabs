@@ -2281,7 +2281,7 @@ func (s *Server) ChangePassword(w rest.ResponseWriter, r *rest.Request) {
 
 	data := make(map[string]string)
 	err := r.DecodeJsonPayload(&data)
-	ok, err := s.etcd.ChangePassword(userId, data["oldPassword"], data["newPassword"])
+	ok, err := s.etcd.ChangePassword(userId, data["password"])
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)

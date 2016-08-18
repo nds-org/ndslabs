@@ -105,7 +105,6 @@ var setPasswordCmd = &cobra.Command{
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		oldPassword := credentials("Enter current password: ")
 		newPassword := credentials("Enter new password: ")
 		confirm := credentials("Enter again: ")
 
@@ -114,7 +113,7 @@ var setPasswordCmd = &cobra.Command{
 			return
 		}
 
-		err := client.ChangePassword(oldPassword, newPassword)
+		err := client.ChangePassword(newPassword)
 		if err != nil {
 			fmt.Printf("Error changing password %s\n", err)
 			return

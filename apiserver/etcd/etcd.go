@@ -46,21 +46,19 @@ func (s *EtcdHelper) GetAccount(uid string) (*api.Account, error) {
 	}
 }
 
-func (s *EtcdHelper) ChangePassword(uid string, oldPassword string, newPassword string) (bool, error) {
-	if s.CheckPassword(uid, oldPassword) {
-		account, err := s.GetAccount(uid)
-		if err != nil {
-			glog.Error(err)
-			return false, err
-		}
-		account.Password = newPassword
-
-		err = s.PutAccount(uid, account, true)
-		if err != nil {
-			return false, err
-		}
-		return true, nil
+func (s *EtcdHelper) ChangePassword(uid string, password string) (bool, error) {
+	account, err := s.GetAccount(uid)
+	if err != nil {
+		glog.Error(err)
+		return false, err
 	}
+	account.Password = password
+
+	err = s.PutAccount(uid, account, true)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 	return false, nil
 }
 

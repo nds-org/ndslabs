@@ -806,11 +806,11 @@ func (c *Client) RenameStack(sid string, name string) error {
 	}
 }
 
-func (c *Client) ChangePassword(oldPassword string, newPassword string) error {
+func (c *Client) ChangePassword(newPassword string) error {
 
 	url := c.BasePath + "change_password"
 
-	request, err := http.NewRequest("PUT", url, bytes.NewBuffer([]byte("{\"oldPassword\":\""+oldPassword+"\", \"newPassword\":\""+newPassword+"\"}")))
+	request, err := http.NewRequest("PUT", url, bytes.NewBuffer([]byte("{\"password\":\""+newPassword+"\"}")))
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	resp, err := c.HttpClient.Do(request)
