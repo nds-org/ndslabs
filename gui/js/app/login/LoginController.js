@@ -8,8 +8,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('LoginController', [ '$scope', '$cookies', '$location', '$log', '$uibModal', 'AuthInfo', 'NdsLabsApi', 'LoginRoute', 'HomeRoute', 'VerifyAccountRoute', 'ResetPasswordRoute', '$uibModalStack', 'ServerData',
-    function($scope, $cookies, $location, $log, $uibModal, authInfo, NdsLabsApi, LoginRoute, HomeRoute, VerifyAccountRoute, ResetPasswordRoute, $uibModalStack, ServerData) {
+.controller('LoginController', [ '$scope', '$cookies', '$location', '$log', '$uibModal', 'AuthInfo', 'NdsLabsApi', 'LoginRoute', 'HomeRoute', 'VerifyAccountRoute', 'ResetPasswordRoute', '$uibModalStack', 'ServerData', 'SignUpRoute',
+    function($scope, $cookies, $location, $log, $uibModal, authInfo, NdsLabsApi, LoginRoute, HomeRoute, VerifyAccountRoute, ResetPasswordRoute, $uibModalStack, ServerData, SignUpRoute) {
   // Grab our injected AuthInfo from the provider
   $scope.settings = authInfo.get();
   $scope.showVerify = false;
@@ -21,7 +21,8 @@ angular
   };
   
   // If we found a token, the user should be sent to the HomePage to check its validity
-  if ($location.path() !== VerifyAccountRoute && $location.path() !== ResetPasswordRoute) {
+  var path = $location.path();
+  if (path !== VerifyAccountRoute && path !== ResetPasswordRoute && path !== SignUpRoute) {
     if (!$scope.settings.token) {
       $location.path(LoginRoute);
     } else {
@@ -96,8 +97,8 @@ angular
         keyboard: false,
         backdrop: 'static',
         resolve: { 
-          username: $scope.settings.namespace, 
-          password: $scope.settings.password
+          username: function() { $scope.settings.namespace }, 
+          password: function() { $scope.settings.password }
         }
       });
       

@@ -406,11 +406,9 @@ paths:
         - name: password
           description: Change password object
           schema:
-            type: object
+            type: string
             properties:
-              oldPassword:
-                type: string
-              newPassword:
+              password:
                 type: string
           in: body
           required: true

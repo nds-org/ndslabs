@@ -17,6 +17,15 @@
         </div>
       </div>
       
+      <div ng-controller="LoginController" ng-show="!settings.token">
+        <div class="navbar-collapse collapse" ng-controller="NavbarController">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#/register">Register</a></li>
+            <li><a href="#/login">Login</a></li>
+          </ul>
+        </div>
+      </div>
+      
       <div ng-controller="LoginController" ng-show="settings.token">
         <div class="navbar-collapse collapse" ng-controller="NavbarController">
           <!-- Draw once for the left half of the navbar, and once again for the right -->
@@ -53,7 +62,7 @@
                   <li><a ng-href="#/recover?t={{ settings.token }}"><i class="fa fa-fw fa-lock"></i> Change Password</a></li>
                   <!--<li><a ng-href="#/faq"><i class="fa fa-fw fa-question-circle"></i> F.A.Q.</a></li>-->
                   <!--<li><a ng-href="#/faq"><i class="fa fa-fw fa-question-circle"></i> Contact Support</a></li>-->
-                  <li><a id="dropDownButton" type="button" ng-click="logout()"><i class="fa fa-fw fa-sign-out"></i> Sign Out</a></li>
+                  <li><a id="dropDownButton" type="button" ng-click="logout()"><i class="fa fa-fw fa-sign-out"></i> Logout</a></li>
                 </ul>
               </a>
             </li>

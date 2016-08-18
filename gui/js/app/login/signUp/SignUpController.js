@@ -8,17 +8,10 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('SignUpController', [ '$scope', '$uibModalInstance', '$log', 'NdsLabsApi', 'Project', 'username', 'password', function($scope, $uibModalInstance, $log, NdsLabsApi, Project, username, password) {
+.controller('SignUpController', [ '$scope', /*'$uibModalInstance',*/ '$log', 'NdsLabsApi', 'Project', function($scope, /*$uibModalInstance,*/ $log, NdsLabsApi, Project) {
   $scope.newProject = Project.create();
   $scope.progressMessage = '';
-  
-  if (username) {
-    $scope.newProject.username = username;
-  }
-  
-  if (password) {
-    $scope.newProject.password = password;
-  }
+  $scope.showVerify = false;
   
   $scope.ok = function(account) {
     $scope.progressMessage = 'Please wait...';
@@ -32,16 +25,13 @@ angular
       
       // Clear out sensitive data
       $scope.newProject = Project.create();
-      $uibModalInstance.close({ 'username': user, 'password': pass });
+      //$uibModalInstance.close({ 'username': user, 'password': pass });
+      $scope.showVerify = true;
     }, function(response) {
       $log.error('Failed to create account: ' + account.namespace);
       $scope.errorMessage = response.body.Error || 'Username or e-mail address already in use';
     }).finally(function() {
       $scope.progressMessage = '';
     });
-  };
-  
-  $scope.close = function() {
-    $uibModalInstance.dismiss('cancel');
   };
 }]);

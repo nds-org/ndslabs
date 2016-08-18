@@ -19,17 +19,21 @@ angular
   $scope.resetSuccessful = false;
   
   $scope.password = {
-    username: '',
-    oldPassword: '',   // we don't know this password, so we can't send it
+    accountId: '',
     password: '',
-    confirm: ''
+    confirmation: ''
   };
   
   /**
    * Send a reset link to the e-mail associated with the given accountId (username / namespace)
    */
   $scope.sendResetLink = function() {
-    NdsLabsApi.postResetByAccountId({ accountId: $scope.newPassword.username }).then(function(data) {
+    console.log("Resetting: " + $scope.password);
+    if (!$scope.password.accountId) {
+      return;
+    }
+    
+    NdsLabsApi.postResetByAccountId({ accountId: $scope.password.accountId }).then(function(data) {
       console.debug(data);
       $scope.resetSendSuccessful = true;
     }, function(response) {
@@ -42,12 +46,14 @@ angular
    * Reset the password of the account associated with the token attached to the request headers
    */
   $scope.resetPassword = function() {
-    if ($scope.password.password !== $scope.password.confirm) {
+    if ($scope.password.password !== $scope.password.confirmation) {
       return;
     }
     
     // TODO: What is the correct API call here?
-    NdsLabsApi.putChangePassword({ password: { oldPassword: $scope.password.oldPassword, newPassword: $scope.password.password } }).then(function(data) {
+    NdsLabsApi.putChangePassword({ password: { 
+      password: $scope.password.password,
+    }}).then(function(data) {
       console.debug(data);
       $scope.resetSuccessful = true;
     }, function(response) {
