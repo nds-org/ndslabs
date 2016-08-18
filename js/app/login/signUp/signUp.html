@@ -1,22 +1,24 @@
 <!-- The SignUp Modal -->
 <section>
-  <div class="modal-header">
-    <button type="button" class="btn btn-xs btn-default pull-right" data-dismiss="modal" aria-label="Close" ng-click="close()"><i class="fa fa-fw fa-times"></i></button>
-    <h4 class="modal-title"><i class="fa fa-fw fa-user-plus"></i> Request Access to NDS Labs</h4>
+  <div class="row">
+    <div class="col-xs-offset-3 col-xs-6 text-center">
+      <!--<button type="button" class="btn btn-xs btn-default pull-right" data-dismiss="modal" aria-label="Close" ng-click="close()"><i class="fa fa-fw fa-times"></i></button>-->
+      <h3><i class="fa fa-fw fa-user-plus"></i> Request Access to NDS Labs</h3>
+    </div>
   </div>
   
   <!-- Registration Form -->
-  <div class="modal-body">
+  <div ng-if="!showVerify">
     <form name="registerForm" ng-submit="ok(newProject)">
       
       <!-- Contact Info -->
       <div class="row">
-        <div class="col-sm-12">           
+        <div class="col-sm-offset-3 col-sm-6">           
           <!-- Enter Full Name -->
           <div class="form-group" ng-class="{ 
               'has-error has-feedback': !registerForm.fullName.$pristine && registerForm.fullName.$invalid, 
               'has-success has-feedback': !registerForm.fullName.$pristine && registerForm.fullName.$valid }">
-            <label for="fullName">Fill Name</label>
+            <label for="fullName">Full Name</label>
             <input type="text" class="form-control" name="fullName" id="fullName" 
                 ng-model="newProject.name" placeholder="Full Name" required />
             <span class="form-control-feedback glyphicon" ng-if="!registerForm.fullName.$pristine"
@@ -30,29 +32,36 @@
       </div>
       
       <div class="row">
-        <div class="col-sm-12">
+        <div class="col-sm-offset-3 col-sm-6">
           <!-- Enter E-mail -->
           <div class="form-group" ng-class="{ 
               'has-error has-feedback': !registerForm.email.$pristine && registerForm.email.$invalid, 
               'has-success has-feedback': !registerForm.email.$pristine && registerForm.email.$valid }">
             <label for="email">E-mail Address</label>
-            <input type="email" class="form-control" name="email" id="email" ng-model-options="{ 'debounce': 400, }"
-                ng-model="newProject.email" placeholder="E-mail Address" required />
-            <!--<span class="form-control-feedback glyphicon" ng-if="!registerForm.email.$pristine"
-                ng-class="{ 'glyphicon-remove': registerForm.email.$invalid, 'glyphicon-ok': registerForm.email.$valid }"></span>-->
+                
+            <div class="input-group">
+              <input type="email" class="form-control" name="email" id="email" ng-model-options="{ 'debounce': 400, }"
+                  ng-model="newProject.email" placeholder="E-mail Address" required aria-describedby="gravatar-addon" />
+              <span class="input-group-addon" id="gravatar-addon" tooltip-placement="left" uib-tooltip="If your e-mail address has a Gravatar associated with it, it will be displayed in the NDS Labs UI">
+                <img gravatar-src="newProject.email" gravatar-size="20" style="border-radius:50px;">
+              </span>
+            </div>
+            
+            <span class="form-control-feedback glyphicon" ng-if="!registerForm.email.$pristine" style="right:45px;"
+                ng-class="{ 'glyphicon-remove': registerForm.email.$invalid, 'glyphicon-ok': registerForm.email.$valid }"></span>
                 
             <div class="text-danger" ng-if="!registerForm.email.$pristine" ng-messages="registerForm.email.$error">
               <div ng-message="required,email">You must enter a valid e-mail address.</div>
             </div>
             
-            <small><small><img gravatar-src="newProject.email" gravatar-size="12" style="border-radius:50px;margin-right:10px;"> You will be asked to verify this e-mail address.</small></small>
+            <small><small><i class="text-warning fa fa-fw fa-warning"></i> You will be asked to verify this e-mail address.</small></small>
           </div>
         </div>
       </div>
       
       <!-- Intentions -->
       <div class="row">
-        <div class="col-sm-12">
+        <div class="col-sm-offset-3 col-sm-6">
           <!-- Enter Organization -->
           <div class="form-group" ng-class="{
               'has-error has-feedback': !registerForm.organization.$pristine && registerForm.organization.$invalid, 
@@ -71,7 +80,7 @@
       </div>
       
       <div class="row">
-        <div class="col-xs-12">
+        <div class="col-sm-offset-3 col-sm-6">
           <div class="form-group" ng-class="{ 
               'has-error has-feedback': !registerForm.description.$pristine && registerForm.description.$invalid, 
               'has-success has-feedback': !registerForm.description.$pristine && registerForm.description.$valid }">
@@ -89,11 +98,9 @@
         </div>
       </div>
       
-      <hr />
-      
       <!-- Credentials -->
       <div class="row">
-        <div class="col-sm-12">
+        <div class="col-sm-offset-3 col-sm-6">
           <!-- Choose a username (namespace) -->
           <div class="form-group" ng-class="{ 
               'has-error has-feedback': !registerForm.namespace.$pristine && registerForm.namespace.$invalid, 
@@ -116,7 +123,7 @@
         
       <!-- <sup><i class="fa fa-fw fa-question-circle"></i></sup> -->
       <div class="row">
-        <div class="col-sm-6">
+        <div class="col-sm-offset-3 col-sm-3">
           <!-- Choose a password -->
           <div class="form-group" ng-class="{ 
               'has-error has-feedback': !registerForm.password.$pristine && registerForm.password.$invalid, 
@@ -134,7 +141,7 @@
             </div>
           </div>
         </div>
-        <div class="col-sm-6">
+        <div class="col-sm-3">
           <!-- Confirm password -->
           <div class="form-group" ng-class="{ 
               'has-error has-feedback': !registerForm.passwordConf.$pristine && registerForm.passwordConf.$invalid, 
@@ -153,24 +160,34 @@
             </div>
           </div>
         </div>
+      </form>
+    </div>
+    
+    <!-- Progress / Error Message -->
+    <div class="row">
+      <div class="text-center col-sm-offset-3 col-sm-6">
+        <p class="text-danger" ng-if="errorMessage">
+          {{ errorMessage }}
+        </p>
+        <p class="text-primary" ng-if="progressMessage">
+          <i class="fa fa-fw fa-spinner fa-spin"></i>{{ progressMessage }}
+        </p>
       </div>
-    </form>
-  </div>
-  
-  <!-- Progress / Error Message -->
-  <div class="row">
-    <div class="text-center col-xs-12">
-      <p class="text-danger" ng-if="errorMessage">
-        {{ errorMessage }}
-      </p>
-      <p class="text-primary" ng-if="progressMessage">
-        <i class="fa fa-fw fa-spinner fa-spin"></i>{{ progressMessage }}
-      </p>
+    </div>
+    
+    <div class="row">
+      <div class="col-sm-offset-3 col-sm-6">
+        <!--<button class="btn btn-default pull-left" data-dismiss="modal" ng-click="close()">Cancel</button>-->
+        <button class="btn btn-success" data-dismiss="modal" ng-disabled="namespaceExists || !registerForm.$valid" ng-click="ok(newProject)">Create Account</button>
+      </div>
     </div>
   </div>
   
-  <div class="modal-footer">
-    <button class="btn btn-default pull-left" data-dismiss="modal" ng-click="close()">Cancel</button>
-    <button class="btn btn-success pull-right" data-dismiss="modal" ng-disabled="namespaceExists || !registerForm.$valid" ng-click="ok(newProject)">Create Account</button>
+  <div class="row" style="margin-top:50px;">
+    <div class="helper-text" ng-if="showVerify">
+      <h2 class="text-warning"><i class="fa fa-fw fa-square-o"></i>&nbsp;&nbsp;Almost there!</h2>
+      <!--<h4>&nbsp;&nbsp;Thank you for registering for NDS Labs</h4>-->
+      <h4>Your request is not submitted until you confirm your e-mail address</h4>
+    </div>
   </div>
 </section>

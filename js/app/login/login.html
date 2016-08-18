@@ -4,7 +4,7 @@
   <div class="panel panel-primary" id="loginPanel" ng-if="!showVerify">
     <div class="panel-heading">
       <small class="pull-right"><a class="btn btn-xs" ng-style="{ color: hover ? 'blue' : 'white' }" ng-mouseenter="hover=true" ng-mouseleave="hover=false" ng-href="#/recover">Forgot your password?</a></small>
-      <h3 class="panel-title"><i class="fa fa-fw fa-lock"></i> Sign In</h3>
+      <h3 class="panel-title"><i class="fa fa-fw fa-lock"></i> Login</h3>
     </div>
     
     <!-- Login form -->
@@ -29,7 +29,7 @@
         
         <div class="row">
           <div class="col-xs-12">
-            <button type="submit" class="btn btn-primary" ng-click="login()" style="width:100%">Sign in <i class="fa fa-fw fa-sign-in"></i></button>
+            <button type="submit" class="btn btn-primary" ng-click="login()" style="width:100%">Sign In <i class="fa fa-fw fa-sign-in"></i></button>
           </div>
         </div>
         
@@ -37,7 +37,8 @@
         <div class="row">
           <div class="col-xs-12 text-center">
             <small>
-              <a ng-click="signUp()" href><i class="fa fa-fw fa-user-plus"></i> Don't have an account yet? Request access here!</a>
+              <!--<a ng-click="signUp()" href><i class="fa fa-fw fa-user-plus"></i> Don't have an account yet? Request access here!</a>-->
+              <a href="#/register"><i class="fa fa-fw fa-user-plus"></i> Don't have an account yet? Request access here!</a>
             </small>
           </div>
         </div>
