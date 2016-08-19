@@ -155,7 +155,11 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   this.$get = function() {
     var authInfo = this.authInfo;
     return {
-      get: function() { return authInfo; }
+      get: function() { return authInfo; },
+      purge: function() {
+        // We overwrite this stub function with "terminateSession" inside of the ".run()" handler below
+        return true;
+      }
     }
   };
 })
@@ -331,8 +335,16 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     }
     
     // Define the logic for ending a user's session in the browser
-    var terminateSession = function() {
+    var authInterval = null;
+    var terminateSession = authInfo.purge = function() {
+      // Cancel the auth check interval
+      if (authInterval) {
+        $interval.cancel(authInterval);
+        authInfo.tokenInterval = authInterval = null;
+      }
+      
       if (authInfo.get().token) {
+        
         // Purge current session data
         authInfo.get().token = null;
         $cookies.remove('token');
@@ -347,12 +359,12 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
         // Purge any server data
         ServerData.purgeAll();
         
-        // Cancel the auth check interval
-        $interval.cancel(checkTokenInterval);
-        checkTokenInterval = null;
               
         // user needs to log in, redirect to /login
-        if (!_.includes(next.templateUrl, "app/login/login.html")) {
+        if (!_.includes(next.templateUrl, "app/login/login.html")
+            && !_.includes(next.templateUrl, "app/login/signUp/signUp.html")
+            && !_.includes(next.templateUrl, "app/login/verify/verify.html")
+            && !_.includes(next.templateUrl, "app/login/reset/reset.html")) {
           $location.path(LoginRoute);
         }
       }
@@ -362,11 +374,11 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     var tokenCheckMs = 60000;
     
     // Every so often, check that our token is still valid
-    var checkTokenInterval = null;
     var checkToken = function() {
       NdsLabsApi.getCheckToken().then(function() { $log.debug('Token is still valid.'); }, function() {
         $log.error('Token expired, redirecting to login.');
         terminateSession();
+        authInfo.purge();
       });
     };
   
@@ -387,13 +399,13 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
             $location.path(dest);
           }*/
         });
-        
         // Restart our token check interval
-        if (checkTokenInterval) {
-          $interval.cancel(checkTokenInterval);
-          checkTokenInterval = null;
+        if (authInterval) {
+          $interval.cancel(authInterval);
+          authInterval = null;
         }
-        checkTokenInterval = $interval(checkToken, tokenCheckMs);
+        authInfo.tokenInterval = authInterval = $interval(checkToken, tokenCheckMs);
+        
       }, function() {
         $log.debug('Failed to refresh token!');
         
