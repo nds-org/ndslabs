@@ -8,23 +8,23 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('SignUpController', [ '$scope', '$uibModalInstance', '$log', 'NdsLabsApi', 'Project', function($scope, $uibModalInstance, $log, NdsLabsApi, Project) {
+.controller('SignUpController', [ '$scope', '$log', 'NdsLabsApi', 'Project', function($scope, $log, NdsLabsApi, Project) {
   $scope.newProject = Project.create();
+  $scope.progressMessage = '';
+  $scope.showVerify = false;
   
   $scope.ok = function(account) {
+    $scope.progressMessage = 'Please wait...';
+    $scope.errorMessage = '';
+    
     NdsLabsApi.postRegister({ 'account': account }).then(function(data, xhr) {
-      var user = account.namespace;
-      var pass = account.password;
-      
-      // Clear out sensitive data
-      $scope.newProject = Project.create();
-      $uibModalInstance.close({ 'username': user, 'password': pass });
-    }, function(headers) {
+      $scope.errorMessage = '';
+      $scope.showVerify = true;
+    }, function(response) {
       $log.error('Failed to create account: ' + account.namespace);
+      $scope.errorMessage = response.body.Error || 'Username or e-mail address already in use';
+    }).finally(function() {
+      $scope.progressMessage = '';
     });
-  };
-  
-  $scope.close = function() {
-    $uibModalInstance.dismiss('cancel');
   };
 }]);

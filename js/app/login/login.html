@@ -1,49 +1,55 @@
 <!-- The Login View -->
 <section>
-   <!-- Main Panel -->
-  <div class="panel panel-primary" id="loginPanel">
+  <!-- Main Panel -->
+  <div class="panel panel-primary" id="loginPanel" ng-if="!showVerify">
     <div class="panel-heading">
-      <h3 class="panel-title"><i class="fa fa-fw fa-lock"></i> Sign In</h3>
+      <small class="pull-right"><a class="btn btn-xs" ng-style="{ color: hover ? 'blue' : 'white' }" ng-mouseenter="hover=true" ng-mouseleave="hover=false" ng-href="#/recover">Forgot your password?</a></small>
+      <h3 class="panel-title"><i class="fa fa-fw fa-lock"></i> Login</h3>
     </div>
     
-    <!-- Login form -->
+    <!-- Login Form -->
     <div class="panel-body">
-      <form class="form-horizontal">
+      <form class="form-horizontal" ng-submit="login()">
 
         <!-- Namespace Field -->
         <div class="form-group">
-          <label for="inputNamespace" class="col-sm-4 control-label">Username</label>
-          <div class="col-sm-8">
+          <!--<label for="inputNamespace" class="col-sm-4 control-label">Username</label>-->
+          <div class="col-sm-12">
             <input type="text" class="form-control" id="inputNamespace" placeholder="Username" ng-model="settings.namespace">
           </div>
         </div>
 
         <!-- Password Field -->
         <div class="form-group">
-          <label for="inputPassword" class="col-sm-4 control-label">Password</label>
-          <div class="col-sm-8">
+          <!--<label for="inputPassword" class="col-sm-4 control-label">Password</label>-->
+          <div class="col-sm-12">
             <input type="password" class="form-control" id="inputPassword" placeholder="Password" ng-model="settings.password">
           </div>
         </div>
-
+        
         <!-- Login Button -->
         <div class="row">
-          <div class="col-md-offset-4 col-sm-4 col-xs-8">
-            <button class="btn btn-default" type="button" ng-click="signUp()">
-              <i class="fa fa-fw fa-user-plus"></i> Create Project
-            </button>
+          <div class="col-xs-12">
+            <button type="submit" class="btn btn-primary" ng-click="login()" style="width:100%">Sign In <i class="fa fa-fw fa-sign-in"></i></button>
           </div>
-          <div class="col-xs-4">
-            <button type="submit" class="btn btn-primary pull-right" ng-click="login()">Sign in <i class="fa fa-fw fa-sign-in"></i></button>
+        </div>
+        
+        <!-- Create Account Button -->
+        <div class="row">
+          <div class="col-xs-12 text-center">
+            <small>
+              <a href="#/register"><i class="fa fa-fw fa-user-plus"></i> Don't have an account yet? Request access here!</a>
+            </small>
           </div>
         </div>
 
+        <!-- Progress / Error Messages -->
         <div class="text-center">
           <p class="text-danger" ng-if="errorMessage">
             {{ errorMessage }}
           </p>
           <p class="text-primary" ng-if="progressMessage">
-            <i class="fa fa-fw fa-spinner fa-spin"></i>{{ progressMessage }}
+            <i class="fa fa-fw fa-spinner fa-spin"></i> {{ progressMessage }}
           </p>
         </div>
       </form>

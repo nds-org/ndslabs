@@ -7,7 +7,7 @@
   
   <div class="modal-body">
     <p>Enter a new label for your application:</p>
-    <form name="renameStack">
+    <form name="renameStack" ng-submit="confirm()">
       <input class="form-control" type="text" name="nameField" ng-model="stack.name" required />
       <ng-messages class="text-danger" for="renameStack.nameField.$error" role="alert">
         <ng-message when="required">This field is required</ng-message>
