@@ -10,7 +10,7 @@
   <div style="margin-top:50px;">
     <div class="row" ng-if="!token && !resetSendSuccessful">
       <div class="col-xs-offset-4 col-xs-4">
-        <form name="sendPassResetForm" ng-submit="sendResetLink()">
+        <form name="sendPassResetForm">
           <!-- Enter E-mail -->
           <div class="form-group">
             <label for="accountId">Username</label>
@@ -21,7 +21,7 @@
               <div ng-message="required">You must enter a username.</div>
             </div>
           </div>
-          
+        
           <button type="submit" class="btn btn-primary" ng-disabled="!password.accountId" ng-click="sendResetLink()">Reset Password</button>
         </form>
       </div>
@@ -38,7 +38,7 @@
       
     <div class="row" ng-if="token && !resetSuccessful" >
       <div class="col-xs-offset-4 col-xs-4">
-        <form name="resetPassForm" ng-submit="resetPassword()">
+        <form name="resetPassForm">
           <!-- Choose a new password -->
           <div class="form-group" ng-class="{ 
               'has-error has-feedback': !resetPassForm.password.$pristine && resetPassForm.password.$invalid, 
