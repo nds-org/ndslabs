@@ -361,10 +361,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
         
               
         // user needs to log in, redirect to /login
-        if (!_.includes(next.templateUrl, "app/login/login.html")
-            && !_.includes(next.templateUrl, "app/login/signUp/signUp.html")
-            && !_.includes(next.templateUrl, "app/login/verify/verify.html")
-            && !_.includes(next.templateUrl, "app/login/reset/reset.html")) {
+        if (!_.includes(next.templateUrl, "app/login/")) {
           $location.path(LoginRoute);
         }
       }
