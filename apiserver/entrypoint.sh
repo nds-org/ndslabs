@@ -36,6 +36,17 @@ if [ "$1" = 'apiserver' ]; then
 		VOLUME_NAME="global"
 	fi
 
+	if [ -z "$SMTP_HOST" ]; then 
+		SMTP_HOST="smtp.ncsa.illinois.edu"
+	fi
+
+	if [ -z "$SMTP_PORT" ]; then 
+		SMTP_PORT=25
+	fi
+	if [ -z "$SUPPORT_EMAIL" ]; then 
+		SUPPORT_EMAIL=support@ndslabs.org
+	fi
+
 cat << EOF > /apiserver.conf
 [Server]
 Port=30001
@@ -47,7 +58,6 @@ Timeout=$TIMEOUT
 Prefix=$PREFIX
 Ingress=$INGRESS
 Domain=$DOMAIN
-
 
 [DefaultLimits]
 CpuMax=2000
@@ -63,6 +73,12 @@ Address=$ETCD_ADDR
 Address=$KUBERNETES_ADDR
 Username=admin
 Password=admin
+
+[Email]
+Host=$SMTP_HOST
+Port=$SMTP_PORT
+SupportEmail=$SUPPORT_EMAIL
+
 EOF
 
 	if [ -z "$SPEC_GIT_REPO" ]; then 

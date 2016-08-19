@@ -5,6 +5,7 @@
     "namespace": "demo",
     "password": "12345",
 	"storageQuota": "10",
+	"status": "approved",
 	"resourceLimits": {
 		"cpuMax": 2000,
 		"cpuDefault": 1000,

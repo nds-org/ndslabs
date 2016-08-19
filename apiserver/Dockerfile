@@ -23,6 +23,7 @@ RUN apt-get update -y -qq && \
 
 #COPY build/bin/apiserver-linux-amd64 /apiserver
 COPY entrypoint.sh /
+COPY templates /templates
 
 VOLUME /volumes
 
