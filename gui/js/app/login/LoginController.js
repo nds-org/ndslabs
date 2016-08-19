@@ -70,43 +70,12 @@ angular
     // TODO: DELETE /authenticate to delete a token in the backend?
     //NdsLabsApi.deleteAuthenticate().then(function(data, xhr) {
       $scope.errorMessage = '';
-      $scope.settings.token = null;
-      $cookies.remove('token');
-      $cookies.remove('namespace');
-      $uibModalStack.dismissAll();
-      $log.debug("Logged out!");
-      $location.path(LoginRoute);
+      $scope.progressMessage = '';
+      $log.debug("Logging out!");
+      authInfo.purge();
     /*}, function(response) {
       $log.error("Error logging out!");
     }).finally(function() {*/
-      $scope.progressMessage = '';
     //});
-  };
-
-  /**
-   * Create a new project in etcd (DEBUG / DEMO only!)
-   * TODO: Remove this ASAP!
-   */
-  $scope.signUp = function() {
-    // See 'app/login/signUp/signUp.html
-      var modalInstance = $uibModal.open({
-        animation: true,
-        templateUrl: 'app/login/signUp/signUp.html',
-        controller: 'SignUpController',
-        size: 'md',
-        keyboard: false,
-        backdrop: 'static',
-        resolve: { 
-          username: function() { $scope.settings.namespace }, 
-          password: function() { $scope.settings.password }
-        }
-      });
-      
-      // Define what we should do when the modal is closed
-      modalInstance.result.then(function(account) {
-        $log.debug('User has successfully created a new account: ' + account.username);
-        
-        $scope.showVerify = true;
-      });
   };
 }]);

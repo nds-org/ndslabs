@@ -7,7 +7,7 @@
       <h3 class="panel-title"><i class="fa fa-fw fa-lock"></i> Login</h3>
     </div>
     
-    <!-- Login form -->
+    <!-- Login Form -->
     <div class="panel-body">
       <form class="form-horizontal" ng-submit="login()">
 
@@ -27,22 +27,23 @@
           </div>
         </div>
         
+        <!-- Login Button -->
         <div class="row">
           <div class="col-xs-12">
             <button type="submit" class="btn btn-primary" ng-click="login()" style="width:100%">Sign In <i class="fa fa-fw fa-sign-in"></i></button>
           </div>
         </div>
         
-        <!-- Login Button -->
+        <!-- Create Account Button -->
         <div class="row">
           <div class="col-xs-12 text-center">
             <small>
-              <!--<a ng-click="signUp()" href><i class="fa fa-fw fa-user-plus"></i> Don't have an account yet? Request access here!</a>-->
               <a href="#/register"><i class="fa fa-fw fa-user-plus"></i> Don't have an account yet? Request access here!</a>
             </small>
           </div>
         </div>
 
+        <!-- Progress / Error Messages -->
         <div class="text-center">
           <p class="text-danger" ng-if="errorMessage">
             {{ errorMessage }}
@@ -52,14 +53,6 @@
           </p>
         </div>
       </form>
-    </div>
-  </div>
-  
-  <div class="row" style="margin-top:50px;">
-    <div class="helper-text" ng-if="showVerify">
-      <h2 class="text-warning"><i class="fa fa-fw fa-square-o"></i>&nbsp;&nbsp;Almost there!</h2>
-      <!--<h4>&nbsp;&nbsp;Thank you for registering for NDS Labs</h4>-->
-      <h4>Your request is not submitted until you confirm your e-mail address</h4>
     </div>
   </div>
 </section>
