@@ -170,10 +170,10 @@ angular.module('ndslabs-api', [])
              * Refresh the JWT token
 
              * @method
-             * @name ApiServer#getRefresh_token
+             * @name ApiServer#getRefreshToken
              * 
              */
-            ApiServer.prototype.getRefresh_token = function(parameters) {
+            ApiServer.prototype.getRefreshToken = function(parameters) {
                 if (parameters === undefined) {
                     parameters = {};
                 }
@@ -205,10 +205,10 @@ angular.module('ndslabs-api', [])
              * Validate the JWT token
 
              * @method
-             * @name ApiServer#getCheck_token
+             * @name ApiServer#getCheckToken
              * 
              */
-            ApiServer.prototype.getCheck_token = function(parameters) {
+            ApiServer.prototype.getCheckToken = function(parameters) {
                 if (parameters === undefined) {
                     parameters = {};
                 }
@@ -1240,6 +1240,139 @@ angular.module('ndslabs-api', [])
                 }
 
                 this.request('GET', domain + path, parameters, body, headers, queryParameters, form, deferred);
+
+                return deferred.promise;
+            };
+            /**
+             * Change the user's password
+
+             * @method
+             * @name ApiServer#putChangePassword
+             * @param {} password - Change password object
+             * 
+             */
+            ApiServer.prototype.putChangePassword = function(parameters) {
+                if (parameters === undefined) {
+                    parameters = {};
+                }
+                var deferred = $q.defer();
+
+                var domain = this.domain;
+                var path = '/change_password';
+
+                var body;
+                var queryParameters = {};
+                var headers = {};
+                var form = {};
+
+                headers['Content-Type'] = ['application/json'];
+
+                if (parameters['password'] !== undefined) {
+                    body = parameters['password'];
+                }
+
+                if (parameters['password'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: password'));
+                    return deferred.promise;
+                }
+
+                if (parameters.$queryParameters) {
+                    Object.keys(parameters.$queryParameters)
+                        .forEach(function(parameterName) {
+                            var parameter = parameters.$queryParameters[parameterName];
+                            queryParameters[parameterName] = parameter;
+                        });
+                }
+
+                this.request('PUT', domain + path, parameters, body, headers, queryParameters, form, deferred);
+
+                return deferred.promise;
+            };
+            /**
+             * Verify registered email address
+
+             * @method
+             * @name ApiServer#putRegisterVerify
+             * @param {} verify - Verification object
+             * 
+             */
+            ApiServer.prototype.putRegisterVerify = function(parameters) {
+                if (parameters === undefined) {
+                    parameters = {};
+                }
+                var deferred = $q.defer();
+
+                var domain = this.domain;
+                var path = '/register/verify';
+
+                var body;
+                var queryParameters = {};
+                var headers = {};
+                var form = {};
+
+                headers['Content-Type'] = ['application/json'];
+
+                if (parameters['verify'] !== undefined) {
+                    body = parameters['verify'];
+                }
+
+                if (parameters['verify'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: verify'));
+                    return deferred.promise;
+                }
+
+                if (parameters.$queryParameters) {
+                    Object.keys(parameters.$queryParameters)
+                        .forEach(function(parameterName) {
+                            var parameter = parameters.$queryParameters[parameterName];
+                            queryParameters[parameterName] = parameter;
+                        });
+                }
+
+                this.request('PUT', domain + path, parameters, body, headers, queryParameters, form, deferred);
+
+                return deferred.promise;
+            };
+            /**
+             * Request password reset email.
+
+             * @method
+             * @name ApiServer#postResetByAccountId
+             * @param {string} accountId - The unique account identifier
+             * 
+             */
+            ApiServer.prototype.postResetByAccountId = function(parameters) {
+                if (parameters === undefined) {
+                    parameters = {};
+                }
+                var deferred = $q.defer();
+
+                var domain = this.domain;
+                var path = '/reset/{account-id}';
+
+                var body;
+                var queryParameters = {};
+                var headers = {};
+                var form = {};
+
+                headers['Content-Type'] = ['application/json'];
+
+                path = path.replace('{account-id}', parameters['accountId']);
+
+                if (parameters['accountId'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: accountId'));
+                    return deferred.promise;
+                }
+
+                if (parameters.$queryParameters) {
+                    Object.keys(parameters.$queryParameters)
+                        .forEach(function(parameterName) {
+                            var parameter = parameters.$queryParameters[parameterName];
+                            queryParameters[parameterName] = parameter;
+                        });
+                }
+
+                this.request('POST', domain + path, parameters, body, headers, queryParameters, form, deferred);
 
                 return deferred.promise;
             };

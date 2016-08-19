@@ -4,13 +4,17 @@
     <button type="button" class="btn btn-xs btn-default pull-right" data-dismiss="modal" aria-label="Close" ng-click="close()"><i class="fa fa-fw fa-times"></i></button>
     <h4 class="modal-title">Import New Application</h4>
   </div>
+  
   <div class="modal-body">
     <div class="row">
       <div class="col-sm-12">
-         <textarea class="form-control" style="height:350px;" placeholder="Paste your JSON spec here..." ng-model="json" ng-model-options="{ updateOn: 'default blur', debounce: { 'default': 400, 'blur': 0 } }"></textarea>
+        <form name="specImport" ng-submit="import()">
+          <textarea class="form-control" style="height:350px;" placeholder="Paste your JSON spec here..." ng-model="json" ng-model-options="{ updateOn: 'default blur', debounce: { 'default': 400, 'blur': 0 } }"></textarea>
+        </form>
       </div>
     </div>
   </div>
+  
   <div class="modal-footer">
     <div class="row">
       <div class="col-sm-2">

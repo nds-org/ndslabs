@@ -205,6 +205,9 @@ html,body {
 #loginPanel {
   margin: 10% auto;
   max-width:400px;
+  -webkit-box-shadow: 7px 10px 29px -5px rgba(0,0,0,0.75);
+  -moz-box-shadow: 7px 10px 29px -5px rgba(0,0,0,0.75);
+  box-shadow: 7px 10px 29px -5px rgba(0,0,0,0.75);
 }
 
 #navbar {

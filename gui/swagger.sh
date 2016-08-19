@@ -3,11 +3,11 @@
 #export DOWNLOADURL=https://raw.githubusercontent.com/nds-org/nds-labs/v2/apis/swagger-spec/ndslabs.json
 
 DOWNLOADURL=$1
-SWAGGERFILE=ndslabs
+SWAGGERFILE=ndslabs.yaml
 OUTPUTFILE=`pwd`/js/app/shared/api.js
 
 # Install swagger-js-codegen
-docker run --rm -it -v `pwd`/api:/data bodom0015/nodejs-bower-grunt npm install swagger-js-codegen
+docker run --rm -it -v `pwd`/api:/data bodom0015/nodejs-bower-grunt npm install swagger-js-codegen yamljs
 
 # Download newest swagger-spec.json
 if [[ "$1" != "" ]]; then
@@ -15,7 +15,7 @@ if [[ "$1" != "" ]]; then
 	sudo curl -L ${DOWNLOADURL} > api/${SWAGGERFILE}
 else
 	echo "Rebuilding swagger spec from ../apis/swagger-spec/${SWAGGERFILE}"
-#	sudo cp ../apis/swagger-spec/${SWAGGERFILE}.json api/${SWAGGERFILE}.json
+	cp ../apis/swagger-spec/${SWAGGERFILE} api/${SWAGGERFILE}
 fi
 
 # Finally, generate AngularJS source
