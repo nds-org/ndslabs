@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	email "github.com/ndslabs/apiserver/email"
 	etcd "github.com/ndslabs/apiserver/etcd"
 	kube "github.com/ndslabs/apiserver/kube"
 	mw "github.com/ndslabs/apiserver/middleware"
@@ -23,6 +24,7 @@ import (
 
 	"github.com/StephanDollberg/go-json-rest-middleware-jwt"
 	"github.com/ant0ine/go-json-rest/rest"
+	jwtbase "github.com/dgrijalva/jwt-go"
 	"github.com/golang/glog"
 )
 
@@ -30,6 +32,7 @@ type Server struct {
 	etcd           *etcd.EtcdHelper
 	kube           *kube.KubeHelper
 	validator      *validate.Validator
+	email          *email.EmailHelper
 	Namespace      string
 	local          bool
 	volDir         string
@@ -44,6 +47,7 @@ type Server struct {
 	memMax         int
 	memDefault     int
 	storageDefault int
+	origin         string
 }
 
 type Config struct {
@@ -74,6 +78,11 @@ type Config struct {
 		TokenPath string
 		Username  string
 		Password  string
+	}
+	Email struct {
+		Host         string
+		Port         int
+		SupportEmail string
 	}
 }
 
@@ -143,6 +152,12 @@ func main() {
 		glog.Fatal(err)
 	}
 
+	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.SupportEmail)
+	if err != nil {
+		glog.Errorf("Error in email server configuration\n")
+		glog.Fatal(err)
+	}
+
 	server := Server{}
 	server.hostname = hostname
 	if cfg.Server.Ingress == IngressTypeLoadBalancer {
@@ -154,6 +169,7 @@ func main() {
 	}
 	server.etcd = etcd
 	server.kube = kube
+	server.email = email
 	server.volDir = cfg.Server.VolDir
 	server.volName = cfg.Server.VolName
 	server.cpuMax = cfg.DefaultLimits.CpuMax
@@ -193,6 +209,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 
 	if len(cfg.Server.Origin) > 0 {
 		glog.Infof("CORS origin %s\n", cfg.Server.Origin)
+		s.origin = cfg.Server.Origin
 
 		api.Use(&rest.CorsMiddleware{
 			RejectNonCorsRequests: false,
@@ -224,7 +241,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 			if userId == "admin" && password == adminPasswd {
 				return true
 			} else {
-				return s.etcd.CheckPassword(userId, password)
+				return s.etcd.CheckPassword(userId, password) && s.etcd.CheckAccess(userId)
 			}
 		},
 		Authorizator: func(userId string, request *rest.Request) bool {
@@ -277,9 +294,13 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Get(s.prefix+"refresh_token", jwt.RefreshHandler),
 		rest.Get(s.prefix+"accounts", s.GetAllAccounts),
 		rest.Post(s.prefix+"accounts", s.PostAccount),
-		rest.Post(s.prefix+"register", s.PostAccount),
+		rest.Post(s.prefix+"register", s.RegisterAccount),
+		rest.Put(s.prefix+"register/verify", s.VerifyAccount),
+		rest.Get(s.prefix+"register/approve", s.ApproveAccount),
+		rest.Get(s.prefix+"register/deny", s.DenyAccount),
 		rest.Put(s.prefix+"accounts/:userId", s.PutAccount),
 		rest.Get(s.prefix+"accounts/:userId", s.GetAccount),
+		rest.Post(s.prefix+"reset/:userId", s.ResetPassword),
 		rest.Delete(s.prefix+"accounts/:userId", s.DeleteAccount),
 		rest.Get(s.prefix+"services", s.GetAllServices),
 		rest.Post(s.prefix+"services", s.PostService),
@@ -501,6 +522,11 @@ func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 
+	if !s.IsAdmin(r) {
+		rest.Error(w, "", http.StatusUnauthorized)
+		return
+	}
+
 	account := api.Account{}
 	err := r.DecodeJsonPayload(&account)
 	if err != nil {
@@ -514,11 +540,27 @@ func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	_, err = s.kube.CreateNamespace(account.Namespace)
+	err = s.setupAccount(&account)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	err = s.etcd.PutAccount(account.Namespace, &account, true)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteJson(&account)
+}
+
+func (s *Server) setupAccount(account *api.Account) error {
+	_, err := s.kube.CreateNamespace(account.Namespace)
+	if err != nil {
+		return err
 	}
 
 	if account.ResourceLimits == (api.AccountResourceLimits{}) {
@@ -535,18 +577,14 @@ func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 		account.ResourceLimits.CPUMax,
 		account.ResourceLimits.MemoryMax)
 	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return err
 	}
 
 	_, err = s.kube.CreateLimitRange(account.Namespace,
 		account.ResourceLimits.CPUDefault,
 		account.ResourceLimits.MemoryDefault)
 	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return err
 	}
 
 	secret, err := s.kube.GetSecret("default", "ndslabs-tls-secret")
@@ -554,26 +592,165 @@ func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 		secretName := fmt.Sprintf("%s-tls-secret", account.Namespace)
 		_, err := s.kube.CreateTLSSecret(account.Namespace, secretName, secret.Data["tls.crt"], secret.Data["tls.key"])
 		if err != nil {
-			glog.Error(err)
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return err
 		}
 	}
 
-	_, err = s.updateStorageQuota(&account)
+	_, err = s.updateStorageQuota(account)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Registers an account for this user and sends a verification email message
+func (s *Server) RegisterAccount(w rest.ResponseWriter, r *rest.Request) {
+
+	account := api.Account{}
+	err := r.DecodeJsonPayload(&account)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = s.etcd.PutAccount(account.Namespace, &account)
+	if s.accountExists(account.Namespace) {
+		rest.Error(w, "Username is in use", http.StatusConflict)
+		return
+	}
+
+	if s.emailExists(account.EmailAddress) {
+		rest.Error(w, "Email address is already associated with another account", http.StatusConflict)
+		return
+	}
+
+	// Set the account status to unverified
+	account.Status = api.AccountStatusUnverified
+
+	// Put account generates the registration token
+	err = s.etcd.PutAccount(account.Namespace, &account, true)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	verifyUrl := s.origin + "/#/register/verify?t=" + account.Token + "&u=" + account.Namespace
+	err = s.email.SendVerificationEmail(account.Name, account.EmailAddress, verifyUrl)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	w.WriteJson(&account)
+}
+
+func (s *Server) VerifyAccount(w rest.ResponseWriter, r *rest.Request) {
+	data := make(map[string]string)
+	err := r.DecodeJsonPayload(&data)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	userId := data["u"]
+	token := data["t"]
+	account, err := s.etcd.GetAccount(userId)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if account.Status == api.AccountStatusUnverified &&
+		account.Token == token {
+		account.Status = api.AccountStatusUnapproved
+		err = s.etcd.PutAccount(userId, account, false)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		approveUrl := r.BaseUrl().String() + "/api/register/approve?t=" + account.Token + "&u=" + account.Namespace
+		denyUrl := r.BaseUrl().String() + "/api/register/deny?t=" + account.Token + "&u=" + account.Namespace
+		err = s.email.SendNewAccountEmail(account, approveUrl, denyUrl)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+	}
+}
+
+func (s *Server) ApproveAccount(w rest.ResponseWriter, r *rest.Request) {
+	userId := r.Request.FormValue("u")
+	token := r.Request.FormValue("t")
+
+	account, err := s.etcd.GetAccount(userId)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if account.Status == api.AccountStatusUnapproved &&
+		account.Token == token {
+		account.Status = api.AccountStatusApproved
+		err = s.etcd.PutAccount(userId, account, false)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		err = s.setupAccount(account)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		err = s.email.SendStatusEmail(account.Name, account.EmailAddress, s.origin, true)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.WriteJson(map[string]string{"message": "Account has been approved."})
+	} else {
+		rest.Error(w, "Token not found", http.StatusNotFound)
+	}
+}
+
+func (s *Server) DenyAccount(w rest.ResponseWriter, r *rest.Request) {
+	userId := r.Request.FormValue("u")
+	token := r.Request.FormValue("t")
+	account, err := s.etcd.GetAccount(userId)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if account.Status == api.AccountStatusUnapproved &&
+		account.Token == token {
+		account.Status = api.AccountStatusDenied
+		err = s.etcd.PutAccount(userId, account, false)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		err = s.email.SendStatusEmail(account.Name, account.EmailAddress, "", false)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.WriteJson(map[string]string{"message": "Account has been denied."})
+	} else {
+		rest.Error(w, "Token not found", http.StatusNotFound)
+	}
 }
 
 func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
@@ -624,7 +801,7 @@ func (s *Server) PutAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	err = s.etcd.PutAccount(userId, &account)
+	err = s.etcd.PutAccount(userId, &account, true)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -649,14 +826,16 @@ func (s *Server) DeleteAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	_, err := s.kube.DeleteNamespace(userId)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if s.kube.NamespaceExists(userId) {
+		_, err := s.kube.DeleteNamespace(userId)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
-	err = s.etcd.DeleteAccount(userId)
+	err := s.etcd.DeleteAccount(userId)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1005,6 +1184,22 @@ func (s *Server) accountExists(userId string) bool {
 	exists := false
 	for _, account := range *accounts {
 		if account.Namespace == userId {
+			exists = true
+			break
+		}
+	}
+	return exists
+}
+
+func (s *Server) emailExists(email string) bool {
+	accounts, _ := s.etcd.GetAccounts()
+	if accounts == nil {
+		return false
+	}
+
+	exists := false
+	for _, account := range *accounts {
+		if account.EmailAddress == email {
 			exists = true
 			break
 		}
@@ -2086,7 +2281,7 @@ func (s *Server) ChangePassword(w rest.ResponseWriter, r *rest.Request) {
 
 	data := make(map[string]string)
 	err := r.DecodeJsonPayload(&data)
-	ok, err := s.etcd.ChangePassword(userId, data["oldPassword"], data["newPassword"])
+	ok, err := s.etcd.ChangePassword(userId, data["password"])
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -2097,5 +2292,50 @@ func (s *Server) ChangePassword(w rest.ResponseWriter, r *rest.Request) {
 	} else {
 		w.WriteHeader(http.StatusConflict)
 	}
+}
+
+func (s *Server) ResetPassword(w rest.ResponseWriter, r *rest.Request) {
+	userId := r.PathParam("userId")
+
+	token, err := s.getTemporaryToken(userId)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	account, err := s.etcd.GetAccount(userId)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resetUrl := s.origin + "/#/recover?t=" + token
+	err = s.email.SendRecoveryEmail(account.Name, account.EmailAddress, resetUrl)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) getTemporaryToken(userId string) (string, error) {
+
+	token := jwtbase.New(jwtbase.GetSigningMethod(s.jwt.SigningAlgorithm))
+
+	if s.jwt.PayloadFunc != nil {
+		for key, value := range s.jwt.PayloadFunc(userId) {
+			token.Claims[key] = value
+		}
+	}
+
+	token.Claims["id"] = userId
+	token.Claims["exp"] = time.Now().Add(time.Minute * 30).Unix()
+	tokenString, err := token.SignedString(s.jwt.Key)
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
 
 }

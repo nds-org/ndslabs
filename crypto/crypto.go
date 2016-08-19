@@ -17,7 +17,7 @@ func NewCryptoHelper() *CryptoHelper {
 func (c *CryptoHelper) HashString(s string) string {
 	hash := sha1.New()
 	hash.Write([]byte(s))
-	sha := base64.URLEncoding.EncodeToString(hash.Sum(nil))
+	sha := base64.RawURLEncoding.EncodeToString(hash.Sum(nil))
 	return sha
 }
 

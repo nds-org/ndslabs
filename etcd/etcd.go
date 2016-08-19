@@ -46,24 +46,33 @@ func (s *EtcdHelper) GetAccount(uid string) (*api.Account, error) {
 	}
 }
 
-func (s *EtcdHelper) ChangePassword(uid string, oldPassword string, newPassword string) (bool, error) {
-	if s.CheckPassword(uid, oldPassword) {
-		account, err := s.GetAccount(uid)
-		if err != nil {
-			glog.Error(err)
-			return false, err
-		}
-		account.Password = newPassword
-
-		err = s.PutAccount(uid, account)
-		if err != nil {
-			return false, err
-		}
-		return true, nil
+func (s *EtcdHelper) ChangePassword(uid string, password string) (bool, error) {
+	account, err := s.GetAccount(uid)
+	if err != nil {
+		glog.Error(err)
+		return false, err
 	}
+	account.Password = password
+
+	err = s.PutAccount(uid, account, true)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 	return false, nil
 }
 
+// Determine whether the current account can login. For now, whether the status is approved.
+func (s *EtcdHelper) CheckAccess(uid string) bool {
+	account, err := s.GetAccount(uid)
+	if err != nil {
+		glog.Error(err)
+		return false
+	}
+	return account.Status == api.AccountStatusApproved
+}
+
+// Check the hashed password against the submitted password
 func (s *EtcdHelper) CheckPassword(uid string, password string) bool {
 	account, err := s.GetAccount(uid)
 	if err != nil {
@@ -79,24 +88,32 @@ func (s *EtcdHelper) CheckPassword(uid string, password string) bool {
 	}
 }
 
-func (s *EtcdHelper) PutAccount(uid string, account *api.Account) error {
+// Set the account object in etd.  newsalt flag determines whether to generate a new salt (i.e., password has changed)
+func (s *EtcdHelper) PutAccount(uid string, account *api.Account, newsalt bool) error {
 
-	salt, err := s.crypto.GenerateRandomString(32)
-	if err != nil {
-		glog.Error(err)
-		return err
+	if newsalt {
+		salt, err := s.crypto.GenerateRandomString(32)
+		if err != nil {
+			glog.Error(err)
+			return err
+		}
+		account.Salt = salt
+		account.Password = s.crypto.HashString(salt + account.Password)
 	}
-	account.Password = s.crypto.HashString(salt + account.Password)
-	account.Salt = salt
+
+	// Access token used for account registration and approval
+	account.Token = s.crypto.HashString(account.Salt + account.EmailAddress + string(account.Status))
 
 	data, _ := json.Marshal(account)
 	opts := client.SetOptions{Dir: true}
 	s.etcd.Set(context.Background(), etcdBasePath+"/accounts/"+uid, "", &opts)
-	_, err = s.etcd.Set(context.Background(), etcdBasePath+"/accounts/"+uid+"/account", string(data), nil)
+	_, err := s.etcd.Set(context.Background(), etcdBasePath+"/accounts/"+uid+"/account", string(data), nil)
 	if err != nil {
 		glog.Error(err)
 		return err
 	}
+	account.Password = ""
+	account.Salt = ""
 
 	return nil
 }
