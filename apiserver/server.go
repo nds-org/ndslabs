@@ -755,7 +755,7 @@ func (s *Server) DenyAccount(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
 
-	err := os.MkdirAll(s.volDir+"/"+account.Namespace, 0755)
+	err := os.MkdirAll(s.volDir+"/"+account.Namespace, 0775|os.ModeSticky)
 	if err != nil {
 		return false, err
 	}
