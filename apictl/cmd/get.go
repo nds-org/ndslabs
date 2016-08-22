@@ -100,43 +100,18 @@ var getAccountCmd = &cobra.Command{
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		if len(args) == 1 && args[0] != apiUser.username {
-			// Trying to get another account, needs to be admin
-			password := credentials("Admin password: ")
-			token, err := client.Login("admin", password)
-			if err != nil {
-				fmt.Printf("Unable to get account: %s \n", err)
-				return
-			}
-
-			account, err := client.GetAccountAdmin(args[0], token)
-			if err != nil {
-				fmt.Printf("Unable to get account: %s\n", err)
-				os.Exit(-1)
-			}
-
-			data, err := json.MarshalIndent(account, "", "   ")
-			if err != nil {
-				fmt.Printf("Error marshalling account %s\n", err.Error)
-				return
-			}
-			fmt.Println(string(data))
-		} else {
-			username := apiUser.username
-
-			account, err := client.GetAccount(username)
-			if err != nil {
-				fmt.Printf("Get account failed: %s\n", err)
-				return
-			}
-			account.Password = "REDACTED"
-			data, err := json.MarshalIndent(account, "", "   ")
-			if err != nil {
-				fmt.Printf("Error marshalling account %s\n", err.Error)
-				return
-			}
-			fmt.Println(string(data))
+		account, err := client.GetAccount(args[0])
+		if err != nil {
+			fmt.Printf("Get account failed: %s\n", err)
+			return
 		}
+		account.Password = "REDACTED"
+		data, err := json.MarshalIndent(account, "", "   ")
+		if err != nil {
+			fmt.Printf("Error marshalling account %s\n", err.Error)
+			return
+		}
+		fmt.Println(string(data))
 
 	},
 	PostRun: RefreshToken,

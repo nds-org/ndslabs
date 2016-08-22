@@ -227,7 +227,7 @@ var addTagCmd = &cobra.Command{
 		}
 		spec.Tags = append(spec.Tags, tagId)
 
-		_, err = client.AddService(spec, client.Token, catalog, true)
+		_, err = client.AddService(spec, catalog, true)
 		if err != nil {
 			fmt.Printf("Error updating app: %s\n", err)
 			return
@@ -335,14 +335,7 @@ func addStack(serviceKey string, name string, opt string) {
 
 func addAccount(account api.Account) {
 
-	password := credentials("Admin password: ")
-	token, err := client.Login("admin", password)
-	if err != nil {
-		fmt.Printf("Unable to add account %s: %s \n", account.Id, err)
-		return
-	}
-
-	err = client.AddAccount(&account, token)
+	err := client.AddAccount(&account)
 	if err != nil {
 		fmt.Printf("Unable to add account %s: %s \n", account.Id, err)
 	} else {
@@ -352,18 +345,7 @@ func addAccount(account api.Account) {
 
 func addService(service api.ServiceSpec, catalog string) {
 
-	token := client.Token
-	if catalog == "system" {
-		password := credentials("Admin password: ")
-		t, err := client.Login("admin", password)
-		if err != nil {
-			fmt.Printf("Unable to add service %s: %s \n", service.Label, err)
-			return
-		}
-		token = t
-	}
-
-	_, err := client.AddService(&service, token, catalog, update)
+	_, err := client.AddService(&service, catalog, update)
 	if err != nil {
 		fmt.Printf("Unable to add/update service %s: %s \n", service.Label, err)
 	} else {

@@ -2346,12 +2346,11 @@ func (s *Server) getTemporaryToken(userId string) (string, error) {
 
 func (s *Server) createAdminUser(password string) error {
 
-	account, err := s.etcd.GetAccount("admin")
-	if err != nil {
-		return err
-	}
-	if account == nil {
-		account := api.Account{
+	glog.V(4).Infof("Creating admin user")
+
+	var account *api.Account
+	if !s.accountExists("admin") {
+		account = &api.Account{
 			Name:        "admin",
 			Namespace:   "admin",
 			Description: "NDS Labs administrator",
@@ -2363,14 +2362,24 @@ func (s *Server) createAdminUser(password string) error {
 				MemoryDefault: s.memDefault,
 			},
 		}
-		s.setupAccount(&account)
+		err := s.setupAccount(account)
+		if err != nil {
+			glog.Error(err)
+			return err
+		}
 
 	} else {
+		account, err := s.etcd.GetAccount("admin")
+		if err != nil {
+			glog.Error(err)
+			return err
+		}
 		account.Password = password
 	}
 
-	err = s.etcd.PutAccount("admin", account, true)
+	err := s.etcd.PutAccount("admin", account, true)
 	if err != nil {
+		glog.Error(err)
 		return err
 	}
 

@@ -239,12 +239,12 @@ func (c *Client) UpdateStack(stack *api.Stack) error {
 	}
 }
 
-func (c *Client) ListAccounts(token string) (*[]api.Account, error) {
+func (c *Client) ListAccounts() (*[]api.Account, error) {
 
 	url := c.BasePath + "accounts"
 
 	request, err := http.NewRequest("GET", url, nil)
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	resp, err := c.HttpClient.Do(request)
 	if err != nil {
 		return nil, err
@@ -267,14 +267,14 @@ func (c *Client) ListAccounts(token string) (*[]api.Account, error) {
 	}
 }
 
-func (c *Client) AddAccount(account *api.Account, token string) error {
+func (c *Client) AddAccount(account *api.Account) error {
 
 	url := c.BasePath + "accounts"
 
 	data, err := json.Marshal(account)
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	resp, err := c.HttpClient.Do(request)
 	if err != nil {
 		return err
@@ -325,7 +325,7 @@ func (c *Client) UpdateAccount(account *api.Account) error {
 	}
 }
 
-func (c *Client) AddService(service *api.ServiceSpec, token string, catalog string, update bool) (*api.ServiceSpec, error) {
+func (c *Client) AddService(service *api.ServiceSpec, catalog string, update bool) (*api.ServiceSpec, error) {
 
 	url := c.BasePath + "services"
 
@@ -347,7 +347,7 @@ func (c *Client) AddService(service *api.ServiceSpec, token string, catalog stri
 
 	request, err := http.NewRequest(method, url, bytes.NewBuffer(data))
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	resp, err := c.HttpClient.Do(request)
 	if err != nil {
 		return nil, err
@@ -370,7 +370,7 @@ func (c *Client) AddService(service *api.ServiceSpec, token string, catalog stri
 	}
 }
 
-func (c *Client) DeleteService(service string, token string, catalog string) error {
+func (c *Client) DeleteService(service string, catalog string) error {
 
 	url := c.BasePath + "services/" + service
 
@@ -380,7 +380,7 @@ func (c *Client) DeleteService(service string, token string, catalog string) err
 
 	request, err := http.NewRequest("DELETE", url, nil)
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	resp, err := c.HttpClient.Do(request)
 	if err != nil {
 		return err
@@ -399,13 +399,13 @@ func (c *Client) DeleteService(service string, token string, catalog string) err
 	return nil
 }
 
-func (c *Client) DeleteAccount(account string, token string) error {
+func (c *Client) DeleteAccount(account string) error {
 
 	url := c.BasePath + "accounts/" + account
 
 	request, err := http.NewRequest("DELETE", url, nil)
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	resp, err := c.HttpClient.Do(request)
 	if err != nil {
 		return err
@@ -572,10 +572,6 @@ func (c *Client) StopStack(stack string) (*api.Stack, error) {
 
 func (c *Client) GetAccount(accountId string) (*api.Account, error) {
 	return c.getAccount(accountId, c.Token)
-}
-
-func (c *Client) GetAccountAdmin(accountId string, token string) (*api.Account, error) {
-	return c.getAccount(accountId, token)
 }
 
 func (c *Client) getAccount(accountId string, token string) (*api.Account, error) {
