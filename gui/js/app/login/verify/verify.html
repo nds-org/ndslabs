@@ -1,0 +1,11 @@
+<!-- The "Verify Account" view -->
+<section>
+  <div class="row" style="margin-top:50px;">
+    <div class="helper-text">
+      <h2 ng-if="verified" class="text-success"><i class="fa fa-fw fa-check-square-o"></i>&nbsp;&nbsp;Thank you!</h2>
+      <h4 ng-if="verified">We will notify you via e-mail once your request is approved</h4>
+      <h2 ng-if="!verified" class="text-danger"><i class="fa fa-fw fa-check-square-o"></i>&nbsp;&nbsp;Uh oh...</h2>
+      <h4 ng-if="!verified">Something went wrong in sending your verification!</h4>
+    </div>
+  </div>
+</section>
