@@ -91,6 +91,8 @@ EOF
 
 	git clone -b $SPEC_GIT_BRANCH $SPEC_GIT_REPO /specs
 
+	umask 0
+
 	/apiserver -conf /apiserver.conf -v 4
 
 
