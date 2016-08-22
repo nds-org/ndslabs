@@ -47,6 +47,10 @@ if [ "$1" = 'apiserver' ]; then
 		SUPPORT_EMAIL=support@ndslabs.org
 	fi
 
+	if [ -z "$ADMIN_PASSWORD" ]; then
+		ADMIN_PASSWORD=`strings /dev/urandom | grep -o '[[:alnum:]]' | head -n 30 | tr -d '\n'`
+	fi
+
 cat << EOF > /apiserver.conf
 [Server]
 Port=30001
@@ -91,11 +95,8 @@ EOF
 
 	git clone -b $SPEC_GIT_BRANCH $SPEC_GIT_REPO /specs
 
-	/apiserver -conf /apiserver.conf -v 4
-
-
-elif [ "$1" = 'usage' ]; then
-    echo  'docker run -d -p 30001:30001 -e "KUBERNETES_ADDR=https://localhost:6443" -e "ETCD_ADDR=localhost:4001" --name=apiserver  ndslabs/apiserver apiserver'
+	echo $ADMIN_PASSWORD > /password.txt
+	/apiserver -conf /apiserver.conf -v 4 -passwd $ADMIN_PASSWORD
 
 else
     exec "$@"
