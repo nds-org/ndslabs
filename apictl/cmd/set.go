@@ -12,7 +12,7 @@ import (
 
 var setCmd = &cobra.Command{
 	Use:   "set",
-	Short: "Set optional stack values",
+	Short: "Set optional app values",
 }
 
 func init() {
@@ -22,8 +22,8 @@ func init() {
 }
 
 var setEnvCmd = &cobra.Command{
-	Use:    "env [stack service id] [var name] [var value]",
-	Short:  "Set stack service environment values",
+	Use:    "env [app service id] [var name] [var value]",
+	Short:  "Set app service environment values",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 3 {
@@ -35,14 +35,14 @@ var setEnvCmd = &cobra.Command{
 		varValue := args[2]
 
 		if strings.Index(ssid, "-") <= 0 {
-			fmt.Printf("Invalid stack service id (looks like a stack Id?): %s\n", ssid)
+			fmt.Printf("Invalid app service id (looks like a app Id?): %s\n", ssid)
 			return
 		}
 
 		sid := ssid[0:strings.Index(ssid, "-")]
 		stack, err := client.GetStack(sid)
 		if err != nil {
-			fmt.Printf("Get stack failed: %s\n", err)
+			fmt.Printf("Get app failed: %s\n", err)
 			return
 		}
 
@@ -78,17 +78,17 @@ var setEnvCmd = &cobra.Command{
 			}
 		}
 		if !ssidFound {
-			fmt.Printf("No such stack service id %s\n", ssid)
+			fmt.Printf("No such app service id %s\n", ssid)
 		}
 		err = client.UpdateStack(stack)
 		if err != nil {
-			fmt.Printf("Error updating stack: %s\n", err)
+			fmt.Printf("Error updating app: %s\n", err)
 			return
 		}
 		if Verbose {
 			data, err := json.MarshalIndent(stack, "", "   ")
 			if err != nil {
-				fmt.Printf("Error marshalling stack %s\n", err.Error)
+				fmt.Printf("Error marshalling app %s\n", err.Error)
 				return
 			}
 

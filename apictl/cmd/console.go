@@ -10,8 +10,8 @@ import (
 
 // consoleCmd represents the console command
 var consoleCmd = &cobra.Command{
-	Use:    "console [stack service]",
-	Short:  "Access console of stack service container",
+	Use:    "console [app service]",
+	Short:  "Access console of app service container",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 

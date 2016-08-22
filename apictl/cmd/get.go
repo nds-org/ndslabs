@@ -43,8 +43,8 @@ var getServiceCmd = &cobra.Command{
 }
 
 var getStackCmd = &cobra.Command{
-	Use:    "stack [stack Id]",
-	Short:  "Get stack details",
+	Use:    "app [app Id]",
+	Short:  "Get app details",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
@@ -54,19 +54,19 @@ var getStackCmd = &cobra.Command{
 		sid := args[0]
 
 		if strings.Index(sid, "-") > 0 {
-			fmt.Printf("Invalid stack id (looks like a stack service Id?): %s\n", sid)
+			fmt.Printf("Invalid app id (looks like a app service Id?): %s\n", sid)
 			return
 		}
 
 		stack, err := client.GetStack(sid)
 		if err != nil {
-			fmt.Printf("Get stack failed: %s\n", err)
+			fmt.Printf("Get app failed: %s\n", err)
 			return
 		}
 
 		data, err := json.MarshalIndent(stack, "", "   ")
 		if err != nil {
-			fmt.Printf("Error marshalling stack %s\n", err.Error)
+			fmt.Printf("Error marshalling app %s\n", err.Error)
 			return
 		}
 		fmt.Println(string(data))

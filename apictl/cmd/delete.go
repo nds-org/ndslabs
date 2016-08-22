@@ -22,8 +22,8 @@ var deleteCmd = &cobra.Command{
 }
 
 var deleteStackCmd = &cobra.Command{
-	Use:    "stack [stackName]",
-	Short:  "Remove a stack",
+	Use:    "app [stackName]",
+	Short:  "Remove a app",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
@@ -103,8 +103,8 @@ func deleteAccount(account string) {
 func deleteStack(stack string) {
 	err := client.DeleteStack(stack)
 	if err != nil {
-		fmt.Printf("Unable to delete stack %s: %s \n", stack, err)
+		fmt.Printf("Unable to delete app %s: %s \n", stack, err)
 	} else {
-		fmt.Printf("Stack %s deleted\n", stack)
+		fmt.Printf("App %s deleted\n", stack)
 	}
 }

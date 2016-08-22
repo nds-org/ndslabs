@@ -11,7 +11,7 @@ import (
 // startCmd represents the start command
 var startCmd = &cobra.Command{
 	Use:    "start [stackName]",
-	Short:  "Start a stack",
+	Short:  "Start an app",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -29,7 +29,7 @@ var startCmd = &cobra.Command{
 		}
 
 		if stack.Status == "started" || stack.Status == "starting" {
-			fmt.Print("Stack already started\n")
+			fmt.Print("App already started\n")
 			return
 		}
 

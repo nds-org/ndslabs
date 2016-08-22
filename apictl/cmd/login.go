@@ -26,10 +26,6 @@ var loginCmd = &cobra.Command{
 		}
 
 		username := strings.TrimSpace(args[0])
-		if username == "admin" {
-			fmt.Println("Admin login not allowed")
-			os.Exit(-1)
-		}
 		password := credentials("")
 		usr, err := user.Current()
 		if err != nil {

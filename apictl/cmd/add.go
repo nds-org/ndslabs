@@ -48,7 +48,7 @@ var addCmd = &cobra.Command{
 
 var addAccountCmd = &cobra.Command{
 	Use:    "account [name] [password]",
-	Short:  "Add the specified account (admin users only)",
+	Short:  "Add the specified account (admin user only)",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -78,7 +78,7 @@ var addAccountCmd = &cobra.Command{
 
 var addServiceCmd = &cobra.Command{
 	Use:    "service",
-	Short:  "Add the specified service (admin users only)",
+	Short:  "Add the specified service (admin user only)",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -131,8 +131,8 @@ func addServiceDir(path string, catalog string) error {
 }
 
 var addStackCmd = &cobra.Command{
-	Use:    "stack [serviceKey] [name]",
-	Short:  "Add the specified stack to your account",
+	Use:    "app [serviceKey] [name]",
+	Short:  "Add the specified application to your account",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
@@ -144,8 +144,8 @@ var addStackCmd = &cobra.Command{
 }
 
 var addMountCmd = &cobra.Command{
-	Use:    "mount [stack service id] [from path] [to path]",
-	Short:  "Add stack service mount points",
+	Use:    "mount [app service id] [from path] [to path]",
+	Short:  "Add app service mount points",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 3 {
@@ -157,14 +157,14 @@ var addMountCmd = &cobra.Command{
 		toPath := args[2]
 
 		if strings.Index(ssid, "-") <= 0 {
-			fmt.Printf("Invalid stack service id (looks like a stack Id?): %s\n", ssid)
+			fmt.Printf("Invalid app service id (looks like a app Id?): %s\n", ssid)
 			return
 		}
 
 		sid := ssid[0:strings.Index(ssid, "-")]
 		stack, err := client.GetStack(sid)
 		if err != nil {
-			fmt.Printf("Get stack failed: %s\n", err)
+			fmt.Printf("Get app failed: %s\n", err)
 			return
 		}
 
@@ -183,17 +183,17 @@ var addMountCmd = &cobra.Command{
 			}
 		}
 		if !ssidFound {
-			fmt.Printf("No such stack service id %s\n", ssid)
+			fmt.Printf("No such app service id %s\n", ssid)
 		}
 		err = client.UpdateStack(stack)
 		if err != nil {
-			fmt.Printf("Error updating stack: %s\n", err)
+			fmt.Printf("Error updating app: %s\n", err)
 			return
 		}
 		if Verbose {
 			data, err := json.MarshalIndent(stack, "", "   ")
 			if err != nil {
-				fmt.Printf("Error marshalling stack %s\n", err.Error)
+				fmt.Printf("Error marshalling app %s\n", err.Error)
 				return
 			}
 
@@ -229,7 +229,7 @@ var addTagCmd = &cobra.Command{
 
 		_, err = client.AddService(spec, client.Token, catalog, true)
 		if err != nil {
-			fmt.Printf("Error updating stack: %s\n", err)
+			fmt.Printf("Error updating app: %s\n", err)
 			return
 		}
 		if Verbose {
@@ -318,10 +318,10 @@ func addStack(serviceKey string, name string, opt string) {
 
 	stackp, err := client.AddStack(&stack)
 	if err != nil {
-		fmt.Printf("Error adding stack: %s\n", err)
+		fmt.Printf("Error adding app: %s\n", err)
 		return
 	} else {
-		fmt.Println("Added stack " + stackp.Id)
+		fmt.Println("Added app " + stackp.Id)
 
 		w := new(tabwriter.Writer)
 		w.Init(os.Stdout, 20, 30, 0, '\t', 0)

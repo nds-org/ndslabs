@@ -49,8 +49,8 @@ var listServicesCmd = &cobra.Command{
 }
 
 var listStacksCmd = &cobra.Command{
-	Use:    "stacks",
-	Short:  "List existing stacks",
+	Use:    "apps",
+	Short:  "List existing apps",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
