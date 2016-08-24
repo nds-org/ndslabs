@@ -1,11 +1,31 @@
 <!-- The "Verify Account" view -->
 <section>
-  <div class="row" style="margin-top:50px;">
+  <div class="row">
+    <div class="col-xs-offset-3 col-xs-6 text-center">
+      <!--<button type="button" class="btn btn-xs btn-default pull-right" data-dismiss="modal" aria-label="Close" ng-click="close()"><i class="fa fa-fw fa-times"></i></button>-->
+      <h3><i class="fa fa-fw fa-user-plus"></i> Request Access to NDS Labs</h3>
+    </div>
+  </div>
+  
+  <div class="row">
     <div class="helper-text">
-      <h2 ng-if="verified" class="text-success"><i class="fa fa-fw fa-check-square-o"></i>&nbsp;&nbsp;Thank you!</h2>
-      <h4 ng-if="verified">We will notify you via e-mail once your request is approved</h4>
-      <h2 ng-if="!verified" class="text-danger"><i class="fa fa-fw fa-check-square-o"></i>&nbsp;&nbsp;Uh oh...</h2>
-      <h4 ng-if="!verified">Something went wrong in sending your verification!</h4>
+      <!-- Progress indicator -->
+      <div ng-if="verified === null">
+        <h2 class="text-warning"><i class="fa fa-fw fa-spinner fa-spin"></i>&nbsp;&nbsp;Almost there!</h2>
+        <h4>Sending verification...</h4>
+      </div>
+      
+      <!-- E-mail address verified! -->
+      <div ng-if="verified === true">
+        <h2 class="text-success"><i class="fa fa-fw fa-check-square-o"></i>&nbsp;&nbsp;Thank you!</h2>
+        <h4>We will notify you via e-mail once your request is approved</h4>
+      </div>
+      
+      <!-- Something went wrong... -->
+      <div ng-if="verified === false">
+        <h2 class="text-danger"><i class="fa fa-fw fa-check-square-o"></i>&nbsp;&nbsp;Uh oh...</h2>
+        <h4>Something went wrong in sending your verification!</h4>
+      </div>
     </div>
   </div>
 </section>
