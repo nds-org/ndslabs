@@ -59,7 +59,6 @@ func (s *EtcdHelper) ChangePassword(uid string, password string) (bool, error) {
 		return false, err
 	}
 	return true, nil
-	return false, nil
 }
 
 // Determine whether the current account can login. For now, whether the status is approved.
@@ -80,29 +79,29 @@ func (s *EtcdHelper) CheckPassword(uid string, password string) bool {
 		return false
 	}
 
-	checkPasswd := s.crypto.HashString(account.Salt + password)
-	if checkPasswd == account.Password {
+	// Comparing the password with the hash
+	err = s.crypto.CompareHashAndPassword(account.Password, password)
+	if err == nil {
 		return true
 	} else {
 		return false
 	}
 }
 
-// Set the account object in etd.  newsalt flag determines whether to generate a new salt (i.e., password has changed)
-func (s *EtcdHelper) PutAccount(uid string, account *api.Account, newsalt bool) error {
+// Set the account object in etd.
+func (s *EtcdHelper) PutAccount(uid string, account *api.Account, changePassword bool) error {
 
-	if newsalt {
-		salt, err := s.crypto.GenerateRandomString(32)
+	if changePassword {
+		hashedPassword, err := s.crypto.BcryptString(account.Password)
 		if err != nil {
 			glog.Error(err)
 			return err
 		}
-		account.Salt = salt
-		account.Password = s.crypto.HashString(salt + account.Password)
+		account.Password = hashedPassword
 	}
 
 	// Access token used for account registration and approval
-	account.Token = s.crypto.HashString(account.Salt + account.EmailAddress + string(account.Status))
+	account.Token = s.crypto.HashString(account.EmailAddress + string(account.Status))
 
 	data, _ := json.Marshal(account)
 	opts := client.SetOptions{Dir: true}
@@ -113,7 +112,6 @@ func (s *EtcdHelper) PutAccount(uid string, account *api.Account, newsalt bool) 
 		return err
 	}
 	account.Password = ""
-	account.Salt = ""
 
 	return nil
 }
@@ -301,7 +299,6 @@ func (s *EtcdHelper) GetAccounts() (*[]api.Account, error) {
 				return nil, err
 			}
 			account.Password = ""
-			account.Salt = ""
 			accounts = append(accounts, account)
 		}
 	}

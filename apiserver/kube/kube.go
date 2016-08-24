@@ -1158,18 +1158,27 @@ func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHe
 	return &wsHandler
 }
 
-func (k *KubeHelper) CreateIngress(pid string, host string, service string, port int, secretName string) (*extensions.Ingress, error) {
+func (k *KubeHelper) CreateIngress(pid string, host string, service string, port int, tlsSecretName string, basicAuth bool) (*extensions.Ingress, error) {
+
+	// https://github.com/kubernetes/contrib/tree/master/ingress/controllers/nginx/examples/auth
+	annotations := map[string]string{}
+	if basicAuth {
+		annotations["ingress.kubernetes.io/auth-type"] = "basic"
+		annotations["ingress.kubernetes.io/auth-secret"] = "basic-auth"
+		annotations["ingress.kubernetes.io/auth-realm"] = "NDS Labs"
+	}
 
 	ingress := extensions.Ingress{
 		ObjectMeta: api.ObjectMeta{
-			Name:      service + "-ingress",
-			Namespace: pid,
+			Name:        service + "-ingress",
+			Namespace:   pid,
+			Annotations: annotations,
 		},
 		Spec: extensions.IngressSpec{
 			TLS: []extensions.IngressTLS{
 				extensions.IngressTLS{
 					Hosts:      []string{host},
-					SecretName: secretName,
+					SecretName: tlsSecretName,
 				},
 			},
 			Rules: []extensions.IngressRule{
@@ -1256,6 +1265,24 @@ func (k *KubeHelper) DeleteIngress(pid string, name string) (*extensions.Ingress
 	return nil, nil
 }
 
+func (k *KubeHelper) CreateBasicAuthSecret(pid string, hashedPassword string) (*api.Secret, error) {
+	secret, _ := k.GetSecret(pid, "basic-auth")
+	if secret != nil {
+		k.DeleteSecret(pid, "basic-auth")
+	}
+
+	secret = &api.Secret{
+		ObjectMeta: api.ObjectMeta{
+			Name:      "basic-auth",
+			Namespace: pid,
+		},
+		Data: map[string][]byte{
+			"auth": []byte(fmt.Sprintf("%s:%s", pid, string(hashedPassword))),
+		},
+	}
+	return k.CreateSecret(pid, secret)
+}
+
 func (k *KubeHelper) CreateTLSSecret(pid string, secretName string, tlsCert []byte, tlsKey []byte) (*api.Secret, error) {
 
 	secret := api.Secret{
@@ -1268,7 +1295,10 @@ func (k *KubeHelper) CreateTLSSecret(pid string, secretName string, tlsCert []by
 			"tls.key": tlsKey,
 		},
 	}
+	return k.CreateSecret(pid, &secret)
+}
 
+func (k *KubeHelper) CreateSecret(pid string, secret *api.Secret) (*api.Secret, error) {
 	data, err := json.Marshal(secret)
 	if err != nil {
 		return nil, err
@@ -1284,18 +1314,18 @@ func (k *KubeHelper) CreateTLSSecret(pid string, secretName string, tlsCert []by
 		return nil, httperr
 	} else {
 		if httpresp.StatusCode == http.StatusCreated {
-			glog.V(2).Infof("Added secret %s %s\n", pid, secretName)
+			glog.V(2).Infof("Added secret %s %s\n", pid, secret.Name)
 			data, err := ioutil.ReadAll(httpresp.Body)
 			if err != nil {
 				return nil, err
 			}
 
-			json.Unmarshal(data, &secret)
-			return &secret, nil
+			json.Unmarshal(data, secret)
+			return secret, nil
 		} else if httpresp.StatusCode == http.StatusConflict {
-			return nil, fmt.Errorf("Secret %s exists for account %s: %s\n", secretName, pid, httpresp.Status)
+			return nil, fmt.Errorf("Secret %s exists for account %s: %s\n", secret.Name, pid, httpresp.Status)
 		} else {
-			return nil, fmt.Errorf("Error adding secret %s for account %s: %s\n", secretName, pid, httpresp.Status)
+			return nil, fmt.Errorf("Error adding secret %s for account %s: %s\n", secret.Name, pid, httpresp.Status)
 		}
 	}
 	return nil, nil

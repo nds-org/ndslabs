@@ -515,7 +515,6 @@ func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 			}
 		}
 		account.Password = ""
-		account.Salt = ""
 		w.WriteJson(account)
 	}
 }
@@ -554,7 +553,29 @@ func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
+	err = s.createBasicAuthSecret(account.Namespace)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteJson(&account)
+}
+
+func (s *Server) createBasicAuthSecret(uid string) error {
+	account, err := s.etcd.GetAccount(uid)
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+
+	_, err = s.kube.CreateBasicAuthSecret(account.Namespace, account.Password)
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+	return nil
 }
 
 func (s *Server) setupAccount(account *api.Account) error {
@@ -805,6 +826,13 @@ func (s *Server) PutAccount(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	err = s.etcd.PutAccount(userId, &account, true)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = s.createBasicAuthSecret(userId)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1375,7 +1403,7 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 
 						host := fmt.Sprintf("%s.%s", svc.Name, s.domain)
 						_, err := s.kube.CreateIngress(userId, host, svc.Name,
-							int(svc.Spec.Ports[0].Port), secretName)
+							int(svc.Spec.Ports[0].Port), secretName, stack.Secure)
 						if err != nil {
 							glog.Errorf("Error creating ingress %s\n", name)
 							glog.Error(err)
@@ -2290,7 +2318,14 @@ func (s *Server) ChangePassword(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	if ok {
+		err = s.createBasicAuthSecret(userId)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		w.WriteHeader(http.StatusOK)
 	} else {
 		w.WriteHeader(http.StatusConflict)

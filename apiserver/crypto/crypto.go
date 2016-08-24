@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/sha1"
 	"encoding/base64"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type CryptoHelper struct {
@@ -30,4 +31,18 @@ func (c *CryptoHelper) GenerateRandomString(len int) (string, error) {
 	}
 
 	return base64.URLEncoding.EncodeToString(b), err
+}
+
+// Bcrypt helper used for passwords
+func (c *CryptoHelper) BcryptString(s string) (string, error) {
+	hashed, err := bcrypt.GenerateFromPassword([]byte(s), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashed), nil
+}
+
+// Bcrypt helper used for passwords
+func (c *CryptoHelper) CompareHashAndPassword(hash string, password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 }
