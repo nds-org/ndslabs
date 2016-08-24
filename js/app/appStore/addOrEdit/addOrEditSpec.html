@@ -49,6 +49,20 @@
                                         </ng-messages>
                                     </div>
                                     
+                                    <!-- Info URL (optional) -->
+                                    <div class="form-group">
+                                        <small class="pull-right">Create a page <i><a ng-href="https://nationaldataservice.atlassian.net/wiki/display/NDSC/NDS+Labs+Services/" target="_blank">here</a></i> and link to it!</small>
+                                        
+                                        <label for="infoLinkField">Information <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="top-right" uib-tooltip="Link to the NDS Confluence wiki where the user can find more information about this service"></i></sup></label>
+                                        
+                                        <input type="url" class="form-control" id="infoLinkField" name="infoLinkField" placeholder="Enter Info URL..." ng-model="spec.info" ng-pattern="/^https://nationaldataservice\.atlassian\.net/wiki/display/NDSC/NDS\+Labs\+Services/[^\s]+/" />
+                                        
+                                        <ng-messages class="text-danger" for="modifySpec.infoLinkField.$error" role="alert">
+                                          <ng-message when="url">Please provide a valid url.</ng-message>
+                                          <ng-message when="pattern">Please provide a valid subpage of the <a ng-href="https://nationaldataservice.atlassian.net/wiki/display/NDSC/NDS+Labs+Services/" target="_blank">NDS Confluence wiki</a>.</ng-message>
+                                        </ng-messages>
+                                    </div>
+                                    
                                     <!-- Maintainer E-mail (optional) -->
                                     <div class="form-group">
                                         <label for="maintainerField">Maintainer <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="Who is in charge of updating this application/image when new releases occur?"></i></sup></label>
@@ -65,6 +79,7 @@
                                         <textarea type="text" class="form-control" id="descriptionField" placeholder="Enter a description of this application (optional)" ng-model="spec.description"></textarea>
                                     </div>
                                 
+                                    <!-- Service access -->
                                     <div class="row">
                                         <div class="col-xs-12">
                                             <!-- Default Access -->
