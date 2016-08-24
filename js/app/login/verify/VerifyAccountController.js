@@ -17,6 +17,7 @@ angular
   } else {
     NdsLabsApi.putRegisterVerify({ verify: { u: $scope.user, t: $scope.token } }).then(function(data) {
       console.debug(data);
+      $scope.verified = true;
     }, function(response) {
       $log.error("Failed to verify user " + $scope.user + ":" + $scope.token);
     });
