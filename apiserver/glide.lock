@@ -1,36 +1,38 @@
-hash: 77e946f31068a150b683af50982fac4296e919c8af1f921004b517ef73cc4626
-updated: 2016-08-24T13:51:32.608981075-05:00
+hash: 3fa3398842e581cebddd55812dfda99958805af953aee5d51ba4857189c192eb
+updated: 2016-07-28T15:57:39.810187605-05:00
 imports:
 - name: github.com/ant0ine/go-json-rest
-  version: ""
+  version: 37ad7dc626602a8355801da6acd85155655520f8
   subpackages:
   - rest
   - rest/trie
 - name: github.com/beorn7/perks
-  version: ""
+  version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
   subpackages:
   - quantile
 - name: github.com/blang/semver
-  version: ""
+  version: 31b736133b98f26d5e078ec9eb591666edfd091f
 - name: github.com/coreos/etcd
-  version: ""
+  version: 5e6eb7e19d6385adfabb1f1caea03e732f9348ad
   subpackages:
   - client
+  - Godeps/_workspace/src/github.com/ugorji/go/codec
+  - Godeps/_workspace/src/golang.org/x/net/context
   - pkg/pathutil
   - pkg/types
 - name: github.com/davecgh/go-spew
-  version: ""
+  version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
   subpackages:
   - spew
 - name: github.com/dgrijalva/jwt-go
-  version: ""
+  version: f164e17f59b82642a3895ba065c385db6c547344
 - name: github.com/docker/distribution
-  version: ""
+  version: cd27f179f2c10c5d300e6d09025b538c475b0d51
   subpackages:
   - digest
   - reference
 - name: github.com/docker/docker
-  version: ""
+  version: 0f5c9d301b9b1cca66b3ea0f9dec3b5317d3686d
   subpackages:
   - pkg/jsonmessage
   - pkg/mount
@@ -41,20 +43,20 @@ imports:
   - pkg/timeutils
   - pkg/units
 - name: github.com/docker/go-units
-  version: ""
+  version: 0bbddae09c5a5419a8c6dcdd7ff90da3d450393b
 - name: github.com/docker/spdystream
-  version: ""
+  version: 449fdfce4d962303d702fec724ef0ad181c92528
   subpackages:
   - spdy
 - name: github.com/emicklei/go-restful
-  version: ""
+  version: 7c47e2558a0bbbaba9ecab06bc6681e73028a28a
   subpackages:
   - log
   - swagger
 - name: github.com/ghodss/yaml
-  version: ""
+  version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/gogo/protobuf
-  version: ""
+  version: 82d16f734d6d871204a3feb1a73cb220cc92574c
   subpackages:
   - gogoproto
   - plugin/defaultcheck
@@ -81,21 +83,21 @@ imports:
   - vanity
   - vanity/command
 - name: github.com/golang/glog
-  version: 42e0c7e7614b8ed3f59a01bb4e0e5c287b106aed
+  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
 - name: github.com/golang/protobuf
-  version: ""
+  version: b982704f8bb716bb608144408cff30e15fbde841
   subpackages:
   - proto
 - name: github.com/google/gofuzz
-  version: ""
+  version: bbcb9da2d746f8bdbd6a936686a0a6067ada0ec5
 - name: github.com/juju/ratelimit
-  version: ""
+  version: 77ed1c8a01217656d2080ad51981f6e99adaa177
 - name: github.com/matttproud/golang_protobuf_extensions
-  version: ""
+  version: fc2b8d3a73c4867e51861bbdd5ae3c1f0869dd6a
   subpackages:
   - pbutil
 - name: github.com/opencontainers/runc
-  version: ""
+  version: 7ca2aa4873aea7cb4265b1726acb24b90d8726c6
   subpackages:
   - libcontainer
   - libcontainer/apparmor
@@ -113,62 +115,62 @@ imports:
   - libcontainer/user
   - libcontainer/utils
 - name: github.com/pborman/uuid
-  version: ""
+  version: ca53cad383cad2479bbba7f7a1a05797ec1386e4
 - name: github.com/prometheus/client_golang
-  version: ""
+  version: 3b78d7a77f51ccbc364d4bc170920153022cfd08
   subpackages:
   - prometheus
 - name: github.com/prometheus/client_model
-  version: ""
+  version: fa8ad6fec33561be4280a8f0514318c79d7f6cb6
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: ""
+  version: a6ab08426bb262e2d190097751f5cfd1cfdfd17d
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
   - model
 - name: github.com/prometheus/procfs
-  version: ""
+  version: 490cc6eb5fa45bf8a8b7b73c8bc82a8160e8531d
 - name: github.com/spf13/pflag
-  version: ""
+  version: 08b1a584251b5b62f458943640fc8ebd4d50aaa5
 - name: github.com/StephanDollberg/go-json-rest-middleware-jwt
-  version: ""
+  version: ff6ad319595d78f039df9a91bbac8b8bd120a764
 - name: github.com/ugorji/go
-  version: ""
+  version: f4485b318aadd133842532f841dc205a8e339d74
   subpackages:
   - codec
   - codec/codecgen
 - name: github.com/xeipuuv/gojsonpointer
-  version: 42e0c7e7614b8ed3f59a01bb4e0e5c287b106aed
+  version: e0fe6f68307607d540ed8eac07a342c33fa1b54a
 - name: github.com/xeipuuv/gojsonreference
-  version: 42e0c7e7614b8ed3f59a01bb4e0e5c287b106aed
+  version: e02fc20de94c78484cd5ffb007f8af96be030a45
 - name: github.com/xeipuuv/gojsonschema
-  version: 42e0c7e7614b8ed3f59a01bb4e0e5c287b106aed
+  version: 0a98b2bd93655a563d1f23c4407e8f01791b6b31
 - name: golang.org/x/crypto
   version: c84e1f8e3a7e322d497cd16c0e8a13c7e127baf3
   subpackages:
   - bcrypt
   - blowfish
 - name: golang.org/x/net
-  version: ""
+  version: 62685c2d7ca23c807425dca88b11a3e2323dab41
   subpackages:
   - context
   - websocket
   - http2
   - http2/hpack
 - name: gopkg.in/gcfg.v1
-  version: ""
+  version: 083575c3955c85df16fe9590cceab64d03f5eb6e
   subpackages:
   - scanner
   - token
   - types
 - name: gopkg.in/inf.v0
-  version: ""
+  version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/yaml.v2
-  version: ""
+  version: a83829b6f1293c91addabc89d0571c246397bbf4
 - name: k8s.io/kubernetes
-  version: ""
+  version: 283137936a498aed572ee22af6774b6fb6e9fd94
   subpackages:
   - pkg/api
   - pkg/api/resource
