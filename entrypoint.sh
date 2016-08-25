@@ -96,6 +96,8 @@ EOF
 	git clone -b $SPEC_GIT_BRANCH $SPEC_GIT_REPO /specs
 
 	echo $ADMIN_PASSWORD > /password.txt
+	umask 0
+
 	/apiserver -conf /apiserver.conf -v 4 -passwd $ADMIN_PASSWORD
 
 else
