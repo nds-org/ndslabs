@@ -11,7 +11,7 @@ import (
 // stopCmd represents the stop command
 var stopCmd = &cobra.Command{
 	Use:    "stop",
-	Short:  "Stop a stack",
+	Short:  "Stop an app",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		stackId := args[0]

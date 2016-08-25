@@ -49,8 +49,8 @@ var listServicesCmd = &cobra.Command{
 }
 
 var listStacksCmd = &cobra.Command{
-	Use:    "stacks",
-	Short:  "List existing stacks",
+	Use:    "apps",
+	Short:  "List existing apps",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -96,14 +96,7 @@ var listAccountsCmd = &cobra.Command{
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		password := credentials("Admin password: ")
-		token, err := client.Login("admin", password)
-		if err != nil {
-			fmt.Printf("Unable to list accounts: %s \n", err)
-			return
-		}
-
-		accounts, err := client.ListAccounts(token)
+		accounts, err := client.ListAccounts()
 		if err != nil {
 			fmt.Printf("List failed: %s\n", err)
 			os.Exit(-1)

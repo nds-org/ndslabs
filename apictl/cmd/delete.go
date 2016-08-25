@@ -22,8 +22,8 @@ var deleteCmd = &cobra.Command{
 }
 
 var deleteStackCmd = &cobra.Command{
-	Use:    "stack [stackName]",
-	Short:  "Remove a stack",
+	Use:    "app [stackName]",
+	Short:  "Remove a app",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
@@ -64,18 +64,8 @@ var deleteServiceCmd = &cobra.Command{
 }
 
 func deleteService(service string, catalog string) {
-	token := client.Token
-	if catalog == "system" {
-		password := credentials("Admin password: ")
-		t, err := client.Login("admin", password)
-		if err != nil {
-			fmt.Printf("Unable to delete service %s: %s \n", service, err)
-			return
-		}
-		token = t
-	}
 
-	err := client.DeleteService(service, token, catalog)
+	err := client.DeleteService(service, catalog)
 	if err != nil {
 		fmt.Printf("Unable to delete service %s: %s \n", service, err)
 	} else {
@@ -85,14 +75,7 @@ func deleteService(service string, catalog string) {
 
 func deleteAccount(account string) {
 
-	password := credentials("Admin password: ")
-	token, err := client.Login("admin", password)
-	if err != nil {
-		fmt.Printf("Unable to delete account %s: %s \n", account, err)
-		return
-	}
-
-	err = client.DeleteAccount(account, token)
+	err := client.DeleteAccount(account)
 	if err != nil {
 		fmt.Printf("Unable to delete account %s: %s \n", account, err)
 	} else {
@@ -103,8 +86,8 @@ func deleteAccount(account string) {
 func deleteStack(stack string) {
 	err := client.DeleteStack(stack)
 	if err != nil {
-		fmt.Printf("Unable to delete stack %s: %s \n", stack, err)
+		fmt.Printf("Unable to delete app %s: %s \n", stack, err)
 	} else {
-		fmt.Printf("Stack %s deleted\n", stack)
+		fmt.Printf("App %s deleted\n", stack)
 	}
 }

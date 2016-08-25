@@ -340,6 +340,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		s.validator = validate.NewValidator(cfg.Server.SpecsDir + "/schemas/spec-schema.json")
 	}
 
+	s.createAdminUser(adminPasswd)
 	go s.initExistingAccounts()
 
 	go s.kube.WatchEvents(s)
@@ -2341,4 +2342,46 @@ func (s *Server) getTemporaryToken(userId string) (string, error) {
 	}
 	return tokenString, nil
 
+}
+
+func (s *Server) createAdminUser(password string) error {
+
+	glog.V(4).Infof("Creating admin user")
+
+	var account *api.Account
+	if !s.accountExists("admin") {
+		account = &api.Account{
+			Name:        "admin",
+			Namespace:   "admin",
+			Description: "NDS Labs administrator",
+			Password:    password,
+			ResourceLimits: api.AccountResourceLimits{
+				CPUMax:        s.cpuMax,
+				CPUDefault:    s.cpuDefault,
+				MemoryMax:     s.memMax,
+				MemoryDefault: s.memDefault,
+			},
+		}
+		err := s.setupAccount(account)
+		if err != nil {
+			glog.Error(err)
+			return err
+		}
+
+	} else {
+		account, err := s.etcd.GetAccount("admin")
+		if err != nil {
+			glog.Error(err)
+			return err
+		}
+		account.Password = password
+	}
+
+	err := s.etcd.PutAccount("admin", account, true)
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+
+	return nil
 }

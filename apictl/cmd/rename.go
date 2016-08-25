@@ -13,8 +13,8 @@ func init() {
 }
 
 var renameCmd = &cobra.Command{
-	Use:    "rename [stack id] [new name]",
-	Short:  "Rename the stack",
+	Use:    "rename [app id] [new name]",
+	Short:  "Rename the app",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
@@ -26,13 +26,13 @@ var renameCmd = &cobra.Command{
 
 		_, err := client.GetStack(sid)
 		if err != nil {
-			fmt.Printf("Get stack failed: %s\n", err)
+			fmt.Printf("Get app failed: %s\n", err)
 			return
 		}
 
 		err = client.RenameStack(sid, name)
 		if err != nil {
-			fmt.Printf("Rename stack failed: %s\n", err)
+			fmt.Printf("Rename app failed: %s\n", err)
 			return
 		}
 
