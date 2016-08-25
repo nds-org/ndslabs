@@ -19,6 +19,7 @@ var (
 	dir     string
 	catalog string
 	update  bool
+	secure  bool
 )
 
 func init() {
@@ -31,6 +32,7 @@ func init() {
 
 	// add stack flags
 	addStackCmd.Flags().StringVar(&opts, "opt", "", "Comma-delimited list of optional services")
+	addStackCmd.Flags().BoolVarP(&secure, "secure", "", false, "Secure app")
 
 	addAccountCmd.Flags().StringVarP(&file, "file", "f", "", "Path to account definition (json)")
 
@@ -139,7 +141,7 @@ var addStackCmd = &cobra.Command{
 			cmd.Usage()
 			os.Exit(-1)
 		}
-		addStack(args[0], args[1], opts)
+		addStack(args[0], args[1], opts, secure)
 	},
 }
 
@@ -287,7 +289,7 @@ func containsService(list []api.StackService, service api.StackService) bool {
 	return exists
 }
 
-func addStack(serviceKey string, name string, opt string) {
+func addStack(serviceKey string, name string, opt string, secure bool) {
 
 	service, _ := client.GetService(serviceKey)
 	if service == nil {
@@ -300,6 +302,7 @@ func addStack(serviceKey string, name string, opt string) {
 	stack := api.Stack{}
 	stack.Key = serviceKey
 	stack.Name = name
+	stack.Secure = secure
 
 	stackService := api.StackService{}
 	stackService.Service = serviceKey
