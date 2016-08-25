@@ -55,7 +55,7 @@
                                         
                                         <label for="infoLinkField">Information <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="top-right" uib-tooltip="Link to the NDS Confluence wiki where the user can find more information about this service"></i></sup></label>
                                         
-                                        <input type="url" class="form-control" id="infoLinkField" name="infoLinkField" placeholder="Enter Info URL..." ng-model="spec.info" ng-pattern="/^https://nationaldataservice\.atlassian\.net/wiki/display/NDSC/NDS\+Labs\+Services/[^\s]+/" />
+                                        <input type="url" class="form-control" id="infoLinkField" name="infoLinkField" placeholder="Enter Info URL..." ng-model="spec.info" ng-pattern="/^https://nationaldataservice\.atlassian\.net/wiki/display/NDSC/[^\s]+/" />
                                         
                                         <ng-messages class="text-danger" for="modifySpec.infoLinkField.$error" role="alert">
                                           <ng-message when="url">Please provide a valid url.</ng-message>
