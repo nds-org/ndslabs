@@ -434,8 +434,8 @@
                                                         </ng-messages>
                                                     </td>
                                                     <td>
-                                                        <button class="btn btn-primary" ng-disabled="!newVolName || !newVolPath"
-                                                                ng-click="addItem('volumeMounts', { name: newVolName, mountPath: newVolPath });newVolName=newVolPath=''">
+                                                        <button class="btn btn-primary" ng-disabled="!newVolPath"
+                                                                ng-click="addItem('volumeMounts', { mountPath: newVolPath });newVolName=newVolPath=''">
                                                             <i class="fa fa-fw fa-plus"></i>
                                                         </button>
                                                     </td>
