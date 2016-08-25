@@ -5,14 +5,18 @@ import (
 	"crypto/rand"
 	"crypto/sha1"
 	"encoding/base64"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/kless/osutil/user/crypt"
+	"github.com/kless/osutil/user/crypt/apr1_crypt"
 )
 
 type CryptoHelper struct {
+	apr1Crypt crypt.Crypter
 }
 
 func NewCryptoHelper() *CryptoHelper {
-	return &CryptoHelper{}
+	return &CryptoHelper{
+		apr1Crypt: apr1_crypt.New(),
+	}
 }
 
 func (c *CryptoHelper) HashString(s string) string {
@@ -33,16 +37,15 @@ func (c *CryptoHelper) GenerateRandomString(len int) (string, error) {
 	return base64.URLEncoding.EncodeToString(b), err
 }
 
-// Bcrypt helper used for passwords
-func (c *CryptoHelper) BcryptString(s string) (string, error) {
-	hashed, err := bcrypt.GenerateFromPassword([]byte(s), bcrypt.DefaultCost)
+func (c *CryptoHelper) CompareHashAndPassword(hash string, password string) error {
+	return c.apr1Crypt.Verify(hash, []byte(password))
+}
+
+func (c *CryptoHelper) APR1String(s string) (string, error) {
+	hashed, err := c.apr1Crypt.Generate([]byte(s), []byte{})
 	if err != nil {
 		return "", err
 	}
-	return string(hashed), nil
-}
 
-// Bcrypt helper used for passwords
-func (c *CryptoHelper) CompareHashAndPassword(hash string, password string) error {
-	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return hashed, nil
 }

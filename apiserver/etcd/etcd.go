@@ -92,7 +92,7 @@ func (s *EtcdHelper) CheckPassword(uid string, password string) bool {
 func (s *EtcdHelper) PutAccount(uid string, account *api.Account, changePassword bool) error {
 
 	if changePassword {
-		hashedPassword, err := s.crypto.BcryptString(account.Password)
+		hashedPassword, err := s.crypto.APR1String(account.Password)
 		if err != nil {
 			glog.Error(err)
 			return err
