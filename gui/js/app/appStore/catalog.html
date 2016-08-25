@@ -130,9 +130,9 @@
                     <li><a href ng-click="cloneSpec(spec)"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
                     <li><a href ng-click="copyToClipboard(spec)"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</a></li>
                     <li><a href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> View JSON</a></li>
-                    <li><a ng-href="{{ spec.info }}"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
-                    <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }"><a ng-href="#/store/edit/{{ spec.key }}" ng-if="spec.catalog === 'user'"><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
-                    <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }"><a href ng-click="openDelete(spec)" ng-if="spec.catalog === 'user'"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
+                    <li ng-if="spec.info"><a ng-href="{{ spec.info }}"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
+                    <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a ng-href="#/store/edit/{{ spec.key }}" ><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
+                    <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a href ng-click="openDelete(spec)"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
                   </ul>
                 </span>
               </div>
@@ -180,9 +180,9 @@
                     <li><a href ng-click="cloneSpec(spec)"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
                     <li><a href ng-click="copyToClipboard(spec)"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</a></li>
                     <li><a href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> View JSON</a></li>
-                    <li><a ng-href="{{ spec.info }}"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
-                    <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }"><a ng-href="#/store/edit/{{ spec.key }}" ng-if="spec.catalog === 'user'"><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
-                    <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }"><a href ng-click="openDelete(spec)" ng-if="spec.catalog === 'user'"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
+                    <li ng-if="spec.info"><a ng-href="{{ spec.info }}"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
+                    <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a ng-href="#/store/edit/{{ spec.key }}" ><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
+                    <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a href ng-click="openDelete(spec)"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
                   </ul>
                 </span>
                 
