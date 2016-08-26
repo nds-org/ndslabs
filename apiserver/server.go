@@ -621,6 +621,13 @@ func (s *Server) setupAccount(account *api.Account) error {
 	if err != nil {
 		return err
 	}
+
+	err = s.createBasicAuthSecret(userId)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	return nil
 }
 
