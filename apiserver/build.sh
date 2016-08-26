@@ -2,7 +2,7 @@
 
 BUILD_DATE=`date +%Y-%m-%d\ %H:%M`
 VERSIONFILE="version.go"
-VERSION="1.0.1-alpha"
+VERSION="1.0.2"
 APP="apiserver"
 
 if [ "$1" = "local" ] || [ "$1" = "docker" ]; then

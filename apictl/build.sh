@@ -2,7 +2,7 @@
 
 BUILD_DATE=`date +%Y-%m-%d\ %H:%M`
 VERSIONFILE="cmd/clientVersion.go"
-VERSION="1.0.1-alpha"
+VERSION="1.0.2"
 APP="ndslabsctl"
 
 
