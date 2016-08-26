@@ -72,6 +72,10 @@
     <!-- Angular Gravatar -->
     <script src="bower_components/angular-gravatar/build/angular-gravatar.js"></script>
     
+    <!-- Angular Busy -->
+    <link rel="stylesheet" type="text/css" href="bower_components/angular-busy/dist/angular-busy.css" />
+    <script src="bower_components/angular-busy/dist/angular-busy.js"></script>
+    
     <!-- Load our own custom modules -->
     <script src="bower_components/angular-wizard/angular-wizard.js"></script>
     <script src="bower_components/angular-grid/angular-grid.js"></script>
@@ -112,7 +116,7 @@
   </head>
 
   <!-- Display the actual contents of the app down here -->
-  <body>
+  <body cg-busy="loading">
     <!-- This syntax can be used to isolate smaller page templates (such as our navbar and footer) -->
     <!-- NOTE: This method does not produce a navigatable route. For another full page/route, we need to add the route to app.js -->
     <div ng-include src="'app/shared/navbar/navbar.html'" ng-controller="NavbarController"></div> 
@@ -132,7 +136,7 @@
     <![endif]-->
     
     <!-- ng-view tells angular that we will swap in templates for the route specified by app.js (via ngRoute) -->
-    <div class="container" id="appContent" ng-view></div>
+    <div class="container" id="appContent" ng-view ng-cloak="loadPromise"></div>
     
     <div ng-include src="'app/shared/footer/footer.html'" ng-controller="FooterController"></div>
   </body>

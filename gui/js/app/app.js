@@ -5,7 +5,7 @@
  * Define our ndslabs module here. All other files will 
  * use the single-argument notation for angular.module()
  */
-angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-filters', 'ndslabs-directives',  'ndslabs-api', 'ngWizard', 'ngGrid', 'ngAlert', 'ngTagsInput',
+angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-filters', 'ndslabs-directives',  'ndslabs-api', 'ngWizard', 'ngGrid', 'ngAlert', 'ngTagsInput', 'cgBusy',
     'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ngMessages', 'ui.bootstrap', 'ngPasswordStrength', 'angular-clipboard', 'ui.pwgen', 'frapontillo.gage', 'chart.js', 'ui.gravatar' ])
 
 /**
@@ -92,8 +92,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  * 
  * TODO: We assume this is running on the same machine as the apiserver.
  */ 
-.constant('ApiHost', '192.168.99.100')
-.constant('ApiPort', '30001')
+.constant('ApiHost', 'localhost')
+.constant('ApiPort', '')
 .constant('ApiPath', '/api')
 .constant('ApiSecure', false) 
 
@@ -302,8 +302,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData',
-    function($rootScope, $window, $location, $log, $interval, $cookies, $uibModalStack, Stacks, _, authInfo, LoginRoute, AppStoreRoute, HomeRoute, NdsLabsApi, AutoRefresh, ServerData) {
+.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData', 'Loading',
+    function($rootScope, $window, $location, $log, $interval, $cookies, $uibModalStack, Stacks, _, authInfo, LoginRoute, AppStoreRoute, HomeRoute, NdsLabsApi, AutoRefresh, ServerData, Loading) {
   
   // Grab saved auth data from cookies and attempt to use the leftover session
   var token = $cookies.get('token');
@@ -389,15 +389,15 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       NdsLabsApi.getRefreshToken().then(function() {
         $log.debug('Token refreshed: ' + authInfo.get().token);
         
-        // Populate all displayed data here from etcd
-        ServerData.populateAll(authInfo.get().namespace).finally(function() {
+        Loading.set(ServerData.populateAll(authInfo.get().namespace).finally(function() {
           /*if (InitialRedirect) {
             InitialRedirect = false;
             var dest = Stacks.all.length > 0 ? HomeRoute : AppStoreRoute;
             debugger;
             $location.path(dest);
           }*/
-        });
+        }));
+        
         // Restart our token check interval
         if (authInterval) {
           $interval.cancel(authInterval);
