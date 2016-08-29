@@ -39,7 +39,7 @@
           <!-- TODO: This is a silly hack, since we can't bind to the accordion's panel-class attribute, \
           and we apparently cannot use ng-class to do the same thing, due to an implementation detail. -->
           <!-- See https://github.com/angular-ui/bootstrap/issues/5368 -->
-          <uib-accordion-group ng-repeat="stack in configuredStacks | orderBy:['name','id'] track by stack.id" is-open="expandedStacks[stack.id]" ng-if="stack.key !== 'cloudcmd'"
+          <uib-accordion-group ng-repeat="stack in configuredStacks | orderBy:['name','id'] track by stack.id" is-open="expandedStacks[stack.id]"
               class="{{ stack.status === 'started' ? 'panel-success' : 
                 (stack.status === 'stopped' ? 'panel-danger' : 'panel-warning')  }}">
             
@@ -199,7 +199,7 @@
               <!-- Launch Application Button -->
               <button class="btn btn-sm btn-primary" ng-disabled="stack.status !== 'stopped' || starting[stack.id]" 
                    ng-click="startStack(stack)" ng-if="stack.status.indexOf('start') === -1" uib-tooltip="Launch application services"
-                  tooltip-placement="top">
+                  tooltip-placement="top-right">
                 <i class="fa fa-fw fa-rocket"></i>
                 Launch
               </button>
