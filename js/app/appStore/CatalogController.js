@@ -63,13 +63,14 @@ angular
   var perRow = 4;
   
   var refilter = function(specs, tags) {
-    $scope.filteredSpecs = $filter('isStack')(specs, $scope.showStandalones);
+    $scope.filteredSpecs = $filter('display')(specs);
     $scope.filteredSpecs = $filter('showTags')($scope.filteredSpecs, tags);
     $scope.filteredSpecs = $filter('orderBy')($scope.filteredSpecs, 'label');
     $scope.chunkedSpecs = _.chunk($scope.filteredSpecs, perRow);
   };
 
   /* TODO: This is FAR too many manual watchers... */
+  /* We might consider off-loading the filtering onto the API server, if we run into scaling issues here */
   $scope.$watch(function () { return Specs.all; }, function(newValue, oldValue) {
     $scope.installs = {};
     angular.forEach(newValue, function(spec) {
@@ -88,7 +89,6 @@ angular
   });
   $scope.$watch(function () { return Project.project; }, function(newValue, oldValue) { projectId = newValue.namespace; });
   $scope.$watch('tags.selected', function(newValue, oldValue) { refilter($scope.specs, newValue); }, true);
-  $scope.$watch('showStandalones', function() { refilter($scope.specs, $scope.tags.selected); });
   
   $scope.copyToClipboard = function(spec) {
     if (!clipboard.supported) {
