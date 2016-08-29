@@ -35,11 +35,15 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
 
 
 /**
- * Given a string, capitalize it
+ * Given a string, capitalize each term (separated by whitespace)
  */ 
 .filter('capitalize', [ '_', function(_) {
   return function(input) {
-    return _.capitalize(input);
+    var ret = [];
+    angular.forEach(_.split(input, /\s/), function(term) {
+      ret.push(_.capitalize(term));
+    });
+    return _.join(ret, " ");
   };
 }])
 
