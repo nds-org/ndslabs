@@ -277,7 +277,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
             
     var stack = {
       id: "",
-      name: key,
+      name: spec.label,
       key: key,
       status: "stopped",
       services: []
