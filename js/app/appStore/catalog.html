@@ -182,7 +182,7 @@
               <!-- TODO: Add these to CSS -->
               <div class="row" style="margin:0;padding:0;" ng-if="installs[spec.key].progress > 0">
                 <div class="row" style="margin:8px 12px 8px 12px;border: 1px solid lightgray;border-radius:15px;">
-                  <span class="progress" style="horizontal-align:center;width:63px;margin:7px;padding:0;height:18px;border-radius:15px;">
+                  <span class="progress" style="horizontal-align:center;width:63px;margin:0;padding:0;height:18px;border-radius:15px;">
                     <div class="progress-bar progress-bar-primary progress-bar-striped active"  style="margin:0;padding:0;height:18px;border-radius:15px;" role="progressbar" aria-valuenow="{{ installs[spec.key].progress }}"
                         aria-valuemin="1" aria-valuemax="{{ installMax }}" ng-style="{ 'width': 100 * installs[spec.key].progress / installMax + '%' }">
                       {{ installs[spec.key].progress < installMax ? (100 * (installs[spec.key].progress / installMax)) : '100'  | number:0 }}%
