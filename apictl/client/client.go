@@ -916,3 +916,27 @@ func (c *Client) Recover(username string) error {
 		}
 	}
 }
+
+func (c *Client) SupportRequest(supportType string, message string) error {
+	url := c.BasePath + "support"
+
+	support := api.SupportRequest{
+		Type:    api.SupportRequestType(supportType),
+		Message: message,
+	}
+	data, err := json.Marshal(support)
+	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			return nil
+
+		} else {
+			return errors.New(resp.Status)
+		}
+	}
+}

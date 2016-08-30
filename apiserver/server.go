@@ -278,6 +278,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 				strings.HasPrefix(request.URL.Path, s.prefix+"configs") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"check_token") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"refresh_token") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"support") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"check_console")
 		},
 		IfTrue: jwt,
@@ -321,6 +322,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Get(s.prefix+"vocabulary/:name", s.GetVocabulary),
 		rest.Put(s.prefix+"stacks/:sid/rename", s.RenameStack),
 		rest.Put(s.prefix+"change_password", s.ChangePassword),
+		rest.Post(s.prefix+"support", s.PostSupport),
 	)
 
 	router, err := rest.MakeRouter(routes...)
@@ -2367,6 +2369,11 @@ func (s *Server) createAdminUser(password string) error {
 			glog.Error(err)
 			return err
 		}
+		err = s.etcd.PutAccount("admin", account, true)
+		if err != nil {
+			glog.Error(err)
+			return err
+		}
 
 	} else {
 		account, err := s.etcd.GetAccount("admin")
@@ -2375,13 +2382,43 @@ func (s *Server) createAdminUser(password string) error {
 			return err
 		}
 		account.Password = password
-	}
 
-	err := s.etcd.PutAccount("admin", account, true)
-	if err != nil {
-		glog.Error(err)
-		return err
+		err = s.etcd.PutAccount("admin", account, true)
+		if err != nil {
+			glog.Error(err)
+			return err
+		}
 	}
 
 	return nil
+}
+
+func (s *Server) PostSupport(w rest.ResponseWriter, r *rest.Request) {
+	userId := s.getUser(r)
+
+	request := api.SupportRequest{}
+	err := r.DecodeJsonPayload(&request)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	account, err := s.etcd.GetAccount(userId)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = s.email.SendSupportEmail(account.Name, account.EmailAddress, string(request.Type), request.Message)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	return
+
 }

@@ -145,6 +145,35 @@ func (s *EmailHelper) SendRecoveryEmail(name string, email string, recoveryUrl s
 	return nil
 }
 
+// Send support email
+func (s *EmailHelper) SendSupportEmail(name string, email string, messageType string, message string) error {
+
+	data := struct {
+		Name         string
+		Email        string
+		Type         string
+		Message      string
+		SupportEmail string
+	}{
+		Name:         name,
+		Email:        email,
+		Type:         messageType,
+		Message:      message,
+		SupportEmail: s.supportEmail,
+	}
+
+	subject := "NDS Labs support request (" + messageType + ")"
+	msg, err := s.parseTemplate("templates/support-request.html", data)
+	if err != nil {
+		return err
+	}
+	_, err = s.sendEmail(s.supportEmail, subject, msg)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // HTML message helper
 func (s *EmailHelper) sendEmail(to string, subject string, body string) (bool, error) {
 	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
