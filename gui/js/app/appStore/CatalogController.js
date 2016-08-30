@@ -60,7 +60,7 @@ angular
   
   $scope.installs = {};
   
-  var perRow = 4;
+  var perRow = 3;
   
   var refilter = function(specs, tags) {
     $scope.filteredSpecs = $filter('display')(specs);

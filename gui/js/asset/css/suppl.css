@@ -43,8 +43,19 @@
   min-height: 125px;
 }
 
+.card {
+  border-radius:2px !important;
+}
+
 .thumbnail {
-  min-height: 175px;
+  min-height: 125px;
+  border: 1px solid gray;
+  border-radius:6px;
+  width:100%;
+  padding-bottom:1px;
+  -webkit-box-shadow: 3px 6px 12px -5px rgba(0,0,0,0.5);
+  -moz-box-shadow: 3px 6px 12px -5px rgba(0,0,0,0.5);
+  box-shadow: 3px 6px 12px -5px rgba(0,0,0,0.5);
 }
 
 .terminal {
@@ -218,3 +229,8 @@ html,body {
   margin-top:-5px;
 }
 
+#cardButtonBar {
+  margin:0;
+  padding:0;
+  border-top:1px dotted lightgray;
+}
