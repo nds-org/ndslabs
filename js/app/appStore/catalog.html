@@ -157,12 +157,12 @@
                 <div class="media-left">
                   <a href="#">
                     <img ng-if="spec.logo" style="max-height:64px;max-width:64px;" class="pull-right" ng-src="{{ spec.logo }}" alt="{{ spec.key }}" />
-                    <p class="pull-left"><small><small><a ng-if="spec.info" ng-href="{{ spec.info }}"><i class="fa fa-fw fa-search"></i> Docs</a></small></small></p>
                   </a>
                 </div>
                 
                 <!-- Name / Description -->
-                <div class="media-body">
+                <div class="media-body caption">
+                  <a class="pull-right" ng-if="spec.info" ng-href="{{ spec.info }}"><i class="fa fa-fw fa-question-circle-o"></i></a>
                   <h4 class="media-heading">{{ spec.label }}</h4>
                   <p><small>{{ spec.description }}</small></p>
                 </div>
@@ -180,14 +180,16 @@
               
               <!-- "Install" progress -->
               <!-- TODO: Add these to CSS -->
-              <div class="row" style="margin:0;padding:0;border-top: 1px dotted lightgray;" ng-if="installs[spec.key].progress > 0">
+              <div class="row" style="margin:0;padding:0;" ng-if="installs[spec.key].progress > 0">
                 <div class="row" style="margin:8px 12px 8px 12px;border: 1px solid lightgray;border-radius:15px;">
                   <span class="progress" style="horizontal-align:center;width:63px;margin:7px;padding:0;height:18px;border-radius:15px;">
                     <div class="progress-bar progress-bar-primary progress-bar-striped active"  style="margin:0;padding:0;height:18px;border-radius:15px;" role="progressbar" aria-valuenow="{{ installs[spec.key].progress }}"
                         aria-valuemin="1" aria-valuemax="{{ installMax }}" ng-style="{ 'width': 100 * installs[spec.key].progress / installMax + '%' }">
                       {{ installs[spec.key].progress < installMax ? (100 * (installs[spec.key].progress / installMax)) : '100'  | number:0 }}%
                     </div>
+
                   </span>
+                  
                 </div>
               </div>
               
