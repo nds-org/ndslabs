@@ -9,8 +9,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('DashboardController', [ '$scope', '$log', '$routeParams', '$location', '$interval', '$q', '$window', '$filter', '$uibModal', '_', 'Project', 'RandomPassword', 'Stack', 'Stacks', 'Specs', 'AutoRefresh',
-    'StackService', 'NdsLabsApi', function($scope, $log, $routeParams, $location, $interval, $q, $window, $filter, $uibModal, _, Project, RandomPassword, Stack, Stacks, Specs, AutoRefresh,
+.controller('DashboardController', [ '$scope', 'Loading', '$log', '$routeParams', '$location', '$interval', '$q', '$window', '$filter', '$uibModal', '_', 'Project', 'RandomPassword', 'Stack', 'Stacks', 'Specs', 'AutoRefresh',
+    'StackService', 'NdsLabsApi', function($scope, Loading, $log, $routeParams, $location, $interval, $q, $window, $filter, $uibModal, _, Project, RandomPassword, Stack, Stacks, Specs, AutoRefresh,
     StackService, NdsLabsApi) {
   
   $scope.expandedStacks = {};
@@ -151,7 +151,7 @@ angular
       $log.error('failed to remove service ' + svc.service + ' from stack ' + stack.name);
       
       // Restore our state from etcd
-      Stacks.populate();
+      Loading.set(Stacks.populate());
     });
   };
   
@@ -194,6 +194,29 @@ angular
     });
   };
   
+    /**
+   * Display a modal window showing running log data for the given service
+   * @param {} service - the service to show logs for
+   */ 
+  $scope.toggleSecure = function(stack) {
+    var stk = angular.copy(stack);
+    var secure = stk.secure = !stk.secure;
+    
+    // Then update the entire stack in etcd
+    return NdsLabsApi.putStacksByStackId({
+      'stack': stk,
+      'stackId': stack.id
+    }).then(function(data, xhr) {
+      $log.debug('successfully set secure == ' + secure + ' on stack id ' + stk.id);
+      stack.secure = stk.secure;
+    }, function(headers) {
+      $log.error('failed to set secure == ' + secure + ' on stack id ' + stk.id);
+      
+      // Restore our state from etcd
+      Loading.set(Stacks.populate());
+    });
+  };
+  
   /**
    * Deletes a stack from etcd, if successful it is removed from the UI.
    * @param {Object} stack - the stack to delete
@@ -219,7 +242,7 @@ angular
         'stackId': stack.id
       }).then(function(data, xhr) {
         $log.debug('successfully deleted stack: ' + stack.name);
-        Stacks.populate();
+        Loading.set(Stacks.populate());
       }, function(headers) {
         $log.error('failed to delete stack: ' + stack.name);
       });
@@ -258,7 +281,7 @@ angular
     };
     
     // Make sure we have ALL of our stacks first
-    return Stacks.populate().then(function(stacks) {
+    return Loading.set(Stacks.populate().then(function(stacks) {
       // Search for CloudCmd stack
       var stack = _.find(stacks, [ 'key', 'cloudcmd' ]);
       if (stack) {
@@ -302,7 +325,7 @@ angular
           $log.error("error posting to /stacks!");
         });
       }
-    });
+    }));
     
   };
 }]);

@@ -13,6 +13,38 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  */ 
 .constant('_', window._)
 
+.factory('Loading', [ '$rootScope', function($rootScope) {
+  var minDuration = 700,
+      delay = 250,
+      message = 'Please Wait...';
+  
+  var ret = {};
+  ret.setNavbarLoading = function(promise, backdrop) {
+    $rootScope.loadingSmall = {
+      promise: promise,
+      message: message,
+      delay: delay,
+      backdrop: backdrop,
+      minDuration: minDuration,
+    };
+    return promise;
+  }
+  ret.set = function(promise, backdrop) {
+    $rootScope.loadPromise = promise;
+    $rootScope.loading = {
+      promise: promise,
+      message: message,
+      backdrop: backdrop,
+      delay: delay,
+      minDuration: minDuration,
+      templateUrl: 'app/shared/loading.html'
+    };
+    return promise;
+  };
+  
+  return ret;
+}])
+
 .factory('RandomPassword', [ function() {
   return {
     generate: function(len) {
@@ -33,15 +65,16 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
      * Perform a partial "soft-refresh" - refresh the stack data without fully re-rendering the page
      */ 
    stacks: function() {
-    Stacks.populate(Project.project.namespace);
+    return Stacks.populate(Project.project.namespace);
    },
+   
     /**
      * Perform a full "soft-refresh" - refresh all data without fully re-rendering the page
      */ 
    full: function() {
     Specs.populate();
-    Project.populate(Project.project.namespace).then(function() {
-      refresh.stacks();
+    return Project.populate(Project.project.namespace).then(function() {
+      return refresh.stacks();
     });
    }
  }
@@ -49,14 +82,16 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  return refresh;
 }])
 
-.factory('AutoRefresh', [ '$interval', '$log', 'SoftRefresh', function($interval, $log, SoftRefresh) {
+.factory('AutoRefresh', [ '$interval', '$log', 'SoftRefresh', 'Loading', function($interval, $log, SoftRefresh, Loading) {
   var autoRefresh = {
     interval: null,
     onInterval: SoftRefresh.stacks,
-    periodSeconds: 1,
+    periodSeconds: 5,
     start: function () {
       autoRefresh.stop();
-      autoRefresh.interval = $interval(autoRefresh.onInterval, 1000 * autoRefresh.periodSeconds);
+      autoRefresh.interval = $interval(function() {
+        Loading.set(autoRefresh.onInterval(), false);
+        }, 1000 * autoRefresh.periodSeconds);
       $log.debug("Interval starting!");
     },
     stop: function() {
@@ -82,16 +117,16 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 /**
  * A shared store for our project metadata pulled from /projects/{namespace}
  */
-.factory('Project', [ '$log', 'NdsLabsApi', function($log, NdsLabsApi) {
+.factory('Project', [ '$log', 'NdsLabsApi', 'Loading', function($log, NdsLabsApi, Loading) {
   var project = {
     purge: function() {
       project.project = {};
     },
     // Grab the project associated with our current namespace
     populate: function(projectId) {
-      return NdsLabsApi.getAccountsByAccountId({ 
+      return Loading.setNavbarLoading(NdsLabsApi.getAccountsByAccountId({ 
         "accountId": projectId 
-      }).then(function(data, xhr) {
+      })).then(function(data, xhr) {
         $log.debug("successfully grabbed from /projects/" + projectId + "!");
         return project.project = data;
       }, function(headers) {
@@ -277,7 +312,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
             
     var stack = {
       id: "",
-      name: key,
+      name: spec.label,
       key: key,
       status: "stopped",
       services: []
