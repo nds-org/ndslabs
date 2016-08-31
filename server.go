@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -347,6 +348,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 	go s.kube.WatchPods(s)
 
 	http.Handle(s.prefix, api.MakeHandler())
+	http.HandleFunc(s.prefix+"download", s.DownloadClient)
 
 	glog.Infof("Listening on %s", cfg.Server.Port)
 	glog.Fatal(http.ListenAndServe(":"+cfg.Server.Port, nil))
@@ -2384,4 +2386,19 @@ func (s *Server) createAdminUser(password string) error {
 	}
 
 	return nil
+}
+
+func (s *Server) DownloadClient(w http.ResponseWriter, r *http.Request) {
+	ops := r.URL.Query().Get("os")
+	w.Header().Set("Content-Disposition", "attachment; filename=ndslabsctl")
+	w.Header().Set("Content-Type", r.Header.Get("Content-Type"))
+
+	reader, err := os.Open("/ndslabsctl/ndslabsctl-" + ops + "-amd64")
+	if err != nil {
+		glog.Error(err)
+		return
+	}
+
+	defer reader.Close()
+	io.Copy(w, reader)
 }
