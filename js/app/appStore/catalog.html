@@ -139,18 +139,6 @@
       <div ng-if="showCards" class="panel-body">
         <div id="cardRow" class="row" ng-repeat="set in chunkedSpecs">
           <div class="col-sm-4" ng-repeat="spec in set" style="height:100%;">
-            <!--<div class="thumbnail" style="width:100%">
-              <div class="pull-right" uib-tooltip="Source: {{ spec.catalog | capitalize }}" tooltip-placement="left">
-                 <i class="fa fa-fw" ng-class="{ 'fa-user': spec.catalog === 'user', 'fa-server': spec.catalog === 'system' }" ></i>
-                 <small>{{ spec.key }}</small>
-              </div>
-              
-              <div class="caption">
-                <img ng-if="spec.logo" style="height:44px;" ng-src="{{ spec.logo }}" alt="{{ spec.key }}">
-                <h4>{{ spec.label }}</h4>
-                <p>{{ spec.description }}</p>
-              </div>-->
-                   
             <div class="thumbnail">
               <div class="media">
                 <!-- Logo -->
@@ -187,9 +175,7 @@
                         aria-valuemin="1" aria-valuemax="{{ installMax }}" ng-style="{ 'width': 100 * installs[spec.key].progress / installMax + '%' }">
                       {{ installs[spec.key].progress < installMax ? (100 * (installs[spec.key].progress / installMax)) : '100'  | number:0 }}%
                     </div>
-
                   </span>
-                  
                 </div>
               </div>
               
@@ -199,13 +185,13 @@
                   
                   <!-- View Instance(s) -->
                   <a class="btn btn-xs btn-link" ng-if="installs[spec.key].count > 0" ng-href="#/home?expand={{ spec.key }}" style="margin:7px;">
-                    View
+                    View <span class="badge" style="margin-left:4px" ng-if="installs[spec.key].count > 0">{{ installs[spec.key].count }}</span>
                   </a>
                   
                   <!-- Install button -->
                   <button ng-disabled="installs[spec.key].progress > 0" ng-if="installs[spec.key].progress === 0" style="margin:7px;"
                       class="btn btn-xs btn-link" ng-click="install(spec)">
-                    Add <span class="badge" style="margin-left:4px" ng-if="installs[spec.key].count > 0">{{ installs[spec.key].count }}</span>
+                    Add
                   </button>
                 </div>
                 
