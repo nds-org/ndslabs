@@ -2358,7 +2358,7 @@ func (s *Server) createAdminUser(password string) error {
 	glog.V(4).Infof("Creating admin user")
 
 	if !s.accountExists("admin") {
-		account = &api.Account{
+		account := &api.Account{
 			Name:        "admin",
 			Namespace:   "admin",
 			Description: "NDS Labs administrator",
