@@ -15,7 +15,7 @@ import (
 type EmailHelper struct {
 	server       string
 	port         int
-	supportEmail string
+	SupportEmail string
 }
 
 func NewEmailHelper(server string, port int, supportEmail string) (*EmailHelper, error) {
@@ -23,7 +23,7 @@ func NewEmailHelper(server string, port int, supportEmail string) (*EmailHelper,
 	return &EmailHelper{
 		server:       server,
 		port:         port,
-		supportEmail: supportEmail,
+		SupportEmail: supportEmail,
 	}, nil
 }
 
@@ -37,7 +37,7 @@ func (s *EmailHelper) SendVerificationEmail(name string, address string, url str
 	}{
 		Name:         name,
 		Link:         url,
-		SupportEmail: s.supportEmail,
+		SupportEmail: s.SupportEmail,
 	}
 
 	subject := "Email address verification"
@@ -70,7 +70,7 @@ func (s *EmailHelper) SendNewAccountEmail(account *api.Account, approveUrl strin
 		Organization: account.Organization,
 		ApproveLink:  approveUrl,
 		DenyLink:     denyUrl,
-		SupportEmail: s.supportEmail,
+		SupportEmail: s.SupportEmail,
 	}
 
 	subject := "New account request"
@@ -78,7 +78,7 @@ func (s *EmailHelper) SendNewAccountEmail(account *api.Account, approveUrl strin
 	if err != nil {
 		return err
 	}
-	_, err = s.sendEmail(s.supportEmail, subject, msg)
+	_, err = s.sendEmail(s.SupportEmail, subject, msg)
 	if err != nil {
 		return err
 	}
@@ -94,7 +94,7 @@ func (s *EmailHelper) SendStatusEmail(name string, address string, url string, a
 	}{
 		Name:         name,
 		Link:         url,
-		SupportEmail: s.supportEmail,
+		SupportEmail: s.SupportEmail,
 	}
 
 	var subject string
@@ -130,7 +130,7 @@ func (s *EmailHelper) SendRecoveryEmail(name string, email string, recoveryUrl s
 		Name:         name,
 		Email:        email,
 		Link:         recoveryUrl,
-		SupportEmail: s.supportEmail,
+		SupportEmail: s.SupportEmail,
 	}
 
 	subject := "NDS Labs password recovery request"
@@ -138,7 +138,7 @@ func (s *EmailHelper) SendRecoveryEmail(name string, email string, recoveryUrl s
 	if err != nil {
 		return err
 	}
-	_, err = s.sendEmail(s.supportEmail, subject, msg)
+	_, err = s.sendEmail(s.SupportEmail, subject, msg)
 	if err != nil {
 		return err
 	}
@@ -159,7 +159,7 @@ func (s *EmailHelper) SendSupportEmail(name string, email string, messageType st
 		Email:        email,
 		Type:         messageType,
 		Message:      message,
-		SupportEmail: s.supportEmail,
+		SupportEmail: s.SupportEmail,
 	}
 
 	subject := "NDS Labs support request (" + messageType + ")"
@@ -167,7 +167,7 @@ func (s *EmailHelper) SendSupportEmail(name string, email string, messageType st
 	if err != nil {
 		return err
 	}
-	_, err = s.sendEmail(s.supportEmail, subject, msg)
+	_, err = s.sendEmail(s.SupportEmail, subject, msg)
 	if err != nil {
 		return err
 	}
@@ -177,7 +177,7 @@ func (s *EmailHelper) SendSupportEmail(name string, email string, messageType st
 // HTML message helper
 func (s *EmailHelper) sendEmail(to string, subject string, body string) (bool, error) {
 	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
-	from := "From: " + s.supportEmail + "\n"
+	from := "From: " + s.SupportEmail + "\n"
 	subject = "Subject: " + subject + "\n"
 	msg := []byte(from + subject + mime + "\n" + body)
 
@@ -198,7 +198,7 @@ func (s *EmailHelper) sendEmail(to string, subject string, body string) (bool, e
 	if err != nil {
 		return false, err
 	}
-	c.Mail(s.supportEmail)
+	c.Mail(s.SupportEmail)
 	c.Rcpt(to)
 	wc, err := c.Data()
 	if err != nil {
