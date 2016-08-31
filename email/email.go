@@ -15,13 +15,15 @@ import (
 type EmailHelper struct {
 	server       string
 	port         int
+	origin       string
 	SupportEmail string
 }
 
-func NewEmailHelper(server string, port int, supportEmail string) (*EmailHelper, error) {
+func NewEmailHelper(server string, port int, supportEmail string, origin string) (*EmailHelper, error) {
 
 	return &EmailHelper{
 		server:       server,
+		origin:       origin,
 		port:         port,
 		SupportEmail: supportEmail,
 	}, nil
@@ -63,6 +65,7 @@ func (s *EmailHelper) SendNewAccountEmail(account *api.Account, approveUrl strin
 		ApproveLink  string
 		DenyLink     string
 		SupportEmail string
+		Origin       string
 	}{
 		Name:         account.Name,
 		Email:        account.EmailAddress,
@@ -71,6 +74,7 @@ func (s *EmailHelper) SendNewAccountEmail(account *api.Account, approveUrl strin
 		ApproveLink:  approveUrl,
 		DenyLink:     denyUrl,
 		SupportEmail: s.SupportEmail,
+		Origin:       s.origin,
 	}
 
 	subject := "New account request"
