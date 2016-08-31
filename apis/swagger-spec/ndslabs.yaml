@@ -445,6 +445,27 @@ paths:
       responses:
         '200':
           description: OK
+  '/support':
+    post:
+      description: |
+        Submit a support request
+      parameters:
+        - name: account
+          in: body
+          description: Support request definition
+          schema:
+            $ref: '#/definitions/SupportRequest'
+          required: true
+      responses:
+        '201':
+          description: Created
+  '/contact':
+    get:
+      description: | 
+        Get contact information
+      responses:
+        '200':
+          description: OK
 definitions:
   Auth:
     type: object
@@ -705,3 +726,11 @@ definitions:
               type: string
             definition:
               type: string
+  SupportRequest:
+    type: object
+    properties:
+      type:
+        type: string
+      message:
+        type: string
+              
