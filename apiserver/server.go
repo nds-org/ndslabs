@@ -756,7 +756,7 @@ func (s *Server) DenyAccount(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
 
-	err := os.MkdirAll(s.volDir+"/"+account.Namespace, 0775|os.ModeSticky)
+	err := os.MkdirAll(s.volDir+"/"+account.Namespace, 0777|os.ModeSticky)
 	if err != nil {
 		return false, err
 	}
@@ -1349,6 +1349,7 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 						stackService.VolumeMounts = map[string]string{}
 					}
 					volPath := fmt.Sprintf("AppData/%s", s.kube.RandomString(5))
+
 					stackService.VolumeMounts[volPath] = mount.MountPath
 				}
 			}
@@ -1599,6 +1600,8 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
 	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, stackService, spec, addrPortMap, &sharedEnv)
 
+	s.makeDirectories(userId, stackService)
+
 	k8vols := make([]k8api.Volume, 0)
 
 	// Mount the home directory
@@ -1835,6 +1838,12 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 	glog.V(4).Infof("Stack %s started\n", sid)
 
 	return stack, nil
+}
+
+func (s *Server) makeDirectories(userId string, stackService *api.StackService) {
+	for path, _ := range stackService.VolumeMounts {
+		os.MkdirAll(s.volDir+"/"+userId+"/"+path, 0777|os.ModeSticky)
+	}
 }
 
 func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, error) {
@@ -2348,9 +2357,8 @@ func (s *Server) createAdminUser(password string) error {
 
 	glog.V(4).Infof("Creating admin user")
 
-	var account *api.Account
 	if !s.accountExists("admin") {
-		account = &api.Account{
+		account := &api.Account{
 			Name:        "admin",
 			Namespace:   "admin",
 			Description: "NDS Labs administrator",
@@ -2367,6 +2375,11 @@ func (s *Server) createAdminUser(password string) error {
 			glog.Error(err)
 			return err
 		}
+		err = s.etcd.PutAccount("admin", account, true)
+		if err != nil {
+			glog.Error(err)
+			return err
+		}
 
 	} else {
 		account, err := s.etcd.GetAccount("admin")
@@ -2375,12 +2388,11 @@ func (s *Server) createAdminUser(password string) error {
 			return err
 		}
 		account.Password = password
-	}
-
-	err := s.etcd.PutAccount("admin", account, true)
-	if err != nil {
-		glog.Error(err)
-		return err
+		err = s.etcd.PutAccount("admin", account, true)
+		if err != nil {
+			glog.Error(err)
+			return err
+		}
 	}
 
 	return nil
