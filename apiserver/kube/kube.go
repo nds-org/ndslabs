@@ -1160,6 +1160,14 @@ func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHe
 
 func (k *KubeHelper) CreateIngress(pid string, host string, service string, port int, tlsSecretName string, basicAuth bool) (*extensions.Ingress, error) {
 
+	name := service + "-ingress"
+
+	// Delete existing ingress
+	ingress, err := k.GetIngress(pid, name)
+	if ingress != nil {
+		k.DeleteIngress(pid, name)
+	}
+
 	// https://github.com/kubernetes/contrib/tree/master/ingress/controllers/nginx/examples/auth
 	annotations := map[string]string{}
 	if basicAuth {
@@ -1168,9 +1176,9 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 		annotations["ingress.kubernetes.io/auth-realm"] = "NDS Labs"
 	}
 
-	ingress := extensions.Ingress{
+	ingress = &extensions.Ingress{
 		ObjectMeta: api.ObjectMeta{
-			Name:        service + "-ingress",
+			Name:        name,
 			Namespace:   pid,
 			Annotations: annotations,
 		},
@@ -1225,11 +1233,39 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 			}
 
 			json.Unmarshal(data, &ingress)
-			return &ingress, nil
+			return ingress, nil
 		} else if httpresp.StatusCode == http.StatusConflict {
 			return nil, fmt.Errorf("Ingress exists for namespace %s: %s\n", pid, httpresp.Status)
 		} else {
 			return nil, fmt.Errorf("Error adding ingress for namespace %s: %s\n", pid, httpresp.Status)
+		}
+	}
+	return nil, nil
+}
+
+func (k *KubeHelper) GetIngress(pid string, ingressName string) (*extensions.Ingress, error) {
+
+	url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses/" + ingressName
+	glog.V(4).Infoln(url)
+	request, _ := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", k.getAuthHeader())
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusOK {
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			ingress := extensions.Ingress{}
+			json.Unmarshal(data, &ingress)
+			return &ingress, nil
+		} else {
+			return nil, fmt.Errorf("Error getting ingress %s for account %s: %s\n", ingressName, pid, httpresp.Status)
 		}
 	}
 	return nil, nil

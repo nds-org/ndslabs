@@ -179,6 +179,16 @@ type Stack struct {
 	Secure      bool           `json:"secure"`
 }
 
+func (s *Stack) GetStackService(stackServiceId string) *StackService {
+	for i := range s.Services {
+		stackService := &s.Services[i]
+		if stackService.Id == stackServiceId {
+			return stackService
+		}
+	}
+	return nil
+}
+
 type StackService struct {
 	Id             string            `json:"id"`
 	Stack          string            `json:"stack"`

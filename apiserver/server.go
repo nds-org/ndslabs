@@ -1387,39 +1387,9 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 
 			// Start the Kubernetes service and ingress
 			if len(spec.Ports) > 0 {
-				name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
-				template := s.kube.CreateServiceTemplate(name, stack.Id, spec, s.useNodePort())
-
-				svc, err := s.kube.GetService(userId, name)
-				if svc == nil {
-					glog.V(4).Infof("Starting Kubernetes service %s\n", name)
-					svc, err = s.kube.StartService(userId, template)
-					if err != nil {
-						glog.Errorf("Error starting service %s\n", name)
-						glog.Error(err)
-						rest.Error(w, err.Error(), http.StatusInternalServerError)
-						return
-					}
-
-					if s.useLoadBalancer() &&
-						spec.Access == api.AccessExternal {
-
-						secretName := fmt.Sprintf("%s-tls-secret", userId)
-
-						host := fmt.Sprintf("%s.%s", svc.Name, s.domain)
-						_, err := s.kube.CreateIngress(userId, host, svc.Name,
-							int(svc.Spec.Ports[0].Port), secretName, stack.Secure)
-						if err != nil {
-							glog.Errorf("Error creating ingress %s\n", name)
-							glog.Error(err)
-							rest.Error(w, err.Error(), http.StatusInternalServerError)
-							return
-						}
-						glog.V(4).Infof("Started ingress %s for service %s\n", host, svc.Name)
-					}
-				}
-				if svc == nil {
-					glog.V(4).Infof("Failed to start service service %s\n", name)
+				_, err := s.createKubernetesService(userId, &stack, spec)
+				if err != nil {
+					glog.V(4).Infof("Failed to start service service %s-%s\n", stack.Id, spec.Key)
 					continue
 				}
 			}
@@ -1435,24 +1405,95 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(&stack)
 }
 
+// Create the Kubernetes service and ingress rules
+func (s *Server) createKubernetesService(userId string, stack *api.Stack, spec *api.ServiceSpec) (*k8api.Service, error) {
+	name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
+	template := s.kube.CreateServiceTemplate(name, stack.Id, spec, s.useNodePort())
+
+	svc, err := s.kube.GetService(userId, name)
+	if svc == nil {
+		glog.V(4).Infof("Starting Kubernetes service %s\n", name)
+		svc, err = s.kube.StartService(userId, template)
+		if err != nil {
+			glog.Errorf("Error starting service %s\n", name)
+			glog.Error(err)
+			return nil, err
+		}
+
+		if s.useLoadBalancer() && spec.Access == api.AccessExternal {
+			s.createIngressRule(userId, svc, stack)
+		}
+	}
+	return svc, nil
+}
+
+func (s *Server) createIngressRule(userId string, svc *k8api.Service, stack *api.Stack) error {
+	secretName := fmt.Sprintf("%s-tls-secret", userId)
+
+	host := fmt.Sprintf("%s.%s", svc.Name, s.domain)
+	_, err := s.kube.CreateIngress(userId, host, svc.Name,
+		int(svc.Spec.Ports[0].Port), secretName, stack.Secure)
+	if err != nil {
+		glog.Errorf("Error creating ingress for %s\n", svc.Name)
+		glog.Error(err)
+		return err
+	}
+	glog.V(4).Infof("Started ingress %s for service %s\n", host, svc.Name)
+	return nil
+}
+
 func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 	userId := s.getUser(r)
 	sid := r.PathParam("sid")
 
-	stack := api.Stack{}
-
-	err := r.DecodeJsonPayload(&stack)
+	newStack := api.Stack{}
+	err := r.DecodeJsonPayload(&newStack)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	for i := range stack.Services {
-		stackService := &stack.Services[i]
-		// Create the stack service ID
-		stackService.Id = fmt.Sprintf("%s-%s", sid, stackService.Service)
+	oldStack, err := s.etcd.GetStack(userId, sid)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
+	for i := range newStack.Services {
+		stackService := &newStack.Services[i]
+
+		oldStackService := oldStack.GetStackService(stackService.Id)
+		if oldStackService == nil {
+
+			// User added a new service
+			stackService.Id = fmt.Sprintf("%s-%s", sid, stackService.Service)
+			spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
+			if spec != nil {
+				_, err := s.createKubernetesService(userId, &newStack, spec)
+				if err != nil {
+					glog.Error(err)
+					rest.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+			}
+		}
+
+		if oldStack.Secure != newStack.Secure {
+			// Need to delete and recreate the ingress rule
+			spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
+			name := fmt.Sprintf("%s-%s", newStack.Id, spec.Key)
+			svc, _ := s.kube.GetService(userId, name)
+			err := s.createIngressRule(userId, svc, &newStack)
+			if err != nil {
+				glog.Error(err)
+				rest.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		}
+
+		// User may have changed volume mounts
 		spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
 		if spec != nil {
 			for _, mount := range spec.VolumeMounts {
@@ -1484,15 +1525,15 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 		}
 	}
 
-	stack.Status = stackStatus[Stopped]
-	err = s.etcd.PutStack(userId, sid, &stack)
+	newStack.Status = stackStatus[Stopped]
+	err = s.etcd.PutStack(userId, sid, &newStack)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteJson(&stack)
+	w.WriteJson(&newStack)
 }
 
 func (s *Server) RenameStack(w rest.ResponseWriter, r *rest.Request) {
