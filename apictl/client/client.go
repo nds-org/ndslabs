@@ -917,14 +917,10 @@ func (c *Client) Recover(username string) error {
 	}
 }
 
-func (c *Client) SupportRequest(supportType string, message string) error {
+func (c *Client) SupportRequest(req *api.SupportRequest) error {
 	url := c.BasePath + "support"
 
-	support := api.SupportRequest{
-		Type:    api.SupportRequestType(supportType),
-		Message: message,
-	}
-	data, err := json.Marshal(support)
+	data, err := json.Marshal(req)
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
 	request.Header.Set("Content-Type", "application/json")
