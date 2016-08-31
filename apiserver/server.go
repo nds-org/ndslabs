@@ -539,14 +539,14 @@ func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	err = s.setupAccount(&account)
+	err = s.etcd.PutAccount(account.Namespace, &account, true)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	err = s.etcd.PutAccount(account.Namespace, &account, true)
+	err = s.setupAccount(&account)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
