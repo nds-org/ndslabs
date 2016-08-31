@@ -323,6 +323,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Put(s.prefix+"stacks/:sid/rename", s.RenameStack),
 		rest.Put(s.prefix+"change_password", s.ChangePassword),
 		rest.Post(s.prefix+"support", s.PostSupport),
+		rest.Get(s.prefix+"contact", s.GetContact),
 	)
 
 	router, err := rest.MakeRouter(routes...)
@@ -431,14 +432,21 @@ func (s *Server) initExistingAccounts() {
 
 func (s *Server) GetPaths(w rest.ResponseWriter, r *rest.Request) {
 	paths := []string{}
+	paths = append(paths, s.prefix+"accounts")
 	paths = append(paths, s.prefix+"authenticate")
+	paths = append(paths, s.prefix+"change_password")
 	paths = append(paths, s.prefix+"configs")
 	paths = append(paths, s.prefix+"console")
-	paths = append(paths, s.prefix+"accounts")
+	paths = append(paths, s.prefix+"logs")
 	paths = append(paths, s.prefix+"register")
+	paths = append(paths, s.prefix+"reset")
 	paths = append(paths, s.prefix+"services")
+	paths = append(paths, s.prefix+"stacks")
+	paths = append(paths, s.prefix+"start")
+	paths = append(paths, s.prefix+"stop")
+	paths = append(paths, s.prefix+"support")
 	paths = append(paths, s.prefix+"version")
-
+	paths = append(paths, s.prefix+"vocabulary")
 	w.WriteJson(&paths)
 }
 
@@ -2421,4 +2429,12 @@ func (s *Server) PostSupport(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(http.StatusOK)
 	return
 
+}
+
+func (s *Server) GetContact(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteJson(map[string]string{
+		"email": s.email.SupportEmail,
+		"forum": "https://groups.google.com/forum/#!forum/ndslabs",
+		"chat":  "https://gitter.im/nds-org/ndslabs",
+	})
 }
