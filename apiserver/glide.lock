@@ -92,6 +92,13 @@ imports:
   version: bbcb9da2d746f8bdbd6a936686a0a6067ada0ec5
 - name: github.com/juju/ratelimit
   version: 77ed1c8a01217656d2080ad51981f6e99adaa177
+- name: github.com/kless/osutil
+  version: 3ac994847c4376a4b905fc0a19f450c5a4bec647
+  subpackages:
+  - user/crypt/apr1_crypt
+  - user/crypt
+  - user/crypt/common
+  - user/crypt/md5_crypt
 - name: github.com/matttproud/golang_protobuf_extensions
   version: fc2b8d3a73c4867e51861bbdd5ae3c1f0869dd6a
   subpackages:
@@ -147,6 +154,11 @@ imports:
   version: e02fc20de94c78484cd5ffb007f8af96be030a45
 - name: github.com/xeipuuv/gojsonschema
   version: 0a98b2bd93655a563d1f23c4407e8f01791b6b31
+- name: golang.org/x/crypto
+  version: c84e1f8e3a7e322d497cd16c0e8a13c7e127baf3
+  subpackages:
+  - bcrypt
+  - blowfish
 - name: golang.org/x/net
   version: 62685c2d7ca23c807425dca88b11a3e2323dab41
   subpackages:
