@@ -2357,7 +2357,6 @@ func (s *Server) createAdminUser(password string) error {
 
 	glog.V(4).Infof("Creating admin user")
 
-	var account *api.Account
 	if !s.accountExists("admin") {
 		account = &api.Account{
 			Name:        "admin",
@@ -2376,6 +2375,11 @@ func (s *Server) createAdminUser(password string) error {
 			glog.Error(err)
 			return err
 		}
+		err = s.etcd.PutAccount("admin", account, true)
+		if err != nil {
+			glog.Error(err)
+			return err
+		}
 
 	} else {
 		account, err := s.etcd.GetAccount("admin")
@@ -2384,12 +2388,11 @@ func (s *Server) createAdminUser(password string) error {
 			return err
 		}
 		account.Password = password
-	}
-
-	err := s.etcd.PutAccount("admin", account, true)
-	if err != nil {
-		glog.Error(err)
-		return err
+		err = s.etcd.PutAccount("admin", account, true)
+		if err != nil {
+			glog.Error(err)
+			return err
+		}
 	}
 
 	return nil
