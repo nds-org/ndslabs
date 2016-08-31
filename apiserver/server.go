@@ -152,7 +152,7 @@ func main() {
 		glog.Fatal(err)
 	}
 
-	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.SupportEmail)
+	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.SupportEmail, cfg.Server.Origin)
 	if err != nil {
 		glog.Errorf("Error in email server configuration\n")
 		glog.Fatal(err)
