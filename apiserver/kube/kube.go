@@ -1274,7 +1274,7 @@ func (k *KubeHelper) GetIngress(pid string, ingressName string) (*extensions.Ing
 //http://kubernetes.io/docs/api-reference/extensions/v1beta1/operations/
 func (k *KubeHelper) DeleteIngress(pid string, name string) (*extensions.Ingress, error) {
 
-	url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses/" + name + "-ingress"
+	url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses/" + name
 	glog.V(4).Infoln(url)
 	request, _ := http.NewRequest("DELETE", url, nil)
 	request.Header.Set("Content-Type", "application/json")
