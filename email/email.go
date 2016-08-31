@@ -177,8 +177,9 @@ func (s *EmailHelper) SendSupportEmail(name string, email string, messageType st
 // HTML message helper
 func (s *EmailHelper) sendEmail(to string, subject string, body string) (bool, error) {
 	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+	from := "From: " + s.supportEmail + "\n"
 	subject = "Subject: " + subject + "\n"
-	msg := []byte(subject + mime + "\n" + body)
+	msg := []byte(from + subject + mime + "\n" + body)
 
 	glog.V(4).Infof("Sending email to %s %s", to, subject)
 
