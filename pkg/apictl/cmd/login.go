@@ -8,7 +8,6 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 	"io/ioutil"
 	"os"
-	"os/user"
 	"strings"
 	"syscall"
 )
@@ -27,11 +26,6 @@ var loginCmd = &cobra.Command{
 
 		username := strings.TrimSpace(args[0])
 		password := credentials("")
-		usr, err := user.Current()
-		if err != nil {
-			fmt.Printf("Error looking up current OS user %s\n", err)
-			os.Exit(-1)
-		}
 
 		token, err := client.Login(username, password)
 		if err != nil {
@@ -39,7 +33,7 @@ var loginCmd = &cobra.Command{
 		} else if token == "" {
 			fmt.Printf("Login failed: no response from server\n")
 		} else {
-			path := usr.HomeDir + "/.ndslabsctl"
+			path := os.Getenv("HOME") + "/.ndslabsctl"
 			os.Mkdir(path, 0700)
 			e := ioutil.WriteFile(path+"/.passwd", []byte(username+":"+token), 0644)
 			if e != nil {
