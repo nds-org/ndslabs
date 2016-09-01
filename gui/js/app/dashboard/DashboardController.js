@@ -194,6 +194,29 @@ angular
     });
   };
   
+    /**
+   * Display a modal window showing running log data for the given service
+   * @param {} service - the service to show logs for
+   */ 
+  $scope.toggleSecure = function(stack) {
+    var stk = angular.copy(stack);
+    var secure = stk.secure = !stk.secure;
+    
+    // Then update the entire stack in etcd
+    return NdsLabsApi.putStacksByStackId({
+      'stack': stk,
+      'stackId': stack.id
+    }).then(function(data, xhr) {
+      $log.debug('successfully set secure == ' + secure + ' on stack id ' + stk.id);
+      stack.secure = stk.secure;
+    }, function(headers) {
+      $log.error('failed to set secure == ' + secure + ' on stack id ' + stk.id);
+      
+      // Restore our state from etcd
+      Loading.set(Stacks.populate());
+    });
+  };
+  
   /**
    * Deletes a stack from etcd, if successful it is removed from the UI.
    * @param {Object} stack - the stack to delete

@@ -187,11 +187,17 @@
             
             <!-- The Stack's "Button Bar" -->
             <div class="pull-right" role="group" aria-label="...">
+              <span uib-tooltip="HTTP Basic Auth {{ stack.secure === true ? 'Enabled' : 'Disabled' }}" tooltip-placement="left">
+                <button class="btn btn-sm btn-link" ng-click="toggleSecure(stack)" ng-disabled="stack.status !== 'stopped' || starting[stack.id]">
+                  <i class="fa fa-fw" ng-class="{ 'fa-lock': stack.secure, 'fa-unlock': !stack.secure }"></i>
+                </button>
+              </span>
+          
           
               <!-- Delete Application Button -->
               <button class="btn btn-sm btn-default" ng-disabled="stack.status !== 'stopped' || starting[stack.id]" ng-if="stack.status.indexOf('start') === -1"
                   ng-click="deleteStack(stack)" uib-tooltip="Remove Application"
-                  tooltip-placement="left">
+                  tooltip-placement="top-right">
                 <i class="fa fa-fw fa-trash"></i>
                 Remove
               </button>
@@ -207,7 +213,7 @@
               <!-- Stop Application Button -->
               <button class="btn btn-sm btn-primary" ng-disabled="(stack.status !== 'started' && stack.status !== 'error') || stopping[stack.id]" 
                    ng-click="stopStack(stack)" ng-if="stack.status.indexOf('stop') === -1" uib-tooltip="Shutdown application services"
-                  tooltip-placement="left">
+                  tooltip-placement="top-right">
                 <i class="fa fa-fw fa-power-off"></i>
                 Shutdown
               </button>

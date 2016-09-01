@@ -114,15 +114,11 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
 /**
  * Given an array of specs, return only those which can be added to your namespace.
  */
-.filter('isStack', [ '_', function(_) {
-  return function(input, showStandalones) {
-    if (!showStandalones) {
-      return _.filter(input, ['display', 'stack']);
-    }
-
+.filter('display', [ '_', function(_) {
+  return function(input) {
     // Return stacks and standalones
     return _.filter(input, function(o) {
-      return o.display;
+      return o.display && o.display !== 'none';
     }); 
   }
 }])
