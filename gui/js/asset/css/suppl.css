@@ -39,15 +39,14 @@
   }
 }
 
-.caption {
-  min-height: 125px;
-}
-
 .card {
   border-radius:2px !important;
 }
 
 .thumbnail {
+  top:0;
+  position:relative;
+  padding-top:0;
   border: 1px solid gray;
   border-radius:6px;
   width:100%;
