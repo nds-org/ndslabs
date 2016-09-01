@@ -2391,15 +2391,23 @@ func (s *Server) createAdminUser(password string) error {
 
 func (s *Server) DownloadClient(w http.ResponseWriter, r *http.Request) {
 	ops := r.URL.Query().Get("os")
-	w.Header().Set("Content-Disposition", "attachment; filename=ndslabsctl")
-	w.Header().Set("Content-Type", r.Header.Get("Content-Type"))
+	if ops != "darwin" || ops != "linux" {
+		html := "<html><body>" +
+			"<a href=\"download?os=darwin\">ndslabsctl-darwin-amd64</a><br/>" +
+			"<a href=\"download?os=linux\">ndslabsctl-linux-amd64</a><br/>" +
+			"</body></html>"
+		w.Write([]byte(html))
+	} else {
+		w.Header().Set("Content-Disposition", "attachment; filename=ndslabsctl")
+		w.Header().Set("Content-Type", r.Header.Get("Content-Type"))
 
-	reader, err := os.Open("/ndslabsctl/ndslabsctl-" + ops + "-amd64")
-	if err != nil {
-		glog.Error(err)
-		return
+		reader, err := os.Open("/ndslabsctl/ndslabsctl-" + ops + "-amd64")
+		if err != nil {
+			glog.Error(err)
+			return
+		}
+
+		defer reader.Close()
+		io.Copy(w, reader)
 	}
-
-	defer reader.Close()
-	io.Copy(w, reader)
 }
