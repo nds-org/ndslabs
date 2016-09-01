@@ -5,7 +5,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"os/user"
 
 	"github.com/spf13/cobra"
 )
@@ -16,12 +15,7 @@ var logoutCmd = &cobra.Command{
 	Short:  "Logout the current user",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
-		usr, err := user.Current()
-		if err != nil {
-			fmt.Printf("Error looking up current OS user %s\n", err)
-			os.Exit(-1)
-		}
-		path := usr.HomeDir + "/.ndslabsctl"
+		path := os.Getenv("HOME") + "/.ndslabsctl"
 		if _, err := os.Stat(path + "/.passwd"); err == nil {
 			err = os.Remove(path + "/.passwd")
 			if err != nil {
