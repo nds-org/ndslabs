@@ -1,0 +1,26 @@
+<!-- The "Contact Us" View -->
+<section>
+    <h3>Contact Us</h3>
+    
+    <div class="row">
+        <div class="col-sm-12">
+            <p>For account-related support, feel free to e-mail us at <a ng-href="mailto:{{ support.email }}">{{ support.email }}</a></p>
+            <p>For ansychronous help from the community at-large, post on our <a ng-href="{{ support.forum }}">Google Group</a></p>
+            <p>For quick real-time chat with the support team, chat with us on <a ng-href="{{ support.chat }}">Gitter</a></p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-sm-12">
+            <form>
+                <select class="form-control" ng-model="selectedType" required>
+                    <option ng-repeat="type in types" value="{{ type.value }}">{{ type.label }}</option>
+                </select>
+                
+                <textarea class="form-control" type="text" ng-model="message" placeholder="{{ selectedType.placeholder }}" required></textarea>
+                
+                <button class="btn btn-lg btn-primary pull-right" type="submit" ng-disabled="!selectedType || !message" ng-click="submitFeedback(selectedType, message)">Submit Feedback</button>
+            </form>
+        </div>
+    </div>
+</section>
