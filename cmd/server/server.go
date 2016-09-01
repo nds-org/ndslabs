@@ -2391,7 +2391,7 @@ func (s *Server) createAdminUser(password string) error {
 
 func (s *Server) DownloadClient(w http.ResponseWriter, r *http.Request) {
 	ops := r.URL.Query().Get("os")
-	if ops != "darwin" || ops != "linux" {
+	if ops != "darwin" && ops != "linux" {
 		html := "<html><body>" +
 			"<a href=\"download?os=darwin\">ndslabsctl-darwin-amd64</a><br/>" +
 			"<a href=\"download?os=linux\">ndslabsctl-linux-amd64</a><br/>" +
