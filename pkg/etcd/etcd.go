@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/ndslabs/apiserver/crypto"
-	api "github.com/ndslabs/apiserver/types"
+	"github.com/ndslabs/apiserver/pkg/crypto"
+	api "github.com/ndslabs/apiserver/pkg/types"
 	"golang.org/x/net/context"
 
 	"github.com/coreos/etcd/client"

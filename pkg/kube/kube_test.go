@@ -3,8 +3,8 @@ package kube_test
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ndslabs/apiserver/kube"
-	ndsapi "github.com/ndslabs/apiserver/types"
+	"github.com/ndslabs/apiserver/pkg/kube"
+	ndsapi "github.com/ndslabs/apiserver/pkg/types"
 	"io/ioutil"
 	"testing"
 )

@@ -16,8 +16,8 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/ndslabs/apiserver/events"
-	ndsapi "github.com/ndslabs/apiserver/types"
+	"github.com/ndslabs/apiserver/pkg/events"
+	ndsapi "github.com/ndslabs/apiserver/pkg/types"
 	"golang.org/x/net/websocket"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/resource"
