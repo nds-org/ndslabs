@@ -1,25 +1,46 @@
 <!-- The "Contact Us" View -->
 <section>
-    <h3>Contact Us</h3>
+    <h2>Contact Us</h2>
     
     <div class="row">
         <div class="col-sm-12">
             <p>For account-related support, feel free to e-mail us at <a ng-href="mailto:{{ support.email }}">{{ support.email }}</a></p>
-            <p>For ansychronous help from the community at-large, post on our <a ng-href="{{ support.forum }}">Google Group</a></p>
-            <p>For quick real-time chat with the support team, chat with us on <a ng-href="{{ support.chat }}">Gitter</a></p>
+            <p>For asynchronous help from the community at-large, search or post on our <a ng-href="{{ support.forum }}">Google Group</a></p>
+            <p>For quick real-time help from the support team and community, chat with us on <a ng-href="{{ support.chat }}">Gitter</a></p>
         </div>
     </div>
     
+    <hr>
+    
+    <h4>Request Support</h4>
+    <p>For your convenience, we have included a form below that will format an e-mail to the support team on your behalf.</p>
+    <p>Please include as much detail as possible when submitting your request.</p>
+    
     <div class="row">
         <div class="col-sm-12">
-            <form>
-                <select class="form-control" ng-model="selectedType" required>
+            <form name="supportForm">
+              <div class="form-group">
+                <label for="typeField">Type of Request</label>
+                <select class="form-control" id="typeField" name="typeField" ng-model="selectedType" required>
                     <option ng-repeat="type in types" value="{{ type.value }}">{{ type.label }}</option>
                 </select>
                 
-                <textarea class="form-control" type="text" ng-model="message" placeholder="{{ selectedType.placeholder }}" required></textarea>
+                <ng-messages class="alert-danger" role="alert" for="supportForm.typeField.$error">
+                    <ng-message when="required">You must select a type of support.</ng-message>
+                </ng-messages>
+              </div>
                 
-                <button class="btn btn-lg btn-primary pull-right" type="submit" ng-disabled="!selectedType || !message" ng-click="submitFeedback(selectedType, message)">Submit Feedback</button>
+              <div class="form-group">
+                <label for="messageField">Message</label>
+                <textarea class="form-control" id="messageField" name="messageField" type="text" ng-model="message" placeholder="{{ selectedType.placeholder }}" required ng-minlength="40"></textarea>
+                
+                <ng-messages class="alert-danger" role="alert" for="supportForm.messageField.$error">
+                    <ng-message when="required">You must attach a message to your support request.</ng-message>
+                    <ng-message when="minlength">Your message must be at least 40 characters.</ng-message>
+                </ng-messages>
+              </div>
+              
+              <button class="btn btn-primary pull-right" type="submit" ng-disabled="supportForm.$error" ng-click="submitFeedback(selectedType, message)"><i class="fa fa-fw fa-send"></i></button>
             </form>
         </div>
     </div>
