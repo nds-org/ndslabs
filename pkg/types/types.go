@@ -225,7 +225,7 @@ type Term struct {
 type SupportRequest struct {
 	Type      SupportRequestType `json:"type"`
 	Message   string             `json:"message"`
-	Anonymous bool               `json:"bool"`
+	Anonymous bool               `json:"anonymous"`
 }
 
 type SupportRequestType string
