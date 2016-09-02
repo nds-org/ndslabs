@@ -152,7 +152,7 @@ func main() {
 		glog.Fatal(err)
 	}
 
-	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.SupportEmail)
+	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.SupportEmail, cfg.Server.Origin)
 	if err != nil {
 		glog.Errorf("Error in email server configuration\n")
 		glog.Fatal(err)
@@ -278,6 +278,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 				strings.HasPrefix(request.URL.Path, s.prefix+"configs") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"check_token") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"refresh_token") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"support") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"check_console")
 		},
 		IfTrue: jwt,
@@ -321,6 +322,8 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Get(s.prefix+"vocabulary/:name", s.GetVocabulary),
 		rest.Put(s.prefix+"stacks/:sid/rename", s.RenameStack),
 		rest.Put(s.prefix+"change_password", s.ChangePassword),
+		rest.Post(s.prefix+"support", s.PostSupport),
+		rest.Get(s.prefix+"contact", s.GetContact),
 	)
 
 	router, err := rest.MakeRouter(routes...)
@@ -429,14 +432,22 @@ func (s *Server) initExistingAccounts() {
 
 func (s *Server) GetPaths(w rest.ResponseWriter, r *rest.Request) {
 	paths := []string{}
+	paths = append(paths, s.prefix+"accounts")
 	paths = append(paths, s.prefix+"authenticate")
+	paths = append(paths, s.prefix+"change_password")
 	paths = append(paths, s.prefix+"configs")
 	paths = append(paths, s.prefix+"console")
-	paths = append(paths, s.prefix+"accounts")
+	paths = append(paths, s.prefix+"contact")
+	paths = append(paths, s.prefix+"logs")
 	paths = append(paths, s.prefix+"register")
+	paths = append(paths, s.prefix+"reset")
 	paths = append(paths, s.prefix+"services")
+	paths = append(paths, s.prefix+"stacks")
+	paths = append(paths, s.prefix+"start")
+	paths = append(paths, s.prefix+"stop")
+	paths = append(paths, s.prefix+"support")
 	paths = append(paths, s.prefix+"version")
-
+	paths = append(paths, s.prefix+"vocabulary")
 	w.WriteJson(&paths)
 }
 
@@ -2477,4 +2488,42 @@ func (s *Server) createAdminUser(password string) error {
 	}
 
 	return nil
+}
+
+func (s *Server) PostSupport(w rest.ResponseWriter, r *rest.Request) {
+	userId := s.getUser(r)
+
+	request := api.SupportRequest{}
+	err := r.DecodeJsonPayload(&request)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	account, err := s.etcd.GetAccount(userId)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = s.email.SendSupportEmail(account.Name, account.EmailAddress, string(request.Type), request.Message, request.Anonymous)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	return
+
+}
+
+func (s *Server) GetContact(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteJson(map[string]string{
+		"email": s.email.SupportEmail,
+		"forum": "https://groups.google.com/forum/#!forum/ndslabs",
+		"chat":  "https://gitter.im/nds-org/ndslabs",
+	})
 }
