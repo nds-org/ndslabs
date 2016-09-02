@@ -113,7 +113,6 @@ type Account struct {
 	Namespace      string                `json:"namespace"`
 	EmailAddress   string                `json:"email"`
 	Password       string                `json:"password"`
-	Salt           string                `json:"salt"`
 	ResourceLimits AccountResourceLimits `json:"resourceLimits"`
 	ResourceUsage  ResourceUsage         `json:"resourceUsage"`
 	Status         AccountStatus         `json:"status"`
@@ -177,6 +176,17 @@ type Stack struct {
 	Status      string         `json:"status"`
 	CreatedTime int            `json:"createdTime"`
 	UpdatedTime int            `json:"updateTime"`
+	Secure      bool           `json:"secure"`
+}
+
+func (s *Stack) GetStackService(stackServiceId string) *StackService {
+	for i := range s.Services {
+		stackService := &s.Services[i]
+		if stackService.Id == stackServiceId {
+			return stackService
+		}
+	}
+	return nil
 }
 
 type StackService struct {
