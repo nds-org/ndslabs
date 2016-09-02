@@ -221,3 +221,24 @@ type Term struct {
 	Name       string `json:"name"`
 	Definition string `json:"definition"`
 }
+
+type SupportRequest struct {
+	Type      SupportRequestType `json:"type"`
+	Message   string             `json:"message"`
+	Anonymous bool               `json:"bool"`
+}
+
+type SupportRequestType string
+
+const (
+	BugRequestType     SupportRequestType = "bug"
+	WishRequestType    SupportRequestType = "wish"
+	HelpRequestType    SupportRequestType = "help"
+	CommentRequestType SupportRequestType = "comment"
+)
+
+type ContactInfo struct {
+	SupportEmail string `json:"supportEmail"`
+	GitterURL    string `json:"gitterURL"`
+	GroupsURL    string `json:"groupsURL"`
+}
