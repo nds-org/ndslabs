@@ -52,6 +52,29 @@ func (s *EmailHelper) SendVerificationEmail(name string, address string, url str
 	return nil
 }
 
+// Send email address verified
+func (s *EmailHelper) SendVerifiedEmail(name string, address string) error {
+
+	data := struct {
+		Name         string
+		SupportEmail string
+	}{
+		Name:         name,
+		SupportEmail: s.supportEmail,
+	}
+
+	subject := "Registration pending"
+	msg, err := s.parseTemplate("templates/verified-email.html", data)
+	if err != nil {
+		return err
+	}
+	_, err = s.sendEmail(address, subject, msg)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Send new account request email
 func (s *EmailHelper) SendNewAccountEmail(account *api.Account, approveUrl string, denyUrl string) error {
 
@@ -119,18 +142,20 @@ func (s *EmailHelper) SendStatusEmail(name string, address string, url string, a
 }
 
 // Send password recovery email
-func (s *EmailHelper) SendRecoveryEmail(name string, email string, recoveryUrl string) error {
+func (s *EmailHelper) SendRecoveryEmail(name string, email string, recoveryUrl string, unapproved bool) error {
 
 	data := struct {
 		Name         string
 		Email        string
 		Link         string
 		SupportEmail string
+		Unapproved   bool
 	}{
 		Name:         name,
 		Email:        email,
 		Link:         recoveryUrl,
 		SupportEmail: s.supportEmail,
+		Unapproved:   unapproved,
 	}
 
 	subject := "NDS Labs password recovery request"
@@ -138,7 +163,7 @@ func (s *EmailHelper) SendRecoveryEmail(name string, email string, recoveryUrl s
 	if err != nil {
 		return err
 	}
-	_, err = s.sendEmail(s.supportEmail, subject, msg)
+	_, err = s.sendEmail(email, subject, msg)
 	if err != nil {
 		return err
 	}

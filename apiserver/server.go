@@ -697,6 +697,14 @@ func (s *Server) VerifyAccount(w rest.ResponseWriter, r *rest.Request) {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		err = s.email.SendVerifiedEmail(account.Name, account.EmailAddress)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		approveUrl := r.BaseUrl().String() + "/api/register/approve?t=" + account.Token + "&u=" + account.Namespace
 		denyUrl := r.BaseUrl().String() + "/api/register/deny?t=" + account.Token + "&u=" + account.Namespace
 		err = s.email.SendNewAccountEmail(account, approveUrl, denyUrl)
@@ -2372,7 +2380,6 @@ func (s *Server) ChangePassword(w rest.ResponseWriter, r *rest.Request) {
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
 	}
 
 	if ok {
@@ -2380,12 +2387,9 @@ func (s *Server) ChangePassword(w rest.ResponseWriter, r *rest.Request) {
 		if err != nil {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
 		}
-		w.WriteHeader(http.StatusOK)
-	} else {
-		w.WriteHeader(http.StatusConflict)
 	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Server) ResetPassword(w rest.ResponseWriter, r *rest.Request) {
@@ -2404,8 +2408,14 @@ func (s *Server) ResetPassword(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	resetUrl := s.origin + "/#/recover?t=" + token
-	err = s.email.SendRecoveryEmail(account.Name, account.EmailAddress, resetUrl)
+	if account.Status == api.AccountStatusUnverified {
+		verifyUrl := s.origin + "/#/register/verify?t=" + account.Token + "&u=" + account.Namespace
+		err = s.email.SendVerificationEmail(account.Name, account.EmailAddress, verifyUrl)
+	} else {
+		resetUrl := s.origin + "/#/recover?t=" + token
+		err = s.email.SendRecoveryEmail(account.Name, account.EmailAddress, resetUrl, (account.Status == api.AccountStatusUnapproved))
+	}
+
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
