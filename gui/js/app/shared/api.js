@@ -1381,7 +1381,7 @@ angular.module('ndslabs-api', [])
 
              * @method
              * @name ApiServer#postSupport
-             * @param {} account - Support request definition
+             * @param {} support - Support request definition
              * 
              */
             ApiServer.prototype.postSupport = function(parameters) {
@@ -1400,12 +1400,12 @@ angular.module('ndslabs-api', [])
 
                 headers['Content-Type'] = ['application/json'];
 
-                if (parameters['account'] !== undefined) {
-                    body = parameters['account'];
+                if (parameters['support'] !== undefined) {
+                    body = parameters['support'];
                 }
 
-                if (parameters['account'] === undefined) {
-                    deferred.reject(new Error('Missing required  parameter: account'));
+                if (parameters['support'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: support'));
                     return deferred.promise;
                 }
 
