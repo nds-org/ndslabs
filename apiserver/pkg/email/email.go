@@ -62,7 +62,7 @@ func (s *EmailHelper) SendVerifiedEmail(name string, address string) error {
 		SupportEmail string
 	}{
 		Name:         name,
-		SupportEmail: s.supportEmail,
+		SupportEmail: s.SupportEmail,
 	}
 
 	subject := "Registration pending"
