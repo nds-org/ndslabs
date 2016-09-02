@@ -34,7 +34,7 @@
     
     <div class="row">
         <div class="col-sm-12">
-            <form name="supportForm">
+            <form name="forms['supportForm']">
               <div class="form-group">
                 <label for="typeField">Type of Request</label>
                 <div class="input-group">
@@ -50,27 +50,30 @@
                   </span>
                 </div>
                 
-                <ng-messages class="alert-danger" role="alert" for="supportForm.typeField.$error">
+                <ng-messages class="alert-danger" role="alert" for="forms['supportForm'].typeField.$error">
                     <ng-message when="required">You must select a type of support to request.</ng-message>
                 </ng-messages>
               </div>
                 
               <div class="form-group" ng-class="{ 
-                  'has-error has-feedback': !supportForm.messageField.$pristine && supportForm.messageField.$invalid, 
-                  'has-success has-feedback': !supportForm.messageField.$pristine && supportForm.messageField.$valid }">
+                  'has-error has-feedback': !forms['supportForm'].messageField.$pristine && forms['supportForm'].messageField.$invalid, 
+                  'has-success has-feedback': !forms['supportForm'].messageField.$pristine && forms['supportForm'].messageField.$valid }">
                 <label for="messageField">Message</label>
                 <textarea class="form-control" id="messageField" name="messageField" type="text" ng-model="request.message" placeholder="{{ _.find(types, [ 'value', request.type ]).placeholder }}" required ng-minlength="40"></textarea>
                 
-                <span class="form-control-feedback glyphicon" ng-if="!supportForm.messageField.$pristine"
-                    ng-class="{ 'glyphicon-remove': supportForm.messageField.$invalid, 'glyphicon-ok': supportForm.messageField.$valid }"></span>
+                <span class="form-control-feedback glyphicon" ng-if="!forms['supportForm'].messageField.$pristine"
+                    ng-class="{ 'glyphicon-remove': forms['supportForm'].messageField.$invalid, 'glyphicon-ok': forms['supportForm'].messageField.$valid }"></span>
                 
-                <ng-messages class="alert-danger" role="alert" for="supportForm.messageField.$error" ng-if="!supportForm.messageField.$pristine">
+                <ng-messages class="alert-danger" role="alert" for="forms['supportForm'].messageField.$error" ng-if="!forms['supportForm'].messageField.$pristine">
                     <ng-message when="required">You must attach a message to your support request.</ng-message>
                     <ng-message when="minlength">Your message must be at least 40 characters.</ng-message>
                 </ng-messages>
               </div>
               
-              <button class="btn btn-primary pull-right" type="submit" ng-disabled="!supportForm.$valid" ng-click="submitFeedback()"><i class="fa fa-fw fa-send"></i></button>
+              <button class="btn btn-primary pull-right" ng-class="{ 'btn-primary': status !== 'sent', 'btn-success': status === 'sent' }" 
+                    type="submit" ng-disabled="!forms['supportForm'].$valid || status !== 'unsent'" ng-click="submitFeedback()">
+                <i class="fa fa-fw" ng-class="{ 'fa-send': status === 'unsent', 'fa-spinner fa-spin': status === 'sending', 'fa-check': status === 'sent' }" ></i>
+              </button>
             </form>
         </div>
     </div>
