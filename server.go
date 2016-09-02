@@ -437,6 +437,7 @@ func (s *Server) GetPaths(w rest.ResponseWriter, r *rest.Request) {
 	paths = append(paths, s.prefix+"change_password")
 	paths = append(paths, s.prefix+"configs")
 	paths = append(paths, s.prefix+"console")
+	paths = append(paths, s.prefix+"contact")
 	paths = append(paths, s.prefix+"logs")
 	paths = append(paths, s.prefix+"register")
 	paths = append(paths, s.prefix+"reset")
@@ -2419,7 +2420,7 @@ func (s *Server) PostSupport(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	err = s.email.SendSupportEmail(account.Name, account.EmailAddress, string(request.Type), request.Message)
+	err = s.email.SendSupportEmail(account.Name, account.EmailAddress, string(request.Type), request.Message, request.Anonymous)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
