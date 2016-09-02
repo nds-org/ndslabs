@@ -450,7 +450,7 @@ paths:
       description: |
         Submit a support request
       parameters:
-        - name: account
+        - name: support
           in: body
           description: Support request definition
           schema:
