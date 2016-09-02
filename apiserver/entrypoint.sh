@@ -81,7 +81,7 @@ Password=admin
 [Email]
 Host=$SMTP_HOST
 Port=$SMTP_PORT
-SupportEmail=NDS Labs <$SUPPORT_EMAIL>
+SupportEmail=$SUPPORT_EMAIL
 
 EOF
 

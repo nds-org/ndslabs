@@ -150,8 +150,12 @@ func (s *EmailHelper) SendRecoveryEmail(name string, email string, recoveryUrl s
 }
 
 // Send support email
-func (s *EmailHelper) SendSupportEmail(name string, email string, messageType string, message string) error {
+func (s *EmailHelper) SendSupportEmail(name string, email string, messageType string, message string, anon bool) error {
 
+	if anon {
+		name = "anonymous"
+		email = "anonymous"
+	}
 	data := struct {
 		Name         string
 		Email        string
@@ -181,7 +185,7 @@ func (s *EmailHelper) SendSupportEmail(name string, email string, messageType st
 // HTML message helper
 func (s *EmailHelper) sendEmail(to string, subject string, body string) (bool, error) {
 	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
-	from := "From: " + s.SupportEmail + "\n"
+	from := "From: NDS Labs <" + s.SupportEmail + ">\n"
 	subject = "Subject: " + subject + "\n"
 	msg := []byte(from + subject + mime + "\n" + body)
 
