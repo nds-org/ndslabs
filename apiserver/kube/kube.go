@@ -739,7 +739,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 	return &k8svc
 }
 
-func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec, links *map[string]ServiceAddrPort, sharedEnv *map[string]string) *api.ReplicationController {
+func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec, links *map[string]ServiceAddrPort, sharedEnv *map[string]string, timeout int32) *api.ReplicationController {
 
 	k8rc := api.ReplicationController{}
 	// Replication controller
@@ -872,29 +872,14 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 
 	if spec.ReadyProbe.Path != "" {
 		if spec.ReadyProbe.Type == "http" {
-			k8probe := &api.Probe{
-				Handler: api.Handler{
-					HTTPGet: &api.HTTPGetAction{
-						Path:   spec.ReadyProbe.Path,
-						Port:   intstr.FromInt(spec.ReadyProbe.Port),
-						Scheme: api.URISchemeHTTP,
-					},
-				},
-				InitialDelaySeconds: spec.ReadyProbe.InitialDelay,
-				TimeoutSeconds:      spec.ReadyProbe.Timeout,
-			}
-			k8template.Spec.Containers[0].ReadinessProbe = k8probe
+			k8template.Spec.Containers[0].ReadinessProbe = k.createHttpProbe(spec.ReadyProbe.Path, spec.ReadyProbe.Port,
+				spec.ReadyProbe.InitialDelay)
+			k8template.Spec.Containers[0].LivenessProbe = k.createHttpProbe(spec.ReadyProbe.Path,
+				spec.ReadyProbe.Port, timeout)
 		} else if spec.ReadyProbe.Type == "tcp" {
-			k8probe := &api.Probe{
-				Handler: api.Handler{
-					TCPSocket: &api.TCPSocketAction{
-						Port: intstr.FromInt(spec.ReadyProbe.Port),
-					},
-				},
-				InitialDelaySeconds: spec.ReadyProbe.InitialDelay,
-				TimeoutSeconds:      spec.ReadyProbe.Timeout,
-			}
-			k8template.Spec.Containers[0].ReadinessProbe = k8probe
+			k8template.Spec.Containers[0].ReadinessProbe = k.createTcpProbe(spec.ReadyProbe.Port,
+				spec.ReadyProbe.InitialDelay)
+			k8template.Spec.Containers[0].LivenessProbe = k.createTcpProbe(spec.ReadyProbe.Port, timeout)
 		}
 	}
 
@@ -1487,4 +1472,28 @@ func (k *KubeHelper) ExecCommand(pid string, pod string, command []string) (stri
 	localErr := &bytes.Buffer{}
 	err = e.Stream(remotecommandserver.SupportedStreamingProtocols, nil, localOut, localErr, false)
 	return localOut.String(), err
+}
+
+func (k *KubeHelper) createHttpProbe(path string, port int, initialDelay int32) *api.Probe {
+	return &api.Probe{
+		Handler: api.Handler{
+			HTTPGet: &api.HTTPGetAction{
+				Path:   path,
+				Port:   intstr.FromInt(port),
+				Scheme: api.URISchemeHTTP,
+			},
+		},
+		InitialDelaySeconds: initialDelay,
+	}
+}
+
+func (k *KubeHelper) createTcpProbe(port int, initialDelay int32) *api.Probe {
+	return &api.Probe{
+		Handler: api.Handler{
+			TCPSocket: &api.TCPSocketAction{
+				Port: intstr.FromInt(port),
+			},
+		},
+		InitialDelaySeconds: initialDelay,
+	}
 }
