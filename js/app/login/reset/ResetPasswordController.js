@@ -28,7 +28,6 @@ angular
    * Send a reset link to the e-mail associated with the given accountId (username / namespace)
    */
   $scope.sendResetLink = function() {
-    console.log("Resetting: " + $scope.password);
     if (!$scope.password.accountId) {
       return;
     }

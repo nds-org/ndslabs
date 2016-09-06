@@ -1376,6 +1376,86 @@ angular.module('ndslabs-api', [])
 
                 return deferred.promise;
             };
+            /**
+             * Submit a support request
+
+             * @method
+             * @name ApiServer#postSupport
+             * @param {} support - Support request definition
+             * 
+             */
+            ApiServer.prototype.postSupport = function(parameters) {
+                if (parameters === undefined) {
+                    parameters = {};
+                }
+                var deferred = $q.defer();
+
+                var domain = this.domain;
+                var path = '/support';
+
+                var body;
+                var queryParameters = {};
+                var headers = {};
+                var form = {};
+
+                headers['Content-Type'] = ['application/json'];
+
+                if (parameters['support'] !== undefined) {
+                    body = parameters['support'];
+                }
+
+                if (parameters['support'] === undefined) {
+                    deferred.reject(new Error('Missing required  parameter: support'));
+                    return deferred.promise;
+                }
+
+                if (parameters.$queryParameters) {
+                    Object.keys(parameters.$queryParameters)
+                        .forEach(function(parameterName) {
+                            var parameter = parameters.$queryParameters[parameterName];
+                            queryParameters[parameterName] = parameter;
+                        });
+                }
+
+                this.request('POST', domain + path, parameters, body, headers, queryParameters, form, deferred);
+
+                return deferred.promise;
+            };
+            /**
+             * Get contact information
+
+             * @method
+             * @name ApiServer#getContact
+             * 
+             */
+            ApiServer.prototype.getContact = function(parameters) {
+                if (parameters === undefined) {
+                    parameters = {};
+                }
+                var deferred = $q.defer();
+
+                var domain = this.domain;
+                var path = '/contact';
+
+                var body;
+                var queryParameters = {};
+                var headers = {};
+                var form = {};
+
+                headers['Content-Type'] = ['application/json'];
+
+                if (parameters.$queryParameters) {
+                    Object.keys(parameters.$queryParameters)
+                        .forEach(function(parameterName) {
+                            var parameter = parameters.$queryParameters[parameterName];
+                            queryParameters[parameterName] = parameter;
+                        });
+                }
+
+                this.request('GET', domain + path, parameters, body, headers, queryParameters, form, deferred);
+
+                return deferred.promise;
+            };
 
             return ApiServer;
         })();

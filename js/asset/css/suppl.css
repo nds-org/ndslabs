@@ -39,15 +39,14 @@
   }
 }
 
-.caption {
-  min-height: 125px;
-}
-
 .card {
   border-radius:2px !important;
 }
 
 .thumbnail {
+  top:0;
+  position:relative;
+  padding-top:0;
   border: 1px solid gray;
   border-radius:6px;
   width:100%;
@@ -152,6 +151,10 @@ html,body {
   margin-right: 120px;
 }
 
+.support-link {
+  margin: 15px;
+}
+
 .top-margin {
   margin-top:15px;
 }
@@ -234,6 +237,18 @@ html,body {
   border-top:1px dotted lightgray;
 }
 
+#typeField {
+  border-radius: 4px 0 0 4px;
+  -webkit-appearance: none;
+}
+
+#checkboxAddon {
+   margin: 0;
+}
+
+#supportLinks {
+   margin:50px 125px 50px 125px;
+}
 
 
 .showbox {
