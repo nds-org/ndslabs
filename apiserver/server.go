@@ -1790,7 +1790,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 				failed++
 			}
 		}
-		time.Sleep(time.Second * 3)
+
 		if timeWait > s.serviceTimeout {
 			// Service has taken too long to startup
 			glog.V(4).Infof("Stack service %s reached timeout, stopping\n", stackService.Id)
@@ -1801,6 +1801,8 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 			failed++
 			break
 		}
+		time.Sleep(time.Second * 3)
+		timeWait += time.Second * 3
 	}
 
 	if failed > 0 {

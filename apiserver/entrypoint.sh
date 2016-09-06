@@ -24,6 +24,10 @@ if [ "$1" = 'apiserver' ]; then
 		TIMEOUT="30"
 	fi
 
+	if [ -z "$SERVICE_TIMEOUT" ]; then 
+		SERVICE_TIMEOUT="600"
+	fi
+
 	if [ -z "$INGRESS" ]; then 
 		INGRESS="NodePort"
 	fi
@@ -59,6 +63,7 @@ VolDir=$VOLUME_PATH
 VolName=$VOLUME_NAME
 SpecsDir=/specs
 Timeout=$TIMEOUT
+ServiceTimeout=$SERVICE_TIMEOUT
 Prefix=$PREFIX
 Ingress=$INGRESS
 Domain=$DOMAIN
