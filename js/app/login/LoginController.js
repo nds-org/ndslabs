@@ -22,7 +22,7 @@ angular
   
   // If we found a token, the user should be sent to the HomePage to check its validity
   var path = $location.path();
-  if (path !== VerifyAccountRoute && path !== ResetPasswordRoute && path !== SignUpRoute && path !== SignUpRoute) {
+  if (path !== VerifyAccountRoute && path !== ResetPasswordRoute && path !== SignUpRoute && path !== ContactUsRoute) {
     if (!$scope.settings.token) {
       $location.path(LoginRoute);
     } else {
