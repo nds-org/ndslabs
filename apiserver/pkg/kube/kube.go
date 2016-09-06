@@ -739,7 +739,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 	return &k8svc
 }
 
-func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec, links *map[string]ServiceAddrPort, sharedEnv *map[string]string) *api.ReplicationController {
+func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, domain string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec, links *map[string]ServiceAddrPort, sharedEnv *map[string]string) *api.ReplicationController {
 
 	k8rc := api.ReplicationController{}
 	// Replication controller
@@ -754,6 +754,8 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 
 	homeDir := "/home/" + ns
 	env := []api.EnvVar{}
+	env = append(env, api.EnvVar{Name: "NDSLABS_HOSTNAME", Value: name + "." + domain})
+	env = append(env, api.EnvVar{Name: "NDSLABS_DOMAIN", Value: domain})
 	env = append(env, api.EnvVar{Name: "NAMESPACE", Value: ns})
 	env = append(env, api.EnvVar{Name: "NDSLABS_HOME", Value: homeDir})
 	env = append(env, api.EnvVar{Name: "TERM", Value: "linux"})
