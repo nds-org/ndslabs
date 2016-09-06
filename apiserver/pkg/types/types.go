@@ -27,6 +27,7 @@ type ServiceSpec struct {
 	Tags                 []string            `json:"tags"`
 	Info                 string              `json:"info"`
 	Privileged           bool                `json:"privileged"`
+	ContextPath          string              `json:"contextPath"`
 }
 
 type ServiceImage struct {
@@ -209,6 +210,8 @@ type Endpoint struct {
 	Port     int32  `json:"port"`
 	NodePort int32  `json:"nodePort"`
 	Protocol string `json:"protocol"`
+	Path     string `json:"path"`
+	URL      string `json:"url"`
 }
 
 type Vocabulary struct {
