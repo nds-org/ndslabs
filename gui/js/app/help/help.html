@@ -43,7 +43,7 @@
                   'has-error has-feedback': !forms['supportForm'].messageField.$pristine && forms['supportForm'].messageField.$invalid, 
                   'has-success has-feedback': !forms['supportForm'].messageField.$pristine && forms['supportForm'].messageField.$valid }">
                 <label for="messageField">Message</label>
-                <textarea class="form-control" id="messageField" name="messageField" type="text" ng-model="request.message" placeholder="{{ _.find(types, [ 'value', request.type ]).placeholder }}" required ng-minlength="40"></textarea>
+                <textarea class="form-control" id="messageField" name="messageField" type="text" ng-model="request.message" placeholder="{{ _.find(types, [ 'value', request.type ]).placeholder }}" required ng-minlength="20"></textarea>
                 
                 <span class="form-control-feedback glyphicon" ng-if="!forms['supportForm'].messageField.$pristine"
                     ng-class="{ 'glyphicon-remove': forms['supportForm'].messageField.$invalid, 'glyphicon-ok': forms['supportForm'].messageField.$valid }"></span>
