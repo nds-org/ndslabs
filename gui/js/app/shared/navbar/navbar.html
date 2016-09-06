@@ -20,6 +20,7 @@
       <div ng-controller="LoginController" ng-show="!settings.token">
         <div class="navbar-collapse collapse" ng-controller="NavbarController">
           <ul class="nav navbar-nav navbar-right">
+            <li><a href="#/contact">Contact Us</a></li>
             <li><a href="#/register">Register</a></li>
             <li><a href="#/login">Login</a></li>
           </ul>
@@ -59,9 +60,9 @@
     	        
                 <img ng-show="loadingSmall.promise.$$state.status === 1" gravatar-src="settings.project.email" gravatar-size="20" style="border-radius:50px;margin-right:10px;" />{{ settings.namespace }} <span class="caret"></span>
                 <ul class="dropdown-menu dropdown-menu-right" ng-class="{ 'open': settings.isOpen }" role="menu">
-                  <li><a ng-href="#/recover?t={{ settings.token }}"><i class="fa fa-fw fa-lock"></i> Change Password</a></li>
+                  <li><a ng-href="#/recover?t={{ settings.token }}"><i class="fa fa-fw fa-unlock-alt"></i> Change Password</a></li>
                   <!--<li><a ng-href="#/faq"><i class="fa fa-fw fa-question-circle"></i> F.A.Q.</a></li>-->
-                  <!--<li><a ng-href="#/faq"><i class="fa fa-fw fa-question-circle"></i> Contact Support</a></li>-->
+                  <li><a href="#/contact"><i class="fa fa-fw fa-question-circle"></i> Contact Us</a></li>
                   <li><a id="dropDownButton" type="button" ng-click="logout()"><i class="fa fa-fw fa-sign-out"></i> Logout</a></li>
                 </ul>
               </a>
