@@ -2292,7 +2292,9 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 					if eventType == "ADDED" {
 						stackService.Status = "starting"
 					} else if eventType == "DELETED" {
-						stackService.Status = "stopped"
+						if stackService.Status != "error" {
+							stackService.Status = "stopped"
+						}
 					}
 				}
 			}
