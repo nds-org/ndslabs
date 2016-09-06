@@ -11,7 +11,7 @@ angular
  
 .controller('HelpController', [ '$scope', '$timeout', 'NdsLabsApi', function($scope, $timeout, NdsLabsApi) {
   $scope.types = [
-    { label: "Request Help", value: "help", placeholder: "Describe a scenario that is causing problems or preventing you from working in NDS Labs..." },
+    { label: "Request Help", value: "help", placeholder: "Describe a specific scenario that is causing problems or preventing you from working in NDS Labs..." },
     { label: "Make a Wish", value: "wish", placeholder: "Describe a change or new feature you would like to see in NDS Labs..." },
     { label: "Report a Bug", value: "bug", placeholder: "Describe unexpected or confusing behavior of NDS Labs..." },
     { label: "General Comment", value: "comment", placeholder: "Any notes or comments you would like to forward to the development team of NDS Labs..." }
@@ -20,8 +20,7 @@ angular
   $scope.forms = {};
   $scope.status = "unsent";
   
-  var resetForm;
-  (resetForm = function() {
+  ($scope.resetForm = function() {
     return $scope.request = {
         "anonymous": false, 
         "type": $scope.types[0].value, 
@@ -36,7 +35,13 @@ angular
   });
     
   NdsLabsApi.getContact().then(function(contact) {
-      $scope.support = contact;
+    $scope.support = contact;
+      
+    $scope.links = [
+      { id: "gitter", label: "Gitter", url: contact.chat, icon: "fa-comments", description: "Chat with the support team and community" },
+      { id: "ggroup", label: "Google Group", url: contact.forum, icon: "fa-bullhorn", description: "Discuss with the support team and community" },
+      /* { id: "email", label: "E-mail", url:  "mailto:" + $scope.support.email, icon: "fa-message", description: "Account-related support" }, */
+    ];
   });
   
   $scope.submitFeedback = function() {
@@ -46,7 +51,7 @@ angular
     
     $scope.status = "sending";
     return NdsLabsApi.postSupport({ support: $scope.request }).then(function(data) {
-      resetForm();
+      $scope.resetForm();
       $scope.forms['supportForm'].messageField.$pristine = true;
       $scope.status = "sent";
       $timeout(function() {

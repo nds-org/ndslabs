@@ -1,39 +1,23 @@
 <!-- The "Contact Us" View -->
 <section>
     <div class="row text-center" id="supportLinks">
-        <div class="col-sm-4 text-center">
-          <h3>Google Group</h3>
-          <a type="button" class="btn btn-lg btn-default support-link" ng-href="{{ support.forum }}">
-              <i class="fa fa-fw fa-3x fa-bullhorn"></i>
+        <div class="col-sm-{{ 12 / links.length }} text-center" ng-repeat="link in links track by link.id">
+          <h3>{{ link.label }}</h3>
+          <a type="button" class="btn btn-lg btn-default support-link" target="_blank" ng-href="{{ link.url }}">
+              <i class="fa fa-fw fa-3x {{ link.icon }}"></i>
           </a>
           
-          <p>Discuss with the support team and community</p>
-        </div>
-        <div class="col-sm-4 text-center">
-          <h3>Gitter</h3>
-          <a type="button" class="btn btn-lg btn-default support-link" ng-href="{{ support.chat }}">
-              <i class="fa fa-fw fa-3x fa-comments"></i>
-          </a>
-          
-          <p>Chat with the support team and community</p>
-        </div>
-        <div class="col-sm-4 text-center">
-          
-          <h3>E-mail</h3>
-          <a type="button" class="btn btn-lg btn-default support-link" ng-href="mailto:{{ support.email }}">
-              <i class="fa fa-fw fa-3x fa-envelope"></i>
-          </a>
-          <p>For account-related support</p>
+          <p>{{ link.description }}</p>
         </div>
     </div>
     
     <hr>
     
-    <h4>Support</h4>
-    <p>Please include as much detail as possible when submitting your request.</p>
+    <div class="row" ng-controller="LoginController" ng-show="settings.token">
+        <div class="col-sm-12" ng-controller="HelpController">
+            <h4>Feedback and Support</h4>
+            <p>Please include as much detail as possible when submitting your request.</p>
     
-    <div class="row">
-        <div class="col-sm-12">
             <form name="forms['supportForm']">
               <div class="form-group">
                 <label for="typeField">Type of Request</label>
@@ -44,7 +28,7 @@
                   <span class="input-group-addon">
                     <div class="checkbox" id="checkboxAddon">
                       <label>
-                        <input id="anonymousInput" name="anonymousInput" type="checkbox" ng-disabled="request.type === 'help'" ng-model="request.anonymous"> Anonymous
+                        <input id="anonymousInput" name="anonymousInput" type="checkbox" ng-disabled="request.type === 'help'" ng-model="request.anonymous"> Send message anonymously?
                       </label>
                     </div>
                   </span>
