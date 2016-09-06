@@ -1798,6 +1798,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 			if err != nil {
 				glog.Error(err)
 			}
+			stackService.Status = "error"
 			failed++
 			break
 		}
