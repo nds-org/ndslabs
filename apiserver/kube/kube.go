@@ -873,13 +873,13 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	if spec.ReadyProbe.Path != "" {
 		if spec.ReadyProbe.Type == "http" {
 			k8template.Spec.Containers[0].ReadinessProbe = k.createHttpProbe(spec.ReadyProbe.Path, spec.ReadyProbe.Port,
-				spec.ReadyProbe.InitialDelay)
+				spec.ReadyProbe.InitialDelay, 3)
 			k8template.Spec.Containers[0].LivenessProbe = k.createHttpProbe(spec.ReadyProbe.Path,
-				spec.ReadyProbe.Port, timeout)
+				spec.ReadyProbe.Port, timeout, 1)
 		} else if spec.ReadyProbe.Type == "tcp" {
 			k8template.Spec.Containers[0].ReadinessProbe = k.createTcpProbe(spec.ReadyProbe.Port,
-				spec.ReadyProbe.InitialDelay)
-			k8template.Spec.Containers[0].LivenessProbe = k.createTcpProbe(spec.ReadyProbe.Port, timeout)
+				spec.ReadyProbe.InitialDelay, 3)
+			k8template.Spec.Containers[0].LivenessProbe = k.createTcpProbe(spec.ReadyProbe.Port, timeout, 1)
 		}
 	}
 
@@ -1474,7 +1474,7 @@ func (k *KubeHelper) ExecCommand(pid string, pod string, command []string) (stri
 	return localOut.String(), err
 }
 
-func (k *KubeHelper) createHttpProbe(path string, port int, initialDelay int32) *api.Probe {
+func (k *KubeHelper) createHttpProbe(path string, port int, initialDelay int32, threshold int32) *api.Probe {
 	return &api.Probe{
 		Handler: api.Handler{
 			HTTPGet: &api.HTTPGetAction{
@@ -1484,10 +1484,11 @@ func (k *KubeHelper) createHttpProbe(path string, port int, initialDelay int32) 
 			},
 		},
 		InitialDelaySeconds: initialDelay,
+		FailureThreshold:    threshold,
 	}
 }
 
-func (k *KubeHelper) createTcpProbe(port int, initialDelay int32) *api.Probe {
+func (k *KubeHelper) createTcpProbe(port int, initialDelay int32, threshold int32) *api.Probe {
 	return &api.Probe{
 		Handler: api.Handler{
 			TCPSocket: &api.TCPSocketAction{
@@ -1495,5 +1496,6 @@ func (k *KubeHelper) createTcpProbe(port int, initialDelay int32) *api.Probe {
 			},
 		},
 		InitialDelaySeconds: initialDelay,
+		FailureThreshold:    threshold,
 	}
 }
