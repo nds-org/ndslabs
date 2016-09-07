@@ -1790,6 +1790,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 				failed++
 			}
 		}
+		time.Sleep(time.Second * 3)
 	}
 
 	if failed > 0 {
