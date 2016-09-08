@@ -1780,6 +1780,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	ready := 0
 	failed := 0
 
+	timeWait := time.Second * 0
 	for (ready + failed) < len(stack.Services) {
 		stack, _ := s.etcd.GetStack(userId, stack.Id)
 		for _, stackService := range stack.Services {
@@ -1790,7 +1791,20 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 				failed++
 			}
 		}
+
+		if timeWait > s.serviceTimeout {
+			// Service has taken too long to startup
+			glog.V(4).Infof("Stack service %s reached timeout, stopping\n", stackService.Id)
+			err := s.kube.StopController(userId, stackService.Id)
+			if err != nil {
+				glog.Error(err)
+			}
+			stackService.Status = "timeout"
+			failed++
+			break
+		}
 		time.Sleep(time.Second * 3)
+
 	}
 
 	if failed > 0 {
@@ -2279,7 +2293,11 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 					if eventType == "ADDED" {
 						stackService.Status = "starting"
 					} else if eventType == "DELETED" {
-						stackService.Status = "stopped"
+						if stackService.Status == "timeout" {
+							stackService.Status = "error"
+						} else {
+							stackService.Status = "stopped"
+						}
 					}
 				}
 			}
