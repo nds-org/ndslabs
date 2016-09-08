@@ -1920,7 +1920,7 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 			if stackService.Status == "ready" {
 				ready[stackService.Service] = 1
 			}
-			if stackService.Status == "error" {
+			if stackService.Status == "error" || stackService.Status == "timeout" {
 				errors[stackService.Service] = 1
 			}
 		}
