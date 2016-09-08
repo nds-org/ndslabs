@@ -1930,7 +1930,7 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 	stack, _ = s.getStackWithStatus(userId, sid)
 	stack.Status = "started"
 	for _, stackService := range stack.Services {
-		if stackService.Status == "error" {
+		if stackService.Status == "error" || stackService.Status == "timeout" {
 			stack.Status = "error"
 		}
 	}
