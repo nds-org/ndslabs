@@ -739,7 +739,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 	return &k8svc
 }
 
-func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec, links *map[string]ServiceAddrPort, sharedEnv *map[string]string, timeout int32) *api.ReplicationController {
+func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec, links *map[string]ServiceAddrPort, sharedEnv *map[string]string) *api.ReplicationController {
 
 	k8rc := api.ReplicationController{}
 	// Replication controller
@@ -874,12 +874,13 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 		if spec.ReadyProbe.Type == "http" {
 			k8template.Spec.Containers[0].ReadinessProbe = k.createHttpProbe(spec.ReadyProbe.Path, spec.ReadyProbe.Port,
 				spec.ReadyProbe.InitialDelay, 3)
-			k8template.Spec.Containers[0].LivenessProbe = k.createHttpProbe(spec.ReadyProbe.Path,
-				spec.ReadyProbe.Port, timeout, 2)
+			//k8template.Spec.Containers[0].LivenessProbe = k.createHttpProbe(spec.ReadyProbe.Path,
+			//	spec.ReadyProbe.Port, spec.ReadyProbe.Timeout, 2)
 		} else if spec.ReadyProbe.Type == "tcp" {
 			k8template.Spec.Containers[0].ReadinessProbe = k.createTcpProbe(spec.ReadyProbe.Port,
 				spec.ReadyProbe.InitialDelay, 3)
-			k8template.Spec.Containers[0].LivenessProbe = k.createTcpProbe(spec.ReadyProbe.Port, timeout, 2)
+			//k8template.Spec.Containers[0].LivenessProbe = k.createTcpProbe(spec.ReadyProbe.Port,
+			//	spec.ReadyProbe.Timeout, 2)
 		}
 	}
 

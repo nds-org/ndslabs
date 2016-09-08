@@ -48,22 +48,20 @@ type Server struct {
 	memDefault     int
 	storageDefault int
 	origin         string
-	serviceTimeout time.Duration
 }
 
 type Config struct {
 	Server struct {
-		Port           string
-		Origin         string
-		VolDir         string
-		VolName        string
-		SpecsDir       string
-		VolumeSource   string
-		Timeout        int
-		ServiceTimeout int
-		Prefix         string
-		Domain         string
-		Ingress        IngressType
+		Port         string
+		Origin       string
+		VolDir       string
+		VolName      string
+		SpecsDir     string
+		VolumeSource string
+		Timeout      int
+		Prefix       string
+		Domain       string
+		Ingress      IngressType
 	}
 	DefaultLimits struct {
 		CpuMax         int
@@ -231,12 +229,6 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		timeout = time.Minute * time.Duration(cfg.Server.Timeout)
 	}
 	glog.Infof("session timeout %s", timeout)
-
-	s.serviceTimeout = time.Minute * 10
-	if cfg.Server.ServiceTimeout > 0 {
-		s.serviceTimeout = time.Minute * time.Duration(cfg.Server.ServiceTimeout)
-	}
-	glog.Infof("service timeout %s", s.serviceTimeout)
 
 	glog.Infof("domain %s", cfg.Server.Domain)
 	glog.Infof("ingress %s", cfg.Server.Ingress)
@@ -1682,7 +1674,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 
 	name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
 	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, stackService, spec,
-		addrPortMap, &sharedEnv, int32(s.serviceTimeout.Seconds()))
+		addrPortMap, &sharedEnv)
 
 	s.makeDirectories(userId, stackService)
 
@@ -1792,7 +1784,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 			}
 		}
 
-		if timeWait > s.serviceTimeout {
+		if timeWait > time.Duration(spec.ReadyProbe.Timeout)*time.Second {
 			// Service has taken too long to startup
 			glog.V(4).Infof("Stack service %s reached timeout, stopping\n", stackService.Id)
 			err := s.kube.StopController(userId, stackService.Id)
