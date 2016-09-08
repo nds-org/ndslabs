@@ -1804,6 +1804,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 			break
 		}
 		time.Sleep(time.Second * 3)
+		timeWait += time.Second * 3
 
 	}
 
