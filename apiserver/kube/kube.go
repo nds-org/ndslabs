@@ -874,12 +874,12 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 		if spec.ReadyProbe.Type == "http" {
 			k8template.Spec.Containers[0].ReadinessProbe = k.createHttpProbe(spec.ReadyProbe.Path, spec.ReadyProbe.Port,
 				spec.ReadyProbe.InitialDelay, 3)
-			k8template.Spec.Containers[0].LivenessProbe = k.createHttpProbe(spec.ReadyProbe.Path,
-				spec.ReadyProbe.Port, timeout, 1)
+			//k8template.Spec.Containers[0].LivenessProbe = k.createHttpProbe(spec.ReadyProbe.Path,
+			//	spec.ReadyProbe.Port, timeout, 1)
 		} else if spec.ReadyProbe.Type == "tcp" {
 			k8template.Spec.Containers[0].ReadinessProbe = k.createTcpProbe(spec.ReadyProbe.Port,
 				spec.ReadyProbe.InitialDelay, 3)
-			k8template.Spec.Containers[0].LivenessProbe = k.createTcpProbe(spec.ReadyProbe.Port, timeout, 1)
+			//k8template.Spec.Containers[0].LivenessProbe = k.createTcpProbe(spec.ReadyProbe.Port, timeout, 1)
 		}
 	}
 
