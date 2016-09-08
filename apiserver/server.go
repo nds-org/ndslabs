@@ -1805,8 +1805,10 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 		}
 		time.Sleep(time.Second * 3)
 		timeWait += time.Second * 3
-
 	}
+
+	// Update stack status
+	s.etcd.PutStack(userId, stack.Id, stack)
 
 	if failed > 0 {
 		return false, nil
