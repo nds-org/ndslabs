@@ -1,41 +1,53 @@
 #!/bin/bash
 
 BUILD_DATE=`date +%Y-%m-%d\ %H:%M`
-VERSIONFILE="version.go"
-VERSION="1.0.2"
-APP="apiserver"
+VERSIONFILE="pkg/version/version.go"
+VERSION="1.0.3"
 
-if [ "$1" = "local" ] || [ "$1" = "docker" ]; then
-    echo Building $APP
+
+if [ "$1" == "local" ] || [ "$1" == "docker" ]; then
+
     if [ -e "$VERSIONFILE" ]; then 
         rm $VERSIONFILE
     fi
-    echo "package main" > $VERSIONFILE
+    mkdir -p pkg/version
+    echo "package version" > $VERSIONFILE
     echo "const (" >> $VERSIONFILE
-	echo "  VERSION = \"$VERSION \"" >> $VERSIONFILE
+    echo "  VERSION = \"$VERSION \"" >> $VERSIONFILE
     echo "  BUILD_DATE = \"$BUILD_DATE\"" >> $VERSIONFILE
     echo ")" >> $VERSIONFILE
-    if [ "$1" = "local" ]; then 
-        glide install --strip-vendor --strip-vcs
-
+    
+    glide install --strip-vendor --strip-vcs --update-vendored
+    
+	if [ "$1" == "local" ]; then 
         UNAME=$(uname)
-
         if [ "$UNAME" == "Darwin" ]; then
-            echo Building darwin-amd64
-            GOOS=darwin GOARCH=amd64 go build -o build/bin/$APP-darwin-amd64
+	        OS="darwin"
         elif [ "$UNAME" == "Linux" ]; then
-            echo Building linux-amd64
-            GOOS=linux GOARCH=amd64 go build -o build/bin/$APP-linux-amd64
+	        OS="linux"
         fi
-    elif [ "$1" = "docker" ]; then 
-        docker run --rm -it -v `pwd`:/go/src/github.com/ndslabs/apiserver -v `pwd`/build/bin:/go/bin -v `pwd`/build/pkg:/go/pkg -v `pwd`/gobuild.sh:/gobuild.sh golang:1.6  /gobuild.sh
+        
+        echo Building apiserver-$OS-amd64
+        GOOS=$OS GOARCH=amd64 go build -o build/bin/apiserver-$OS-amd64 ./cmd/server
+        
+        echo Building apictl-$OS-amd64
+        GOOS=$OS GOARCH=amd64 go build -o build/bin/ndslabsctl-$OS-amd64 ./cmd/apictl
+
+	elif [ "$1" == "docker" ]; then 	
+
+        echo Building apiserver-linux-amd64
+        GOOS=linux GOARCH=amd64 go build -o build/bin/apiserver-linux-amd64 ./cmd/server
+        
+        echo Building ndslabsctl-linux-amd64
+        GOOS=linux GOARCH=amd64 go build -o build/bin/ndslabsctl-linux-amd64 ./cmd/apictl
+
+        echo Building ndslabsctl-darwin-amd64
+        GOOS=darwin GOARCH=amd64 go build -o build/bin/ndslabsctl-darwin-amd64 ./cmd/apictl
     fi
-
-    rm $VERSIONFILE
-
-elif [ "$1" = "clean" ]; then
-    echo Cleaning
-    rm -rf build
+    
+    rm -r pkg/version
+elif [ "$1" == "clean" ]; then
+	rm -r build
+	rm -r vendor/github.com vendor/golang.org vendor/gopkg.in vendor/k8s.io
 fi
-
 
