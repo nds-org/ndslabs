@@ -66,7 +66,7 @@ Domain=$DOMAIN
 [DefaultLimits]
 CpuMax=2000
 CpuDefault=1000
-MemMax=8196
+MemMax=12000
 MemDefault=100
 StorageDefault=10
 
