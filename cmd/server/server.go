@@ -231,6 +231,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		timeout = time.Minute * time.Duration(cfg.Server.Timeout)
 	}
 	glog.Infof("session timeout %s", timeout)
+
 	glog.Infof("domain %s", cfg.Server.Domain)
 	glog.Infof("ingress %s", cfg.Server.Ingress)
 
@@ -1794,6 +1795,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	ready := 0
 	failed := 0
 
+	timeWait := time.Second * 0
 	for (ready + failed) < len(stack.Services) {
 		stack, _ := s.etcd.GetStack(userId, stack.Id)
 		for _, stackService := range stack.Services {
@@ -1804,8 +1806,26 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 				failed++
 			}
 		}
+
+		if timeWait > time.Duration(spec.ReadyProbe.Timeout)*time.Second {
+			// Service has taken too long to startup
+			glog.V(4).Infof("Stack service %s reached timeout, stopping\n", stackService.Id)
+			err := s.kube.StopController(userId, stackService.Id)
+			if err != nil {
+				glog.Error(err)
+			}
+			stackService.StatusMessages = append(stackService.StatusMessages,
+				fmt.Sprintf("Service timed out after %d seconds\n", spec.ReadyProbe.Timeout))
+			stackService.Status = "timeout"
+			failed++
+			break
+		}
 		time.Sleep(time.Second * 3)
+		timeWait += time.Second * 3
 	}
+
+	// Update stack status
+	s.etcd.PutStack(userId, stack.Id, stack)
 
 	if failed > 0 {
 		return false, nil
@@ -1917,7 +1937,7 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 			if stackService.Status == "ready" {
 				ready[stackService.Service] = 1
 			}
-			if stackService.Status == "error" {
+			if stackService.Status == "error" || stackService.Status == "timeout" {
 				errors[stackService.Service] = 1
 			}
 		}
@@ -1927,7 +1947,7 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 	stack, _ = s.getStackWithStatus(userId, sid)
 	stack.Status = "started"
 	for _, stackService := range stack.Services {
-		if stackService.Status == "error" {
+		if stackService.Status == "error" || stackService.Status == "timeout" {
 			stack.Status = "error"
 		}
 	}
@@ -2173,13 +2193,12 @@ func (s *Server) getLogs(userId string, sid string, ssid string, tailLines int) 
 						return "", err
 					} else {
 						log += podLog
-						return log, nil
 					}
 				}
 			}
 		}
 	}
-	return "", nil
+	return log, nil
 }
 
 func (s *Server) addServiceFile(path string) error {
@@ -2293,7 +2312,11 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 					if eventType == "ADDED" {
 						stackService.Status = "starting"
 					} else if eventType == "DELETED" {
-						stackService.Status = "stopped"
+						if stackService.Status == "timeout" {
+							stackService.Status = "error"
+						} else {
+							stackService.Status = "stopped"
+						}
 					}
 				}
 			}
