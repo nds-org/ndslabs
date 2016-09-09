@@ -1813,6 +1813,8 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 			if err != nil {
 				glog.Error(err)
 			}
+			stackService.StatusMessages = append(stackService.StatusMessages,
+				fmt.Sprintf("Service timed out after %d seconds\n", spec.ReadyProbe.Timeout))
 			stackService.Status = "timeout"
 			failed++
 			break
@@ -2190,13 +2192,12 @@ func (s *Server) getLogs(userId string, sid string, ssid string, tailLines int) 
 						return "", err
 					} else {
 						log += podLog
-						return log, nil
 					}
 				}
 			}
 		}
 	}
-	return "", nil
+	return log, nil
 }
 
 func (s *Server) addServiceFile(path string) error {
