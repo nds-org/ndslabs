@@ -1695,8 +1695,9 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	}
 
 	name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
-	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, stackService, spec,
-		addrPortMap, &sharedEnv)
+
+	account, _ := s.etcd.GetAccount(userId)
+	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, s.domain, account.EmailAddress, stackService, spec, addrPortMap, &sharedEnv)
 
 	s.makeDirectories(userId, stackService)
 
