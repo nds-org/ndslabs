@@ -1871,6 +1871,7 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 
 	sid := stack.Id
 	stack.Status = stackStatus[Starting]
+	glog.V(4).Infoln("PutStack (startStack)")
 	s.etcd.PutStack(userId, sid, stack)
 
 	stackServices := stack.Services
@@ -1958,8 +1959,8 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 		}
 	}
 
-	s.etcd.PutStack(userId, sid, stack)
 	glog.V(4).Infof("Stack %s started\n", sid)
+	s.etcd.PutStack(userId, sid, stack)
 
 	return stack, nil
 }
@@ -2057,6 +2058,7 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 	}
 
 	stack.Status = stackStatus[Stopping]
+	glog.V(4).Infoln("PutStack (stopStack start)")
 	s.etcd.PutStack(userId, sid, stack)
 
 	// For each stack service, stop dependent services first.
@@ -2114,6 +2116,7 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 		stackService.Endpoints = nil
 	}
 
+	glog.V(4).Infoln("PutStack (stopStack end)")
 	stack.Status = stackStatus[Stopped]
 	s.etcd.PutStack(userId, sid, stack)
 
@@ -2332,6 +2335,8 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 			}
 			glog.V(4).Infof("Namespace: %s, Pod: %s, Status: %s, StatusMessage: %s\n", userId, pod.Name,
 				stackService.Status, message)
+
+			glog.V(4).Infoln("PutStack (HandlePodEvent)")
 			s.etcd.PutStack(userId, sid, stack)
 		}
 	}
@@ -2373,6 +2378,7 @@ func (s *Server) HandleReplicationControllerEvent(eventType watch.EventType, eve
 			glog.V(4).Infof("Namespace: %s, ReplicationController: %s, Status: %s, StatusMessage: %s\n", userId, rc.Name,
 				stackService.Status, stackService.StatusMessages[len(stackService.StatusMessages)-1])
 		}
+		glog.V(4).Infoln("PutStack (HandleRCEvent)")
 		s.etcd.PutStack(userId, sid, stack)
 	}
 }
