@@ -1823,15 +1823,16 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 			stackService.StatusMessages = append(stackService.StatusMessages,
 				fmt.Sprintf("Service timed out after %d seconds\n", timeOut))
 			stackService.Status = "timeout"
+
+			// Update stack status
+			s.etcd.PutStack(userId, stack.Id, stack)
+
 			failed++
 			break
 		}
 		time.Sleep(time.Second * 3)
 		timeWait += time.Second * 3
 	}
-
-	// Update stack status
-	s.etcd.PutStack(userId, stack.Id, stack)
 
 	if failed > 0 {
 		return false, nil
