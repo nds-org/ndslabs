@@ -1799,7 +1799,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 
 	timeOut := defaultTimeout
 	if spec.ReadyProbe.Timeout > 0 {
-		timeOut = spec.ReadyProbe.Timeout
+		timeOut = int(spec.ReadyProbe.Timeout)
 	}
 	timeWait := time.Second * 0
 	for (ready + failed) < len(stack.Services) {
