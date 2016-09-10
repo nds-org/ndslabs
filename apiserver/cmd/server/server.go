@@ -1813,7 +1813,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 			}
 		}
 
-		if timeWait > time.Duration(spec.ReadyProbe.Timeout)*time.Second {
+		if timeWait > time.Duration(timeOut)*time.Second {
 			// Service has taken too long to startup
 			glog.V(4).Infof("Stack service %s reached timeout, stopping\n", stackService.Id)
 			err := s.kube.StopController(userId, stackService.Id)
@@ -1821,7 +1821,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 				glog.Error(err)
 			}
 			stackService.StatusMessages = append(stackService.StatusMessages,
-				fmt.Sprintf("Service timed out after %d seconds\n", spec.ReadyProbe.Timeout))
+				fmt.Sprintf("Service timed out after %d seconds\n", timeOut))
 			stackService.Status = "timeout"
 			failed++
 			break
