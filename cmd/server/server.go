@@ -1803,12 +1803,12 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	}
 	timeWait := time.Second * 0
 	for (ready + failed) < len(stack.Services) {
-		stack, _ := s.etcd.GetStack(userId, stack.Id)
-		for _, stackService := range stack.Services {
-			glog.V(4).Infof("Stack service %s: status=%s\n", stackService.Id, stackService.Status)
-			if stackService.Status == "ready" {
+		stack2, _ := s.etcd.GetStack(userId, stack.Id)
+		for _, ss := range stack2.Services {
+			glog.V(4).Infof("Stack service %s: status=%s\n", ss.Id, ss.Status)
+			if ss.Status == "ready" {
 				ready++
-			} else if stackService.Status == "error" {
+			} else if ss.Status == "error" {
 				failed++
 			}
 		}
@@ -2280,11 +2280,13 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 
 			if event != nil {
 				// This is a general Event
-				if event.Reason == "MissingClusterDNS" || event.Reason == "FailedSync" {
+				if event.Reason == "MissingClusterDNS" {
 					// Ignore these for now
 					return
 				}
-				if event.Type == "Warning" && event.Reason != "Unhealthy" {
+				if event.Type == "Warning" &&
+					(event.Reason != "Unhealthy" || event.Reason == "FailedSync" ||
+						event.Reason == "BackOff") {
 					// This is an error
 					stackService.Status = "error"
 				}
