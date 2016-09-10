@@ -2073,7 +2073,12 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 				continue
 			}
 
-			glog.V(4).Infof("Stopping stack service %s\n", stackService.Service)
+			glog.V(4).Infof("Stopping service %s\n", stackService.Service)
+			stackService.StatusMessages = append(stackService.StatusMessages,
+				fmt.Sprintf("Stopping service\n"))
+			stackService.Status = "stopping"
+			s.etcd.PutStack(userId, stack.Id, stack)
+
 			numDeps := 0
 			stoppedDeps := 0
 			for _, ss := range stack.Services {
