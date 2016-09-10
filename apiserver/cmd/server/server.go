@@ -95,6 +95,8 @@ const (
 	IngressTypeNodePort     IngressType = "NodePort"
 )
 
+var defaultTimeout = 600
+
 func main() {
 
 	var confPath, adminPasswd string
@@ -1795,37 +1797,43 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	ready := 0
 	failed := 0
 
+	timeOut := defaultTimeout
+	if spec.ReadyProbe.Timeout > 0 {
+		timeOut = int(spec.ReadyProbe.Timeout)
+	}
 	timeWait := time.Second * 0
 	for (ready + failed) < len(stack.Services) {
-		stack, _ := s.etcd.GetStack(userId, stack.Id)
-		for _, stackService := range stack.Services {
-			glog.V(4).Infof("Stack service %s: status=%s\n", stackService.Id, stackService.Status)
-			if stackService.Status == "ready" {
+		stck, _ := s.etcd.GetStack(userId, stack.Id)
+		for _, ss := range stck.Services {
+			glog.V(4).Infof("Stack service %s: status=%s\n", ss.Id, ss.Status)
+			if ss.Status == "ready" {
 				ready++
-			} else if stackService.Status == "error" {
+			} else if ss.Status == "error" {
 				failed++
 			}
 		}
 
-		if timeWait > time.Duration(spec.ReadyProbe.Timeout)*time.Second {
+		if timeWait > time.Duration(timeOut)*time.Second {
+			stackService.StatusMessages = append(stackService.StatusMessages,
+				fmt.Sprintf("Service timed out after %d seconds\n", timeOut))
+			stackService.Status = "timeout"
+
+			// Update stack status
+			s.etcd.PutStack(userId, stack.Id, stack)
+
 			// Service has taken too long to startup
 			glog.V(4).Infof("Stack service %s reached timeout, stopping\n", stackService.Id)
 			err := s.kube.StopController(userId, stackService.Id)
 			if err != nil {
 				glog.Error(err)
 			}
-			stackService.StatusMessages = append(stackService.StatusMessages,
-				fmt.Sprintf("Service timed out after %d seconds\n", spec.ReadyProbe.Timeout))
-			stackService.Status = "timeout"
+
 			failed++
 			break
 		}
 		time.Sleep(time.Second * 3)
 		timeWait += time.Second * 3
 	}
-
-	// Update stack status
-	s.etcd.PutStack(userId, stack.Id, stack)
 
 	if failed > 0 {
 		return false, nil
@@ -1952,8 +1960,8 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 		}
 	}
 
-	s.etcd.PutStack(userId, sid, stack)
 	glog.V(4).Infof("Stack %s started\n", sid)
+	s.etcd.PutStack(userId, sid, stack)
 
 	return stack, nil
 }
@@ -2065,7 +2073,8 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 				continue
 			}
 
-			glog.V(4).Infof("Stopping stack service %s\n", stackService.Service)
+			glog.V(4).Infof("Stopping service %s\n", stackService.Service)
+
 			numDeps := 0
 			stoppedDeps := 0
 			for _, ss := range stack.Services {
@@ -2269,11 +2278,13 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 
 			if event != nil {
 				// This is a general Event
-				if event.Reason == "MissingClusterDNS" || event.Reason == "FailedSync" {
+				if event.Reason == "MissingClusterDNS" {
 					// Ignore these for now
 					return
 				}
-				if event.Type == "Warning" && event.Reason != "Unhealthy" {
+				if event.Type == "Warning" &&
+					(event.Reason != "Unhealthy" || event.Reason == "FailedSync" ||
+						event.Reason == "BackOff") {
 					// This is an error
 					stackService.Status = "error"
 				}
@@ -2326,6 +2337,7 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 			}
 			glog.V(4).Infof("Namespace: %s, Pod: %s, Status: %s, StatusMessage: %s\n", userId, pod.Name,
 				stackService.Status, message)
+
 			s.etcd.PutStack(userId, sid, stack)
 		}
 	}
