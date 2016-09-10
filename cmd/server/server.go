@@ -95,6 +95,8 @@ const (
 	IngressTypeNodePort     IngressType = "NodePort"
 )
 
+var defaultTimeout = 600
+
 func main() {
 
 	var confPath, adminPasswd string
@@ -1795,6 +1797,10 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	ready := 0
 	failed := 0
 
+	timeOut := defaultTimeout
+	if spec.ReadyProbe.Timeout > 0 {
+		timeOut = spec.ReadyProbe.Timeout
+	}
 	timeWait := time.Second * 0
 	for (ready + failed) < len(stack.Services) {
 		stack, _ := s.etcd.GetStack(userId, stack.Id)
