@@ -1000,6 +1000,13 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
+	dep, ok := s.checkDependencies(userId, &service)
+	if !ok {
+		glog.Warningf("Cannot add service, dependency %s missing\n", dep)
+		rest.Error(w, fmt.Sprintf("Missing dependency %s", dep), http.StatusNotFound)
+		return
+	}
+
 	if catalog == "system" {
 		if !s.IsAdmin(r) {
 			rest.Error(w, "", http.StatusUnauthorized)
@@ -1046,6 +1053,13 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 	if !ok {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	dep, ok := s.checkDependencies(userId, &service)
+	if !ok {
+		glog.Warningf("Cannot add service, dependency %s missing\n", dep)
+		rest.Error(w, fmt.Sprintf("Missing dependency %s", dep), http.StatusNotFound)
 		return
 	}
 
@@ -1403,7 +1417,7 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 					if stackService.VolumeMounts == nil {
 						stackService.VolumeMounts = map[string]string{}
 					}
-					volPath := fmt.Sprintf("AppData/%s", s.kube.RandomString(5))
+					volPath := fmt.Sprintf("AppData/%s", s.getAppDataDir(stackService.Id))
 
 					stackService.VolumeMounts[volPath] = mount.MountPath
 				}
@@ -1529,7 +1543,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 					}
 
 					if len(fromPath) == 0 {
-						volPath := fmt.Sprintf("AppData/%s", s.kube.RandomString(5))
+						volPath := fmt.Sprintf("AppData/%s", s.getAppDataDir(stackService.Id))
 						stackService.VolumeMounts[volPath] = mount.MountPath
 					}
 				}
@@ -1542,7 +1556,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 
 				if found == 0 {
 					// Create a new temporary folder
-					volPath := fmt.Sprintf("AppData/%s", s.kube.RandomString(5))
+					volPath := fmt.Sprintf("AppData/%s", s.getAppDataDir(stackService.Id))
 					stackService.VolumeMounts[volPath] = mount.MountPath
 				}
 			}
@@ -2596,4 +2610,17 @@ func (s *Server) GetContact(w rest.ResponseWriter, r *rest.Request) {
 		"forum": "https://groups.google.com/forum/#!forum/ndslabs",
 		"chat":  "https://gitter.im/nds-org/ndslabs",
 	})
+}
+
+func (s *Server) getAppDataDir(stackService string) string {
+	return fmt.Sprintf("%s-%s", stackService, s.kube.RandomString(5))
+}
+
+func (s *Server) checkDependencies(uid string, service *api.ServiceSpec) (string, bool) {
+	for _, dependency := range service.Dependencies {
+		if !s.serviceExists(uid, dependency.DependencyKey) {
+			return dependency.DependencyKey, false
+		}
+	}
+	return "", true
 }
