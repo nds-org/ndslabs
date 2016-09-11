@@ -813,22 +813,19 @@ func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
 	}
 
 	// Get the GFS server pods
-	/*
-		Disabled until NDS-395 resolved
-		gfs, err := s.kube.GetPods("default", "name", "glusterfs-server-globalfs")
+	gfs, err := s.kube.GetPods("default", "name", "glusterfs-server-globalfs")
+	if err != nil {
+		return false, err
+	}
+	if len(gfs) > 0 {
+		cmd := []string{"gluster", "volume", "quota", s.volName, "limit-usage", "/" + account.Namespace, fmt.Sprintf("%dGB", account.ResourceLimits.StorageQuota)}
+		_, err := s.kube.ExecCommand("default", gfs[0].Name, cmd)
 		if err != nil {
 			return false, err
 		}
-		if len(gfs) > 0 {
-			cmd := []string{"gluster", "volume", "quota", s.volName, "limit-usage", "/" + account.Namespace, fmt.Sprintf("%dGB", account.ResourceLimits.StorageQuota)}
-			_, err := s.kube.ExecCommand("default", gfs[0].Name, cmd)
-			if err != nil {
-				return false, err
-			}
-		} else {
-			glog.V(2).Info("No GFS servers found, cannot set account quota")
-		}
-	*/
+	} else {
+		glog.V(2).Info("No GFS servers found, cannot set account quota")
+	}
 	return true, nil
 }
 
