@@ -758,6 +758,7 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	env = append(env, api.EnvVar{Name: "NDSLABS_HOSTNAME", Value: name + "." + domain})
 	env = append(env, api.EnvVar{Name: "NDSLABS_DOMAIN", Value: domain})
 	env = append(env, api.EnvVar{Name: "NDSLABS_EMAIL", Value: emailAddress})
+	env = append(env, api.EnvVar{Name: "NDSLABS_STACK", Value: stack})
 	env = append(env, api.EnvVar{Name: "NAMESPACE", Value: ns})
 	env = append(env, api.EnvVar{Name: "NDSLABS_HOME", Value: homeDir})
 	env = append(env, api.EnvVar{Name: "TERM", Value: "linux"})
