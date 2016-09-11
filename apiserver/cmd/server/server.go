@@ -1620,7 +1620,7 @@ func (s *Server) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 			}
 		}
 		if s.useLoadBalancer() {
-			s.kube.DeleteIngress(userId, stackService.Id)
+			s.kube.DeleteIngress(userId, stackService.Id+"-ingress")
 			glog.V(4).Infof("Deleted ingress for service %s\n", stackService.Id)
 		}
 	}
