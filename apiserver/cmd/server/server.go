@@ -1003,6 +1003,13 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
+	cf, ok := s.checkConfigs(userId, &service)
+	if !ok {
+		glog.Warningf("Cannot add service, config dependency %s missing\n", cf)
+		rest.Error(w, fmt.Sprintf("Missing config dependency %s", cf), http.StatusNotFound)
+		return
+	}
+
 	if catalog == "system" {
 		if !s.IsAdmin(r) {
 			rest.Error(w, "", http.StatusUnauthorized)
@@ -1049,6 +1056,13 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 	if !ok {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	cf, ok := s.checkConfigs(userId, &service)
+	if !ok {
+		glog.Warningf("Cannot add service, config dependency %s missing\n", cf)
+		rest.Error(w, fmt.Sprintf("Missing config dependency %s", cf), http.StatusNotFound)
 		return
 	}
 
@@ -2595,4 +2609,16 @@ func (s *Server) GetContact(w rest.ResponseWriter, r *rest.Request) {
 		"forum": "https://groups.google.com/forum/#!forum/ndslabs",
 		"chat":  "https://gitter.im/nds-org/ndslabs",
 	})
+}
+
+// Make sure that conig.useFrom dependencies exist
+func (s *Server) checkConfigs(uid string, service *api.ServiceSpec) (string, bool) {
+	for _, config := range service.Config {
+		if len(config.UseFrom) > 0 {
+			if !s.serviceExists(uid, config.UseFrom) {
+				return config.UseFrom, false
+			}
+		}
+	}
+	return "", true
 }
