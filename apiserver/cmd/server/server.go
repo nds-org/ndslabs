@@ -596,6 +596,23 @@ func (s *Server) createBasicAuthSecret(uid string) error {
 	return nil
 }
 
+func (s *Server) createLMABasicAuthSecret() error {
+	if s.kube.NamespaceExists("kube-system") {
+		account, err := s.etcd.GetAccount("admin")
+		if err != nil {
+			glog.Error(err)
+			return err
+		}
+
+		_, err = s.kube.CreateBasicAuthSecret("kube-system", account.Password)
+		if err != nil {
+			glog.Error(err)
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *Server) setupAccount(account *api.Account) error {
 	_, err := s.kube.CreateNamespace(account.Namespace)
 	if err != nil {
@@ -2535,6 +2552,11 @@ func (s *Server) createAdminUser(password string) error {
 			glog.Error(err)
 			return err
 		}
+	}
+	err := s.createLMABasicAuthSecret()
+	if err != nil {
+		glog.Error(err)
+		return err
 	}
 
 	return nil
