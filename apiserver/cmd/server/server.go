@@ -2529,12 +2529,12 @@ func (s *Server) createAdminUser(password string) error {
 				MemoryDefault: s.memDefault,
 			},
 		}
-		err := s.setupAccount(account)
+		err := s.etcd.PutAccount("admin", account, true)
 		if err != nil {
 			glog.Error(err)
 			return err
 		}
-		err = s.etcd.PutAccount("admin", account, true)
+		err = s.setupAccount(account)
 		if err != nil {
 			glog.Error(err)
 			return err
