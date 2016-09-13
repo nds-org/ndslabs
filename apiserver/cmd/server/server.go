@@ -819,7 +819,7 @@ func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
 	}
 	if len(gfs) > 0 {
 		cmd := []string{"gluster", "volume", "quota", s.volName, "limit-usage", "/" + account.Namespace, fmt.Sprintf("%dGB", account.ResourceLimits.StorageQuota)}
-		_, err := s.kube.ExecCommand("default", gfs[0].Name, cmd)
+		_, err := s.kube.ExecCommand("kube-system", gfs[0].Name, cmd)
 		if err != nil {
 			return false, err
 		}
