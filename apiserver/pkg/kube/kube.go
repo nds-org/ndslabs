@@ -1291,7 +1291,7 @@ func (k *KubeHelper) DeleteIngress(pid string, name string) (*extensions.Ingress
 	return nil, nil
 }
 
-func (k *KubeHelper) CreateBasicAuthSecret(pid string, hashedPassword string) (*api.Secret, error) {
+func (k *KubeHelper) CreateBasicAuthSecret(pid string, username string, hashedPassword string) (*api.Secret, error) {
 	secret, _ := k.GetSecret(pid, "basic-auth")
 	if secret != nil {
 		k.DeleteSecret(pid, "basic-auth")
@@ -1303,7 +1303,7 @@ func (k *KubeHelper) CreateBasicAuthSecret(pid string, hashedPassword string) (*
 			Namespace: pid,
 		},
 		Data: map[string][]byte{
-			"auth": []byte(fmt.Sprintf("%s:%s", pid, string(hashedPassword))),
+			"auth": []byte(fmt.Sprintf("%s:%s", username, string(hashedPassword))),
 		},
 	}
 	return k.CreateSecret(pid, secret)
