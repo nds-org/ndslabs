@@ -813,7 +813,7 @@ func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
 	}
 
 	// Get the GFS server pods
-	gfs, err := s.kube.GetPods("default", "name", "glfs-server-global")
+	gfs, err := s.kube.GetPods("kube-system", "name", "glfs-server-global")
 	if err != nil {
 		return false, err
 	}
