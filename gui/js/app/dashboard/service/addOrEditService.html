@@ -11,8 +11,11 @@
         
       <uib-tabset active="activeTab">
         <!-- Config Mapper -->
-        <uib-tab heading="Environment" index="1">
-          
+        <uib-tab index="1">
+          <uib-tab-heading>
+            Environment <span class="badge">{{ configs | countReqConfigs }}</span>
+          </uib-tab-heading>
+        
           <fieldset class="border-nds">
             <legend class="legend-fix">Environment Variables</legend>
             <div class="table-responsive">
@@ -83,7 +86,11 @@
         </uib-tab>
       
         <!-- Volume Mapper -->
-        <uib-tab heading="Data" index="2">
+        <uib-tab index="2">
+          <uib-tab-heading>
+            Data <span class="badge">{{ volumes | countReqVolumes }}</span>
+          </uib-tab-heading>
+          
           <fieldset class="border-nds">
             <legend class="legend-fix">Application Data</legend>
             <div class="table-responsive">

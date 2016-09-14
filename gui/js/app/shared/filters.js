@@ -15,6 +15,34 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  */ 
 .constant('_', window._)
 
+.filter('countReqConfigs', [ '_', function(_) {
+  return function(input) {
+    var ret = [];
+    
+    angular.forEach(input, function(cfg) {
+      if (cfg.isPassword || cfg.value === '' ) {
+        ret.push(cfg);
+      }
+    }); 
+    
+    return ret.length;
+  }
+}])
+
+
+.filter('countReqVolumes', [ '_', function(_) {
+  return function(input) {
+    var ret = [];
+    
+    angular.forEach(input, function(vol) {
+      if (!vol.canEdit) {
+        ret.push(vol);
+      }
+    }); 
+    
+    return ret.length;
+  }
+}])
 
 /**
  * Given a list of specs, return only those associated with the given tag name
