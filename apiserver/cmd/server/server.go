@@ -882,6 +882,10 @@ func (s *Server) DeleteAccount(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, "", http.StatusUnauthorized)
 		return
 	}
+	if userId == "admin" {
+		rest.Error(w, "", http.StatusForbidden)
+		return
+	}
 
 	if !s.accountExists(userId) {
 		rest.NotFound(w, r)
