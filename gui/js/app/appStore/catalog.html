@@ -69,27 +69,28 @@
       <table ng-if="!showCards" class="table table-hover table-striped" ng-hide="(specs | display | showTags:tags.selected).length === 0">
         <thead>
           <tr>
-            <th><label>Name</label></th>
-            <th><label>Source</label></th>
-            <th><label>Description</label></th>
-            <th></th>
+            <th width="20%"><label>Name</label></th>
+            <th width="5%"><label>Source</label></th>
+            <th width="40%"><label>Description</label></th>
+            <th width="30%"></th>
+            <th width="5%"></th>
           </tr>
         </thead>
         <tbody>
           <tr ng-repeat="spec in specs | display | showTags:tags.selected | orderBy:'label' track by spec.key">
-            <th width="20%">
+            <th>
               {{ spec.label }}
             </th>
             
-            <td class="5%">
+            <td>
               <i class="fa fa-fw" tooptip-placement="top-right" uib-tooltip="Source: {{ spec.catalog | capitalize }}" ng-class="{ 'fa-user': spec.catalog === 'user', 'fa-server': spec.catalog === 'system' }"></i>
             </td>
             
-            <td width="45%">
+            <td>
               {{ spec.description }}
             </td>
             
-            <td width="30%">
+            <td>
               <!-- Show "install" progress -->
               <div class="progress" style="margin:3px;min-width:75px;" ng-if="installs[spec.key].progress > 0">
                 <div class="progress-bar progress-bar-primary progress-bar-striped active" role="progressbar" aria-valuenow="{{ installs[spec.key].progress }}"
@@ -131,6 +132,10 @@
                 </span>
               </div>
             </td>
+            
+            <td>
+              <a class="pull-right" target="_blank" ng-if="spec.info" ng-href="{{ spec.info }}"><i class="fa fa-fw fa-question-circle-o"></i></a>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -143,14 +148,14 @@
               <div class="media">
                 <!-- Logo -->
                 <div class="media-left">
-                  <a ng-href="{{ spec.info }}">
+                  <a ng-href="{{ spec.info }}" target="_blank">
                     <img ng-if="spec.logo" style="margin:15px;max-height:64px;max-width:64px;min-height:64px;min-width:64px;" class="pull-right" ng-src="{{ spec.logo }}" alt="{{ spec.key }}" />
                   </a>
                 </div>
                 
                 <!-- Name / Description -->
                 <div class="media-body caption">
-                  <a class="pull-right" ng-if="spec.info" ng-href="{{ spec.info }}"><i class="fa fa-fw fa-question-circle-o"></i></a>
+                  <a class="pull-right" target="_blank" ng-if="spec.info" ng-href="{{ spec.info }}"><i class="fa fa-fw fa-question-circle-o"></i></a>
                   <h4 class="media-heading">{{ spec.label }}</h4>
                   <p><small>{{ spec.description }}</small></p>
                 </div>
