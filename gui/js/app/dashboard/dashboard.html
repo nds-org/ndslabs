@@ -180,9 +180,10 @@
                         </td>
                         <td>
                            <select ng-model="stack.selectedOption">
-                             <option ng-repeat="option in stack.key | options track by option.key" value="{{ option.key }}">{{ option.key | specProperty:'label' }}</option>
+                             <option ng-repeat="option in stack.key | options | notPresent:stack track by option.key" value="{{ option.key }}">{{ option.key | specProperty:'label' }}</option>
                            </select> 
                         </td>
+                        <td></td>
                         <td></td>
                         <td></td>
                         <td></td>

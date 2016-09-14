@@ -61,18 +61,24 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
   };
 }])
 
-.filter('notPresent', [ '_', '$filter', function(_, $filter) {
+/**
+ * Given a list of option and a stack, return only option which have not yet been added to the stack
+ */ 
+.filter('notPresent', [ '_', function(_) {
   return function(input, stack) {
-    var options = $filter('options')(stack.key);
+    if (!stack || !stack.key) {
+      return [];
+    }
     
     var ret = [];
     
-    angular.forEach(options, function(option) {
+    angular.forEach(input, function(option) {
       var item = _.find(stack.services, [ 'service', option.key ]);
       if (!item) {
-        ret.push(option.key);
+        ret.push(option);
       }
     });
+    
     return ret;
   };
 }])
