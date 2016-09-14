@@ -125,7 +125,7 @@
                     <td>
                       <input class="form-control" ng-model="newTo" placeholder="Map To..." />
                     </td>
-                    <td><button class="btn btn-xs btn-primary" ng-click="volumes.push({ to: newTo, from: newFrom, canEdit:true });newFrom=newTo=''" ng-disabled="!newTo || !newFrom"><i class="fa fa-fw fa-plus"></i></button></td>
+                    <td><button class="btn btn-xs btn-primary" ng-click="volumes.push({ to: newTo, from: newFrom, canEdit:true });newFrom=newTo=''" ng-disabled="!newTo || !newFrom || _.find(volumes, [ 'to', newTo ])"><i class="fa fa-fw fa-plus"></i></button></td>
                   </tr>
                 </tbody>
               </table>
