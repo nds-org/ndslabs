@@ -33,6 +33,22 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
   };
 }])
 
+.filter('notPresent', [ '_', '$filter', function(_, $filter) {
+  return function(input, stack) {
+    var options = $filter('options')(stack.key);
+    
+    var ret = [];
+    
+    angular.forEach(options, function(option) {
+      var item = _.find(stack.services, [ 'service', option.key ]);
+      if (!item) {
+        ret.push(option.key);
+      }
+    });
+    return ret;
+  };
+}])
+
 
 /**
  * Given a string, capitalize each term (separated by whitespace)
