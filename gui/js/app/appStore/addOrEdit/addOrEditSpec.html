@@ -18,13 +18,14 @@
                                     <!-- Short Name (Key) -->
                                     <div class="form-group" >
                                         <label for="keyField">Short Name <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="The database key for this application (must be lowercase with no special characters)"></i></sup></label>
-                                        <input type="text" class="form-control" id="keyField" name="keyField" placeholder="Short Name"
+                                        <input type="text" class="form-control" id="keyField" name="keyField" placeholder="Short Name" maxlength="17"
                                             ng-model="spec.key" ng-disabled="editingSpec" required ng-pattern="/^[a-z0-9]+$/" />
                                         
                                         <p class="text-danger" ng-if="!keyUnique">This key is already in use</p>
                                         <ng-messages class="text-danger" for="modifySpec.keyField.$error" role="alert">
                                           <ng-message when="required">This field is required</ng-message>
                                           <ng-message when="pattern">This field may only contain lowercase alphanumeric characters</ng-message>
+                                          <ng-message when="maxlength">This field must be 17 characters or less.</ng-message>
                                         </ng-messages>
                                     </div>
                                     
