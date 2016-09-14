@@ -109,7 +109,6 @@ var getAccountCmd = &cobra.Command{
 			fmt.Printf("Get account failed: %s\n", err)
 			return
 		}
-		account.Password = "REDACTED"
 		data, err := json.MarshalIndent(account, "", "   ")
 		if err != nil {
 			fmt.Printf("Error marshalling account %s\n", err.Error)
