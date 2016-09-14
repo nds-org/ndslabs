@@ -533,6 +533,7 @@ func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 			}
 		}
 		account.Password = ""
+		account.Token = ""
 		w.WriteJson(account)
 	}
 }
