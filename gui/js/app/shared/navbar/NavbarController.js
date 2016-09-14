@@ -45,7 +45,7 @@ angular
   
   $scope.navs = [
     {
-      name: 'Dashboard',
+      name: 'Applications',
       url: '#' + HomeRoute,
       icon: 'fa-dashboard'
     },
