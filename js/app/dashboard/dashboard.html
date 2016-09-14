@@ -78,8 +78,8 @@
                     <thead>
                       <tr>
                         <td width="15%" class="text-center"><strong>Status</strong></td>
-                        <td width="25%"><strong>Name</strong></td>
-                        <td width="25%"><strong>ID</strong></td>
+                        <td width="20%"><strong>Name</strong></td>
+                        <td width="20%"><strong>ID</strong></td>
                         <td width="10%" class="text-center"><strong>Console</strong></td>
                         <td width="10%" class="text-center">
                           <strong ng-if="stack.status !== 'stopped'">Config</strong>
@@ -89,6 +89,7 @@
                           <strong ng-if="stack.status !== 'stopped'">Logs</strong>
                           <strong ng-if="stack.status === 'stopped'">Remove</strong>
                         </td>
+                        <td width="10%" class="text-center"><strong>Help</strong></td>
                       </tr>
                     </thead>
                     <tbody>
@@ -163,6 +164,9 @@
                             <i class="fa fa-fw fa-times"></i>
                           </button>
                         </td>
+                        
+                        <!-- Help Link -->
+                        <td class="text-center"><a ng-href="{{ svc.service | specProperty:'info' }}"><i class="fa fa-fw fa-question-circle"></i></a></td>
                       </tr>
                       
                       <!-- Add an artificial row (if necessary) for optional services -->
