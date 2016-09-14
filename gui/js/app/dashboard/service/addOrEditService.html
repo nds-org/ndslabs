@@ -10,24 +10,6 @@
       </ol>
         
       <uib-tabset active="activeTab">
-        <uib-tab heading="Docker" index="0">
-          <fieldset class="border-nds">
-            <legend class="legend-fix">Docker</legend>
-            
-            <label>Registry</label>
-            <p>{{ spec.image.registry || 'docker.io' }}</p>
-            
-            <label>Image Name</label>
-            <p>{{ spec.image.name }}</p>
-            
-            <label>Image Tag</label><!--  "dep as dep.label for dep in spec.depends | invertSpecList track by dep.key --->
-            <select class="form-control" ng-model="service.imageTag">
-              <option value="">Default ({{ spec.image.tags[0] || 'latest' }})</option>
-              <option ng-repeat="tag in spec.image.tags track by tag" value="{{ tag }}">{{ tag }}</option>
-            </select>
-          </fieldset>
-        </uib-tab>
-        
         <!-- Config Mapper -->
         <uib-tab heading="Environment" index="1">
           
@@ -178,6 +160,25 @@
             </div>
           </fieldset>
         </uib-tab> -->
+        
+        
+        <uib-tab heading="Docker" index="3">
+          <fieldset class="border-nds">
+            <legend class="legend-fix">Docker</legend>
+            
+            <label>Registry</label>
+            <p>{{ spec.image.registry || 'docker.io' }}</p>
+            
+            <label>Image Name</label>
+            <p>{{ spec.image.name }}</p>
+            
+            <label>Image Tag</label><!--  "dep as dep.label for dep in spec.depends | invertSpecList track by dep.key --->
+            <select class="form-control" ng-model="service.imageTag">
+              <option value="">Default ({{ spec.image.tags[0] || 'latest' }})</option>
+              <option ng-repeat="tag in spec.image.tags track by tag" value="{{ tag }}">{{ tag }}</option>
+            </select>
+          </fieldset>
+        </uib-tab>
       </uib-tabset>
     </div>
   </div>
