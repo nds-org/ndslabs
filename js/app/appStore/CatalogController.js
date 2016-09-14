@@ -99,9 +99,19 @@ angular
     var specCopy = angular.copy(spec);
     
     // Remove unused / unnecessary fields
-    delete specCopy.$$hashKey;
-    delete specCopy.updateTime;
-    delete specCopy.createdTime;
+    delete $scope.spec.$$hashKey;
+    delete $scope.spec.updateTime;
+    delete $scope.spec.createdTime;
+    delete $scope.spec.id;
+    delete $scope.spec.privileged;
+    delete $scope.spec.catalog;
+    
+    // Remove empty fields
+    angular.forEach($scope.spec, function(value, key) {
+      if (angular.isUndefined(value) || value === null || !value || (_.isArray(value) && value.length === 0)) {
+        delete $scope.spec[key];
+      }
+    });
     
     clipboard.copyText(JSON.stringify(specCopy, null, 4));
   };
