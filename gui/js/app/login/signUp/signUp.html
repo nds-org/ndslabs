@@ -3,7 +3,7 @@
   <div class="row">
     <div class="col-xs-offset-3 col-xs-6 text-center">
       <!--<button type="button" class="btn btn-xs btn-default pull-right" data-dismiss="modal" aria-label="Close" ng-click="close()"><i class="fa fa-fw fa-times"></i></button>-->
-      <h3><i class="fa fa-fw fa-user-plus"></i> Request Access to NDS Labs</h3>
+      <h3><i class="fa fa-fw fa-user-plus"></i> Request Access to {{ productName }}</h3>
     </div>
   </div>
   
@@ -42,7 +42,7 @@
             <div class="input-group">
               <input type="email" class="form-control" name="email" id="email" ng-model-options="{ 'debounce': 400, }"
                   ng-model="newProject.email" placeholder="E-mail Address" required aria-describedby="gravatar-addon" />
-              <span class="input-group-addon" id="gravatar-addon" tooltip-placement="left" uib-tooltip="If your e-mail address has a Gravatar associated with it, it will be displayed in the NDS Labs UI">
+              <span class="input-group-addon" id="gravatar-addon" tooltip-placement="left" uib-tooltip="If your e-mail address has a Gravatar associated with it, it will be displayed in the {{ productName }} UI">
                 <img gravatar-src="newProject.email" gravatar-size="20" style="border-radius:50px;">
               </span>
             </div>
@@ -87,12 +87,12 @@
             <!-- Enter Description -->
             <label for="organization">Description</label>
             <textarea class="form-control" rows="4" name="description" id="description"
-                ng-model="newProject.description" placeholder="Describe how you plan to use NDS Labs..." required></textarea>
+                ng-model="newProject.description" placeholder="Describe how you plan to use {{ productName }}..." required></textarea>
             <span class="form-control-feedback glyphicon" ng-if="!registerForm.description.$pristine"
                 ng-class="{ 'glyphicon-remove': registerForm.description.$invalid, 'glyphicon-ok': registerForm.description.$valid }"></span>
               
             <div class="text-danger" ng-if="!registerForm.description.$pristine" ng-messages="registerForm.description.$error">
-              <div ng-message="required">Describe your reason(s) for using NDS Labs.</div>
+              <div ng-message="required">Describe your reason(s) for using {{ productName }}.</div>
             </div>
           </div>
         </div>
@@ -186,7 +186,7 @@
   <div class="row">
     <div class="helper-text" ng-if="showVerify">
       <h2 class="text-warning"><i class="fa fa-fw fa-square-o"></i>&nbsp;&nbsp;Almost there!</h2>
-      <!--<h4>&nbsp;&nbsp;Thank you for registering for NDS Labs</h4>-->
+      <!--<h4>&nbsp;&nbsp;Thank you for registering for {{ productName }}</h4>-->
       <h4>Your request is not submitted until you confirm your e-mail address</h4>
     </div>
   </div>

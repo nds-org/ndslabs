@@ -19,14 +19,15 @@ angular
     return filtered;
   };
 })
+
 /**
  * The Controller for the Navigation Bar
  * 
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'AppStoreRoute', 'HomeRoute',
-    function($scope, $location, LoginRoute, AppStoreRoute, HomeRoute) {
+.controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ProductName', 'ProductUrl',
+    function($scope, $location, LoginRoute, AppStoreRoute, HomeRoute, ProductName, ProductUrl) {
   $scope.$on('$routeChangeSuccess', function(event, current, previous){
     if (current.$$route) {
       $scope.path = current.$$route.originalPath;
@@ -38,8 +39,8 @@ angular
   
   $scope.home = 
   {
-    name:'NDS Labs',
-    url: 'http://labsportal.nationaldataservice.org/'
+    name: ProductName,
+    url: ProductUrl
   };
   
   $scope.navs = [
@@ -49,7 +50,7 @@ angular
       icon: 'fa-dashboard'
     },
     {
-      name:'Browse Applications',
+      name:'Catalog',
       url: '#' + AppStoreRoute,
       icon: 'fa-list-alt'
     }
