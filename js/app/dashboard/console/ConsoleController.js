@@ -9,8 +9,25 @@ angular
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
  
-.controller('ConsoleController', [ '$scope', '$routeParams', '$window', function($scope, $routeParams, $window) {
-  $scope.svcId = $routeParams.stackId + '-' + $routeParams.service;
+.controller('ConsoleController', [ '$scope', '$routeParams', '$window', '_', 'Stacks', function($scope, $routeParams, $window, _, Stacks) {
+
+  $scope.$watch(function () { return Stacks.all }, function() {
   
+    $scope.stacks = Stacks.all;
+    var stk = _.find($scope.stacks, [ 'id', $routeParams.stackId ]);
+    
+    if (!stk) {
+      return;
+    }
+    
+    $scope.stack = stk;
+    
+    
+    $scope.service = _.find($scope.stack.services, [ 'service', $routeParams.service ]);
+  });
+    
+  $scope.svcId = $routeParams.stackId + '-' + $routeParams.service;
   $window.document.title = 'Console: ' + $scope.svcId;
+  
+  $scope.stacks = Stacks.all;
 }])

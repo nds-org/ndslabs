@@ -309,7 +309,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     templateUrl: 'app/dashboard/service/addOrEditService.html'
   })
   .when(ConsoleRoute, {
-    title: 'Application Service Console',
+    title: 'Service Console',
     controller: 'ConsoleController',
     templateUrl: 'app/dashboard/console/console.html'
   })
