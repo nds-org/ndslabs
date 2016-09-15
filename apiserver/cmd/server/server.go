@@ -355,6 +355,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 	go s.kube.WatchPods(s)
 
 	http.Handle(s.prefix, api.MakeHandler())
+	http.Handle("/docs/", http.StripPrefix("/docs/", http.FileServer(http.Dir("swagger-spec"))))
 	http.HandleFunc(s.prefix+"download", s.DownloadClient)
 
 	glog.Infof("Listening on %s", cfg.Server.Port)

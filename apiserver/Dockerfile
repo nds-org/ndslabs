@@ -24,6 +24,7 @@ RUN apt-get update -y -qq && \
     
 
 COPY entrypoint.sh /
+COPY swagger-spec /swagger-spec
 COPY templates /templates
 
 VOLUME /volumes
