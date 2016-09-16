@@ -533,6 +533,7 @@ func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 			}
 		}
 		account.Password = ""
+		account.Token = ""
 		w.WriteJson(account)
 	}
 }
@@ -877,6 +878,10 @@ func (s *Server) DeleteAccount(w rest.ResponseWriter, r *rest.Request) {
 
 	if !s.IsAdmin(r) {
 		rest.Error(w, "", http.StatusUnauthorized)
+		return
+	}
+	if userId == "admin" {
+		rest.Error(w, "", http.StatusForbidden)
 		return
 	}
 
@@ -2100,7 +2105,7 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 				for _, dep := range svc.Dependencies {
 					if dep.DependencyKey == stackService.Service {
 						numDeps++
-						if ss.Status == "stopped" || ss.Status == "" {
+						if ss.Status == "stopped" || ss.Status == "" || ss.Status == "error" {
 							stoppedDeps++
 						}
 					}

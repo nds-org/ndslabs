@@ -100,12 +100,15 @@ var getAccountCmd = &cobra.Command{
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		account, err := client.GetAccount(args[0])
+		userId := apiUser.username
+		if len(args) == 1 {
+			userId = args[0]
+		}
+		account, err := client.GetAccount(userId)
 		if err != nil {
 			fmt.Printf("Get account failed: %s\n", err)
 			return
 		}
-		account.Password = "REDACTED"
 		data, err := json.MarshalIndent(account, "", "   ")
 		if err != nil {
 			fmt.Printf("Error marshalling account %s\n", err.Error)
