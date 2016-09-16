@@ -1004,6 +1004,12 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 	if !ok {
 		glog.Warningf("Cannot add service, dependency %s missing\n", dep)
 		rest.Error(w, fmt.Sprintf("Missing dependency %s", dep), http.StatusNotFound)
+	}
+
+	cf, ok := s.checkConfigs(userId, &service)
+	if !ok {
+		glog.Warningf("Cannot add service, config dependency %s missing\n", cf)
+		rest.Error(w, fmt.Sprintf("Missing config dependency %s", cf), http.StatusNotFound)
 		return
 	}
 
@@ -1060,6 +1066,11 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 	if !ok {
 		glog.Warningf("Cannot add service, dependency %s missing\n", dep)
 		rest.Error(w, fmt.Sprintf("Missing dependency %s", dep), http.StatusNotFound)
+	}
+	cf, ok := s.checkConfigs(userId, &service)
+	if !ok {
+		glog.Warningf("Cannot add service, config dependency %s missing\n", cf)
+		rest.Error(w, fmt.Sprintf("Missing config dependency %s", cf), http.StatusNotFound)
 		return
 	}
 
@@ -1689,20 +1700,16 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	glog.V(4).Infof("Starting controller for %s\n", serviceKey)
 	spec, _ := s.etcd.GetServiceSpec(userId, serviceKey)
 
-	sharedEnv := make(map[string]string)
-	// Hack to allow for sharing configuration information between dependent services
-	for _, depends := range spec.Dependencies {
-		if depends.ShareConfig {
-			// Get the stack service for the dependency, if present
+	// useFrom
+	for _, config := range spec.Config {
+		if len(config.UseFrom) > 0 {
 			for i := range stack.Services {
 				ss := &stack.Services[i]
-				if ss.Service == depends.DependencyKey {
-					// Found it. Now get it's config
-					for key, value := range ss.Config {
-						sharedEnv[key] = value
-						glog.V(4).Infof("Adding env from %s  %s=%s\n", ss.Service, key, value)
-					}
+				if config.UseFrom == ss.Service {
+					glog.V(4).Infof("Setting %s %s to %s %s\n", stackService.Id, config.Name, ss.Id, ss.Config[config.Name])
+					stackService.Config[config.Name] = ss.Config[config.Name]
 				}
+
 			}
 		}
 	}
@@ -1710,7 +1717,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
 
 	account, _ := s.etcd.GetAccount(userId)
-	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, s.domain, account.EmailAddress, stackService, spec, addrPortMap, &sharedEnv)
+	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, s.domain, account.EmailAddress, stackService, spec, addrPortMap)
 
 	s.makeDirectories(userId, stackService)
 
@@ -2620,6 +2627,18 @@ func (s *Server) checkDependencies(uid string, service *api.ServiceSpec) (string
 	for _, dependency := range service.Dependencies {
 		if !s.serviceExists(uid, dependency.DependencyKey) {
 			return dependency.DependencyKey, false
+		}
+	}
+	return "", true
+}
+
+// Make sure that conig.useFrom dependencies exist
+func (s *Server) checkConfigs(uid string, service *api.ServiceSpec) (string, bool) {
+	for _, config := range service.Config {
+		if len(config.UseFrom) > 0 {
+			if !s.serviceExists(uid, config.UseFrom) {
+				return config.UseFrom, false
+			}
 		}
 	}
 	return "", true
