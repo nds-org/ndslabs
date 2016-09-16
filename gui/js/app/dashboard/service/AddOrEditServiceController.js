@@ -74,42 +74,51 @@ angular
     // TODO: ports are not currently supported
     $scope.ports = [];
     angular.forEach($scope.service.endpoints, function(endPt) {
-      $scope.ports.push({ protocol: endPt.protocol, port: endPt.port, access: 'Internal' });
+      $scope.ports.push({ protocol: endPt.protocol, port: endPt.port });
     });
   });
   
   $scope.$watch(function () { return Project.project; }, function(newValue, oldValue) { $scope.project = newValue; });
   
-  $scope.save = function() {
-    $scope.service.volumeMounts = {};
-    angular.forEach($scope.volumes, function(mnt) {
-      $scope.service.volumeMounts[mnt.from] = mnt.to;
+  var parseMaps = function(service, volumes, ports, configs) {
+    service.volumeMounts = {};
+    angular.forEach(volumes, function(mnt) {
+      service.volumeMounts[mnt.from] = mnt.to;
     });
     
     //$scope.service.ports = $scope.ports;
-    $scope.service.endpoints = [];
-    angular.forEach($scope.ports, function(port) {
-      $scope.service.endpoints.push({ port: port.port, protocol: port.protocol, access: port.access} );
+    service.endpoints = [];
+    angular.forEach(ports, function(port) {
+      service.endpoints.push({ port: port.port, protocol: port.protocol });
     });
     
     // Parse environment vars into config map
-    $scope.service.config = {};
-    angular.forEach($scope.configs, function(cfg) {
+    service.config = {};
+    angular.forEach(configs, function(cfg) {
       // Do not allow for empty passwords
       if (cfg.isPassword && cfg.value === '') {
         // TODO: Generate random secure passwords here!
         cfg.value = RandomPassword.generate();
       }
       
-      $scope.service.config[cfg.name] = cfg.value;
+      service.config[cfg.name] = cfg.value;
     });
+    
+    return service;
+  };
+  
+  $scope.save = function() {
+    $scope.service = parseMaps($scope.service, $scope.volumes, $scope.ports, $scope.configs);
     
     if (!$scope.editingService && $scope.stack.services.indexOf($scope.service) === -1) {
       angular.forEach($scope.spec.depends, function(dep) {
         var exists = _.find($scope.stack.services, function(svc) { return svc.service === dep.key });
         if (dep.required && !exists) {
           var spec = _.find(Specs.all, [ 'key', dep.key ]);
-          $scope.stack.services.push(new StackService($scope.stack, spec));
+          var dependency = new StackService($scope.stack, spec);
+          
+          dependency = parseMaps(dependency, dependency.volumeMounts, dependency.endpoints, dependency.config);
+          $scope.stack.services.push(dependency);
         }
       });
       

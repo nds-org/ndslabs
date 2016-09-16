@@ -2,7 +2,7 @@
 <section>
   <div class="row">
     <div class="col-xs-12">
-      <h3>{{ (editingService ? 'Edit' : 'Add') }} {{ service.service | specProperty:'label' }}<span ng-if="service.id"> ({{ service.id }})</span></h3>
+      <h3>{{ editingService ? 'Edit' : 'Add' }} {{ service.service | specProperty:'label' }}<span ng-if="service.id"> ({{ service.id }})</span></h3>
       
       <ol class="breadcrumb">
         <!-- <li><a ng-href="{{ productUrl }}">{{ productName }}</a></li> -->
@@ -12,27 +12,12 @@
       </ol>
         
       <uib-tabset active="activeTab">
-        <uib-tab heading="Docker" index="0">
-          <fieldset class="border-nds">
-            <legend class="legend-fix">Docker</legend>
-            
-            <label>Registry</label>
-            <p>{{ spec.image.registry || 'docker.io' }}</p>
-            
-            <label>Image Name</label>
-            <p>{{ spec.image.name }}</p>
-            
-            <label>Image Tag</label><!--  "dep as dep.label for dep in spec.depends | invertSpecList track by dep.key --->
-            <select class="form-control" ng-model="service.imageTag">
-              <option value="">Default ({{ spec.image.tags[0] || 'latest' }})</option>
-              <option ng-repeat="tag in spec.image.tags track by tag" value="{{ tag }}">{{ tag }}</option>
-            </select>
-          </fieldset>
-        </uib-tab>
-        
         <!-- Config Mapper -->
-        <uib-tab heading="Environment" index="1">
-          
+        <uib-tab index="1">
+          <uib-tab-heading>
+            Variables <span class="badge">{{ configs | countReqConfigs }}</span>
+          </uib-tab-heading>
+        
           <fieldset class="border-nds">
             <legend class="legend-fix">Environment Variables</legend>
             <div class="table-responsive">
@@ -103,7 +88,11 @@
         </uib-tab>
       
         <!-- Volume Mapper -->
-        <uib-tab heading="Data" index="2">
+        <uib-tab index="2">
+          <uib-tab-heading>
+            Data <span class="badge">{{ volumes | countReqVolumes }}</span>
+          </uib-tab-heading>
+          
           <fieldset class="border-nds">
             <legend class="legend-fix">Application Data</legend>
             <div class="table-responsive">
@@ -120,8 +109,7 @@
                     <td>
                       <!--<div class="input-group">
                         <span class="input-group-addon" id="volume-map-from">/home/{{ project.namespace }}/</span>-->
-                        <span ng-if="!volume.canEdit">{{ volume.from }}</span>
-                        <input class="form-control" ng-if="volume.canEdit" type="text" ng-model="volume.from" placeholder="Map From..." />
+                        <input class="form-control" type="text" ng-model="volume.from" placeholder="Map From..." />
                       <!--</div>-->
                     </td>
                     <td>
@@ -139,7 +127,7 @@
                     <td>
                       <input class="form-control" ng-model="newTo" placeholder="Map To..." />
                     </td>
-                    <td><button class="btn btn-xs btn-primary" ng-click="volumes.push({ to: newTo, from: newFrom, canEdit:true });newFrom=newTo=''" ng-disabled="!newTo || !newFrom"><i class="fa fa-fw fa-plus"></i></button></td>
+                    <td><button class="btn btn-xs btn-primary" ng-click="volumes.push({ to: newTo, from: newFrom, canEdit:true });newFrom=newTo=''" ng-disabled="!newTo || !newFrom || _.find(volumes, [ 'to', newTo ])"><i class="fa fa-fw fa-plus"></i></button></td>
                   </tr>
                 </tbody>
               </table>
@@ -181,6 +169,25 @@
             </div>
           </fieldset>
         </uib-tab> -->
+        
+        
+        <uib-tab heading="Docker" index="3">
+          <fieldset class="border-nds">
+            <legend class="legend-fix">Docker</legend>
+            
+            <label>Registry</label>
+            <p>{{ spec.image.registry || 'docker.io' }}</p>
+            
+            <label>Image Name</label>
+            <p>{{ spec.image.name }}</p>
+            
+            <label>Image Tag</label><!--  "dep as dep.label for dep in spec.depends | invertSpecList track by dep.key --->
+            <select class="form-control" ng-model="service.imageTag">
+              <option value="">Default ({{ spec.image.tags[0] || 'latest' }})</option>
+              <option ng-repeat="tag in spec.image.tags track by tag" value="{{ tag }}">{{ tag }}</option>
+            </select>
+          </fieldset>
+        </uib-tab>
       </uib-tabset>
     </div>
   </div>

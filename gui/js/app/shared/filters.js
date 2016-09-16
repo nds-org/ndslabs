@@ -15,6 +15,34 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  */ 
 .constant('_', window._)
 
+.filter('countReqConfigs', [ '_', function(_) {
+  return function(input) {
+    var ret = [];
+    
+    angular.forEach(input, function(cfg) {
+      if (cfg.isPassword || cfg.canOverride) {
+        ret.push(cfg);
+      }
+    }); 
+    
+    return ret.length;
+  }
+}])
+
+
+.filter('countReqVolumes', [ '_', function(_) {
+  return function(input) {
+    var ret = [];
+    
+    angular.forEach(input, function(vol) {
+      if (!vol.canEdit) {
+        ret.push(vol);
+      }
+    }); 
+    
+    return ret.length;
+  }
+}])
 
 /**
  * Given a list of specs, return only those associated with the given tag name
@@ -30,6 +58,28 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
     return _.filter(input, function(spec) {
       return spec.tags && spec.tags.indexOf(tag.id) !== -1
     });
+  };
+}])
+
+/**
+ * Given a list of option and a stack, return only option which have not yet been added to the stack
+ */ 
+.filter('notPresent', [ '_', function(_) {
+  return function(input, stack) {
+    if (!stack || !stack.key) {
+      return [];
+    }
+    
+    var ret = [];
+    
+    angular.forEach(input, function(option) {
+      var item = _.find(stack.services, [ 'service', option.key ]);
+      if (!item) {
+        ret.push(option);
+      }
+    });
+    
+    return ret;
   };
 }])
 
