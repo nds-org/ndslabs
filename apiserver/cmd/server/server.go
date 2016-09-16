@@ -813,22 +813,19 @@ func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
 	}
 
 	// Get the GFS server pods
-	/*
-		Disabled until NDS-395 resolved
-		gfs, err := s.kube.GetPods("default", "name", "glusterfs-server-globalfs")
+	gfs, err := s.kube.GetPods("kube-system", "name", "glfs-server-global")
+	if err != nil {
+		return false, err
+	}
+	if len(gfs) > 0 {
+		cmd := []string{"gluster", "volume", "quota", s.volName, "limit-usage", "/" + account.Namespace, fmt.Sprintf("%dGB", account.ResourceLimits.StorageQuota)}
+		_, err := s.kube.ExecCommand("kube-system", gfs[0].Name, cmd)
 		if err != nil {
 			return false, err
 		}
-		if len(gfs) > 0 {
-			cmd := []string{"gluster", "volume", "quota", s.volName, "limit-usage", "/" + account.Namespace, fmt.Sprintf("%dGB", account.ResourceLimits.StorageQuota)}
-			_, err := s.kube.ExecCommand("default", gfs[0].Name, cmd)
-			if err != nil {
-				return false, err
-			}
-		} else {
-			glog.V(2).Info("No GFS servers found, cannot set account quota")
-		}
-	*/
+	} else {
+		glog.V(2).Info("No GFS servers found, cannot set account quota")
+	}
 	return true, nil
 }
 
@@ -1003,6 +1000,12 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
+	dep, ok := s.checkDependencies(userId, &service)
+	if !ok {
+		glog.Warningf("Cannot add service, dependency %s missing\n", dep)
+		rest.Error(w, fmt.Sprintf("Missing dependency %s", dep), http.StatusNotFound)
+	}
+
 	cf, ok := s.checkConfigs(userId, &service)
 	if !ok {
 		glog.Warningf("Cannot add service, config dependency %s missing\n", cf)
@@ -1059,6 +1062,11 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
+	dep, ok := s.checkDependencies(userId, &service)
+	if !ok {
+		glog.Warningf("Cannot add service, dependency %s missing\n", dep)
+		rest.Error(w, fmt.Sprintf("Missing dependency %s", dep), http.StatusNotFound)
+	}
 	cf, ok := s.checkConfigs(userId, &service)
 	if !ok {
 		glog.Warningf("Cannot add service, config dependency %s missing\n", cf)
@@ -1420,7 +1428,7 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 					if stackService.VolumeMounts == nil {
 						stackService.VolumeMounts = map[string]string{}
 					}
-					volPath := fmt.Sprintf("AppData/%s", s.kube.RandomString(5))
+					volPath := fmt.Sprintf("AppData/%s", s.getAppDataDir(stackService.Id))
 
 					stackService.VolumeMounts[volPath] = mount.MountPath
 				}
@@ -1546,7 +1554,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 					}
 
 					if len(fromPath) == 0 {
-						volPath := fmt.Sprintf("AppData/%s", s.kube.RandomString(5))
+						volPath := fmt.Sprintf("AppData/%s", s.getAppDataDir(stackService.Id))
 						stackService.VolumeMounts[volPath] = mount.MountPath
 					}
 				}
@@ -1559,7 +1567,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 
 				if found == 0 {
 					// Create a new temporary folder
-					volPath := fmt.Sprintf("AppData/%s", s.kube.RandomString(5))
+					volPath := fmt.Sprintf("AppData/%s", s.getAppDataDir(stackService.Id))
 					stackService.VolumeMounts[volPath] = mount.MountPath
 				}
 			}
@@ -1634,7 +1642,7 @@ func (s *Server) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 			}
 		}
 		if s.useLoadBalancer() {
-			s.kube.DeleteIngress(userId, stackService.Id)
+			s.kube.DeleteIngress(userId, stackService.Id+"-ingress")
 			glog.V(4).Infof("Deleted ingress for service %s\n", stackService.Id)
 		}
 	}
@@ -2609,6 +2617,19 @@ func (s *Server) GetContact(w rest.ResponseWriter, r *rest.Request) {
 		"forum": "https://groups.google.com/forum/#!forum/ndslabs",
 		"chat":  "https://gitter.im/nds-org/ndslabs",
 	})
+}
+
+func (s *Server) getAppDataDir(stackService string) string {
+	return fmt.Sprintf("%s-%s", stackService, s.kube.RandomString(5))
+}
+
+func (s *Server) checkDependencies(uid string, service *api.ServiceSpec) (string, bool) {
+	for _, dependency := range service.Dependencies {
+		if !s.serviceExists(uid, dependency.DependencyKey) {
+			return dependency.DependencyKey, false
+		}
+	}
+	return "", true
 }
 
 // Make sure that conig.useFrom dependencies exist
