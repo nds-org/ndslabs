@@ -1,20 +1,5 @@
 <!-- The "Contact Us" View -->
 <section>
-  <div class="row">
-    <div class="col-xs-12">
-      <!--<button type="button" class="btn btn-xs btn-default pull-right" data-dismiss="modal" aria-label="Close" ng-click="close()"><i class="fa fa-fw fa-times"></i></button>-->
-      <h3>Support and Feedback</h3>
-      
-      <ol class="breadcrumb" ng-if="token">
-        <!-- <li><a ng-href="{{ productUrl }}">{{ productName }}</a></li> -->
-        <li class="active">Support and Feedback</li>
-      </ol>
-    </div>
-  </div>
-  
-  
-  
-  
     <div class="row text-center" id="supportLinks">
         <div class="col-sm-{{ 12 / links.length }} text-center" ng-repeat="link in links track by link.id">
           <h3>{{ link.label }}</h3>
