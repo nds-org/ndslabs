@@ -1,12 +1,14 @@
 <!-- The Add / Edit Application Service View -->
 <section>
   <div class="row">
-    <div class="col-xs-10 col-xs-offset-1">
-      <h3>{{ editingService ? 'Edit' : 'Add' }} {{ service.service | specProperty:'label' }}<span ng-if="service.id"> ({{ service.id }})</span></h3>
+    <div class="col-xs-12">
+      <h3>{{ (editingService ? 'Edit' : 'Add') }} {{ service.service | specProperty:'label' }}<span ng-if="service.id"> ({{ service.id }})</span></h3>
       
       <ol class="breadcrumb">
-        <li><a href="#/home">Dashboard</a></li>
-        <li class="active">Edit Service</li>
+        <!-- <li><a ng-href="{{ productUrl }}">{{ productName }}</a></li> -->
+        <li><a href="#/home">Applications</a></li>
+        <li><a ng-href="#/home?expand={{ stack.key }}">{{ stack.key | specProperty:'label'}} ({{ stack.id }})</a></li>
+        <li class="active">{{ editingService ? service.id : 'New ' + (service.service | specProperty:'label') }}</li>
       </ol>
         
       <uib-tabset active="activeTab">

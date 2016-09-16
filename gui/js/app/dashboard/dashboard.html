@@ -1,19 +1,19 @@
 <!-- The Dashboard View -->
 <section>
-  <div class="row" id="dashHeader">
+  <div class="row">
     <div class="col-xs-8">
-      <h2>{{ project.name | capitalize }}</h2>
+      <h3>{{ project.name | capitalize }}</h3>
     </div>
     
     <div class="col-xs-4">
       <div class="pull-right">
-        <a class="btn btn-sm btn-primary" href="#/store"
+        <a class="btn btn-xs btn-primary" href="#/store"
            ng-mouseenter="iconBounce = true" ng-mouseleave="iconBounce = false"
            uib-tooltip="Add an Application Instance" tooltip-placement="left">
           <i class="fa fa-fw fa-plus"  ng-class="{ 'faa-bounce animated':iconBounce }"></i>
         </a>
        
-        <button class="btn btn-default btn-sm" ng-click="autoRefresh.toggle()"
+        <button class="btn btn-default btn-xs" ng-click="autoRefresh.toggle()"
              ng-class="{ 'btn-info':autoRefresh.interval !== null }"
              ng-mouseenter="iconSpin = true" ng-mouseleave="iconSpin = false"
              uib-tooltip="Refresh" tooltip-placement="left">
@@ -22,6 +22,11 @@
       </div>
     </div>
   </div>
+    
+  <ol class="breadcrumb">
+    <!-- <li><a ng-href="{{ productUrl }}">{{ productName }}</a></li> -->
+    <li class="active">Applications</li>
+  </ol>
   
   <!-- Applications Area -->
   <div class="row">
