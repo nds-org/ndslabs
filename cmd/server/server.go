@@ -30,6 +30,9 @@ import (
 	"github.com/golang/glog"
 )
 
+var adminUser = "admin"
+var systemNamespace = "kube-system"
+
 type Server struct {
 	etcd           *etcd.EtcdHelper
 	kube           *kube.KubeHelper
@@ -243,7 +246,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		Timeout:    timeout,
 		MaxRefresh: time.Hour * 24,
 		Authenticator: func(userId string, password string) bool {
-			if userId == "admin" && password == adminPasswd {
+			if userId == adminUser && password == adminPasswd {
 				return true
 			} else {
 				return s.etcd.CheckPassword(userId, password) && s.etcd.CheckAccess(userId)
@@ -260,8 +263,8 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		},
 		PayloadFunc: func(userId string) map[string]interface{} {
 			payload := make(map[string]interface{})
-			if userId == "admin" {
-				payload["admin"] = true
+			if userId == adminUser {
+				payload[adminUser] = true
 			}
 			payload["server"] = s.hostname
 			payload["user"] = userId
@@ -488,7 +491,7 @@ func (s *Server) GetAllAccounts(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) getUser(r *rest.Request) string {
 	payload := r.Env["JWT_PAYLOAD"].(map[string]interface{})
-	if payload["admin"] == true {
+	if payload[adminUser] == true {
 		return ""
 	} else {
 		return payload["user"].(string)
@@ -497,7 +500,7 @@ func (s *Server) getUser(r *rest.Request) string {
 
 func (s *Server) IsAdmin(r *rest.Request) bool {
 	payload := r.Env["JWT_PAYLOAD"].(map[string]interface{})
-	if payload["admin"] == true {
+	if payload[adminUser] == true {
 		return true
 	} else {
 		return false
@@ -589,7 +592,57 @@ func (s *Server) createBasicAuthSecret(uid string) error {
 		return err
 	}
 
-	_, err = s.kube.CreateBasicAuthSecret(account.Namespace, account.Password)
+	_, err = s.kube.CreateBasicAuthSecret(account.Namespace, account.Namespace, account.Password)
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+
+	err = s.updateIngress(uid)
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+	return nil
+}
+
+func (s *Server) updateIngress(uid string) error {
+
+	ingresses, err := s.kube.GetIngresses(uid)
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+	if ingresses != nil {
+		for _, ingress := range ingresses {
+			glog.V(4).Infof("Touching ingress %s\n", ingress.Name)
+			_, err = s.kube.CreateUpdateIngress(uid, &ingress, true)
+			if err != nil {
+				glog.Error(err)
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s *Server) createLMABasicAuthSecret() error {
+	if s.kube.NamespaceExists(systemNamespace) {
+		account, err := s.etcd.GetAccount(adminUser)
+		if err != nil {
+			glog.Error(err)
+			return err
+		}
+
+		_, err = s.kube.CreateBasicAuthSecret(systemNamespace, adminUser, account.Password)
+		if err != nil {
+			glog.Error(err)
+			return err
+		}
+	}
+
+	err := s.updateIngress(systemNamespace)
 	if err != nil {
 		glog.Error(err)
 		return err
@@ -2274,7 +2327,7 @@ func (s *Server) loadSpecs(path string) error {
 
 func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, pod *k8api.Pod) {
 
-	if pod.Namespace != "default" && pod.Namespace != "kube-system" {
+	if pod.Namespace != "default" && pod.Namespace != systemNamespace {
 		glog.V(4).Infof("HandlePodEvent %s", eventType)
 
 		//name := pod.Name
@@ -2369,7 +2422,7 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 func (s *Server) HandleReplicationControllerEvent(eventType watch.EventType, event *k8api.Event,
 	rc *k8api.ReplicationController) {
 
-	if rc.Namespace != "default" && rc.Namespace != "kube-system" {
+	if rc.Namespace != "default" && rc.Namespace != systemNamespace {
 		glog.V(4).Infof("HandleReplicationControllerEvent %s", eventType)
 
 		userId := rc.Namespace
@@ -2522,10 +2575,10 @@ func (s *Server) createAdminUser(password string) error {
 
 	glog.V(4).Infof("Creating admin user")
 
-	if !s.accountExists("admin") {
+	if !s.accountExists(adminUser) {
 		account := &api.Account{
-			Name:        "admin",
-			Namespace:   "admin",
+			Name:        adminUser,
+			Namespace:   adminUser,
 			Description: "NDS Labs administrator",
 			Password:    password,
 			ResourceLimits: api.AccountResourceLimits{
@@ -2535,29 +2588,34 @@ func (s *Server) createAdminUser(password string) error {
 				MemoryDefault: s.memDefault,
 			},
 		}
-		err := s.setupAccount(account)
+		err := s.etcd.PutAccount(adminUser, account, true)
 		if err != nil {
 			glog.Error(err)
 			return err
 		}
-		err = s.etcd.PutAccount("admin", account, true)
+		err = s.setupAccount(account)
 		if err != nil {
 			glog.Error(err)
 			return err
 		}
 
 	} else {
-		account, err := s.etcd.GetAccount("admin")
+		account, err := s.etcd.GetAccount(adminUser)
 		if err != nil {
 			glog.Error(err)
 			return err
 		}
 		account.Password = password
-		err = s.etcd.PutAccount("admin", account, true)
+		err = s.etcd.PutAccount(adminUser, account, true)
 		if err != nil {
 			glog.Error(err)
 			return err
 		}
+	}
+	err := s.createLMABasicAuthSecret()
+	if err != nil {
+		glog.Error(err)
+		return err
 	}
 
 	return nil
