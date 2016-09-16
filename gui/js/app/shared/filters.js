@@ -20,7 +20,7 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
     var ret = [];
     
     angular.forEach(input, function(cfg) {
-      if (cfg.isPassword || cfg.value === '' ) {
+      if (cfg.isPassword || cfg.canOverride) {
         ret.push(cfg);
       }
     }); 
