@@ -83,6 +83,13 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  */
 .constant('ConsoleRoute', '/home/:stackId/console/:service')
 
+/**
+ * The name of the product to display in the UI and the URL to link to when clicked
+ */
+ 
+.constant('OrgName', 'NDS')
+.constant('ProductName', 'Labs Workbench')
+.constant('ProductUrl', 'http://www.nationaldataservice.org/projects/labs.html')
 
 /**
  * The version/revision of this GUI
@@ -172,8 +179,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ConsoleRoute', 'AddServiceRoute', 'EditServiceRoute', 'AddSpecRoute', 'EditSpecRoute', 'VerifyAccountRoute', 'ResetPasswordRoute', 'SignUpRoute', 'ContactUsRoute',
-    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, HomeRoute, ConsoleRoute, AddServiceRoute, EditServiceRoute, AddSpecRoute, EditSpecRoute, VerifyAccountRoute, ResetPasswordRoute, SignUpRoute, ContactUsRoute) {
+.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ConsoleRoute', 'AddServiceRoute', 'EditServiceRoute', 'AddSpecRoute', 'EditSpecRoute', 'VerifyAccountRoute', 'ResetPasswordRoute', 'SignUpRoute', 'ContactUsRoute', 'ProductName',
+    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, HomeRoute, ConsoleRoute, AddServiceRoute, EditServiceRoute, AddSpecRoute, EditSpecRoute, VerifyAccountRoute, ResetPasswordRoute, SignUpRoute, ContactUsRoute, ProductName) {
   // Squelch debug-level log messages
   $logProvider.debugEnabled(DEBUG);
       
@@ -247,17 +254,17 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   // Setup routes to our different pages
   $routeProvider
   .when(LoginRoute, {
-    title: 'Sign In to NDS Labs',
+    title: 'Sign In to ' + ProductName,
     controller: 'LoginController',
     templateUrl: 'app/login/login.html'
   })
   .when(SignUpRoute, {
-    title: 'Sign Up for NDS Labs',
+    title: 'Sign Up for ' + ProductName,
     controller: 'SignUpController',
     templateUrl: 'app/login/signUp/signUp.html'
   })
   .when(ContactUsRoute, {
-    title: 'Contact NDS Labs Support',
+    title: 'Contact ' + ProductName + ' Support',
     controller: 'HelpController',
     templateUrl: 'app/help/help.html'
   })
@@ -272,7 +279,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     templateUrl: 'app/login/reset/reset.html'
   })
   .when(AppStoreRoute, {
-    title: 'NDS Labs Catalog',
+    title: ProductName + ' Catalog',
     controller: 'CatalogController',
     templateUrl: 'app/appStore/catalog.html'
   })
@@ -287,7 +294,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     templateUrl: 'app/appStore/addOrEdit/addOrEditSpec.html'
   })
   .when(HomeRoute, {
-    title: 'NDS Labs Dashboard',
+    title: ProductName + ' Dashboard',
     controller: 'DashboardController',
     templateUrl: 'app/dashboard/dashboard.html'
   })
@@ -302,7 +309,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     templateUrl: 'app/dashboard/service/addOrEditService.html'
   })
   .when(ConsoleRoute, {
-    title: 'Application Service Console',
+    title: 'Service Console',
     controller: 'ConsoleController',
     templateUrl: 'app/dashboard/console/console.html'
   })
