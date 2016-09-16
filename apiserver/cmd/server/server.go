@@ -2087,7 +2087,7 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 				for _, dep := range svc.Dependencies {
 					if dep.DependencyKey == stackService.Service {
 						numDeps++
-						if ss.Status == "stopped" || ss.Status == "" {
+						if ss.Status == "stopped" || ss.Status == "" || ss.Status == "error" {
 							stoppedDeps++
 						}
 					}
