@@ -1,4 +1,9 @@
 <footer id="footer">
+  <div class="alert alert-danger text-center" role="alert" ng-if="showAlertBanner">
+    We were unable to communicate with the server. Please wait a few minutes and try again.
+    If this problem persists, please contact <a href="#/contact">no one</a> - we can't get the contact e-mail if the API server is down...
+  </div>
+
   <div class="container">
     <div class="row">
       <div class="col-sm-12">
