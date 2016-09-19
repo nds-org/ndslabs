@@ -226,7 +226,7 @@
               </button>
           
               <!-- Stop Application Button -->
-              <button class="btn btn-sm btn-primary" ng-disabled="(stack.statusMessages.length < 40) || (stack.status !== 'started' && stack.status !== 'error') || stopping[stack.id]" 
+              <button class="btn btn-sm btn-primary" ng-disabled="(stack.statusMessages.length < 40 && stack.status !== 'started' && stack.status !== 'error') || stopping[stack.id]" 
                    ng-click="stopStack(stack)" ng-if="stack.status.indexOf('stop') === -1" uib-tooltip="Shutdown application services"
                   tooltip-placement="top-right">
                 <i class="fa fa-fw fa-power-off"></i>
