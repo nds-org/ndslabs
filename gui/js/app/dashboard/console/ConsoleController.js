@@ -9,8 +9,13 @@ angular
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
  
-.controller('ConsoleController', [ '$scope', '$routeParams', '$window', '_', 'Stacks', function($scope, $routeParams, $window, _, Stacks) {
+.controller('ConsoleController', [ '$scope', '$routeParams', '$location', '$window', '_', 'Stacks', 'AuthInfo', 'LoginRoute', function($scope, $routeParams, $location, $window, _, Stacks, AuthInfo, LoginRoute) {
 
+  if (!AuthInfo.get().token) {
+    $location.path(LoginRoute);
+    return;
+  }
+  
   $scope.$watch(function () { return Stacks.all }, function() {
   
     $scope.stacks = Stacks.all;

@@ -10,6 +10,11 @@ angular
  */
 .controller('LoginController', [ '$scope', '$cookies', '$location', '$log', '$uibModal', 'AuthInfo', 'NdsLabsApi', 'LoginRoute', 'HomeRoute', 'VerifyAccountRoute', 'ResetPasswordRoute', '$uibModalStack', 'ServerData', 'SignUpRoute', 'ContactUsRoute',
     function($scope, $cookies, $location, $log, $uibModal, authInfo, NdsLabsApi, LoginRoute, HomeRoute, VerifyAccountRoute, ResetPasswordRoute, $uibModalStack, ServerData, SignUpRoute, ContactUsRoute) {
+  
+  if (authInfo.get().token) {
+    $location.path(HomeRoute);
+  }    
+  
   // Grab our injected AuthInfo from the provider
   $scope.settings = authInfo.get();
   $scope.showVerify = false;
