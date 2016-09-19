@@ -12,10 +12,13 @@ angular
     function($scope, $log, NdsLabsApi, BuildDate, BuildVersion) {
   $scope.guiVersion = BuildVersion;
   $scope.guiBuildDate = BuildDate;
+  $scope.showAlertBanner = false;
   
   NdsLabsApi.getVersion().then(function(data, xhr) {
     $scope.apiVersion = data;
+    $scope.showAlertBanner = false;
   }, function(headers) {
     $log.error('Failed to grab API Version. Is the server running?');
+    $scope.showAlertBanner = true;
   });
 }]);
