@@ -17,11 +17,20 @@ angular
   var path = $location.path();
   $scope.editingService = (path.indexOf('/edit/') !== -1);
   
-  var projectId = null
-  $scope.$watch(function () { return Project.project; }, function(newValue, oldValue) { projectId = newValue.namespace; });
+  var projectId = null;
+  $scope.$watch(function () { return Project.project; }, function(newValue, oldValue) { 
+    $scope.project = newValue;
+    projectId = newValue.namespace;
+  });
   
+  var firstLoad = true;
   
+  $scope.$watch(function () { return Project.project; }, function(newValue, oldValue) { $scope.project = newValue;projectId = newValue.namespace; });
   $scope.$watch(function () { return Stacks.all; }, function(newValue, oldValue) {
+    if (!firstLoad) {
+      return;
+    }
+    
     var stackId = $routeParams.stackId;
     $scope.stack = _.find(Stacks.all, [ 'id', stackId ]);
     
@@ -76,9 +85,9 @@ angular
     angular.forEach($scope.service.endpoints, function(endPt) {
       $scope.ports.push({ protocol: endPt.protocol, port: endPt.port });
     });
+    
+    firstLoad = false;
   });
-  
-  $scope.$watch(function () { return Project.project; }, function(newValue, oldValue) { $scope.project = newValue; });
   
   var parseMaps = function(service, volumes, ports, configs) {
     service.volumeMounts = {};
