@@ -16,7 +16,14 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('AddOrEditSpecController', [ '$scope', '$log', '$location', '$routeParams', '_', 'NdsLabsApi', 'Specs', 'Spec', 'Vocabulary',  'Project',  function($scope, $log, $location, $routeParams, _, NdsLabsApi, Specs, Spec, Vocabulary, Project) {
+.controller('AddOrEditSpecController', [ '$scope', '$log', '$location', '$routeParams', '_', 'NdsLabsApi', 'Specs', 'Spec', 'Vocabulary',  'Project', 'AuthInfo', 'LoginRoute',
+    function($scope, $log, $location, $routeParams, _, NdsLabsApi, Specs, Spec, Vocabulary, Project, AuthInfo, LoginRoute) {
+  
+  if (!AuthInfo.get().token) {
+    $location.path(LoginRoute);
+    return;
+  }    
+  
   var path = $location.path();
   //$scope.editingSpec = (path.indexOf('edit') !== -1);
   $scope.editingSpec = (path.indexOf('/edit/') !== -1);
