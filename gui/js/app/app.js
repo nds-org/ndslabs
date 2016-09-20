@@ -84,6 +84,12 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 .constant('ConsoleRoute', '/home/:stackId/console/:service')
 
 /**
+ * The back-up (default) administrator e-mail to use for support, 
+ * in case the /api/contact endpoint is unavailable
+ */
+.constant('SupportEmail', '')
+
+/**
  * The name of the product to display in the UI and the URL to link to when clicked
  */
  
