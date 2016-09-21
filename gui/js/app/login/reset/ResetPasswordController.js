@@ -8,12 +8,14 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('ResetPasswordController', [ '$scope', '$location', '$cookies', '$routeParams', '$log', 'HomeRoute', 'NdsLabsApi', function($scope, $location, $cookies, $routeParams, $log, HomeRoute, NdsLabsApi) {
+.controller('ResetPasswordController', [ '$scope', '$location', '$cookies', '$routeParams', '$log', 'HomeRoute', 'NdsLabsApi', 'ProductName', function($scope, $location, $cookies, $routeParams, $log, HomeRoute, NdsLabsApi, ProductName) {
   $scope.token = $routeParams.t;
   
   if ($scope.token) {
     $cookies.put('token', $scope.token);
   }
+  
+  $scope.productName = ProductName;
   
   $scope.resetSendSuccessful = false;
   $scope.resetSuccessful = false;

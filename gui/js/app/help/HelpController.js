@@ -17,6 +17,8 @@ angular
     { label: "General Comment", value: "comment", placeholder: "Any notes or comments you would like to forward to the development team of " + ProductName + "..." }
   ];
   
+  $scope.productName = ProductName;
+  
   $scope.forms = {};
   $scope.status = "unsent";
   

@@ -9,15 +9,17 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('DashboardController', [ '$scope', 'Loading', '$log', '$routeParams', '$location', '$interval', '$q', '$window', '$filter', '$uibModal', '_', 'Project', 'RandomPassword', 'Stack', 'Stacks', 'Specs', 'AlertService', 'AutoRefresh', 'AuthInfo', 'LoginRoute',
-    'StackService', 'NdsLabsApi', function($scope, Loading, $log, $routeParams, $location, $interval, $q, $window, $filter, $uibModal, _, Project, RandomPassword, Stack, Stacks, Specs, AlertService,AutoRefresh, AuthInfo, LoginRoute,
-
-    StackService, NdsLabsApi) {
+.controller('DashboardController', [ '$scope', 'Loading', '$log', '$routeParams', '$location', '$interval', '$q', '$window', '$filter', '$uibModal', '_', 'Project', 'RandomPassword', 'Stack', 'Stacks', 'Specs', 'AlertService', 'AutoRefresh', 'AuthInfo', 'LandingRoute',
+      'StackService', 'NdsLabsApi', 'ProductName',
+    function($scope, Loading, $log, $routeParams, $location, $interval, $q, $window, $filter, $uibModal, _, Project, RandomPassword, Stack, Stacks, Specs, AlertService,AutoRefresh, AuthInfo, LandingRoute,
+      StackService, NdsLabsApi, ProductName) {
       
   if (!AuthInfo.get().token) {
-    $location.path(LoginRoute);
+    $location.path(LandingRoute);
     return;
   }
+  
+  $scope.productName = ProductName;
   
   $scope.expandedStacks = {};
   

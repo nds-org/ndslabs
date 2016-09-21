@@ -1,5 +1,17 @@
 <!-- The Login View -->
 <section>
+  <div class="row">
+    <div class="col-xs-offset-3 col-xs-6 text-center">
+      <!--<button type="button" class="btn btn-xs btn-default pull-right" data-dismiss="modal" aria-label="Close" ng-click="close()"><i class="fa fa-fw fa-times"></i></button>-->
+      <h3><i class="fa fa-fw fa-user-plus"></i> Log into {{ productName }}</h3>
+      
+      <ol class="breadcrumb">
+        <li><a ng-href="#/">{{ productName }}</a></li> 
+        <li class="active">Login</li>
+      </ol>
+    </div>
+  </div>
+  
   <!-- Main Panel -->
   <div class="panel panel-primary" id="loginPanel" ng-if="!showVerify">
     <div class="panel-heading">

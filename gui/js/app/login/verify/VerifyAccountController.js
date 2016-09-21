@@ -8,10 +8,13 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('VerifyAccountController', [ '$scope', '$location', '$routeParams', '$log', 'HomeRoute', 'NdsLabsApi', function($scope, $location, $routeParams, $log, HomeRoute, NdsLabsApi) {
+.controller('VerifyAccountController', [ '$scope', '$location', '$routeParams', '$log', 'HomeRoute', 'NdsLabsApi', 'ProductName', 
+    function($scope, $location, $routeParams, $log, HomeRoute, NdsLabsApi, ProductName) {
   $scope.token = $routeParams.t;
   $scope.user = $routeParams.u;
   $scope.verified = null;
+  
+  $scope.productName = ProductName;
   
   if (!$scope.user || !$scope.token) {
     $location.path(HomeRoute);
