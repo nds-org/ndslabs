@@ -24,6 +24,11 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 .constant('_', window._)
 
 /**
+ * The route to our "Landing Page" View
+ */
+.constant('LandingRoute', '/')
+
+/**
  * The route to our "Login" View
  */
 .constant('LoginRoute', '/login')
@@ -192,8 +197,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ConsoleRoute', 'AddServiceRoute', 'EditServiceRoute', 'AddSpecRoute', 'EditSpecRoute', 'VerifyAccountRoute', 'ResetPasswordRoute', 'SignUpRoute', 'ContactUsRoute', 'ProductName',
-    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, HomeRoute, ConsoleRoute, AddServiceRoute, EditServiceRoute, AddSpecRoute, EditSpecRoute, VerifyAccountRoute, ResetPasswordRoute, SignUpRoute, ContactUsRoute, ProductName) {
+.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ConsoleRoute', 'AddServiceRoute', 'EditServiceRoute', 'AddSpecRoute', 'EditSpecRoute', 'VerifyAccountRoute', 'ResetPasswordRoute', 'SignUpRoute', 'ContactUsRoute', 'ProductName', 'LandingRoute',
+    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, HomeRoute, ConsoleRoute, AddServiceRoute, EditServiceRoute, AddSpecRoute, EditSpecRoute, VerifyAccountRoute, ResetPasswordRoute, SignUpRoute, ContactUsRoute, ProductName, LandingRoute) {
   // Squelch debug-level log messages
   $logProvider.debugEnabled(DEBUG);
       
@@ -251,9 +256,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
             $cookies.remove('namespace');
             
             // Route to Login Page to prompt for credentials
-            if ($location.path() !== LoginRoute) {
-              $location.path(LoginRoute);
-            }
+            $location.path(LandingRoute);
+            
             return $q.reject(rejection);
           }
         }
@@ -270,6 +274,11 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     title: 'Sign In to ' + ProductName,
     controller: 'LoginController',
     templateUrl: 'app/login/login.html'
+  })
+  .when(LandingRoute, {
+    title: ProductName + ' Landing Page',
+    controller: 'LandingController',
+    templateUrl: 'app/landing/landing.html'
   })
   .when(SignUpRoute, {
     title: 'Sign Up for ' + ProductName,
@@ -326,14 +335,50 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     controller: 'ConsoleController',
     templateUrl: 'app/dashboard/console/console.html'
   })
-  .otherwise({ redirectTo: LoginRoute });
+  .otherwise({ redirectTo: LandingRoute });
 }])
 
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData', 'Loading',
-    function($rootScope, $window, $location, $log, $interval, $cookies, $uibModalStack, Stacks, _, authInfo, LoginRoute, AppStoreRoute, HomeRoute, NdsLabsApi, AutoRefresh, ServerData, Loading) {
+.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData', 'Loading', 'LandingRoute',
+    function($rootScope, $window, $location, $log, $interval, $cookies, $uibModalStack, Stacks, _, authInfo, LoginRoute, AppStoreRoute, HomeRoute, NdsLabsApi, AutoRefresh, ServerData, Loading, LandingRoute) {
+  
+  // Make _ bindable in partial views
+  // TODO: Investigate performance concerns here...
+  $rootScope._ = window._;
+    
+  // Check our token every 60s
+  var tokenCheckMs = 60000;
+  
+  // Define the logic for ending a user's session in the browser
+  var authInterval = null;
+  var terminateSession = authInfo.purge = function() {
+    // Cancel the auth check interval
+    if (authInterval) {
+      $interval.cancel(authInterval);
+      authInfo.tokenInterval = authInterval = null;
+    }
+    
+    if (authInfo.get().token) {
+      // Purge current session data
+      authInfo.get().token = null;
+      $cookies.remove('token');
+      $cookies.remove('namespace');
+      
+      // Close any open modals
+      $uibModalStack.dismissAll();
+      
+      // Stop any running auto-refresh interval
+      AutoRefresh.stop();
+      
+      // Purge any server data
+      ServerData.purgeAll();
+      
+      // redirect user to landing page
+      $location.path(LandingRoute);
+    }
+  };
   
   // Grab saved auth data from cookies and attempt to use the leftover session
   var token = $cookies.get('token');
@@ -342,11 +387,17 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     // Pull our token / namespace from cookies
     authInfo.get().token = token;
     authInfo.get().namespace = namespace;
+  } else {
+    $location.path(LandingRoute);
   }
-      
-  // Make _ bindable in partial views
-  // TODO: Investigate performance concerns here...
-  $rootScope._ = window._;
+  
+  // Every so often, check that our token is still valid
+  var checkToken = function() {
+    NdsLabsApi.getCheckToken().then(function() { $log.debug('Token is still valid.'); }, function() {
+      $log.error('Token expired, redirecting to login.');
+      terminateSession();
+    });
+  };
   
   // Change the tab/window title when we change routes
   $rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
@@ -360,56 +411,13 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   // When user changes routes, check that they are still authed
   $rootScope.$on( "$routeChangeStart", function(event, next, current) {
     // Skip token checking for the "Verify Account" View
-    if (next.$$route.templateUrl === 'app/login/verify/verify.html') {
+    if (next.$$route.templateUrl === 'app/login/verify/verify.html'
+        || next.$$route.templateUrl === 'app/landing/landing.html' 
+        || next.$$route.templateUrl === 'app/help/help.html' 
+        || next.$$route.templateUrl === 'app/login/reset/reset.html'
+        || next.$$route.templateUrl === 'app/login/login.html') {
       return;
     }
-    
-    // Define the logic for ending a user's session in the browser
-    var authInterval = null;
-    var terminateSession = authInfo.purge = function() {
-      // Cancel the auth check interval
-      if (authInterval) {
-        $interval.cancel(authInterval);
-        authInfo.tokenInterval = authInterval = null;
-      }
-      
-      if (authInfo.get().token) {
-        
-        // Purge current session data
-        authInfo.get().token = null;
-        $cookies.remove('token');
-        $cookies.remove('namespace');
-        
-        // Close any open modals
-        $uibModalStack.dismissAll();
-        
-        // Stop any running auto-refresh interval
-        AutoRefresh.stop();
-        
-        // Purge any server data
-        ServerData.purgeAll();
-        
-              
-        // user needs to log in, redirect to /login
-        if (!_.includes(next.templateUrl, "app/login/login.html")
-            && !_.includes(next.templateUrl, "app/login/signUp/signUp.html")
-            && !_.includes(next.templateUrl, "app/login/verify/verify.html")) {
-          $location.path(LoginRoute);
-        }
-      }
-    };
-    
-    // Check our token every 60s
-    var tokenCheckMs = 60000;
-    
-    // Every so often, check that our token is still valid
-    var checkToken = function() {
-      NdsLabsApi.getCheckToken().then(function() { $log.debug('Token is still valid.'); }, function() {
-        $log.error('Token expired, redirecting to login.');
-        terminateSession();
-        authInfo.purge();
-      });
-    };
   
     // Check if the token is still valid on route changes
     var token = $cookies.get('token');
@@ -418,15 +426,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       authInfo.get().namespace = $cookies.get('namespace');
       NdsLabsApi.getRefreshToken().then(function() {
         $log.debug('Token refreshed: ' + authInfo.get().token);
-        
-        Loading.set(ServerData.populateAll(authInfo.get().namespace).finally(function() {
-          /*if (InitialRedirect) {
-            InitialRedirect = false;
-            var dest = Stacks.all.length > 0 ? HomeRoute : AppStoreRoute;
-            debugger;
-            $location.path(dest);
-          }*/
-        }));
+        Loading.set(ServerData.populateAll(authInfo.get().namespace));
         
         // Restart our token check interval
         if (authInterval) {
@@ -444,8 +444,6 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
         
         terminateSession();
       });
-    } else {
-      terminateSession();
     }
   });
 }]);
