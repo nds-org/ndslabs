@@ -8,8 +8,14 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('AddOrEditServiceController', [ '$scope', '$routeParams', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stacks', 'StackService', 'Specs', 'RandomPassword', 'ProductName', 'ProductUrl',
-    function($scope, $routeParams, $location, $log, _, NdsLabsApi, Project, Stacks, StackService, Specs, RandomPassword, ProductName, ProductUrl) {
+.controller('AddOrEditServiceController', [ '$scope', '$routeParams', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stacks', 'StackService', 'Specs', 'RandomPassword', 'ProductName', 'ProductUrl', 'AuthInfo', 'LoginRoute',
+    function($scope, $routeParams, $location, $log, _, NdsLabsApi, Project, Stacks, StackService, Specs, RandomPassword, ProductName, ProductUrl, AuthInfo, LoginRoute) {
+      
+  if (!AuthInfo.get().token) {
+    $location.path(LoginRoute);
+    return;
+  }
+      
   $scope.productName = ProductName;
   $scope.productUrl = ProductUrl;
   
