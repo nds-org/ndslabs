@@ -30,7 +30,6 @@ angular
   
   $scope.$watch(function() { return Project.project; }, function(newValue, oldValue) { $scope.project = newValue; });
   
-  
   /**
    * Start a local session by asking the server for a token
    */
