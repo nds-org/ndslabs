@@ -21,14 +21,16 @@ angular
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
 .controller('CatalogController', [ '$scope', '$filter', '$interval', '$uibModal', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stack', 'Stacks', 
-    'StackService', 'Specs', 'clipboard', 'Vocabulary', 'RandomPassword', 'AuthInfo', 'LoginRoute',
-    function($scope, $filter, $interval, $uibModal, $location, $log, _, NdsLabsApi, Project, Stack, Stacks, StackService, Specs, clipboard, Vocabulary, RandomPassword, AuthInfo, LoginRoute) {
+    'StackService', 'Specs', 'clipboard', 'Vocabulary', 'RandomPassword', 'AuthInfo', 'LandingRoute', 'ProductName',
+    function($scope, $filter, $interval, $uibModal, $location, $log, _, NdsLabsApi, Project, Stack, Stacks, StackService, Specs, clipboard, Vocabulary, RandomPassword, AuthInfo, LandingRoute, ProductName) {
       
   
   if (!AuthInfo.get().token) {
-    $location.path(LoginRoute);
+    $location.path(LandingRoute);
     return;
   }    
+  
+  $scope.productName = ProductName;
       
   $scope.tags = { all: [], selected: [] };
   Vocabulary.populate("tags").then(function(data) {

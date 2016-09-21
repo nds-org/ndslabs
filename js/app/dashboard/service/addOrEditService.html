@@ -5,7 +5,7 @@
       <h3>{{ editingService ? 'Edit' : 'Add' }} {{ service.service | specProperty:'label' }}<span ng-if="service.id"> ({{ service.id }})</span></h3>
       
       <ol class="breadcrumb">
-        <!-- <li><a ng-href="{{ productUrl }}">{{ productName }}</a></li> -->
+        <li><a href="#/">{{ productName }}</a></li>
         <li><a href="#/home">Applications</a></li>
         <li><a ng-href="#/home?expand={{ stack.key }}">{{ stack.key | specProperty:'label'}} ({{ stack.id }})</a></li>
         <li class="active">{{ editingService ? service.id : 'New ' + (service.service | specProperty:'label') }}</li>
