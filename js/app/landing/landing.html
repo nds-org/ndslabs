@@ -1,0 +1,52 @@
+<!-- The "Contact Us" View -->
+<section>
+    <div class="jumbotron">
+      <h1>Welcome to the {{ productName }}!</h1>
+      <p>NDS Labs is an environment where developers can prototype tools and capabilities that help build out the NDS framework and services.</p>
+      <p>In particular, it is a place that can host the development activities of <a href="http://www.nationaldataservice.org/projects/pilots.html">NDS pilot projects</a>.</p>
+      <p><a class="btn btn-primary btn-lg" href="{{ featureLink.url }}" role="button">Learn more</a></p>
+    </div>
+    
+    <div class="row">
+        <div class="col-sm-9">
+            <p>Users of this environment have access to significant storage, machines that can run services, and a variety of useful data management and manipulation tools (e.g. databases, storage management systems, repository applications, etc.). The key purpose behind NDS Labs is to discover and demonstrate the key features and capabilities needed by the NDS framework. NDS Labs provides an environment that enables a developer or small team of developers to explore an innovative idea, prototype a service, or connect existing applications as part of building an NDS ecosystem. We also see NDS Labs as a way to cultivate a community of developers interested in building up open-source software that will drive the NDS environment.</p>
+            <p>Finally, we would like to see most projects developed in NDS Labs mature to the point of delivering real capabilities to scientists; tools developed in NDS Labs can be exposed to a broader user base through <a href="http://www.nationaldataservice.org/projects/share.html">NDS Share</a>.</p>
+        </div>
+        
+        <div class="col-sm-3">
+              <p>See Also:
+                  <ul class="fa-ul">
+                      <li ng-repeat="link in helpLinks"><i class="fa-li fa {{ link.icon }}"></i> <a ng-href="{{ link.url }}">{{ link.name }}</a></li>
+                      <!--<li><i class="fa-li fa fa-support"></i> <a ng-href="#/contact">Contact Us</a></li>-->
+                  </ul>
+              </p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-sm-6">
+          <div class="panel panel-primary">
+            <div class="panel-heading">
+              <h3 class="panel-title">Request Access to {{ productName }}</h3>
+            </div>
+            <div class="panel-body">
+              <p>For more information about requesting access to {{ productName }}, click <a href="{{ productUrl }}">here</a>!</p>
+              <a href="#/register" class="btn btn-default">Request Access <i class="fa fa-fw fa-caret-right"></i></a>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-sm-6">
+          <div class="panel panel-primary">
+            <div class="panel-heading">
+              <h3 class="panel-title">Already have an account?</h3>
+            </div>
+            <div class="panel-body">
+              <p>Start using {{ productName }}</p>
+              <a class="btn btn-default" href="#/login">Sign in here <i class="fa fa-fw fa-caret-right"></i></a>
+            </div>
+          </div>
+          
+        </div>
+    </div>
+</section>
