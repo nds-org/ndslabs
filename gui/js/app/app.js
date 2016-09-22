@@ -256,7 +256,10 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
             $cookies.remove('namespace');
             
             // Route to Login Page to prompt for credentials
-            $location.path(LandingRoute);
+            var path = $location.path();
+            if (path !== LoginRoute) {
+              $location.path(LandingRoute);
+            }
             
             return $q.reject(rejection);
           }
