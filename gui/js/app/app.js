@@ -258,6 +258,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
             // Route to Login Page to prompt for credentials
             var path = $location.path();
             if (path !== LoginRoute) {
+              $log.debug("Routing to landing...");
               $location.path(LandingRoute);
             }
             
@@ -344,8 +345,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData', 'Loading', 'LandingRoute',
-    function($rootScope, $window, $location, $log, $interval, $cookies, $uibModalStack, Stacks, _, authInfo, LoginRoute, AppStoreRoute, HomeRoute, NdsLabsApi, AutoRefresh, ServerData, Loading, LandingRoute) {
+.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData', 'Loading', 'LandingRoute', 'VerifyAccountRoute',
+    function($rootScope, $window, $location, $log, $interval, $cookies, $uibModalStack, Stacks, _, authInfo, LoginRoute, AppStoreRoute, HomeRoute, NdsLabsApi, AutoRefresh, ServerData, Loading, LandingRoute, VerifyAccountRoute) {
   
   // Make _ bindable in partial views
   // TODO: Investigate performance concerns here...
@@ -378,6 +379,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       // Purge any server data
       ServerData.purgeAll();
       
+      $log.debug("Terminating session... routing to Landing");
+      
       // redirect user to landing page
       $location.path(LandingRoute);
     }
@@ -386,11 +389,13 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   // Grab saved auth data from cookies and attempt to use the leftover session
   var token = $cookies.get('token');
   var namespace = $cookies.get('namespace');
+  var path = $location.path();
   if (token && namespace) {
     // Pull our token / namespace from cookies
     authInfo.get().token = token;
     authInfo.get().namespace = namespace;
-  } else {
+  } else if (path !== VerifyAccountRoute) {
+    $log.debug("App started... routing to Landing");
     $location.path(LandingRoute);
   }
   

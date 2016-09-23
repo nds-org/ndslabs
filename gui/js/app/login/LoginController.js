@@ -11,17 +11,6 @@ angular
 .controller('LoginController', [ '$scope', '$cookies', '$location', '$log', '$uibModal', 'AuthInfo', 'Project', 'NdsLabsApi', 'LoginRoute', 'HomeRoute', 'VerifyAccountRoute', 'ResetPasswordRoute', '$uibModalStack', 'ServerData', 'SignUpRoute', 'ContactUsRoute', 'LandingRoute', 'ProductName',
     function($scope, $cookies, $location, $log, $uibModal, authInfo, Project, NdsLabsApi, LoginRoute, HomeRoute, VerifyAccountRoute, ResetPasswordRoute, $uibModalStack, ServerData, SignUpRoute, ContactUsRoute, LandingRoute, ProductName) {
   
-  var path = $location.path();
-  
-  // If we found a token, the user should be sent to the HomePage to check its validity;
-  if (path !== ContactUsRoute) {
-    if (authInfo.get().token) {
-      $location.path(HomeRoute);
-    } else if (path !== LoginRoute) {
-      $location.path(LandingRoute);
-    }
-  }
-  
   $scope.productName = ProductName;
   
   // Grab our injected AuthInfo from the provider
@@ -78,4 +67,12 @@ angular
     }).finally(function() {*/
     //});
   };
+  
+  var path = $location.path();
+  
+  // If we found a token, the user should be sent to the HomePage to check its validity;
+  if (path === LoginRoute && authInfo.get().token) {
+    $log.debug("Found token on an unauth view... routing Home");
+    $location.path(HomeRoute);
+  }
 }]);
