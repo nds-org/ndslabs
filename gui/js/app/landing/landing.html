@@ -19,7 +19,7 @@
     <h1>Welcome to the {{ productName }}!</h1>
     <p>{{ productName }} is an environment where developers can prototype tools and capabilities that help build out the NDS framework and services.</p>
     <p>In particular, it is a place that can host the development activities of <a href="http://www.nationaldataservice.org/projects/pilots.html">NDS pilot projects</a>.</p>
-    <p><a class="btn btn-primary btn-lg" href="{{ featureLink.url }}" role="button">Learn more</a></p>
+    <p><a class="btn btn-primary btn-lg" href="{{ featureLink.url }}" target="_blank" role="button">Learn more</a></p>
   </div>
   
   <div class="row">
@@ -29,7 +29,7 @@
             <h3 class="panel-title">Request Access to {{ productName }}</h3>
           </div>
           <div class="panel-body">
-            <p>For more about requesting access to {{ productName }}, click <a href="{{ productUrl }}">here</a>!</p>
+            <p>For more about requesting access to {{ productName }}, click <a href="{{ productUrl }}" target="_blank">here</a>!</p>
             <a href="#/register" class="btn btn-default">Request Access <i class="fa fa-fw fa-caret-right"></i></a>
           </div>
         </div>
@@ -51,7 +51,7 @@
       <div class="col-sm-2">
         <p>See Also:
           <ul class="fa-ul">
-            <li ng-repeat="link in helpLinks"><i class="fa-li fa {{ link.icon }}"></i> <a ng-href="{{ link.url }}">{{ link.name }}</a></li>
+            <li ng-repeat="link in helpLinks"><i class="fa-li fa {{ link.icon }}"></i> <a ng-href="{{ link.url }}" target="_blank">{{ link.name }}</a></li>
           </ul>
         </p>
       </div>
