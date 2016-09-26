@@ -221,7 +221,8 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		api.Use(&rest.CorsMiddleware{
 			RejectNonCorsRequests: false,
 			OriginValidator: func(origin string, request *rest.Request) bool {
-				return origin == cfg.Server.Origin
+				// NDS-552
+				return origin == cfg.Server.Origin || origin == cfg.Server.Origin+"."
 			},
 			AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
 			AllowedHeaders: []string{
