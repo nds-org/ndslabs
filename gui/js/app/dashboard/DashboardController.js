@@ -9,9 +9,17 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('DashboardController', [ '$scope', 'Loading', '$log', '$routeParams', '$location', '$interval', '$q', '$window', '$filter', '$uibModal', '_', 'Project', 'RandomPassword', 'Stack', 'Stacks', 'Specs', 'AutoRefresh',
-    'StackService', 'NdsLabsApi', function($scope, Loading, $log, $routeParams, $location, $interval, $q, $window, $filter, $uibModal, _, Project, RandomPassword, Stack, Stacks, Specs, AutoRefresh,
-    StackService, NdsLabsApi) {
+.controller('DashboardController', [ '$scope', 'Loading', '$log', '$routeParams', '$location', '$interval', '$q', '$window', '$filter', '$uibModal', '_', 'Project', 'RandomPassword', 'Stack', 'Stacks', 'Specs', 'AlertService', 'AutoRefresh', 'AuthInfo', 'LandingRoute',
+      'StackService', 'NdsLabsApi', 'ProductName',
+    function($scope, Loading, $log, $routeParams, $location, $interval, $q, $window, $filter, $uibModal, _, Project, RandomPassword, Stack, Stacks, Specs, AlertService,AutoRefresh, AuthInfo, LandingRoute,
+      StackService, NdsLabsApi, ProductName) {
+      
+  if (!AuthInfo.get().token) {
+    $location.path(LandingRoute);
+    return;
+  }
+  
+  $scope.productName = ProductName;
   
   $scope.expandedStacks = {};
   
@@ -256,14 +264,19 @@ angular
       var cc = _.find(stack.services, [ 'service', fileMgrKey ]);
       var ep = _.head(cc.endpoints);
       if (ep) {
-        //$window.location.href = $filter('externalHostPort')(ep);
         $window.open($filter('externalHostPort')(ep), '_blank');
       }
     };
     
     var startAndNavigate = function(stack) {
-      $scope.launchingFileManager = $scope.stopping[stack.id] = true;
+      if (stack.status === 'stopping' || $scope.launchingFileManager) {
+        alert('You must wait for the File Manager to shut down.');
+        return;
+      }
+      
       if (stack.status !== 'started') {
+        $scope.launchingFileManager = $scope.stopping[stack.id] = true;
+        AutoRefresh.start();
         return NdsLabsApi.getStartByStackId({
             'stackId': stack.id
           }).then(function(started, xhr) {
@@ -283,13 +296,13 @@ angular
     // Make sure we have ALL of our stacks first
     return Loading.set(Stacks.populate().then(function(stacks) {
       // Search for CloudCmd stack
-      var stack = _.find(stacks, [ 'key', 'cloudcmd' ]);
+      var stack = _.find(stacks, [ 'key', fileMgrKey ]);
       if (stack) {
         // If found, start it up
         startAndNavigate(stack);
       } else {
         // No Cloud Commander found.. install one
-        var spec = _.find(Specs.all, [ 'key', 'cloudcmd' ]);
+        var spec = _.find(Specs.all, [ 'key', fileMgrKey ]);
         
         if (!spec) {
           $log.error("No file manager found... aborting...");

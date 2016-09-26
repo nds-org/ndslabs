@@ -8,27 +8,16 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('LoginController', [ '$scope', '$cookies', '$location', '$log', '$uibModal', 'AuthInfo', 'NdsLabsApi', 'LoginRoute', 'HomeRoute', 'VerifyAccountRoute', 'ResetPasswordRoute', '$uibModalStack', 'ServerData', 'SignUpRoute',
-    function($scope, $cookies, $location, $log, $uibModal, authInfo, NdsLabsApi, LoginRoute, HomeRoute, VerifyAccountRoute, ResetPasswordRoute, $uibModalStack, ServerData, SignUpRoute) {
+.controller('LoginController', [ '$scope', '$cookies', '$location', '$log', '$uibModal', 'AuthInfo', 'Project', 'NdsLabsApi', 'LoginRoute', 'HomeRoute', 'VerifyAccountRoute', 'ResetPasswordRoute', '$uibModalStack', 'ServerData', 'SignUpRoute', 'ContactUsRoute', 'LandingRoute', 'ProductName',
+    function($scope, $cookies, $location, $log, $uibModal, authInfo, Project, NdsLabsApi, LoginRoute, HomeRoute, VerifyAccountRoute, ResetPasswordRoute, $uibModalStack, ServerData, SignUpRoute, ContactUsRoute, LandingRoute, ProductName) {
+  
+  $scope.productName = ProductName;
+  
   // Grab our injected AuthInfo from the provider
   $scope.settings = authInfo.get();
   $scope.showVerify = false;
   
-  var getProject = function() {
-    ServerData.project.populate($scope.settings.namespace).then(function(data) {
-      $scope.settings.project = data;
-    });
-  };
-  
-  // If we found a token, the user should be sent to the HomePage to check its validity
-  var path = $location.path();
-  if (path !== VerifyAccountRoute && path !== ResetPasswordRoute && path !== SignUpRoute) {
-    if (!$scope.settings.token) {
-      $location.path(LoginRoute);
-    } else {
-      getProject();
-    }
-  }
+  $scope.$watch(function() { return Project.project; }, function(newValue, oldValue) { $scope.project = newValue; });
   
   /**
    * Start a local session by asking the server for a token
@@ -48,7 +37,7 @@ angular
       $scope.errorMessage = '';
       $cookies.put('namespace', $scope.settings.namespace);
       $log.debug("Logged in!");
-      getProject();
+      //getProject();
       $location.path(HomeRoute);
     }, function(response) {
       var body = response.body || { 'Error': 'Something went wrong. Is the server running?' };
@@ -78,4 +67,12 @@ angular
     }).finally(function() {*/
     //});
   };
+  
+  var path = $location.path();
+  
+  // If we found a token, the user should be sent to the HomePage to check its validity;
+  if (path === LoginRoute && authInfo.get().token) {
+    $log.debug("Found token on an unauth view... routing Home");
+    $location.path(HomeRoute);
+  }
 }]);

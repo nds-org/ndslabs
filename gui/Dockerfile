@@ -29,7 +29,7 @@ WORKDIR /home
 COPY . /home/
     
 # Set build information here before building
-ARG version="1.0.3"
+ARG version="1.0.6"
 
 # Set build number/date inside the container, as well as our default API server/port
 RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${version}')#" "/home/js/app/app.js" && \

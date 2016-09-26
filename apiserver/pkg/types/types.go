@@ -68,6 +68,7 @@ type Config struct {
 	Label       string `json:"label"`
 	IsPassword  bool   `json:"isPassword"`
 	CanOverride bool   `json:"canOverride"`
+	UseFrom     string `json:"useFrom"`
 }
 
 type Port struct {
@@ -166,7 +167,6 @@ type Service struct {
 type ServiceDependency struct {
 	DependencyKey string `json:"key"`
 	Required      bool   `json:"required"`
-	ShareConfig   bool   `json:"shareConfig"`
 }
 
 type Stack struct {

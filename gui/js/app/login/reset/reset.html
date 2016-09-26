@@ -4,6 +4,17 @@
     <div class="col-xs-offset-3 col-xs-6 text-center">
       <!--<button type="button" class="btn btn-xs btn-default pull-right" data-dismiss="modal" aria-label="Close" ng-click="close()"><i class="fa fa-fw fa-times"></i></button>-->
       <h3><i class="fa fa-fw fa-lock"></i> Reset Your Password</h3>
+      
+      <ol class="breadcrumb" ng-if="token">
+        <li><a href="#/">{{ productName }}</a></li>
+        <li class="active">Change Password</li>
+      </ol>
+  
+      <ol class="breadcrumb" ng-if="!token">
+        <li><a ng-href="#/">{{ productName }}</a></li>
+        <li><a href="#/login">Sign In</a></li>
+        <li class="active">Forgot Password</li>
+      </ol>
     </div>
   </div>
   
