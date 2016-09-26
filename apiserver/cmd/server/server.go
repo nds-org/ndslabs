@@ -332,6 +332,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Put(s.prefix+"change_password", s.ChangePassword),
 		rest.Post(s.prefix+"support", s.PostSupport),
 		rest.Get(s.prefix+"contact", s.GetContact),
+		rest.Get(s.prefix+"healthz", s.GetHealthz),
 	)
 
 	router, err := rest.MakeRouter(routes...)
@@ -2705,4 +2706,24 @@ func (s *Server) checkConfigs(uid string, service *api.ServiceSpec) (string, boo
 		}
 	}
 	return "", true
+}
+
+func (s *Server) GetHealthz(w rest.ResponseWriter, r *rest.Request) {
+	// Confirm access to Etcd
+	_, err := s.etcd.GetAccount(adminUser)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Confirm access to Kubernetes API
+	_, err = s.kube.GetSecret(adminUser, "ndslabs-tls-secret")
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Confirm access to Gluster and GFS
+
+	w.WriteHeader(http.StatusOK)
 }
