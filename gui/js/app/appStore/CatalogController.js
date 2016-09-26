@@ -21,8 +21,16 @@ angular
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
 .controller('CatalogController', [ '$scope', '$filter', '$interval', '$uibModal', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stack', 'Stacks', 
-    'StackService', 'Specs', 'clipboard', 'Vocabulary', 'RandomPassword', 
-    function($scope, $filter, $interval, $uibModal, $location, $log, _, NdsLabsApi, Project, Stack, Stacks, StackService, Specs, clipboard, Vocabulary, RandomPassword) {
+    'StackService', 'Specs', 'clipboard', 'Vocabulary', 'RandomPassword', 'AuthInfo', 'LandingRoute', 'ProductName',
+    function($scope, $filter, $interval, $uibModal, $location, $log, _, NdsLabsApi, Project, Stack, Stacks, StackService, Specs, clipboard, Vocabulary, RandomPassword, AuthInfo, LandingRoute, ProductName) {
+      
+  
+  if (!AuthInfo.get().token) {
+    $location.path(LandingRoute);
+    return;
+  }    
+  
+  $scope.productName = ProductName;
       
   $scope.tags = { all: [], selected: [] };
   Vocabulary.populate("tags").then(function(data) {
@@ -99,9 +107,19 @@ angular
     var specCopy = angular.copy(spec);
     
     // Remove unused / unnecessary fields
-    delete specCopy.$$hashKey;
-    delete specCopy.updateTime;
-    delete specCopy.createdTime;
+    delete $scope.spec.$$hashKey;
+    delete $scope.spec.updateTime;
+    delete $scope.spec.createdTime;
+    delete $scope.spec.id;
+    delete $scope.spec.privileged;
+    delete $scope.spec.catalog;
+    
+    // Remove empty fields
+    angular.forEach($scope.spec, function(value, key) {
+      if (angular.isUndefined(value) || value === null || !value || (_.isArray(value) && value.length === 0)) {
+        delete $scope.spec[key];
+      }
+    });
     
     clipboard.copyText(JSON.stringify(specCopy, null, 4));
   };

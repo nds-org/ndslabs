@@ -30,6 +30,9 @@ import (
 	"github.com/golang/glog"
 )
 
+var adminUser = "admin"
+var systemNamespace = "kube-system"
+
 type Server struct {
 	etcd           *etcd.EtcdHelper
 	kube           *kube.KubeHelper
@@ -243,7 +246,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		Timeout:    timeout,
 		MaxRefresh: time.Hour * 24,
 		Authenticator: func(userId string, password string) bool {
-			if userId == "admin" && password == adminPasswd {
+			if userId == adminUser && password == adminPasswd {
 				return true
 			} else {
 				return s.etcd.CheckPassword(userId, password) && s.etcd.CheckAccess(userId)
@@ -260,8 +263,8 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		},
 		PayloadFunc: func(userId string) map[string]interface{} {
 			payload := make(map[string]interface{})
-			if userId == "admin" {
-				payload["admin"] = true
+			if userId == adminUser {
+				payload[adminUser] = true
 			}
 			payload["server"] = s.hostname
 			payload["user"] = userId
@@ -489,7 +492,7 @@ func (s *Server) GetAllAccounts(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) getUser(r *rest.Request) string {
 	payload := r.Env["JWT_PAYLOAD"].(map[string]interface{})
-	if payload["admin"] == true {
+	if payload[adminUser] == true {
 		return ""
 	} else {
 		return payload["user"].(string)
@@ -498,7 +501,7 @@ func (s *Server) getUser(r *rest.Request) string {
 
 func (s *Server) IsAdmin(r *rest.Request) bool {
 	payload := r.Env["JWT_PAYLOAD"].(map[string]interface{})
-	if payload["admin"] == true {
+	if payload[adminUser] == true {
 		return true
 	} else {
 		return false
@@ -534,6 +537,7 @@ func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 			}
 		}
 		account.Password = ""
+		account.Token = ""
 		w.WriteJson(account)
 	}
 }
@@ -589,7 +593,57 @@ func (s *Server) createBasicAuthSecret(uid string) error {
 		return err
 	}
 
-	_, err = s.kube.CreateBasicAuthSecret(account.Namespace, account.Password)
+	_, err = s.kube.CreateBasicAuthSecret(account.Namespace, account.Namespace, account.Password)
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+
+	err = s.updateIngress(uid)
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+	return nil
+}
+
+func (s *Server) updateIngress(uid string) error {
+
+	ingresses, err := s.kube.GetIngresses(uid)
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+	if ingresses != nil {
+		for _, ingress := range ingresses {
+			glog.V(4).Infof("Touching ingress %s\n", ingress.Name)
+			_, err = s.kube.CreateUpdateIngress(uid, &ingress, true)
+			if err != nil {
+				glog.Error(err)
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s *Server) createLMABasicAuthSecret() error {
+	if s.kube.NamespaceExists(systemNamespace) {
+		account, err := s.etcd.GetAccount(adminUser)
+		if err != nil {
+			glog.Error(err)
+			return err
+		}
+
+		_, err = s.kube.CreateBasicAuthSecret(systemNamespace, adminUser, account.Password)
+		if err != nil {
+			glog.Error(err)
+			return err
+		}
+	}
+
+	err := s.updateIngress(systemNamespace)
 	if err != nil {
 		glog.Error(err)
 		return err
@@ -680,7 +734,7 @@ func (s *Server) RegisterAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	verifyUrl := s.origin + "/#/register/verify?t=" + account.Token + "&u=" + account.Namespace
+	verifyUrl := s.origin + "/#/?t=" + account.Token + "&u=" + account.Namespace
 	err = s.email.SendVerificationEmail(account.Name, account.EmailAddress, verifyUrl)
 	if err != nil {
 		glog.Error(err)
@@ -814,22 +868,19 @@ func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
 	}
 
 	// Get the GFS server pods
-	/*
-		Disabled until NDS-395 resolved
-		gfs, err := s.kube.GetPods("default", "name", "glusterfs-server-globalfs")
+	gfs, err := s.kube.GetPods("kube-system", "name", "glfs-server-global")
+	if err != nil {
+		return false, err
+	}
+	if len(gfs) > 0 {
+		cmd := []string{"gluster", "volume", "quota", s.volName, "limit-usage", "/" + account.Namespace, fmt.Sprintf("%dGB", account.ResourceLimits.StorageQuota)}
+		_, err := s.kube.ExecCommand("kube-system", gfs[0].Name, cmd)
 		if err != nil {
 			return false, err
 		}
-		if len(gfs) > 0 {
-			cmd := []string{"gluster", "volume", "quota", s.volName, "limit-usage", "/" + account.Namespace, fmt.Sprintf("%dGB", account.ResourceLimits.StorageQuota)}
-			_, err := s.kube.ExecCommand("default", gfs[0].Name, cmd)
-			if err != nil {
-				return false, err
-			}
-		} else {
-			glog.V(2).Info("No GFS servers found, cannot set account quota")
-		}
-	*/
+	} else {
+		glog.V(2).Info("No GFS servers found, cannot set account quota")
+	}
 	return true, nil
 }
 
@@ -881,6 +932,10 @@ func (s *Server) DeleteAccount(w rest.ResponseWriter, r *rest.Request) {
 
 	if !s.IsAdmin(r) {
 		rest.Error(w, "", http.StatusUnauthorized)
+		return
+	}
+	if userId == "admin" {
+		rest.Error(w, "", http.StatusForbidden)
 		return
 	}
 
@@ -1004,6 +1059,19 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
+	dep, ok := s.checkDependencies(userId, &service)
+	if !ok {
+		glog.Warningf("Cannot add service, dependency %s missing\n", dep)
+		rest.Error(w, fmt.Sprintf("Missing dependency %s", dep), http.StatusNotFound)
+	}
+
+	cf, ok := s.checkConfigs(userId, &service)
+	if !ok {
+		glog.Warningf("Cannot add service, config dependency %s missing\n", cf)
+		rest.Error(w, fmt.Sprintf("Missing config dependency %s", cf), http.StatusNotFound)
+		return
+	}
+
 	if catalog == "system" {
 		if !s.IsAdmin(r) {
 			rest.Error(w, "", http.StatusUnauthorized)
@@ -1050,6 +1118,18 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 	if !ok {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	dep, ok := s.checkDependencies(userId, &service)
+	if !ok {
+		glog.Warningf("Cannot add service, dependency %s missing\n", dep)
+		rest.Error(w, fmt.Sprintf("Missing dependency %s", dep), http.StatusNotFound)
+	}
+	cf, ok := s.checkConfigs(userId, &service)
+	if !ok {
+		glog.Warningf("Cannot add service, config dependency %s missing\n", cf)
+		rest.Error(w, fmt.Sprintf("Missing config dependency %s", cf), http.StatusNotFound)
 		return
 	}
 
@@ -1407,7 +1487,7 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 					if stackService.VolumeMounts == nil {
 						stackService.VolumeMounts = map[string]string{}
 					}
-					volPath := fmt.Sprintf("AppData/%s", s.kube.RandomString(5))
+					volPath := fmt.Sprintf("AppData/%s", s.getAppDataDir(stackService.Id))
 
 					stackService.VolumeMounts[volPath] = mount.MountPath
 				}
@@ -1533,7 +1613,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 					}
 
 					if len(fromPath) == 0 {
-						volPath := fmt.Sprintf("AppData/%s", s.kube.RandomString(5))
+						volPath := fmt.Sprintf("AppData/%s", s.getAppDataDir(stackService.Id))
 						stackService.VolumeMounts[volPath] = mount.MountPath
 					}
 				}
@@ -1546,7 +1626,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 
 				if found == 0 {
 					// Create a new temporary folder
-					volPath := fmt.Sprintf("AppData/%s", s.kube.RandomString(5))
+					volPath := fmt.Sprintf("AppData/%s", s.getAppDataDir(stackService.Id))
 					stackService.VolumeMounts[volPath] = mount.MountPath
 				}
 			}
@@ -1621,7 +1701,7 @@ func (s *Server) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 			}
 		}
 		if s.useLoadBalancer() {
-			s.kube.DeleteIngress(userId, stackService.Id)
+			s.kube.DeleteIngress(userId, stackService.Id+"-ingress")
 			glog.V(4).Infof("Deleted ingress for service %s\n", stackService.Id)
 		}
 	}
@@ -1679,20 +1759,16 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	glog.V(4).Infof("Starting controller for %s\n", serviceKey)
 	spec, _ := s.etcd.GetServiceSpec(userId, serviceKey)
 
-	sharedEnv := make(map[string]string)
-	// Hack to allow for sharing configuration information between dependent services
-	for _, depends := range spec.Dependencies {
-		if depends.ShareConfig {
-			// Get the stack service for the dependency, if present
+	// useFrom
+	for _, config := range spec.Config {
+		if len(config.UseFrom) > 0 {
 			for i := range stack.Services {
 				ss := &stack.Services[i]
-				if ss.Service == depends.DependencyKey {
-					// Found it. Now get it's config
-					for key, value := range ss.Config {
-						sharedEnv[key] = value
-						glog.V(4).Infof("Adding env from %s  %s=%s\n", ss.Service, key, value)
-					}
+				if config.UseFrom == ss.Service {
+					glog.V(4).Infof("Setting %s %s to %s %s\n", stackService.Id, config.Name, ss.Id, ss.Config[config.Name])
+					stackService.Config[config.Name] = ss.Config[config.Name]
 				}
+
 			}
 		}
 	}
@@ -1700,7 +1776,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
 
 	account, _ := s.etcd.GetAccount(userId)
-	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, s.domain, account.EmailAddress, stackService, spec, addrPortMap, &sharedEnv)
+	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, s.domain, account.EmailAddress, stackService, spec, addrPortMap)
 
 	s.makeDirectories(userId, stackService)
 
@@ -2083,7 +2159,7 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 				for _, dep := range svc.Dependencies {
 					if dep.DependencyKey == stackService.Service {
 						numDeps++
-						if ss.Status == "stopped" || ss.Status == "" {
+						if ss.Status == "stopped" || ss.Status == "" || ss.Status == "error" {
 							stoppedDeps++
 						}
 					}
@@ -2252,7 +2328,7 @@ func (s *Server) loadSpecs(path string) error {
 
 func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, pod *k8api.Pod) {
 
-	if pod.Namespace != "default" && pod.Namespace != "kube-system" {
+	if pod.Namespace != "default" && pod.Namespace != systemNamespace {
 		glog.V(4).Infof("HandlePodEvent %s", eventType)
 
 		//name := pod.Name
@@ -2347,7 +2423,7 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 func (s *Server) HandleReplicationControllerEvent(eventType watch.EventType, event *k8api.Event,
 	rc *k8api.ReplicationController) {
 
-	if rc.Namespace != "default" && rc.Namespace != "kube-system" {
+	if rc.Namespace != "default" && rc.Namespace != systemNamespace {
 		glog.V(4).Infof("HandleReplicationControllerEvent %s", eventType)
 
 		userId := rc.Namespace
@@ -2461,7 +2537,7 @@ func (s *Server) ResetPassword(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	if account.Status == api.AccountStatusUnverified {
-		verifyUrl := s.origin + "/#/register/verify?t=" + account.Token + "&u=" + account.Namespace
+		verifyUrl := s.origin + "/#/?t=" + account.Token + "&u=" + account.Namespace
 		err = s.email.SendVerificationEmail(account.Name, account.EmailAddress, verifyUrl)
 	} else {
 		resetUrl := s.origin + "/#/recover?t=" + token
@@ -2500,10 +2576,10 @@ func (s *Server) createAdminUser(password string) error {
 
 	glog.V(4).Infof("Creating admin user")
 
-	if !s.accountExists("admin") {
+	if !s.accountExists(adminUser) {
 		account := &api.Account{
-			Name:        "admin",
-			Namespace:   "admin",
+			Name:        adminUser,
+			Namespace:   adminUser,
 			Description: "NDS Labs administrator",
 			Password:    password,
 			ResourceLimits: api.AccountResourceLimits{
@@ -2513,29 +2589,34 @@ func (s *Server) createAdminUser(password string) error {
 				MemoryDefault: s.memDefault,
 			},
 		}
-		err := s.setupAccount(account)
+		err := s.etcd.PutAccount(adminUser, account, true)
 		if err != nil {
 			glog.Error(err)
 			return err
 		}
-		err = s.etcd.PutAccount("admin", account, true)
+		err = s.setupAccount(account)
 		if err != nil {
 			glog.Error(err)
 			return err
 		}
 
 	} else {
-		account, err := s.etcd.GetAccount("admin")
+		account, err := s.etcd.GetAccount(adminUser)
 		if err != nil {
 			glog.Error(err)
 			return err
 		}
 		account.Password = password
-		err = s.etcd.PutAccount("admin", account, true)
+		err = s.etcd.PutAccount(adminUser, account, true)
 		if err != nil {
 			glog.Error(err)
 			return err
 		}
+	}
+	err := s.createLMABasicAuthSecret()
+	if err != nil {
+		glog.Error(err)
+		return err
 	}
 
 	return nil
@@ -2613,4 +2694,29 @@ func (s *Server) GetApiDocs(w http.ResponseWriter, r *http.Request) {
 
 	defer reader.Close()
 	io.Copy(w, reader)
+}
+
+func (s *Server) getAppDataDir(stackService string) string {
+	return fmt.Sprintf("%s-%s", stackService, s.kube.RandomString(5))
+}
+
+func (s *Server) checkDependencies(uid string, service *api.ServiceSpec) (string, bool) {
+	for _, dependency := range service.Dependencies {
+		if !s.serviceExists(uid, dependency.DependencyKey) {
+			return dependency.DependencyKey, false
+		}
+	}
+	return "", true
+}
+
+// Make sure that conig.useFrom dependencies exist
+func (s *Server) checkConfigs(uid string, service *api.ServiceSpec) (string, bool) {
+	for _, config := range service.Config {
+		if len(config.UseFrom) > 0 {
+			if !s.serviceExists(uid, config.UseFrom) {
+				return config.UseFrom, false
+			}
+		}
+	}
+	return "", true
 }

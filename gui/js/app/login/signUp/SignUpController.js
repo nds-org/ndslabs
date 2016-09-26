@@ -8,7 +8,15 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('SignUpController', [ '$scope', '$log', 'NdsLabsApi', 'Project', function($scope, $log, NdsLabsApi, Project) {
+.controller('SignUpController', [ '$scope', '$log', '$location', 'NdsLabsApi', 'Project', 'ProductName', 'AuthInfo', 'HomeRoute', 
+    function($scope, $log, $location, NdsLabsApi, Project, ProductName, AuthInfo, HomeRoute) {
+      
+  if (AuthInfo.get().token) {
+    $location.path(HomeRoute);
+  }   
+  
+  $scope.productName = ProductName;
+  
   $scope.newProject = Project.create();
   $scope.progressMessage = '';
   $scope.showVerify = false;

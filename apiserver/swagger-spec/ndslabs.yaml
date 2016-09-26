@@ -6,7 +6,7 @@ info:
    email: ndslabs-support@nationaldataservice.org
    name:  NDS Labs Support
    url: http://www.nationaldataservice.org/projects/labs.html
-  version: 1.0.4
+  version: 1.0.6
 basePath: /api
 schemes:
   - https

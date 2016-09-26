@@ -24,6 +24,11 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 .constant('_', window._)
 
 /**
+ * The route to our "Landing Page" View
+ */
+.constant('LandingRoute', '/')
+
+/**
  * The route to our "Login" View
  */
 .constant('LoginRoute', '/login')
@@ -83,11 +88,31 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  */
 .constant('ConsoleRoute', '/home/:stackId/console/:service')
 
+/**
+ * The back-up (default) administrator e-mail to use for support, 
+ * in case the /api/contact endpoint is unavailable
+ */
+.constant('SupportEmail', '')
+
+/**
+ * The name of the product to display in the UI and the URL to link to when clicked
+ */
+ 
+.constant('OrgName', 'NDS')
+.constant('ProductName', 'Labs Workbench')
+.constant('ProductUrl', 'http://www.nationaldataservice.org/projects/labs.html')
+
+.value('HelpLinks', [
+  { name: "Feature Overview",    icon: 'fa-info-circle',        url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Feature+Overview' },
+  { name: "F.A.Q.",              icon: 'fa-question-circle',    url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Frequently+Asked+Questions'},
+  { name: "User's Guide",        icon: 'fa-book',               url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/User%27s+Guide' },
+  { name: "Developer's Guide",   icon: 'fa-code-fork',          url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Developer%27s+Guide' },
+])
 
 /**
  * The version/revision of this GUI
  */
-.constant('BuildVersion', '1.0.4-devel')
+.constant('BuildVersion', '1.0.5-devel')
 .constant('BuildDate', '')
 
 /**
@@ -172,8 +197,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ConsoleRoute', 'AddServiceRoute', 'EditServiceRoute', 'AddSpecRoute', 'EditSpecRoute', 'VerifyAccountRoute', 'ResetPasswordRoute', 'SignUpRoute', 'ContactUsRoute',
-    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, HomeRoute, ConsoleRoute, AddServiceRoute, EditServiceRoute, AddSpecRoute, EditSpecRoute, VerifyAccountRoute, ResetPasswordRoute, SignUpRoute, ContactUsRoute) {
+.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ConsoleRoute', 'AddServiceRoute', 'EditServiceRoute', 'AddSpecRoute', 'EditSpecRoute', 'VerifyAccountRoute', 'ResetPasswordRoute', 'SignUpRoute', 'ContactUsRoute', 'ProductName', 'LandingRoute',
+    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, HomeRoute, ConsoleRoute, AddServiceRoute, EditServiceRoute, AddSpecRoute, EditSpecRoute, VerifyAccountRoute, ResetPasswordRoute, SignUpRoute, ContactUsRoute, ProductName, LandingRoute) {
   // Squelch debug-level log messages
   $logProvider.debugEnabled(DEBUG);
       
@@ -231,9 +256,12 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
             $cookies.remove('namespace');
             
             // Route to Login Page to prompt for credentials
-            if ($location.path() !== LoginRoute) {
-              $location.path(LoginRoute);
+            var path = $location.path();
+            if (path !== LoginRoute) {
+              $log.debug("Routing to landing...");
+              $location.path(LandingRoute);
             }
+            
             return $q.reject(rejection);
           }
         }
@@ -247,17 +275,22 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   // Setup routes to our different pages
   $routeProvider
   .when(LoginRoute, {
-    title: 'Sign In to NDS Labs',
+    title: 'Sign In to ' + ProductName,
     controller: 'LoginController',
     templateUrl: 'app/login/login.html'
   })
+  .when(LandingRoute, {
+    title: ProductName + ' Landing Page',
+    controller: 'LandingController',
+    templateUrl: 'app/landing/landing.html'
+  })
   .when(SignUpRoute, {
-    title: 'Sign Up for NDS Labs',
+    title: 'Sign Up for ' + ProductName,
     controller: 'SignUpController',
     templateUrl: 'app/login/signUp/signUp.html'
   })
   .when(ContactUsRoute, {
-    title: 'Contact NDS Labs Support',
+    title: 'Contact ' + ProductName + ' Support',
     controller: 'HelpController',
     templateUrl: 'app/help/help.html'
   })
@@ -272,7 +305,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     templateUrl: 'app/login/reset/reset.html'
   })
   .when(AppStoreRoute, {
-    title: 'NDS Labs Catalog',
+    title: ProductName + ' Catalog',
     controller: 'CatalogController',
     templateUrl: 'app/appStore/catalog.html'
   })
@@ -287,7 +320,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     templateUrl: 'app/appStore/addOrEdit/addOrEditSpec.html'
   })
   .when(HomeRoute, {
-    title: 'NDS Labs Dashboard',
+    title: ProductName + ' Dashboard',
     controller: 'DashboardController',
     templateUrl: 'app/dashboard/dashboard.html'
   })
@@ -302,31 +335,77 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     templateUrl: 'app/dashboard/service/addOrEditService.html'
   })
   .when(ConsoleRoute, {
-    title: 'Application Service Console',
+    title: 'Service Console',
     controller: 'ConsoleController',
     templateUrl: 'app/dashboard/console/console.html'
   })
-  .otherwise({ redirectTo: LoginRoute });
+  .otherwise({ redirectTo: LandingRoute });
 }])
 
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData', 'Loading',
-    function($rootScope, $window, $location, $log, $interval, $cookies, $uibModalStack, Stacks, _, authInfo, LoginRoute, AppStoreRoute, HomeRoute, NdsLabsApi, AutoRefresh, ServerData, Loading) {
+.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData', 'Loading', 'LandingRoute', 'VerifyAccountRoute',
+    function($rootScope, $window, $location, $log, $interval, $cookies, $uibModalStack, Stacks, _, authInfo, LoginRoute, AppStoreRoute, HomeRoute, NdsLabsApi, AutoRefresh, ServerData, Loading, LandingRoute, VerifyAccountRoute) {
+  
+  // Make _ bindable in partial views
+  // TODO: Investigate performance concerns here...
+  $rootScope._ = window._;
+    
+  // Check our token every 60s
+  var tokenCheckMs = 60000;
+  
+  // Define the logic for ending a user's session in the browser
+  var authInterval = null;
+  var terminateSession = authInfo.purge = function() {
+    // Cancel the auth check interval
+    if (authInterval) {
+      $interval.cancel(authInterval);
+      authInfo.tokenInterval = authInterval = null;
+    }
+    
+    if (authInfo.get().token) {
+      // Purge current session data
+      authInfo.get().token = null;
+      $cookies.remove('token');
+      $cookies.remove('namespace');
+      
+      // Close any open modals
+      $uibModalStack.dismissAll();
+      
+      // Stop any running auto-refresh interval
+      AutoRefresh.stop();
+      
+      // Purge any server data
+      ServerData.purgeAll();
+      
+      $log.debug("Terminating session... routing to Landing");
+      
+      // redirect user to landing page
+      $location.path(LandingRoute);
+    }
+  };
   
   // Grab saved auth data from cookies and attempt to use the leftover session
   var token = $cookies.get('token');
   var namespace = $cookies.get('namespace');
+  var path = $location.path();
   if (token && namespace) {
     // Pull our token / namespace from cookies
     authInfo.get().token = token;
     authInfo.get().namespace = namespace;
+  } else if (path !== VerifyAccountRoute) {
+    $log.debug("App started... routing to Landing");
+    $location.path(LandingRoute);
   }
-      
-  // Make _ bindable in partial views
-  // TODO: Investigate performance concerns here...
-  $rootScope._ = window._;
+  
+  // Every so often, check that our token is still valid
+  var checkToken = function() {
+    NdsLabsApi.getCheckToken().then(function() { $log.debug('Token is still valid.'); }, function() {
+      $log.error('Token expired, redirecting to login.');
+      terminateSession();
+    });
+  };
   
   // Change the tab/window title when we change routes
   $rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
@@ -340,56 +419,13 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   // When user changes routes, check that they are still authed
   $rootScope.$on( "$routeChangeStart", function(event, next, current) {
     // Skip token checking for the "Verify Account" View
-    if (next.$$route.templateUrl === 'app/login/verify/verify.html') {
+    if (next.$$route.templateUrl === 'app/login/verify/verify.html'
+        || next.$$route.templateUrl === 'app/landing/landing.html' 
+        || next.$$route.templateUrl === 'app/help/help.html' 
+        || next.$$route.templateUrl === 'app/login/reset/reset.html'
+        || next.$$route.templateUrl === 'app/login/login.html') {
       return;
     }
-    
-    // Define the logic for ending a user's session in the browser
-    var authInterval = null;
-    var terminateSession = authInfo.purge = function() {
-      // Cancel the auth check interval
-      if (authInterval) {
-        $interval.cancel(authInterval);
-        authInfo.tokenInterval = authInterval = null;
-      }
-      
-      if (authInfo.get().token) {
-        
-        // Purge current session data
-        authInfo.get().token = null;
-        $cookies.remove('token');
-        $cookies.remove('namespace');
-        
-        // Close any open modals
-        $uibModalStack.dismissAll();
-        
-        // Stop any running auto-refresh interval
-        AutoRefresh.stop();
-        
-        // Purge any server data
-        ServerData.purgeAll();
-        
-              
-        // user needs to log in, redirect to /login
-        if (!_.includes(next.templateUrl, "app/login/login.html")
-            && !_.includes(next.templateUrl, "app/login/signUp/signUp.html")
-            && !_.includes(next.templateUrl, "app/login/verify/verify.html")) {
-          $location.path(LoginRoute);
-        }
-      }
-    };
-    
-    // Check our token every 60s
-    var tokenCheckMs = 60000;
-    
-    // Every so often, check that our token is still valid
-    var checkToken = function() {
-      NdsLabsApi.getCheckToken().then(function() { $log.debug('Token is still valid.'); }, function() {
-        $log.error('Token expired, redirecting to login.');
-        terminateSession();
-        authInfo.purge();
-      });
-    };
   
     // Check if the token is still valid on route changes
     var token = $cookies.get('token');
@@ -398,15 +434,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       authInfo.get().namespace = $cookies.get('namespace');
       NdsLabsApi.getRefreshToken().then(function() {
         $log.debug('Token refreshed: ' + authInfo.get().token);
-        
-        Loading.set(ServerData.populateAll(authInfo.get().namespace).finally(function() {
-          /*if (InitialRedirect) {
-            InitialRedirect = false;
-            var dest = Stacks.all.length > 0 ? HomeRoute : AppStoreRoute;
-            debugger;
-            $location.path(dest);
-          }*/
-        }));
+        Loading.set(ServerData.populateAll(authInfo.get().namespace));
         
         // Restart our token check interval
         if (authInterval) {
@@ -424,8 +452,6 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
         
         terminateSession();
       });
-    } else {
-      terminateSession();
     }
   });
 }]);

@@ -1,4 +1,9 @@
 <footer id="footer">
+  <div class="alert alert-danger text-center" role="alert" ng-if="showAlertBanner">
+    <p>We were unable to communicate with the server. Please wait a few minutes and try again.</p>
+    <p>If the problem persists, please contact <a ng-href="mailto:{{ supportEmail }}">{{ productName }} Support</a>.</p>
+  </div>
+
   <div class="container">
     <div class="row">
       <div class="col-sm-12">

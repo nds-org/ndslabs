@@ -740,7 +740,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 	return &k8svc
 }
 
-func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, domain string, emailAddress string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec, links *map[string]ServiceAddrPort, sharedEnv *map[string]string) *api.ReplicationController {
+func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, domain string, emailAddress string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec, links *map[string]ServiceAddrPort) *api.ReplicationController {
 
 	k8rc := api.ReplicationController{}
 	// Replication controller
@@ -758,6 +758,7 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	env = append(env, api.EnvVar{Name: "NDSLABS_HOSTNAME", Value: name + "." + domain})
 	env = append(env, api.EnvVar{Name: "NDSLABS_DOMAIN", Value: domain})
 	env = append(env, api.EnvVar{Name: "NDSLABS_EMAIL", Value: emailAddress})
+	env = append(env, api.EnvVar{Name: "NDSLABS_STACK", Value: stack})
 	env = append(env, api.EnvVar{Name: "NAMESPACE", Value: ns})
 	env = append(env, api.EnvVar{Name: "NDSLABS_HOME", Value: homeDir})
 	env = append(env, api.EnvVar{Name: "TERM", Value: "linux"})
@@ -792,10 +793,6 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	}
 
 	for name, value := range stackService.Config {
-		env = append(env, api.EnvVar{Name: name, Value: value})
-	}
-
-	for name, value := range *sharedEnv {
 		env = append(env, api.EnvVar{Name: name, Value: value})
 	}
 
@@ -1151,45 +1148,48 @@ func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHe
 func (k *KubeHelper) CreateIngress(pid string, host string, service string, port int, tlsSecretName string, basicAuth bool) (*extensions.Ingress, error) {
 
 	name := service + "-ingress"
+	update := true
 
-	// Delete existing ingress
 	ingress, err := k.GetIngress(pid, name)
-	if ingress != nil {
-		k.DeleteIngress(pid, name)
+	if err == nil {
+		return nil, err
 	}
+	if ingress == nil {
+		update = false
 
-	// https://github.com/kubernetes/contrib/tree/master/ingress/controllers/nginx/examples/auth
-	annotations := map[string]string{}
-	if basicAuth {
-		annotations["ingress.kubernetes.io/auth-type"] = "basic"
-		annotations["ingress.kubernetes.io/auth-secret"] = "basic-auth"
-		annotations["ingress.kubernetes.io/auth-realm"] = "NDS Labs"
-	}
+		// https://github.com/kubernetes/contrib/tree/master/ingress/controllers/nginx/examples/auth
+		annotations := map[string]string{}
+		if basicAuth {
+			annotations["ingress.kubernetes.io/auth-type"] = "basic"
+			annotations["ingress.kubernetes.io/auth-secret"] = "basic-auth"
+			annotations["ingress.kubernetes.io/auth-realm"] = "NDS Labs"
+		}
 
-	ingress = &extensions.Ingress{
-		ObjectMeta: api.ObjectMeta{
-			Name:        name,
-			Namespace:   pid,
-			Annotations: annotations,
-		},
-		Spec: extensions.IngressSpec{
-			TLS: []extensions.IngressTLS{
-				extensions.IngressTLS{
-					Hosts:      []string{host},
-					SecretName: tlsSecretName,
-				},
+		ingress = &extensions.Ingress{
+			ObjectMeta: api.ObjectMeta{
+				Name:        name,
+				Namespace:   pid,
+				Annotations: annotations,
 			},
-			Rules: []extensions.IngressRule{
-				extensions.IngressRule{
-					Host: host,
-					IngressRuleValue: extensions.IngressRuleValue{
-						HTTP: &extensions.HTTPIngressRuleValue{
-							Paths: []extensions.HTTPIngressPath{
-								extensions.HTTPIngressPath{
-									Path: "/",
-									Backend: extensions.IngressBackend{
-										ServiceName: service,
-										ServicePort: intstr.FromInt(port),
+			Spec: extensions.IngressSpec{
+				TLS: []extensions.IngressTLS{
+					extensions.IngressTLS{
+						Hosts:      []string{host},
+						SecretName: tlsSecretName,
+					},
+				},
+				Rules: []extensions.IngressRule{
+					extensions.IngressRule{
+						Host: host,
+						IngressRuleValue: extensions.IngressRuleValue{
+							HTTP: &extensions.HTTPIngressRuleValue{
+								Paths: []extensions.HTTPIngressPath{
+									extensions.HTTPIngressPath{
+										Path: "/",
+										Backend: extensions.IngressBackend{
+											ServiceName: service,
+											ServicePort: intstr.FromInt(port),
+										},
 									},
 								},
 							},
@@ -1197,17 +1197,27 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 					},
 				},
 			},
-		},
+		}
 	}
+	return k.CreateUpdateIngress(pid, ingress, update)
+}
 
+func (k *KubeHelper) CreateUpdateIngress(pid string, ingress *extensions.Ingress, update bool) (*extensions.Ingress, error) {
+
+	ingress.ObjectMeta.Annotations["ndslabs.org/updated"] = time.Now().String()
 	data, err := json.Marshal(ingress)
 	if err != nil {
 		return nil, err
 	}
 
-	url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses/"
+	url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses"
+	method := "POST"
+	if update {
+		method = "PUT"
+		url += "/" + ingress.Name
+	}
 	glog.V(4).Infoln(url)
-	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	request, _ := http.NewRequest(method, url, bytes.NewBuffer(data))
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Authorization", k.getAuthHeader())
 	httpresp, httperr := k.client.Do(request)
@@ -1215,8 +1225,8 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 		glog.Error(httperr)
 		return nil, httperr
 	} else {
-		if httpresp.StatusCode == http.StatusCreated {
-			glog.V(2).Infof("Added ingress %s-%s\n", pid, service)
+		if httpresp.StatusCode == http.StatusCreated || httpresp.StatusCode == http.StatusOK {
+			glog.V(2).Infof("Added/updated ingress %s\n", ingress.Name)
 			data, err := ioutil.ReadAll(httpresp.Body)
 			if err != nil {
 				return nil, err
@@ -1227,7 +1237,7 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 		} else if httpresp.StatusCode == http.StatusConflict {
 			return nil, fmt.Errorf("Ingress exists for namespace %s: %s\n", pid, httpresp.Status)
 		} else {
-			return nil, fmt.Errorf("Error adding ingress for namespace %s: %s\n", pid, httpresp.Status)
+			return nil, fmt.Errorf("Error adding/updating ingress for namespace %s: %s\n", pid, httpresp.Status)
 		}
 	}
 	return nil, nil
@@ -1256,6 +1266,40 @@ func (k *KubeHelper) GetIngress(pid string, ingressName string) (*extensions.Ing
 			return &ingress, nil
 		} else {
 			return nil, fmt.Errorf("Error getting ingress %s for account %s: %s\n", ingressName, pid, httpresp.Status)
+		}
+	}
+	return nil, nil
+}
+
+func (k *KubeHelper) GetIngresses(pid string) ([]extensions.Ingress, error) {
+
+	url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses"
+	glog.V(4).Infoln(url)
+	request, _ := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", k.getAuthHeader())
+	httpresp, httperr := k.client.Do(request)
+	if httperr != nil {
+		glog.Error(httperr)
+		return nil, httperr
+	} else {
+		if httpresp.StatusCode == http.StatusOK {
+			data, err := ioutil.ReadAll(httpresp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			ingressList := extensions.IngressList{}
+			json.Unmarshal(data, &ingressList)
+
+			var ingresses = []extensions.Ingress{}
+			for _, ingress := range ingressList.Items {
+				ingresses = append(ingresses, ingress)
+			}
+			return ingresses, nil
+
+		} else {
+			return nil, fmt.Errorf("Error getting ingresses for account %s: %s\n", pid, httpresp.Status)
 		}
 	}
 	return nil, nil
@@ -1291,7 +1335,7 @@ func (k *KubeHelper) DeleteIngress(pid string, name string) (*extensions.Ingress
 	return nil, nil
 }
 
-func (k *KubeHelper) CreateBasicAuthSecret(pid string, hashedPassword string) (*api.Secret, error) {
+func (k *KubeHelper) CreateBasicAuthSecret(pid string, username string, hashedPassword string) (*api.Secret, error) {
 	secret, _ := k.GetSecret(pid, "basic-auth")
 	if secret != nil {
 		k.DeleteSecret(pid, "basic-auth")
@@ -1303,7 +1347,7 @@ func (k *KubeHelper) CreateBasicAuthSecret(pid string, hashedPassword string) (*
 			Namespace: pid,
 		},
 		Data: map[string][]byte{
-			"auth": []byte(fmt.Sprintf("%s:%s", pid, string(hashedPassword))),
+			"auth": []byte(fmt.Sprintf("%s:%s", username, string(hashedPassword))),
 		},
 	}
 	return k.CreateSecret(pid, secret)

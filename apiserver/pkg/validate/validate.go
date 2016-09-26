@@ -7,6 +7,8 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 )
 
+var maxKeyLength = 17
+
 type Validator struct {
 	schemaLoader gojsonschema.JSONLoader
 }
@@ -28,6 +30,9 @@ func (v *Validator) ValidateSpec(spec *api.ServiceSpec) (bool, error) {
 	}
 
 	if result.Valid() {
+		if len(spec.Key) > maxKeyLength {
+			return false, fmt.Errorf("Key must be no longer than 17 characters\n")
+		}
 		return true, nil
 	} else {
 		msg := ""
