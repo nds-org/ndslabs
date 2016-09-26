@@ -15,6 +15,7 @@ angular
   $scope.helpLinks = HelpLinks;
   
   $scope.featureLink = _.find($scope.helpLinks, [ 'name', 'Feature Overview' ]);
+  $scope.eulaLink = _.find($scope.helpLinks, [ 'name', 'Acceptable Use Policy' ]);
   
   $scope.token = $routeParams.t;
   $scope.user = $routeParams.u;
