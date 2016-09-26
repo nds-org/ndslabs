@@ -8,12 +8,14 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('SignUpController', [ '$scope', '$log', '$location', 'NdsLabsApi', 'Project', 'ProductName', 'AuthInfo', 'HomeRoute', 
-    function($scope, $log, $location, NdsLabsApi, Project, ProductName, AuthInfo, HomeRoute) {
+.controller('SignUpController', [ '$scope', '$log', '$location', '_', 'NdsLabsApi', 'Project', 'ProductName', 'AuthInfo', 'HomeRoute', 'HelpLinks',
+    function($scope, $log, $location, _, NdsLabsApi, Project, ProductName, AuthInfo, HomeRoute, HelpLinks) {
       
   if (AuthInfo.get().token) {
     $location.path(HomeRoute);
   }   
+  
+  $scope.eulaLink = _.find(HelpLinks, [ 'name', 'Acceptable Use Policy' ]);
   
   $scope.productName = ProductName;
   
