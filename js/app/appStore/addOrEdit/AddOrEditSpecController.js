@@ -76,6 +76,7 @@ angular
   // Set up some common defaults
   $scope.portProtocol = 'http';
   $scope.portNumber = 1;
+  $scope.portPath ='/';
   
   $scope.probe = {
     type: 'none',
