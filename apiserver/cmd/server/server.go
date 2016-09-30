@@ -32,6 +32,7 @@ import (
 
 var adminUser = "admin"
 var systemNamespace = "kube-system"
+var glusterPodName = "glfs-server-global"
 
 type Server struct {
 	etcd           *etcd.EtcdHelper
@@ -869,18 +870,38 @@ func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
 	}
 
 	// Get the GFS server pods
-	gfs, err := s.kube.GetPods("kube-system", "name", "glfs-server-global")
+	gfs, err := s.kube.GetPods(systemNamespace, "name", glusterPodName)
 	if err != nil {
 		return false, err
 	}
 	if len(gfs) > 0 {
 		cmd := []string{"gluster", "volume", "quota", s.volName, "limit-usage", "/" + account.Namespace, fmt.Sprintf("%dGB", account.ResourceLimits.StorageQuota)}
-		_, err := s.kube.ExecCommand("kube-system", gfs[0].Name, cmd)
+		_, err := s.kube.ExecCommand(systemNamespace, gfs[0].Name, cmd)
 		if err != nil {
 			return false, err
 		}
 	} else {
 		glog.V(2).Info("No GFS servers found, cannot set account quota")
+	}
+	return true, nil
+}
+
+// For now, just call the status command and see if it returns an error
+func (s *Server) getGlusterStatus() (bool, error) {
+
+	// Get the GFS server pods
+	gfs, err := s.kube.GetPods(systemNamespace, "name", glusterPodName)
+	if err != nil {
+		return false, err
+	}
+	if len(gfs) > 0 {
+		cmd := []string{"gluster", "volume", "status", s.volName}
+		_, err := s.kube.ExecCommand(systemNamespace, gfs[0].Name, cmd)
+		if err != nil {
+			return false, err
+		}
+	} else {
+		glog.V(2).Info("No GFS servers found, GFS not enabled")
 	}
 	return true, nil
 }
@@ -2532,8 +2553,7 @@ func (s *Server) ResetPassword(w rest.ResponseWriter, r *rest.Request) {
 	}
 	account, err := s.etcd.GetAccount(userId)
 	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		rest.NotFound(w, r)
 		return
 	}
 
@@ -2713,18 +2733,23 @@ func (s *Server) GetHealthz(w rest.ResponseWriter, r *rest.Request) {
 	// Confirm access to Etcd
 	_, err := s.etcd.GetAccount(adminUser)
 	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		rest.Error(w, "etcd not available", http.StatusInternalServerError)
 		return
 	}
 
 	// Confirm access to Kubernetes API
 	_, err = s.kube.GetSecret(adminUser, "ndslabs-tls-secret")
 	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		rest.Error(w, "Kubernetes API not available", http.StatusInternalServerError)
 		return
 	}
 
 	// Confirm access to Gluster and GFS
+	_, err = s.getGlusterStatus()
+	if err != nil {
+		rest.Error(w, "GFS not available", http.StatusInternalServerError)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 }
