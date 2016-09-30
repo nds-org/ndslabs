@@ -2740,7 +2740,7 @@ func (s *Server) GetHealthz(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	// Confirm access to Kubernetes API
-	_, err = s.kube.GetSecret("default", "ndslabs-tls-secret")
+	_, err = s.kube.GetNamespace(adminUser)
 	if err != nil {
 		rest.Error(w, "Kubernetes API not available", http.StatusInternalServerError)
 		return
