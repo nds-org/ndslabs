@@ -27,7 +27,6 @@ type ServiceSpec struct {
 	Tags                 []string            `json:"tags"`
 	Info                 string              `json:"info"`
 	Privileged           bool                `json:"privileged"`
-	ContextPath          string              `json:"contextPath"`
 }
 
 type ServiceImage struct {
@@ -72,8 +71,9 @@ type Config struct {
 }
 
 type Port struct {
-	Port     int32  `json:"port"`
-	Protocol string `json:"protocol"`
+	Port        int32  `json:"port"`
+	Protocol    string `json:"protocol"`
+	ContextPath string `json:"contextPath"`
 }
 
 type VolumeMount struct {
