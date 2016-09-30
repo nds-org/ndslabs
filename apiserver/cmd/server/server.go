@@ -140,6 +140,7 @@ func main() {
 	if cfg.DefaultLimits.StorageDefault <= 0 {
 		cfg.DefaultLimits.StorageDefault = 10
 	}
+	glog.Infof("Using account defaults: max memory=%d M, max cpu=%d m, max storage = %d GB\n")
 
 	hostname, err := os.Hostname()
 	if err != nil {

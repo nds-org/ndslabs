@@ -64,11 +64,11 @@ Ingress=$INGRESS
 Domain=$DOMAIN
 
 [DefaultLimits]
-CpuMax=2000
+CpuMax=4000
 CpuDefault=1000
-MemMax=12000
+MemMax=12288
 MemDefault=100
-StorageDefault=10
+StorageDefault=20
 
 [Etcd]
 Address=$ETCD_ADDR
