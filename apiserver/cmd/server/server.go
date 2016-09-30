@@ -450,6 +450,7 @@ func (s *Server) GetPaths(w rest.ResponseWriter, r *rest.Request) {
 	paths = append(paths, s.prefix+"configs")
 	paths = append(paths, s.prefix+"console")
 	paths = append(paths, s.prefix+"contact")
+	paths = append(paths, s.prefix+"healthz")
 	paths = append(paths, s.prefix+"logs")
 	paths = append(paths, s.prefix+"register")
 	paths = append(paths, s.prefix+"reset")
@@ -2738,7 +2739,7 @@ func (s *Server) GetHealthz(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	// Confirm access to Kubernetes API
-	_, err = s.kube.GetSecret(adminUser, "ndslabs-tls-secret")
+	_, err = s.kube.GetSecret("default", "ndslabs-tls-secret")
 	if err != nil {
 		rest.Error(w, "Kubernetes API not available", http.StatusInternalServerError)
 		return
