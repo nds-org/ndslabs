@@ -2549,12 +2549,13 @@ func (s *Server) ResetPassword(w rest.ResponseWriter, r *rest.Request) {
 	token, err := s.getTemporaryToken(userId)
 	if err != nil {
 		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 	account, err := s.etcd.GetAccount(userId)
 	if err != nil {
-		rest.NotFound(w, r)
+		glog.Error(err)
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 
@@ -2568,7 +2569,7 @@ func (s *Server) ResetPassword(w rest.ResponseWriter, r *rest.Request) {
 
 	if err != nil {
 		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
