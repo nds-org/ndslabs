@@ -140,6 +140,7 @@ func main() {
 	if cfg.DefaultLimits.StorageDefault <= 0 {
 		cfg.DefaultLimits.StorageDefault = 10
 	}
+	glog.Infof("Using account defaults: max memory=%d M, max cpu=%d m, max storage = %d GB\n")
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -2082,6 +2083,8 @@ func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, erro
 					endpoint.NodePort = k8port.NodePort
 					if s.useLoadBalancer() && spec.Access == api.AccessExternal {
 						endpoint.Host = fmt.Sprintf("%s.%s", stackService.Id, s.domain)
+						endpoint.Path = specPort.ContextPath
+						endpoint.URL = endpoint.Host + specPort.ContextPath
 					}
 
 					stackService.Endpoints = append(stackService.Endpoints, endpoint)
