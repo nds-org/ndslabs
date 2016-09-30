@@ -1763,9 +1763,10 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 		if len(config.UseFrom) > 0 {
 			for i := range stack.Services {
 				ss := &stack.Services[i]
-				if config.UseFrom == ss.Service {
+				useFrom := strings.Split(config.UseFrom, ".")
+				if useFrom[0] == ss.Service {
 					glog.V(4).Infof("Setting %s %s to %s %s\n", stackService.Id, config.Name, ss.Id, ss.Config[config.Name])
-					stackService.Config[config.Name] = ss.Config[config.Name]
+					stackService.Config[config.Name] = ss.Config[useFrom[1]]
 				}
 
 			}
@@ -2699,8 +2700,9 @@ func (s *Server) checkDependencies(uid string, service *api.ServiceSpec) (string
 func (s *Server) checkConfigs(uid string, service *api.ServiceSpec) (string, bool) {
 	for _, config := range service.Config {
 		if len(config.UseFrom) > 0 {
-			if !s.serviceExists(uid, config.UseFrom) {
-				return config.UseFrom, false
+			useFrom := strings.Split(config.UseFrom, ".")
+			if !s.serviceExists(uid, useFrom[0]) {
+				return useFrom[0], false
 			}
 		}
 	}
