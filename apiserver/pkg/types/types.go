@@ -68,6 +68,7 @@ type Config struct {
 	IsPassword  bool   `json:"isPassword"`
 	CanOverride bool   `json:"canOverride"`
 	UseFrom     string `json:"useFrom"`
+	SetTo       string `json:"setTo"`
 }
 
 type Port struct {

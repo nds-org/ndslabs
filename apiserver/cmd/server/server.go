@@ -1758,7 +1758,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	glog.V(4).Infof("Starting controller for %s\n", serviceKey)
 	spec, _ := s.etcd.GetServiceSpec(userId, serviceKey)
 
-	// useFrom
+	// If useFrom is set on *this* spec,
 	for _, config := range spec.Config {
 		if len(config.UseFrom) > 0 {
 			for i := range stack.Services {
@@ -1768,7 +1768,25 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 					glog.V(4).Infof("Setting %s %s to %s %s\n", stackService.Id, config.Name, ss.Id, ss.Config[config.Name])
 					stackService.Config[config.Name] = ss.Config[useFrom[1]]
 				}
+			}
+		}
+	}
 
+	// Enumerate other services in this stack to see if "setTo" is set
+	// on any configs for this service.
+	if stackService.Config == nil {
+		stackService.Config = map[string]string{}
+	}
+	for _, ss := range stack.Services {
+		ssSpec, _ := s.etcd.GetServiceSpec(userId, ss.Service)
+		for _, config := range ssSpec.Config {
+			if len(config.SetTo) > 0 {
+				setTo := strings.Split(config.SetTo, ".")
+				// Is the setTo key this service?
+				if setTo[0] == serviceKey {
+					glog.V(4).Infof("Setting %s.%s to %s.%s value\n", serviceKey, config.Name, ss.Id, setTo[1], ss.Config[setTo[1]])
+					stackService.Config[setTo[1]] = ss.Config[config.Name]
+				}
 			}
 		}
 	}
@@ -2703,6 +2721,13 @@ func (s *Server) checkConfigs(uid string, service *api.ServiceSpec) (string, boo
 			useFrom := strings.Split(config.UseFrom, ".")
 			if !s.serviceExists(uid, useFrom[0]) {
 				return useFrom[0], false
+			}
+		}
+
+		if len(config.SetTo) > 0 {
+			setTo := strings.Split(config.SetTo, ".")
+			if !s.serviceExists(uid, setTo[0]) {
+				return setTo[0], false
 			}
 		}
 	}
