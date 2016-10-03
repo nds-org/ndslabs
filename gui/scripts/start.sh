@@ -3,7 +3,6 @@
 # Stop anything running first
 sh ./stop.sh
 
-
 REPO=ndslabs
 IMAGE=ndslabs-gui
 TAG=develop

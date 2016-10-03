@@ -1,1 +1,0 @@
-# AngularJS Swagger API Generator

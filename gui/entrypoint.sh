@@ -10,4 +10,4 @@
 /bin/sed -i -e "s#^\.constant('SupportEmail', .*)#.constant('SupportEmail', '${SUPPORT_EMAIL}')#" "/home/js/app/app.js"
 
 # Start our HTTP Server
-http-server /home/js/
+http-server /home/
