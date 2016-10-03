@@ -7,7 +7,6 @@ REPO=ndslabs
 IMAGE=ndslabs-gui
 TAG=develop
 
-
 # If -c specified, clean old image
 if [[ "${@/-c/ }" != "$@" ]]; then
 	echo "Removing image: $REPO/$IMAGE:$TAG"

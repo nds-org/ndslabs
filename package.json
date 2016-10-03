@@ -5,7 +5,10 @@
   "description": "AngularJS Client GUI for the NDS Labs API",
   "repository": "https://github.com/nds-org/nds-labs",
   "license": "MIT",
-  "devDependencies": {},
+  "devDependencies": {
+    "swagger-js-codegen": "^1.6.9",
+    "yamljs": "^0.2.8"
+  },
   "dependencies": {
     "bower": "^1.7.7",
     "grunt": "^0.4.5",

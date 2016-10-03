@@ -127,7 +127,7 @@ angular
   $scope.cloneSpec = function(spec) {
     $uibModal.open({
       animation: true,
-      templateUrl: 'app/appStore/modals/clone/cloneSpec.html',
+      templateUrl: 'app/catalog/modals/clone/cloneSpec.html',
       controller: 'CloneSpecCtrl',
       size: 'md',
       backdrop: 'static',
@@ -141,7 +141,7 @@ angular
   $scope.openExport = function(spec) {
     $uibModal.open({
       animation: true,
-      templateUrl: 'app/appStore/modals/export/exportSpec.html',
+      templateUrl: 'app/catalog/modals/export/exportSpec.html',
       controller: 'ExportSpecCtrl',
       size: 'md',
       backdrop: 'static',
@@ -155,7 +155,7 @@ angular
   $scope.openImport = function() {
     $uibModal.open({
       animation: true,
-      templateUrl: 'app/appStore/modals/import/importSpec.html',
+      templateUrl: 'app/catalog/modals/import/importSpec.html',
       controller: 'ImportSpecCtrl',
       size: 'md',
       backdrop: 'static',
@@ -167,7 +167,7 @@ angular
   $scope.openDelete = function(spec) {
     $uibModal.open({
       animation: true,
-      templateUrl: 'app/appStore/modals/delete/deleteSpec.html',
+      templateUrl: 'app/catalog/modals/delete/deleteSpec.html',
       controller: 'DeleteSpecCtrl',
       size: 'md',
       backdrop: 'static',
