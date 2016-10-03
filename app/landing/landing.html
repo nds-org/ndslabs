@@ -65,9 +65,15 @@
       <p>See Also:
         <ul class="fa-ul">
           <li ng-repeat="link in helpLinks"><i class="fa-li fa {{ link.icon }}"></i> <a ng-href="{{ link.url }}" target="_blank">{{ link.name }}</a></li>
-          <li role="separator" class="divider"></li>
-          <li><a href="#/swagger"><i class="fa fa-fw fa-server"></i> API Reference</a></li>
-          <li><a href="#/contact"><i class="fa fa-fw fa-support"></i> Contact Us</a></li>
+        </ul>
+      </p>
+      
+      <hr>
+      
+      <p>
+        <ul class="fa-ul">
+          <li><i class="fa-li fa fa-server"></i> <a href="#/swagger"> API Reference</a></li>
+          <li><i class="fa-li fa fa-support"></i> <a href="#/contact"> Contact Us</a></li>
         </ul>
       </p>
     </div>
