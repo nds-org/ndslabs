@@ -153,10 +153,10 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
     var protocol = endpt.protocol;
 
 	// NDS-260
-    if (endpt.host) {
-        return protocol + '://' + endpt.host;
+    if (endpt.url) {
+      return protocol + '://' + endpt.url;
     } else {
-       return protocol + '://' + ApiHost + (endpt.nodePort ? ':' + endpt.nodePort : '');
+      return protocol + '://' + ApiHost + (endpt.nodePort ? ':' + endpt.nodePort : '');
     }
   };
 }])
