@@ -6,10 +6,25 @@
 #
 
 # This image will be based on the official nodejs docker image
-FROM node:6.3.1-slim
+FROM debian:jessie
 
 # Tell Docker we plan to use this port (http-server's default)
 EXPOSE 8080
+
+RUN apt-get -qq update && \
+    apt-get -qq install \
+      build-essential \
+      curl \
+      git \
+      sudo \
+      npm && \
+    curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - && \
+    apt-get -qq install nodejs && \
+    ln -s /usr/local/bin/node /usr/local/bin/nodejs && \
+    apt-get -qq autoremove && \
+    apt-get -qq autoclean && \
+    apt-get -qq clean all && \
+    rm -rf /var/cache/apk/* /tmp/*
     
 # Set directory for npm/bower
 WORKDIR /home/
@@ -19,7 +34,7 @@ COPY package.json bower.json Gruntfile.js /home/
 
 # Install dependencies
 RUN npm install -g bower grunt http-server && \
-#    npm install && \
+    npm install && \
     bower install --config.interactive=false --allow-root
 
 # Copy in the source
