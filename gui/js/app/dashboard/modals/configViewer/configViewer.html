@@ -74,11 +74,11 @@
                 <td>{{ endpt.protocol | uppercase }}</td>
                 <td>{{ service.internalIP }}:{{ endpt.port }}</td>
                 <td>
-		              <span ng-if="!endpt.nodePort && !endpt.host">N / A</span>
+		              <span ng-if="!endpt.nodePort && !endpt.url">N / A</span>
                   <a ng-if="endpt.nodePort" ng-href="{{ 'http://' + apiHost + ':' + endpt.nodePort }}">
                     {{ apiHost + ':' + endpt.nodePort }}
                   </a>
-                  <a ng-if="endpt.host" ng-href="{{ 'http://' + endpt.host }}">
+                  <a ng-if="endpt.url" ng-href="{{ 'http://' + endpt.url }}">
                     {{ endpt.host }}
                   </a>
                 </td>

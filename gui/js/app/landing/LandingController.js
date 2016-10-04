@@ -8,10 +8,11 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('LandingController', [ '$scope', '$location', '$routeParams', '$log', '_', 'AuthInfo', 'OrgName', 'ProductName', 'NdsLabsApi', 'HelpLinks',  
-    function($scope, $location, $routeParams, $log, _, AuthInfo, OrgName, ProductName, NdsLabsApi, HelpLinks) {
+.controller('LandingController', [ '$scope', '$location', '$routeParams', '$log', '_', 'AuthInfo', 'OrgName', 'ProductName', 'ProductUrl', 'NdsLabsApi', 'HelpLinks',  
+    function($scope, $location, $routeParams, $log, _, AuthInfo, OrgName, ProductName, ProductUrl, NdsLabsApi, HelpLinks) {
   $scope.orgName = OrgName;
   $scope.productName = ProductName;
+  $scope.productUrl = ProductUrl;
   $scope.helpLinks = HelpLinks;
   
   $scope.auth = AuthInfo.get();

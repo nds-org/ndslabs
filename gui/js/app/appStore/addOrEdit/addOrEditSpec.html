@@ -472,6 +472,7 @@
                                               <tr>
                                                 <th width="30%" class="text-center">Protocol</th>
                                                 <th width="30%">Port Number</th>
+                                                <th width="30%">Context Path</th>
                                                 <th width="10%"></th>
                                               </tr>
                                             </thead>
@@ -484,11 +485,22 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                  <input class="form-control" type="number" ng-model="port.port" id="portPortField" name="portPortField" required min="1" max="65535" />
-                                                  <ng-messages class="text-danger" role="alert" for="modifySpec.portPortField.$error">
+                                                  <input class="form-control" type="number" ng-model="port.port" id="portPortField{{ $index }}" name="portPortField{{ $index }}" required min="1" max="65535" />
+                                                  <ng-messages class="text-danger" role="alert" for="modifySpec['portPortField'+$index].$error">
                                                       <ng-message when="required">Please enter a value or delete this port mapping</ng-message>
                                                       <ng-message when="min,max">This value must be a valid port number (1 - 65535)</ng-message>
                                                   </ng-messages>
+                                                </td>
+                                                <td>
+                                                  <div ng-if="port.protocol === 'http'">
+                                                        
+                                                    <input class="form-control" type="text" required ng-pattern="/^\/[^\s]*$/" name="portPathField{{ $index }}" id="portPathField{{ $index }}" ng-model="port.contextPath" placeholder="Path..." />
+                                                            
+                                                    <ng-messages role="alert" class="text-danger" for="modifySpec['portPathField'+$index].$error">
+                                                      <ng-message when="required">You must specify a path for HTTP ports</ng-message>
+                                                      <ng-message when="pattern">This value must be a valid context path (such as '/' or '/index.html')</ng-message>
+                                                    </ng-messages>
+                                                  </div>
                                                 </td>
                                                 <td><button class="btn btn-xs btn-default" ng-click="spec.ports.splice(spec.ports.indexOf(port), 1)"><i class="fa fa-fw fa-trash"></i></button></td>
                                               </tr>
@@ -498,16 +510,28 @@
                                                 <td class="text-center">
                                                   <div class="btn-group" role="group">
                                                     <button type="button" class="btn btn-xs" ng-click="portProtocol='http'" ng-class="{ 'btn-primary': portProtocol === 'http', 'btn-default': portProtocol !== 'http' }">HTTP</button>
+                                                    <button type="button" class="btn btn-xs" ng-click="portProtocol='tcp'" ng-class="{ 'btn-primary': portProtocol === 'tcp', 'btn-default': portProtocol !== 'tcp' }">TCP</button>
                                                   </div>
                                                 </td>
                                                 <td class="text-center">
                                                   <input class="form-control" type="number" ng-model="portNumber" id="portNumberField" name="portNumberField" min="1" max="65535" />
-                                                  <ng-messages class="text-danger" role="alert" for="modifySpec.portNumberField.$error">
+                                                  <ng-messages class="text-danger" role="alert" for="modifySpec['portNumberField'].$error">
                                                       <ng-message when="min,max">This value must be a valid port number (1 - 65535)</ng-message>
                                                   </ng-messages>
                                                 </td>
-                                                <td><button class="btn btn-xs btn-primary" ng-click="spec.ports.push({ protocol: portProtocol, port: portNumber });portNumber=1" 
-                                                    ng-disabled="!portNumber || _.find(spec.ports, { protocol:portProtocol, port:portNumber })" ><i class="fa fa-fw fa-plus"></i></button></td>
+                                                <td>
+                                                  <!-- XXX: We need ng-show here, to avoid creating an isolate scope -->
+                                                  <div ng-show="portProtocol === 'http'">
+                                                    <input class="form-control" type="text" required ng-pattern="/^\/[^\s]*$/" name="portPathField" id="portPathField" ng-model="portPath" placeholder="Path..." />
+                                                                
+                                                    <ng-messages role="alert" class="text-danger" for="modifySpec['portPathField'].$error">
+                                                      <ng-message when="required">You must specify a path for HTTP ports</ng-message>
+                                                      <ng-message when="pattern">Enter a valid context path (i.e. '/' or '/index.html')</ng-message>
+                                                    </ng-messages>
+                                                  </div>
+                                                </td>
+                                                <td><button class="btn btn-xs btn-primary" ng-click="spec.ports.push({ protocol: portProtocol, port: portNumber, contextPath: portPath });portNumber=1;portPath='/';" 
+                                                    ng-disabled="!portNumber || (portProtocol === 'http' && modifySpec['portPathField'].$invalid) || _.find(spec.ports, { protocol:portProtocol, port:portNumber })" ><i class="fa fa-fw fa-plus"></i></button></td>
                                               </tr>
                                           </table>
                                         </div>
