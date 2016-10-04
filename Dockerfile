@@ -6,7 +6,7 @@
 #
 
 # This image will be based on the official nodejs docker image
-FROM node:slim-6.3.1
+FROM node:6.3.1-slim
 
 # Tell Docker we plan to use this port (http-server's default)
 EXPOSE 8080
