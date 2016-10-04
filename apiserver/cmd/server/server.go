@@ -1546,7 +1546,7 @@ func (s *Server) createIngressRule(userId string, svc *k8api.Service, stack *api
 		glog.Error(err)
 		return err
 	}
-	glog.V(4).Infof("Started ingress %s for service %s\n", host, svc.Name)
+	glog.V(4).Infof("Started ingress %s for service %s (secure=%t)\n", host, svc.Name, stack.Secure)
 	return nil
 }
 

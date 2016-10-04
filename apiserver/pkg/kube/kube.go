@@ -1198,7 +1198,12 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 				},
 			},
 		}
+	} else {
+		if !basicAuth {
+			ingress.Annotations = map[string]string{}
+		}
 	}
+
 	return k.CreateUpdateIngress(pid, ingress, update)
 }
 
