@@ -6,24 +6,36 @@
 #
 
 # This image will be based on the official nodejs docker image
-FROM node:6.3.1
+FROM debian:jessie
 
 # Tell Docker we plan to use this port (http-server's default)
 EXPOSE 8080
+
+RUN apt-get -qq update && \
+    apt-get -qq install \
+      build-essential \
+      curl \
+      git \
+      sudo \
+      npm && \
+    curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - && \
+    apt-get -qq install nodejs && \
+    ln -s /usr/local/bin/node /usr/local/bin/nodejs && \
+    apt-get -qq autoremove && \
+    apt-get -qq autoclean && \
+    apt-get -qq clean all && \
+    rm -rf /var/cache/apk/* /tmp/*
     
 # Set directory for npm/bower
-WORKDIR /home/js/
+WORKDIR /home/
 
 # Copy in the source
-COPY js/package.json js/bower.json js/Gruntfile.js /home/js/
+COPY package.json bower.json Gruntfile.js /home/
 
 # Install dependencies
 RUN npm install -g bower grunt http-server && \
-#    npm install && \
+    npm install && \
     bower install --config.interactive=false --allow-root
-    
-# Set directory for npm/bower
-WORKDIR /home
 
 # Copy in the source
 COPY . /home/
@@ -32,8 +44,8 @@ COPY . /home/
 ARG version="1.0.6"
 
 # Set build number/date inside the container, as well as our default API server/port
-RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${version}')#" "/home/js/app/app.js" && \
-    /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('$(date)'))#" "/home/js/app/app.js"
+RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${version}')#" "/home/app/app.js" && \
+    /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('$(date)'))#" "/home/app/app.js"
 
 # The command to run our app when the container is run
 CMD [ "./entrypoint.sh" ]

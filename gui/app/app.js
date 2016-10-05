@@ -5,8 +5,8 @@
  * Define our ndslabs module here. All other files will 
  * use the single-argument notation for angular.module()
  */
-angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-filters', 'ndslabs-directives',  'ndslabs-api', 'ngWizard', 'ngGrid', 'ngAlert', 'ngTagsInput', 'cgBusy',
-    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ngMessages', 'ui.bootstrap', 'ngPasswordStrength', 'angular-clipboard', 'ui.pwgen', 'frapontillo.gage', 'chart.js', 'ui.gravatar' ])
+angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-filters', 'ndslabs-directives',  'ndslabs-api', 'ngWizard', 'ngGrid', 'ngAlert', 'ngTagsInput', 'cgBusy', 'ngSanitize',
+    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ngMessages', 'ui.bootstrap', 'ngPasswordStrength', 'angular-clipboard', 'ui.pwgen', 'frapontillo.gage', 'chart.js', 'ui.gravatar', 'swaggerUi' ])
 
 /**
  * If true, display verbose debug data as JSON
@@ -280,6 +280,11 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     controller: 'LoginController',
     templateUrl: 'app/login/login.html'
   })
+  .when('/swagger', {
+    title: 'Swagger UI',
+    controller: 'SwaggerController',
+    templateUrl: 'app/api/swagger.html'
+  })
   .when(LandingRoute, {
     title: ProductName + ' Landing Page',
     controller: 'LandingController',
@@ -308,17 +313,17 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   .when(AppStoreRoute, {
     title: ProductName + ' Catalog',
     controller: 'CatalogController',
-    templateUrl: 'app/appStore/catalog.html'
+    templateUrl: 'app/catalog/catalog.html'
   })
   .when(AddSpecRoute, {
     title: 'Add Application',
     controller: 'AddOrEditSpecController',
-    templateUrl: 'app/appStore/addOrEdit/addOrEditSpec.html'
+    templateUrl: 'app/catalog/addOrEdit/addOrEditSpec.html'
   })
   .when(EditSpecRoute, {
     title: 'Edit Application',
     controller: 'AddOrEditSpecController',
-    templateUrl: 'app/appStore/addOrEdit/addOrEditSpec.html'
+    templateUrl: 'app/catalog/addOrEdit/addOrEditSpec.html'
   })
   .when(HomeRoute, {
     title: ProductName + ' Dashboard',

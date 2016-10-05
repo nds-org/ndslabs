@@ -5,7 +5,7 @@ angular.module('ndslabs-api', [])
         'use strict';
 
         /**
-         * 
+         * API for the NDS Labs Workbench service
          * @class ApiServer
          * @param {(string|object)} [domainOrOptions] - The project domain or options object. If object, see the object's optional properties.
          * @param {string} [domainOrOptions.domain] - The project domain

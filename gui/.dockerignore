@@ -1,9 +1,6 @@
-*/.c9/
+**/.c9/
 .c9/
-api/
+node_modules/
+bower_components/
 README.md
-build.sh
-release.sh
-swagger.sh
-start.sh
-stop.sh
+scripts/
