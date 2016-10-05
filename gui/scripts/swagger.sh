@@ -12,10 +12,9 @@ docker run --rm -it -v `pwd`:/data bodom0015/nodejs-bower-grunt npm install swag
 # Retrieve target swagger-spec.yaml
 if [[ "$1" != "" ]]; then
 	echo "Downloading swagger spec from ${DOWNLOADURL}"
-	sudo curl -L ${DOWNLOADURL} > app/api/${SWAGGERFILE}
+	curl -L ${DOWNLOADURL} > app/api/${SWAGGERFILE}
 else
-	echo "Rebuilding swagger spec from ../apis/swagger-spec/${SWAGGERFILE}"
-	cp ../apis/swagger-spec/${SWAGGERFILE} app/api/${SWAGGERFILE}
+	echo "Rebuilding swagger spec from ${SWAGGERFILE}"
 fi
 
 # Next, generate JSON spec (for Swagger UI)
