@@ -1,8 +1,13 @@
 swagger: '2.0'
 info:
-  title: ndslabs
+  title: NDS Labs Workbench
+  description: API for the NDS Labs Workbench service
+  contact:
+   email: ndslabs-support@nationaldataservice.org
+   name:  NDS Labs Support
+   url: http://www.nationaldataservice.org/projects/labs.html
   version: 1.0.6
-basePath: /v1
+basePath: /api
 schemes:
   - https
 produces:
