@@ -27,6 +27,7 @@ type ServiceSpec struct {
 	Tags                 []string            `json:"tags"`
 	Info                 string              `json:"info"`
 	Privileged           bool                `json:"privileged"`
+	AuthRequired         bool                `json:"authRequired"`
 }
 
 type ServiceImage struct {

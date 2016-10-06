@@ -1113,6 +1113,9 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 		// Don't allow privileged services in user catalogs
 		service.Privileged = false
 
+		// Always require auth on user catalog services
+		service.AuthRequired = true
+
 		err = s.etcd.PutService(userId, service.Key, &service)
 		if err != nil {
 			glog.Error(err)
@@ -1185,6 +1188,9 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 		}
 		// Don't allow privileged services in user catalogs
 		service.Privileged = false
+
+		// Always require auth on user catalog services
+		service.AuthRequired = true
 
 		err = s.etcd.PutService(userId, key, &service)
 		if err != nil {
