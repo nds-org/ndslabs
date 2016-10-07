@@ -21,12 +21,22 @@ angular
   delete $scope.spec.privileged;
   delete $scope.spec.catalog;
   
-  // Remove empty fields
-  angular.forEach($scope.spec, function(value, key) {
-    if (angular.isUndefined(value) || value === null || !value || (_.isArray(value) && value.length === 0)) {
-      delete $scope.spec[key];
+  // Remove empty fields and sub-fields
+  ($scope.stripEmptyFields = function(spec) {
+    if (_.isArray(spec)) {    // Arrays
+      angular.forEach(spec, function(arrVal) {
+        $scope.stripEmptyFields(arrVal);
+      });
+    } else {                  // Objects
+      angular.forEach(spec, function(value, key) {
+        if (angular.isUndefined(value) || value === null || !value || (_.isArray(value) && value.length === 0)) {
+          delete spec[key];
+        } else if (_.isArray(spec[key])) {   // Arrays
+          $scope.stripEmptyFields(spec[key]);
+        }
+      });
     }
-  });
+  })($scope.spec);
   
   angular.forEach(Stacks.all, function(stack) {
     if (_.find(stack.services, [ 'service', $scope.spec.key ])) {
