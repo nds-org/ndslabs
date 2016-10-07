@@ -371,13 +371,13 @@
                                                             
                                                             <!-- Config value / setTo / useFrom -->
                                                             <td>
-                                                                <span ng-if="cfg.type === 'Set To'"><p>Set To:</p>{{ cfg.setTo }}</span>
-                                                                <span ng-if="cfg.type === 'Use From'"><p>Use From:</p>{{ cfg.useFrom }}</span>
-                                                                <span ng-if="cfg.type === 'Explicit'"><p>Explicit Value:</p>{{ cfg.value }}</span>
+                                                                <span ng-if="cfg.type === 'Set To'">Set To: {{ cfg.setTo }}</span>
+                                                                <span ng-if="cfg.type === 'Use From'">Use From: {{ cfg.useFrom }}</span>
+                                                                <span ng-if="cfg.type === 'Explicit'">{{ cfg.value }}</span>
                                                             </td>
                                                             
                                                             <!-- Can Override? -->
-                                                            <td><input type="checkbox" class="checkbox" ng-model="cfg.canOverride" /></td>
+                                                            <td><input type="checkbox" class="checkbox" ng-model="cfg.canOverride"  /></td>
                                                             
                                                             <!-- Is Password? -->
                                                             <td><input type="checkbox" class="checkbox" ng-model="cfg.isPassword" /></td>
