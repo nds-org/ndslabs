@@ -94,6 +94,21 @@ angular
       $scope.keyUnique = true;
     }
   });
+  
+  $scope.$watch('spec.depends.length', function(newValue, oldValue) {
+    if (!newValue) {
+      return;
+    }
+    
+    // Collect all configs present in the stack
+    $scope.configSrcOptions = [];
+    angular.forEach(newValue, function(dep) {
+      var spec = _.find(Specs.all, ['key', dep.key ]);
+      angular.forEach(spec.config, function(cfg) {
+        $scope.configSrcOptions.push(dep.key + '.' + cfg.name);
+      });
+    });
+  });
 
   // Update view when our spec list reloads
   $scope.$watch(function () { return Specs.all; }, function(newValue, oldValue) {
@@ -120,7 +135,7 @@ angular
       $scope.spec.depends = $scope.spec.depends || [];
       $scope.spec.command = _.join($scope.spec.command, ' ');
       $scope.spec.args = _.join($scope.spec.args, ' ');
-      
+
       // Set config type on each config object
       angular.forEach($scope.spec.config, function(cfg) {
         if (!cfg.useFrom && cfg.setTo) {

@@ -353,13 +353,12 @@
                                                 <table class="table table-striped table-condensed table-hover">
                                                     <thead>
                                                         <tr>
-                                                            <th width="20%">Name</th>
+                                                            <th width="25%">Name</th>
                                                             <th width="20%">Label</th>
-                                                            <th width="20%">Type</th>
-                                                            <th width="20%">Default Value</th>
+                                                            <th width="40%">Default Value</th>
                                                             <th width="5%">Can Override?</th>
                                                             <th width="5%">Is Password?</th>
-                                                            <th width="10%"></th>
+                                                            <th width="5%"></th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -370,16 +369,11 @@
                                                             <!-- Label -->
                                                             <td>{{ cfg.label }}</td>
                                                             
-                                                            <!-- Config Type -->
-                                                            <td>
-                                                                {{ cfg.type}}
-                                                            </td>
-                                                            
                                                             <!-- Config value / setTo / useFrom -->
                                                             <td>
-                                                                <span ng-if="cfg.type === 'Set To'">{{ cfg.setTo }}</span>
-                                                                <span ng-if="cfg.type === 'Use From'">{{ cfg.useFrom }}</span>
-                                                                <span ng-if="cfg.type === 'Explicit'">{{ cfg.value }}</span>
+                                                                <span ng-if="cfg.type === 'Set To'"><p>Set To:</p>{{ cfg.setTo }}</span>
+                                                                <span ng-if="cfg.type === 'Use From'"><p>Use From:</p>{{ cfg.useFrom }}</span>
+                                                                <span ng-if="cfg.type === 'Explicit'"><p>Explicit Value:</p>{{ cfg.value }}</span>
                                                             </td>
                                                             
                                                             <!-- Can Override? -->
@@ -411,26 +405,37 @@
                                                                 </ng-messages>
                                                             </td>
                                                             
-                                                            <!-- New Config Type -->
-                                                            <td>
-                                                                <div class="btn-group" role="group" aria-label="New Config Type">
-                                                                  <button type="button" class="btn btn-xs" ng-class="{ 'btn-primary': newCfgType === 'Explicit',  'btn-default': newCfgType !== 'Explicit' }" 
-                                                                        ng-click="newCfgType = 'Explicit';newCfgUseFrom='';newCfgSetTo='';" uib-tooltip="Set an explicit value">Explicit</button>
-                                                                  <button type="button" class="btn btn-xs" ng-class="{ 'btn-primary': newCfgType === 'Use From',  'btn-default': newCfgType !== 'Use From' }" 
-                                                                        ng-click="newCfgType = 'Use From';newCfgSetTo=''" uib-tooltip="Inherit this value from a dependency">Use From</button>
-                                                                  <button type="button" class="btn btn-xs" ng-class="{ 'btn-primary': newCfgType === 'Set To',  'btn-default': newCfgType !== 'Set To' }" 
-                                                                        ng-click="newCfgType = 'Set To';newCfgUseFrom=''" uib-tooltip="Override this value in a dependency">Set To</button>
-                                                                </div>
-                                                            </td>
-                                                            
                                                             <!-- New Config value / setTo / useFrom -->
                                                             <td>
-                                                                <span ng-if="newCfgType === 'Explicit'">
-                                                                    <input class="form-control" ng-model="newCfgValue" placeholder="Default value..." name="newCfgValueField" id="newCfgValueField" minlength="0" maxlength="4096" />
-                                                                    <ng-messages role="alert" class="text-danger" for="modifySpec.newCfgName.$error">
-                                                                        <ng-message when="minlength,maxlength">This value must be between 1 and 4096 characters</ng-message>
-                                                                    </ng-messages>
-                                                                </span>
+                                                                <div class="input-group">
+                                                                  <div class="input-group-btn dropup">
+                                                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ newCfgType }} <span class="caret"></span></button>
+                                                                    <ul class="dropdown-menu">
+                                                                      <li><a href type="button" ng-class="{ 'active': newCfgType === 'Explicit' }" 
+                                                                        ng-click="newCfgType = 'Explicit';newCfgUseFrom='';newCfgSetTo='';" uib-tooltip="Set an explicit value">Explicit</a></li>
+                                                                      <li><a href type="button" ng-class="{ 'active': newCfgType === 'Use From' }" 
+                                                                        ng-click="newCfgType = 'Use From';newCfgSetTo='';newCfgUseFrom=configSrcOptions[0]" uib-tooltip="Inherit this value from a dependency"
+                                                                        ng-disabled="!spec.depends || !spec.depends.length || !configSrcOptions">Use From</a></li>
+                                                                      <li><a href type="button" ng-class="{ 'active': newCfgType === 'Set To' }"
+                                                                        ng-click="newCfgType = 'Set To';newCfgUseFrom='';newCfgSetTo=configSrcOptions[0]" uib-tooltip="Override this value in a dependency"
+                                                                        ng-disabled="!spec.depends || !spec.depends.length || !configSrcOptions">Set To</a></li>
+                                                                    </ul>
+                                                                  </div><!-- /btn-group -->
+                                                                  
+                                                                  <select ng-show="newCfgType === 'Use From'" class="form-control" ng-model="newCfgUseFrom">
+                                                                    <option value="{{ svcVar }}" ng-repeat="svcVar in configSrcOptions">{{ svcVar }}</option>
+                                                                  </select>
+                                                                  
+                                                                  
+                                                                  <select ng-show="newCfgType === 'Set To'" class="form-control" ng-model="newCfgSetTo">
+                                                                    <option value="{{ svcVar }}" ng-repeat="svcVar in configSrcOptions">{{ svcVar }}</option>
+                                                                  </select>
+                                                                  
+                                                                  <input ng-show="newCfgType === 'Explicit'" class="form-control" ng-model="newCfgValue" placeholder="Default value..." name="newCfgValueField" id="newCfgValueField" minlength="0" maxlength="4096" />
+                                                                  <ng-messages ng-show="newCfgType === 'Explicit'" role="alert" class="text-danger" for="modifySpec.newCfgName.$error">
+                                                                    <ng-message when="minlength,maxlength">This value must be between 1 and 4096 characters</ng-message>
+                                                                  </ng-messages>
+                                                                </div><!-- /input-group -->
                                                             </td>
                                                             
                                                             <!-- New Config Can Override? -->
@@ -441,7 +446,7 @@
                                                             
                                                             <!-- New Config Add button -->
                                                             <td>
-                                                                <button class="btn btn-xs btn-primary" ng-disabled="!newCfgName" ng-click="addItem('config', { name: newCfgName, label: newCfgLbl, type: newCfgType, useFrom: newCfgUseFrom, setTo: newCfgSetTo, value: newCfgValue, canOverride: newCfgCanOverride, isPassword: newCfgIsPassword });newCfgName=newCfgValue=''">
+                                                                <button class="btn btn-xs btn-primary" ng-disabled="!newCfgName" ng-click="addItem('config', { name: newCfgName, label: newCfgLbl, type: newCfgType, useFrom: newCfgUseFrom, setTo: newCfgSetTo, value: newCfgValue, canOverride: newCfgCanOverride, isPassword: newCfgIsPassword });newCfgName=newCfgValue='';newCfgLbl='';newCfgType='Explicit';">
                                                                     <i class="fa fa-fw fa-plus"></i>
                                                                 </button>
                                                             </td>
@@ -738,8 +743,6 @@
             </div>    
         </div>
     </div>
-    
-    
             
             <pre>{{ spec | json }}</pre>
 </section>
