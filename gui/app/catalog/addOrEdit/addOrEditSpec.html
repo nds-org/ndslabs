@@ -431,7 +431,7 @@
                                                                     <option value="{{ svcVar }}" ng-repeat="svcVar in configSrcOptions">{{ svcVar }}</option>
                                                                   </select>
                                                                   
-                                                                  <input ng-show="newCfgType === 'Explicit'" class="form-control" ng-model="newCfgValue" placeholder="Default value..." name="newCfgValueField" id="newCfgValueField" minlength="0" maxlength="4096" />
+                                                                  <input ng-show="newCfgType === 'Explicit'" class="form-control" ng-model="newCfgValue" ng-disabled="newCfgIsPassword"  placeholder="Default value..." name="newCfgValueField" id="newCfgValueField" minlength="0" maxlength="4096" />
                                                                   <ng-messages ng-show="newCfgType === 'Explicit'" role="alert" class="text-danger" for="modifySpec.newCfgName.$error">
                                                                     <ng-message when="minlength,maxlength">This value must be between 1 and 4096 characters</ng-message>
                                                                   </ng-messages>
