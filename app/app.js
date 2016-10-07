@@ -123,7 +123,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  * 
  * TODO: We assume this is running on the same machine as the apiserver.
  */ 
-.constant('ApiHost', 'www.mldev.ndslabs.org')
+.constant('ApiHost', 'localhost')
 .constant('ApiPort', '')
 .constant('ApiPath', '/api')
 .constant('ApiSecure', true) 
