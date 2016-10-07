@@ -95,7 +95,7 @@ angular
     }
   });
   
-  $scope.$watch('spec.depends.length', function(newValue, oldValue) {
+  $scope.$watch('spec.depends', function(newValue, oldValue) {
     if (!newValue) {
       return;
     }
@@ -108,7 +108,7 @@ angular
         $scope.configSrcOptions.push(dep.key + '.' + cfg.name);
       });
     });
-  });
+  }, true);
 
   // Update view when our spec list reloads
   $scope.$watch(function () { return Specs.all; }, function(newValue, oldValue) {
