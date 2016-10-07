@@ -167,7 +167,11 @@
                 <small class="pull-right" uib-tooltip="Source: {{ spec.catalog | capitalize }}" tooltip-placement="left"><small><i class="fa fa-fw" ng-class="{ 'fa-user': spec.catalog === 'user', 'fa-server': spec.catalog === 'system' }"></i> {{ spec.key }}</small></small>
                 <div class="pull-left">
                   <div class="text-center" style="padding:0;">
-                    <button style="padding:0 4px 0 4px;margin:0 4px 0 4px;" class="btn btn-xs btn-default" ng-repeat="tag in spec.tags" ng-click="addFilterTag(tag)"><small>{{ tag | tagProperty:'name' }}</small></button>
+                    <button style="padding:0 4px 0 4px;margin:0 4px 0 4px;" class="btn btn-xs btn-default" 
+                        ng-repeat="tag in spec.tags" ng-click="addFilterTag(tag)" 
+                        uib-tooltip="{{ tag | tagProperty:'definition' }}">
+                      <small>{{ tag | tagProperty:'name' }}</small>
+                    </button>
                   </div>
                 </div>
               </div>
