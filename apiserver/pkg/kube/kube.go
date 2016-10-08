@@ -1200,6 +1200,7 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 		}
 	} else {
 		if !basicAuth {
+			glog.V(4).Info("Removing basic-auth annotations for " + ingress.Name)
 			ingress.Annotations = map[string]string{}
 		}
 	}
@@ -1209,6 +1210,7 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 
 func (k *KubeHelper) CreateUpdateIngress(pid string, ingress *extensions.Ingress, update bool) (*extensions.Ingress, error) {
 
+	glog.V(4).Info("Updating ingress " + ingress.Name)
 	ingress.ObjectMeta.Annotations["ndslabs.org/updated"] = time.Now().String()
 	data, err := json.Marshal(ingress)
 	if err != nil {
