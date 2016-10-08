@@ -184,7 +184,7 @@
                           </a>
                         </td>
                         <td>
-                           <select ng-model="stack.selectedOption">
+                           <select class="form-control" ng-model="stack.selectedOption">
                              <option ng-repeat="option in stack.key | options | notPresent:stack track by option.key" value="{{ option.key }}">{{ option.key | specProperty:'label' }}</option>
                            </select> 
                         </td>
