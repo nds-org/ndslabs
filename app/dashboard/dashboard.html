@@ -200,7 +200,7 @@
             <!-- The Stack's "Button Bar" -->
             <div class="pull-right" role="group" aria-label="...">
               <span uib-tooltip="HTTP Basic Auth {{ stack.secure === true ? 'Enabled' : 'Disabled' }}" tooltip-placement="left">
-                <button class="btn btn-sm btn-link" ng-click="toggleSecure(stack)" ng-disabled="stack.status !== 'stopped' || starting[stack.id]">
+                <button class="btn btn-sm btn-link" ng-click="toggleSecure(stack)" ng-disabled="stack.status !== 'stopped' || starting[stack.id] || ((stack.key | specProperty:'authRequired') === true) || ((stack.key | specProperty:'catalog') === 'user')">
                   <i class="fa fa-fw" ng-class="{ 'fa-lock': stack.secure, 'fa-unlock': !stack.secure }"></i>
                 </button>
               </span>
