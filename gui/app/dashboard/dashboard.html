@@ -188,11 +188,8 @@
                              <option ng-repeat="option in stack.key | options | notPresent:stack track by option.key" value="{{ option.key }}">{{ option.key | specProperty:'label' }}</option>
                            </select> 
                         </td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <td colspan="4">{{ stack.selectedOption | specProperty:'description' }}</td>
+                        <td class="text-center"><a ng-if="stack.selectedOption | specProperty:'info'" ng-href="{{ stack.selectedOption | specProperty:'info' }}" target="_blank"><i class="fa fa-fw fa-question-circle"></i></a></td>
                       </tr>
                     </tbody>
                   </table>
