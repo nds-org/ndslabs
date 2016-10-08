@@ -371,7 +371,7 @@
                                                             
                                                             <!-- Config value / setTo / useFrom -->
                                                             <td>
-                                                                <span ng-if="cfg.type === 'Set To'">Set To: {{ cfg.setTo }}</span>
+                                                                <span ng-if="cfg.type === 'Set To'">Set {{ cfg.setTo }} to {{ cfg.value }}</span>
                                                                 <span ng-if="cfg.type === 'Use From'">Use From: {{ cfg.useFrom }}</span>
                                                                 <span ng-if="cfg.type === 'Explicit'">{{ cfg.value }}</span>
                                                             </td>
@@ -407,7 +407,11 @@
                                                             
                                                             <!-- New Config value / setTo / useFrom -->
                                                             <td>
-                                                                <div class="input-group">
+                                                                <div class="input-group  input-group-sm">
+                                                                  <select ng-show="newCfgType === 'Set To'" class="form-control" ng-model="newCfgSetTo">
+                                                                    <option value="{{ svcVar }}" ng-repeat="svcVar in configSrcOptions">{{ svcVar }}</option>
+                                                                  </select>
+                                                                  
                                                                   <div class="input-group-btn dropup">
                                                                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ newCfgType }} <span class="caret"></span></button>
                                                                     <ul class="dropdown-menu">
@@ -420,18 +424,13 @@
                                                                         ng-click="newCfgType = 'Set To';newCfgUseFrom='';newCfgSetTo=configSrcOptions[0]" uib-tooltip="Override this value in a dependency"
                                                                         ng-disabled="!spec.depends || !spec.depends.length || !configSrcOptions">Set To</a></li>
                                                                     </ul>
-                                                                  </div><!-- /btn-group -->
+                                                                  </div><!-- /input-group-btn -->
                                                                   
                                                                   <select ng-show="newCfgType === 'Use From'" class="form-control" ng-model="newCfgUseFrom">
                                                                     <option value="{{ svcVar }}" ng-repeat="svcVar in configSrcOptions">{{ svcVar }}</option>
                                                                   </select>
                                                                   
-                                                                  
-                                                                  <select ng-show="newCfgType === 'Set To'" class="form-control" ng-model="newCfgSetTo">
-                                                                    <option value="{{ svcVar }}" ng-repeat="svcVar in configSrcOptions">{{ svcVar }}</option>
-                                                                  </select>
-                                                                  
-                                                                  <input ng-show="newCfgType === 'Explicit'" class="form-control" ng-model="newCfgValue" ng-disabled="newCfgIsPassword"  placeholder="Default value..." name="newCfgValueField" id="newCfgValueField" minlength="0" maxlength="4096" />
+                                                                  <input ng-show="newCfgType === 'Explicit' || newCfgType === 'Set To'" class="form-control" ng-model="newCfgValue" ng-disabled="newCfgIsPassword"  placeholder="Default value..." name="newCfgValueField" id="newCfgValueField" minlength="0" maxlength="4096" />
                                                                   <ng-messages ng-show="newCfgType === 'Explicit'" role="alert" class="text-danger" for="modifySpec.newCfgName.$error">
                                                                     <ng-message when="minlength,maxlength">This value must be between 1 and 4096 characters</ng-message>
                                                                   </ng-messages>
