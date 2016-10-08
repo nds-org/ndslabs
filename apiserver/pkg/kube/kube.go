@@ -1157,19 +1157,10 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 	if ingress == nil {
 		update = false
 
-		// https://github.com/kubernetes/contrib/tree/master/ingress/controllers/nginx/examples/auth
-		annotations := map[string]string{}
-		if basicAuth {
-			annotations["ingress.kubernetes.io/auth-type"] = "basic"
-			annotations["ingress.kubernetes.io/auth-secret"] = "basic-auth"
-			annotations["ingress.kubernetes.io/auth-realm"] = "NDS Labs"
-		}
-
 		ingress = &extensions.Ingress{
 			ObjectMeta: api.ObjectMeta{
-				Name:        name,
-				Namespace:   pid,
-				Annotations: annotations,
+				Name:      name,
+				Namespace: pid,
 			},
 			Spec: extensions.IngressSpec{
 				TLS: []extensions.IngressTLS{
@@ -1198,12 +1189,18 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 				},
 			},
 		}
-	} else {
-		if !basicAuth {
-			glog.V(4).Info("Removing basic-auth annotations for " + ingress.Name)
-			ingress.Annotations = map[string]string{}
-		}
 	}
+
+	annotations := map[string]string{}
+	if !basicAuth {
+		glog.V(4).Info("Removing basic-auth annotations for " + ingress.Name)
+	}
+	if basicAuth {
+		annotations["ingress.kubernetes.io/auth-type"] = "basic"
+		annotations["ingress.kubernetes.io/auth-secret"] = "basic-auth"
+		annotations["ingress.kubernetes.io/auth-realm"] = "NDS Labs"
+	}
+	ingress.Annotations = annotations
 
 	return k.CreateUpdateIngress(pid, ingress, update)
 }
