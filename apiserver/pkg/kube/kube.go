@@ -1150,7 +1150,7 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 	name := service + "-ingress"
 	update := true
 
-	ingress, err := k.GetIngress(pid, name)
+	ingress, _ := k.GetIngress(pid, name)
 	if ingress == nil {
 		update = false
 
