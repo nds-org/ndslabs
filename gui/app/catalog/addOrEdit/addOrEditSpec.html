@@ -2,9 +2,7 @@
 <section>
     <div class="row">
         <div class="col-xs-12">
-            
             <h3>{{ editingSpec ? 'Edit' : 'Add' }} Application<span ng-if="spec.label">: {{ spec.label }}</span></h3>
-
             
             <ol class="breadcrumb">
                 <!-- <li><a ng-href="{{ productUrl }}">{{ productName }}</a></li> -->
@@ -12,11 +10,9 @@
                 <li><a ng-href="#/store">Catalog</a></li>
                 <li class="active">{{ editingSpec ? spec.label : 'Add Application' }}</li>
             </ol>
-            
                             
             <div ng-if="spec.key | stackExistsFromSpec" uib-alert class="text-center alert-danger">You must remove any <a ng-href="#/home?expand={{ spec.key }}">existing application instances</a> before you can edit the spec</div>
     
-
             <form name="modifySpec">
                 <div class="row">
                     <div class="col-sm-12">
@@ -357,26 +353,42 @@
                                                 <table class="table table-striped table-condensed table-hover">
                                                     <thead>
                                                         <tr>
-                                                            <th width="18%">Name</th>
-                                                            <th width="18%">Label</th>
-                                                            <th width="18%">Default Value</th>
-                                                            <th width="18%">Can Override?</th>
-                                                            <th width="18%">Is Password?</th>
-                                                            <th width="10%"></th>
+                                                            <th width="25%">Name</th>
+                                                            <th width="20%">Label</th>
+                                                            <th width="40%">Default Value</th>
+                                                            <th width="5%">Can Override?</th>
+                                                            <th width="5%">Is Password?</th>
+                                                            <th width="5%"></th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         <tr ng-repeat="cfg in spec.config">
+                                                            <!-- Name -->
                                                             <td>{{ cfg.name }}</td>
+                                                            
+                                                            <!-- Label -->
                                                             <td>{{ cfg.label }}</td>
-                                                            <td>{{ cfg.value }}</td>
-                                                            <td><input type="checkbox" class="checkbox" ng-model="cfg.canOverride" /></td>
+                                                            
+                                                            <!-- Config value / setTo / useFrom -->
+                                                            <td>
+                                                                <span ng-if="cfg.type === 'Set To'">Set {{ cfg.setTo }} to {{ cfg.value }}</span>
+                                                                <span ng-if="cfg.type === 'Use From'">Use From: {{ cfg.useFrom }}</span>
+                                                                <span ng-if="cfg.type === 'Explicit'">{{ cfg.value }}</span>
+                                                            </td>
+                                                            
+                                                            <!-- Can Override? -->
+                                                            <td><input type="checkbox" class="checkbox" ng-model="cfg.canOverride"  /></td>
+                                                            
+                                                            <!-- Is Password? -->
                                                             <td><input type="checkbox" class="checkbox" ng-model="cfg.isPassword" /></td>
+                                                            
+                                                            <!-- Delete button -->
                                                             <td><button class="btn btn-xs btn-default" ng-click="removeItem(spec.config, cfg)"><i class="fa fa-fw fa-trash"></i></button></td>
                                                         </tr>
                                                 
                                                         <!-- Add new environment variable -->
                                                         <tr>
+                                                            <!-- New Config Name -->
                                                             <td>
                                                                 <input class="form-control" ng-model="newCfgName" id="newCfgNameField" name="newCfgNameField" placeholder="Variable name..." minlength="0" maxlength="80" ng-pattern="/^[a-zA-Z_]+[a-zA-Z0-9_]*$/" />
                                                                 <ng-messages role="alert" class="text-danger" for="modifySpec.newCfgNameField.$error">
@@ -384,22 +396,56 @@
                                                                     <ng-message when="minlength,maxlength">This value must be between 1 and 80 characters</ng-message>
                                                                 </ng-messages>
                                                             </td>
+                                                            
+                                                            <!-- New Config Label -->
                                                             <td>
                                                                 <input class="form-control" ng-model="newCfgLbl" id="newCfgLblField" name="newCfgLblField" placeholder="Variable label (optional)..." minlength="0" maxlength="30" />
                                                                 <ng-messages role="alert" class="text-danger" for="modifySpec.newCfgName.$error">
                                                                     <ng-message when="minlength,maxlength">This value must be between 1 and 30 characters</ng-message>
                                                                 </ng-messages>
                                                             </td>
+                                                            
+                                                            <!-- New Config value / setTo / useFrom -->
                                                             <td>
-                                                                <input class="form-control" ng-model="newCfgValue" placeholder="Default value..." name="newCfgValueField" id="newCfgValueField" minlength="0" maxlength="4096" />
-                                                                <ng-messages role="alert" class="text-danger" for="modifySpec.newCfgName.$error">
+                                                                <div class="input-group  input-group-sm">
+                                                                  <select ng-show="newCfgType === 'Set To'" class="form-control" ng-model="newCfgSetTo">
+                                                                    <option value="{{ svcVar }}" ng-repeat="svcVar in configSrcOptions">{{ svcVar }}</option>
+                                                                  </select>
+                                                                  
+                                                                  <div class="input-group-btn dropup">
+                                                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ newCfgType }} <span class="caret"></span></button>
+                                                                    <ul class="dropdown-menu">
+                                                                      <li><a href type="button" ng-class="{ 'active': newCfgType === 'Explicit' }" 
+                                                                        ng-click="newCfgType = 'Explicit';newCfgUseFrom='';newCfgSetTo='';" uib-tooltip="Set an explicit value">Explicit</a></li>
+                                                                      <li><a href type="button" ng-class="{ 'active': newCfgType === 'Use From' }" 
+                                                                        ng-click="newCfgType = 'Use From';newCfgSetTo='';newCfgUseFrom=configSrcOptions[0]" uib-tooltip="Inherit this value from a dependency"
+                                                                        ng-disabled="!spec.depends || !spec.depends.length || !configSrcOptions">Use From</a></li>
+                                                                      <li><a href type="button" ng-class="{ 'active': newCfgType === 'Set To' }"
+                                                                        ng-click="newCfgType = 'Set To';newCfgUseFrom='';newCfgSetTo=configSrcOptions[0]" uib-tooltip="Override this value in a dependency"
+                                                                        ng-disabled="!spec.depends || !spec.depends.length || !configSrcOptions">Set To</a></li>
+                                                                    </ul>
+                                                                  </div><!-- /input-group-btn -->
+                                                                  
+                                                                  <select ng-show="newCfgType === 'Use From'" class="form-control" ng-model="newCfgUseFrom">
+                                                                    <option value="{{ svcVar }}" ng-repeat="svcVar in configSrcOptions">{{ svcVar }}</option>
+                                                                  </select>
+                                                                  
+                                                                  <input ng-show="newCfgType === 'Explicit' || newCfgType === 'Set To'" class="form-control" ng-model="newCfgValue" ng-disabled="newCfgIsPassword"  placeholder="Default value..." name="newCfgValueField" id="newCfgValueField" minlength="0" maxlength="4096" />
+                                                                  <ng-messages ng-show="newCfgType === 'Explicit'" role="alert" class="text-danger" for="modifySpec.newCfgName.$error">
                                                                     <ng-message when="minlength,maxlength">This value must be between 1 and 4096 characters</ng-message>
-                                                                </ng-messages>
+                                                                  </ng-messages>
+                                                                </div><!-- /input-group -->
                                                             </td>
+                                                            
+                                                            <!-- New Config Can Override? -->
                                                             <td><input type="checkbox" class="checkbox" ng-model="newCfgCanOverride" ng-disabled="newCfgIsPassword" /></td>
+                                                            
+                                                            <!-- New Config Is Password? -->
                                                             <td><input type="checkbox" class="checkbox" ng-model="newCfgIsPassword" /></td>
+                                                            
+                                                            <!-- New Config Add button -->
                                                             <td>
-                                                                <button class="btn btn-xs btn-primary" ng-disabled="!newCfgName" ng-click="addItem('config', { name: newCfgName, label: newCfgLbl, value: newCfgValue, canOverride: newCfgCanOverride, isPassword: newCfgIsPassword });newCfgName=newCfgValue=''">
+                                                                <button class="btn btn-xs btn-primary" ng-disabled="!newCfgName" ng-click="addItem('config', { name: newCfgName, label: newCfgLbl, type: newCfgType, useFrom: newCfgUseFrom, setTo: newCfgSetTo, value: newCfgValue, canOverride: newCfgCanOverride, isPassword: newCfgIsPassword });newCfgName=newCfgValue='';newCfgLbl='';newCfgType='Explicit';">
                                                                     <i class="fa fa-fw fa-plus"></i>
                                                                 </button>
                                                             </td>
