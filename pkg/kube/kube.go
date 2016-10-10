@@ -829,8 +829,8 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 			api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", spec.ResourceLimits.MemoryMax)),
 		}
 		k8rq.Requests = api.ResourceList{
-			api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", spec.ResourceLimits.CPUMax)),
-			api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", spec.ResourceLimits.MemoryMax)),
+			api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", spec.ResourceLimits.CPUDefault)),
+			api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", spec.ResourceLimits.MemoryDefault)),
 		}
 	} else {
 		glog.Warningf("No resource requirements specified for service %s\n", spec.Label)
@@ -1150,26 +1150,14 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 	name := service + "-ingress"
 	update := true
 
-	ingress, err := k.GetIngress(pid, name)
-	if err == nil {
-		return nil, err
-	}
+	ingress, _ := k.GetIngress(pid, name)
 	if ingress == nil {
 		update = false
 
-		// https://github.com/kubernetes/contrib/tree/master/ingress/controllers/nginx/examples/auth
-		annotations := map[string]string{}
-		if basicAuth {
-			annotations["ingress.kubernetes.io/auth-type"] = "basic"
-			annotations["ingress.kubernetes.io/auth-secret"] = "basic-auth"
-			annotations["ingress.kubernetes.io/auth-realm"] = "NDS Labs"
-		}
-
 		ingress = &extensions.Ingress{
 			ObjectMeta: api.ObjectMeta{
-				Name:        name,
-				Namespace:   pid,
-				Annotations: annotations,
+				Name:      name,
+				Namespace: pid,
 			},
 			Spec: extensions.IngressSpec{
 				TLS: []extensions.IngressTLS{
@@ -1199,11 +1187,24 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 			},
 		}
 	}
+
+	annotations := map[string]string{}
+	if !basicAuth {
+		glog.V(4).Info("Removing basic-auth annotations for " + ingress.Name)
+	}
+	if basicAuth {
+		annotations["ingress.kubernetes.io/auth-type"] = "basic"
+		annotations["ingress.kubernetes.io/auth-secret"] = "basic-auth"
+		annotations["ingress.kubernetes.io/auth-realm"] = "NDS Labs"
+	}
+	ingress.Annotations = annotations
+
 	return k.CreateUpdateIngress(pid, ingress, update)
 }
 
 func (k *KubeHelper) CreateUpdateIngress(pid string, ingress *extensions.Ingress, update bool) (*extensions.Ingress, error) {
 
+	glog.V(4).Info("Updating ingress " + ingress.Name)
 	ingress.ObjectMeta.Annotations["ndslabs.org/updated"] = time.Now().String()
 	data, err := json.Marshal(ingress)
 	if err != nil {
