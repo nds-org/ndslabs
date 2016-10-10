@@ -95,19 +95,30 @@ angular
     }
   });
   
-  $scope.$watch('spec.depends', function(newValue, oldValue) {
-    if (!newValue) {
-      return;
-    }
-    
+  $scope.rebuildSetToSrc = function(spec) {
     // Collect all configs present in the stack
     $scope.configSrcOptions = [];
-    angular.forEach(newValue, function(dep) {
+    angular.forEach(spec.depends, function(dep) {
       var spec = _.find(Specs.all, ['key', dep.key ]);
       angular.forEach(spec.config, function(cfg) {
         $scope.configSrcOptions.push(dep.key + '.' + cfg.name);
       });
     });
+    
+    angular.forEach(spec.config, function(cfg) {
+      if (cfg.setTo) {
+        var index = $scope.configSrcOptions.indexOf(cfg.setTo);
+        $scope.configSrcOptions.splice(index, 1);
+      }
+    });
+  };
+  
+  $scope.$watch('spec', function(newValue, oldValue) {
+    if (!newValue) {
+      return;
+    }
+    
+    $scope.rebuildSetToSrc(newValue);
   }, true);
 
   // Update view when our spec list reloads
