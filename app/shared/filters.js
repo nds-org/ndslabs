@@ -147,12 +147,12 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  * Return the external IP of the API / GUI server 
  * appended with the port if one is provided.
  */ 
-.filter('externalHostPort', [ 'ApiHost', 'ApiPort', '_', function(ApiHost, ApiPort, _) {
+.filter('externalHostPort', [ 'ApiSecure', 'ApiHost', 'ApiPort', '_', function(ApiSecure, ApiHost, ApiPort, _) {
   return function(endpt) {
     // TODO: How do we know if this can be navigated to?
-    var protocol = endpt.protocol;
-
-	// NDS-260
+    var protocol = 'http' + (ApiSecure ? 's' : '');
+    
+	  // NDS-260
     if (endpt.url) {
       return protocol + '://' + endpt.url;
     } else {

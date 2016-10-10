@@ -107,19 +107,29 @@ angular
     var specCopy = angular.copy(spec);
     
     // Remove unused / unnecessary fields
-    delete $scope.spec.$$hashKey;
-    delete $scope.spec.updateTime;
-    delete $scope.spec.createdTime;
-    delete $scope.spec.id;
-    delete $scope.spec.privileged;
-    delete $scope.spec.catalog;
+    delete specCopy.$$hashKey;
+    delete specCopy.updateTime;
+    delete specCopy.createdTime;
+    delete specCopy.id;
+    delete specCopy.privileged;
+    delete specCopy.catalog;
     
-    // Remove empty fields
-    angular.forEach($scope.spec, function(value, key) {
-      if (angular.isUndefined(value) || value === null || !value || (_.isArray(value) && value.length === 0)) {
-        delete $scope.spec[key];
+    // Remove empty fields and sub-fields
+    ($scope.stripEmptyFields = function(spec) {
+      if (_.isArray(spec)) {    // Arrays
+        angular.forEach(spec, function(arrVal) {
+          $scope.stripEmptyFields(arrVal);
+        });
+      } else {                  // Objects
+        angular.forEach(spec, function(value, key) {
+          if (angular.isUndefined(value) || value === null || !value || (_.isArray(value) && value.length === 0)) {
+            delete spec[key];
+          } else if (_.isArray(spec[key])) {   // Arrays
+            $scope.stripEmptyFields(spec[key]);
+          }
+        });
       }
-    });
+    })(specCopy);
     
     clipboard.copyText(JSON.stringify(specCopy, null, 4));
   };
