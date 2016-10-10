@@ -23,8 +23,8 @@ RUN apt-get update -y -qq && \
     apt-get autoremove -y -qq
     
 
-COPY entrypoint.sh /
-COPY templates /templates
+COPY ./entrypoint.sh /
+COPY ./templates /templates
 
 VOLUME /volumes
 
