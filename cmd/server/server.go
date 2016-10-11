@@ -2638,6 +2638,7 @@ func (s *Server) createAdminUser(password string) error {
 				CPUDefault:    s.cpuDefault,
 				MemoryMax:     s.memMax,
 				MemoryDefault: s.memDefault,
+				StorageQuota:  s.storageDefault,
 			},
 		}
 		err := s.etcd.PutAccount(adminUser, account, true)
