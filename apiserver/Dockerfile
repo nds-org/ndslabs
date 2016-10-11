@@ -3,7 +3,8 @@ MAINTAINER willis8@illinois.edu
 
 
 COPY . /go/src/github.com/ndslabs/apiserver
-COPY templates entrypoint.sh /
+COPY entrypoint.sh /entrypoint.sh
+COPY templates /templates
 
 RUN apt-get update -y -qq && \
 	apt-get install -y -qq binutils curl gcc git vim && \
