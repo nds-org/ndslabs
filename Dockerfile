@@ -3,6 +3,7 @@ MAINTAINER willis8@illinois.edu
 
 
 COPY . /go/src/github.com/ndslabs/apiserver
+COPY templates entrypoint.sh /
 
 RUN apt-get update -y -qq && \
 	apt-get install -y -qq binutils curl gcc git vim && \
@@ -22,9 +23,6 @@ RUN apt-get update -y -qq && \
     apt-get remove --purge gcc -y -qq && \
     apt-get autoremove -y -qq
     
-
-COPY ./entrypoint.sh /
-COPY ./templates /templates
 
 VOLUME /volumes
 
