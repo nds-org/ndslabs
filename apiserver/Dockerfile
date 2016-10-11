@@ -3,6 +3,7 @@ MAINTAINER willis8@illinois.edu
 
 
 COPY . /go/src/github.com/ndslabs/apiserver
+COPY templates entrypoint.sh /
 
 RUN apt-get update -y -qq && \
 	apt-get install -y -qq binutils curl gcc git vim && \
@@ -17,14 +18,10 @@ RUN apt-get update -y -qq && \
     ./build.sh docker && \
     mv build/bin/apiserver-linux-amd64 /apiserver && \
     mkdir /ndslabsctl/ && mv build/bin/ndslabsctl* /ndslabsctl && \
-    rm -rf /golang && \
-    rm -rf /go && \
     apt-get remove --purge gcc -y -qq && \
-    apt-get autoremove -y -qq
-    
-
-COPY ./entrypoint.sh /
-COPY ./templates /templates
+    apt-get autoremove -y -qq && \
+    apt-get -y clean all &&\
+    rm -rf /var/cache/apk/* /go /golang /tmp/*
 
 VOLUME /volumes
 
