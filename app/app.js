@@ -113,7 +113,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * The version/revision of this GUI
  */
-.constant('BuildVersion', '1.0.6-devel')
+.constant('BuildVersion', '1.0.7-devel')
 .constant('BuildDate', '')
 
 /**
