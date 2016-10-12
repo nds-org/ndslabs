@@ -978,7 +978,8 @@ func (k *KubeHelper) WatchPods(handler events.EventHandler) {
 				for {
 					data, err := reader.ReadBytes('\n')
 					if err != nil {
-						glog.Error(err)
+						// TODO: NDS-372
+						//glog.Error(err)
 						break
 					}
 
