@@ -1623,11 +1623,13 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 			spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
 			name := fmt.Sprintf("%s-%s", newStack.Id, spec.Key)
 			svc, _ := s.kube.GetService(userId, name)
-			err := s.createIngressRule(userId, svc, &newStack)
-			if err != nil {
-				glog.Error(err)
-				rest.Error(w, err.Error(), http.StatusInternalServerError)
-				return
+			if s.useLoadBalancer() && spec.Access == api.AccessExternal {
+				err := s.createIngressRule(userId, svc, &newStack)
+				if err != nil {
+					glog.Error(err)
+					rest.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
 			}
 		}
 
