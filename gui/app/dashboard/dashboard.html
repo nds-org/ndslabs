@@ -119,7 +119,7 @@
                           <a ng-repeat="endpt in svc.endpoints track by endpt.port" 
                               uib-tooltip="Navigate to {{ svc.service | capitalize }} port {{ endpt.port }}"
                               ng-if="stack.status === 'started' && svc.status === 'ready' 
-                                  && endpt !== '' && endpt.protocol === 'http'"  target="_blank"
+                                  && endpt !== '' && ((stack.key | specProperty:'access') === 'external')"  target="_blank"
                               ng-href="{{ endpt | externalHostPort }}"
                               ng-disabled="stack.status === 'stopping' && svc.status === 'ready'">
                             <i class="fa fa-fw fa-external-link faa-tada faa-slow animated"></i>
