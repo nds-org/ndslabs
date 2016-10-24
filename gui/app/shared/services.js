@@ -314,7 +314,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       id: "",
       name: spec.label,
       key: key,
-      secure: true,
+      secure: spec.authRequired,
       status: "stopped",
       services: []
     };
