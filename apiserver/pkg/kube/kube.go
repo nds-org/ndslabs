@@ -1161,14 +1161,6 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 				Namespace: pid,
 			},
 			Spec: extensions.IngressSpec{
-				/*
-					TLS: []extensions.IngressTLS{
-						extensions.IngressTLS{
-							Hosts:      []string{host},
-							SecretName: tlsSecretName,
-						},
-					},
-				*/
 				Rules: []extensions.IngressRule{
 					extensions.IngressRule{
 						Host: host,
