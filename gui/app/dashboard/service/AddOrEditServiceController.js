@@ -75,9 +75,9 @@ angular
         // "Edit service" case: map of strings
         cfg = _.find($scope.spec.config, [ 'name', key ]);
         if (!cfg) {
-          $scope.configs.push({ 'name': key, 'value': value, 'def': '', 'isPassword':false, canEdit: true });
+          $scope.configs.push({ 'name': key, 'value': value, 'def': '', 'spec': cfg, 'isPassword':false, canEdit: true });
         } else {
-          $scope.configs.push({ 'name': key, 'label': cfg.label, 'value': value, 'def': cfg.value, 'spec': cfg, 'isPassword':cfg.isPassword });
+          $scope.configs.push({ 'name': key, 'label': cfg.label, 'value': value, 'spec': cfg, 'def': cfg.value, 'spec': cfg, 'isPassword':cfg.isPassword });
         }
       }
     });

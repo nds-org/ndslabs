@@ -38,7 +38,9 @@
                       </td>
                       <td>
                         <div ng-if="!cfg.spec.canOverride && !cfg.spec.isPassword">
-                          {{ cfg.value }}
+                          <span ng-if="cfg.value">{{ cfg.value }}</span>
+                          <span ng-if="cfg.spec.useFrom">Use From: {{ cfg.spec.useFrom }}</span>
+                          <span ng-if="cfg.spec.setTo">{{ cfg.value }} -> {{ cfg.spec.setTo }}</span>
                         </div>
                         <div ng-if="cfg.spec.canOverride || cfg.spec.isPassword">
                           <input class="form-control" ng-if="!cfg.spec.isPassword" ng-model="cfg.value" placeholder="Property Value..." />
