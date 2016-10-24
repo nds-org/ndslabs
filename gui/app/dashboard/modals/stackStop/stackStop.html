@@ -8,7 +8,7 @@
     <p>Are you sure that you want to shut this application down?</p>
     <p>You and your peers will no longer be able to access the endpoints provided below:
       <ul>
-        <li ng-repeat="endpt in stack | allEndpoints track by $index" ng-if="endpt && endpt !== ''"><a href="{{ endpt | externalHostPort }}">{{ endpt | externalHostPort }}</a></li>
+        <li ng-repeat="endpt in stack | allEndpoints track by $index" ng-if="endpt && endpt !== '' && ((stack.key | specProperty:'access') === 'external')"><a href="{{ endpt | externalHostPort }}">{{ endpt | externalHostPort }}</a></li>
       </ul>
     </p>
   </div>
