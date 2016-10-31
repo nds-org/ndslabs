@@ -7,6 +7,8 @@ See [Karma](https://github.com/karma-runner/karma)
 * Test custom services (business logic)
 * Test custom filters
 * Test custom directives (not applicable at this time)
+* Fast execution of tests
+* Auto-watching files for quicker testing
 
 # Prerequisites
 * [Git](https://git-scm.com/)
@@ -24,7 +26,7 @@ cd ndslabs/gui/
 docker run -it -v `pwd`:/data -w /data bodom0015/nodejs-bower-grunt bash
 ```
 
-# Install depedencies
+## Install depedencies
 Inside your new **nodejs-bower-grunt** container, run these commands to get all of the necessary dependencies:
 ```bash
 npm install -g karma-cli
@@ -34,7 +36,7 @@ bower install
 
 NOTE: This will automatically install the `karma` executable onto your PATH.
 
-# Run Karma CLI
+## Run Karma CLI
 Run the following command to run karma:
 ```bash
 karma start karma.conf.js
@@ -45,3 +47,7 @@ This will pop open a web browser to run your tests - leave this browser open.
 Your console will print the results of running your unit tests, and they will automatically re-run when you modify any of the files specified in karma.conf.js.
 
 This allows for rapid test-driven development without needing to recompile or refresh or even unfocus your current window.
+
+# TODO
+* Expand test spec code coverage
+* Multiple browser support? Is this possible?

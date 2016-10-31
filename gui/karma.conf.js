@@ -62,14 +62,23 @@ module.exports = function(config) {
 	// See http://stackoverflow.com/questions/19117092/jasmine-tests-in-karma-uncaught-referenceerror-require-is-not-defined
     preprocessors: {
 	//	'app/tests/*.js': [ 'browserify' ]
+		'app/login/signUp/*.js': 'coverage'
     },
 
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress'],
-
+    reporters: ['progress', 'coverage', 'html'],
+	
+	htmlReporter: {
+	  outputFile: 'tests/reports/unit.html'
+	},
+ 
+    coverageReporter: {
+      type : 'html',
+      dir : 'tests/reports/coverage/'
+    }
 
     // web server port
     port: 9876,
