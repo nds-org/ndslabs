@@ -30,7 +30,20 @@ npm install
 bower install
 ```
 
-# Run Karma CLI
+# Run webdriver-manager
+Run the following command to download necessary selenium binaries:
+```bash
+webdriver-manager update
+```
+
+Then run the following command to start a selenium webserver:
+```bash
+webdriver-manager update
+```
+
+Protractor will use this server to run your E2E test suite(s).
+
+# Run Protractor CLI
 Run the following command to run karma:
 ```bash
 protractor protractor.conf.js
