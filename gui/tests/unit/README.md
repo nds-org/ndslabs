@@ -2,6 +2,12 @@
 
 See [Karma](https://github.com/karma-runner/karma)
 
+# Goals
+* Test controller functions
+* Test custom services (business logic)
+* Test custom filters
+* Test custom directives (not applicable at this time)
+
 # Prerequisites
 * Git
 * Docker
@@ -33,6 +39,6 @@ karma start karma.conf.js
 
 This will pop open a web browser to run your tests - leave this browser open.
 
-Your console will print the results of running your tests, and they will automatically re-run when you modify any of the files specified in karma.conf.js.
+Your console will print the results of running your unit tests, and they will automatically re-run when you modify any of the files specified in karma.conf.js.
 
 This allows for rapid test-driven development without needing to recompile or refresh or even unfocus your current window.
