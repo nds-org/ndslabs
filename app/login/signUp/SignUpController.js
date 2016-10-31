@@ -15,6 +15,8 @@ angular
     $location.path(HomeRoute);
   }   
   
+  $scope.forms = {};
+  
   $scope.eulaLink = _.find(HelpLinks, [ 'name', 'Acceptable Use Policy' ]);
   
   $scope.productName = ProductName;
