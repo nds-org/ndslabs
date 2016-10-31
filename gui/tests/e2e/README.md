@@ -36,7 +36,9 @@ Run the following command to run karma:
 protractor protractor.conf.js
 ```
 
-This will pop open a web browser (or multiple browsers) to run your tests, which should close automatically once the testing has concluded.
+This will pop open a web browser (or multiple browsers) to run your tests.
+
+The test browsers should close automatically once your test suite(s) have concluded.
 
 Your console will print the results of running your e2e tests.
 
