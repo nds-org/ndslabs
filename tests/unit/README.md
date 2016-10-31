@@ -9,8 +9,9 @@ See [Karma](https://github.com/karma-runner/karma)
 * Test custom directives (not applicable at this time)
 
 # Prerequisites
-* Git
-* Docker
+* [Git](https://git-scm.com/)
+* [Docker](https://www.docker.com/)
+* [Google Chrome](https://www.google.com/chrome/browser/desktop/)
 
 # Clone this repo
 ```bash
@@ -26,10 +27,12 @@ docker run -it -v `pwd`:/data -w /data bodom0015/nodejs-bower-grunt bash
 # Install depedencies
 Inside your new **nodejs-bower-grunt** container, run these commands to get all of the necessary dependencies:
 ```bash
-npm install -g bower karma-cli protractor grunt
+npm install -g karma-cli
 npm install
 bower install
 ```
+
+NOTE: This will automatically install the `karma` executable onto your PATH.
 
 # Run Karma CLI
 Run the following command to run karma:
