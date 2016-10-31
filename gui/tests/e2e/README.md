@@ -2,14 +2,15 @@
 
 See [Protractor](https://github.com/angular/protractor)
 
-# Prerequisites
-* Git
-* Docker
-
 # Goals
 * Test form validation
 * Test routing (?)
 * Test user experience
+
+# Prerequisites
+* [Git](https://git-scm.com/)
+* [Docker](https://www.docker.com/)
+* [Google Chrome](https://www.google.com/chrome/browser/desktop/)
 
 # Clone this repo
 ```bash
@@ -25,10 +26,12 @@ docker run -it -v `pwd`:/data -w /data bodom0015/nodejs-bower-grunt bash
 # Install depedencies
 Inside your new **nodejs-bower-grunt** container, run these commands to get all of the necessary dependencies:
 ```bash
-npm install -g bower karma-cli protractor grunt
+npm install -g protractor
 npm install
 bower install
 ```
+
+NOTE: This will automatically install the `protractor` and `webdriver-manager` executables onto your PATH.
 
 # Run webdriver-manager
 Run the following command to download necessary selenium binaries:
@@ -38,7 +41,7 @@ webdriver-manager update
 
 Then run the following command to start a selenium webserver:
 ```bash
-webdriver-manager update
+webdriver-manager start
 ```
 
 Protractor will use this server to run your E2E test suite(s).
