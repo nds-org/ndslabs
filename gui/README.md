@@ -1,77 +1,43 @@
-# NDSLabs Web Interface
+# NDS Labs
 
-## Getting Started
-Building / modifying this code is not necessary unless you want to make modifications to the interface.
+<img src="https://github.com/craig-willis/ndslabs/blob/master/docs/images/logos/NDS-badge.png" width="100" alt="NDS">
 
-Simply run the following command to retrieve a pre-built copy of the image:
-```bash
-docker pull ndslabs/ndslabs-gui:latest
-```
+[![Join the chat at https://gitter.im/nds-org/ndslabs](https://badges.gitter.im/nds-org/ndslabs.svg)](https://gitter.im/nds-org/ndslabs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) ![Docker Automated build](https://img.shields.io/docker/automated/ndslabs/apiserver.svg?maxAge=2592000)
 
-## Modifying the GUI
-Several helper scripts are included to help you modify this code:
-* build.sh:     Builds the ndslabs/ndslabs-gui docker image.
-* release.sh:   Pushes a new release of the given tag and/or "latest".
-* start.sh:     Create a container from the ndslabs/ndslabs-gui image.
-* stop.sh:      Remove the running cloud9 / ndslabs-gui container(s).
-* swagger.sh:   Regenerate the REST API spec from Swagger.
+This is the main repository for the [National Data Service](http://www.nationaldataservice.org/) [Labs Workbench](https://www.workbench.nationaldataservice.org/) service.  
 
-### build.sh
-Builds the ndslabs/ndslabs-gui docker image.
+Labs Workbench is an experimental space for evaluating, developing, and exploring interoperability between research data management services. This is achieved through the use of applications containerized with [Docker](https://www.docker.com/what-docker), [Kubernetes](http://kubernetes.io/docs/whatisk8s/) for container orchestration, deployed on an [OpenStack](https://www.openstack.org/) cluster.
 
-Usage:
-```bash
-./build.sh [-c] [-p]
-```
+For more information, see the [architecture documentation](https://github.com/nds-org/ndslabs/tree/master/docs/architecture).
 
-Args:
-* -c: Clean (remove) the existing image before building the new one.
-* -p: Push the new image after building it.
+On top of this foundation, NDS Labs provides a user interface, command line interface, and an API server used to manage the configuration and deployment of containerized services. This repository includes the following:
 
-### release.sh
-Pushes a new release of the given tag and/or "latest".
+* apiserver: REST API server, a thin management layer over etcd and Kubernetes as well as the ndslabsctl command line utility
+* gui: Project management UI implemented in AngularJS
 
-Usage:
-```bash
-./release.sh [tagName] [-t]
-```
 
-Args:
-* tagName: The name of the new tag to push in addition to "latest" (i.e. "1.0-alpha")
-* -t:      Specify this as a "test" release and skip pushing to "latest"
+# Service catalog 
+The Labs Worthbench includes a catalog of service specifications managed via
+the [ndslabs-specs](https://github.com/nds-org/ndslabs-specs) repository. The catalog currenty contains over 50 services (and growing).
 
-### start.sh
-Create a container from the ndslabs/ndslabs-gui image and, optionally, open an IDE allowing dynamic changes.
-This will remove the containers first, if they already exist.
+# For developers
 
-Usage:
-```bash
-./start.sh [-c] [-d|--dev]
-```
+The Labs Workbench is a hosted service and is not intended for installation. For Labs Workbench developers, it is possible to run the complete system on a single virtual machine or laptop. 
 
-Args:
-* -c:          (debug mode)       Run bash to open a console, instead of starting the http-server.
-* -d or --dev: (developer mode)   Start the container in developer mode instead.
+* To run a development copy of Labs Workbench, see https://github.com/nds-org/ndslabs-startup.
+* To deploy Labs Workbench via Ansible on an OpenStack cluster, see https://github.com/nds-org/deploy-tools
 
-NOTE: -d will start an instance of the Cloud9 IDE, allowing you to modify the GUI on-the-fly.
 
-### stop.sh
-Remove the running cloud9 / ndslabs-gui container(s).
+# Where to get help
 
-Usage:
-```bash
-./stop.sh
-```
+* [NDS Labs Google Group](https://groups.google.com/forum/#!forum/ndslabs/)
+* [File an issue](https://github.com/nds-org/ndslabs/issues)
+* [Find us on Gitter](https://gitter.im/nds-org/ndslabs)
+* [NDS Wiki](https://nationaldataservice.atlassian.net/wiki/display/NDSC/NDS+Labs+Workbench)
 
-### swagger.sh
-Regenerate the REST API spec from Swagger
 
-Usage:
-```bash
-./swagger.sh [URL]
-```
+# Contributing
 
-Args:
-* URL: The remote URL from which to download the swagger spec.
+For more information on our Developer Workflows, see [Developer Workflows](https://opensource.ncsa.illinois.edu/confluence/display/NDS/Developer+Workflows).
 
-NOTE: If no URL is provided, the file locaated at ../apis/swagger-spec/ndslabs.json will be used instead.
+In short, fork this repository and make a pull request. We will review and give feedback.
