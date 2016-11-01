@@ -15,7 +15,6 @@ angular
   
   // Grab our injected AuthInfo from the provider
   $scope.settings = authInfo.get();
-  $scope.showVerify = false;
   
   $scope.$watch(function() { return Project.project; }, function(newValue, oldValue) { $scope.project = newValue; });
   

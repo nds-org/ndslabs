@@ -46,8 +46,7 @@ module.exports = function(config) {
 	    'app/**/*.js',       // View controllers
 	    'app/**/**/*.js',    // Subview controllers
 	    'app/**/**/**/*.js', // Modal controllers
-      'app/login/signUp/*.js',
-      'tests/unit/spec.js'
+      'tests/unit/*.spec.js'
     ],
 
 
