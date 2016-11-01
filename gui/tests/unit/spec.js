@@ -49,7 +49,7 @@ describe('SignUpController', function() {
       Project = _Project_;
       $httpBackend = _$httpBackend_;
       
-      $httpBackend.when('POST', ApiUri.api + '/register').respond("an order form");
+      $httpBackend.when('POST', ApiUri.api + '/register').respond("a successful response");
     }));
   
     it('does not accept invalid account registration', function() {
