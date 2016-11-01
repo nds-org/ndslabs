@@ -26,9 +26,18 @@ describe('LoginController', function() {
     AuthInfo = _AuthInfo_;
     ApiUri = _ApiUri_;
     
-    $scope = $rootScope.new();
+    $scope = $rootScope.$new();
     controller = $controller('LoginController', { $scope: $scope });
+	
+      
+    $httpBackend.whenPOST(ApiUri.api + '/authenticate', { username: TEST_USERNAME, password: TEST_PASSWORD}).respond("a successful response");
+    $httpBackend.whenPOST(ApiUri.api + '/authenticate', { username: TEST_USERNAME, password: TEST_INVALID_PASSWORD}).respond(401, "a successful response");
   }));
+ 
+  afterEach(function() {
+    $httpBackend.verifyNoOutstandingExpectation();
+    $httpBackend.verifyNoOutstandingRequest();
+  });
   
   describe('$scope.productName', function() {
   	it('has the correct value', function() {
@@ -38,26 +47,63 @@ describe('LoginController', function() {
   
   describe('$scope.login()', function() {
   	it('accepts valid login', function() {
-  	  
+	  var authInfo = AuthInfo.get();
+	  
+      expect(authInfo.namespace).toEqual('');
+      expect(authInfo.password).toEqual('');
+	  
+	  authInfo.namespace = TEST_USERNAME;
+	  authInfo.password = TEST_PASSWORD;
+	  
+	  $httpBackend.expectPOST(ApiUri.api + '/authenticate', { username: TEST_USERNAME, password: TEST_PASSWORD });
+	  $scope.login();
+	  $httpBackend.flush();
+      
+	  // Progress resets on completion, and no error message shows
+      expect($scope.progressMessage).toEqual('');
+      expect($scope.errorMessage).toEqual('');
   	});
   	
   	it('denies invalid login', function() {
-  	  
+	  var authInfo = AuthInfo.get();
+	  
+      expect(authInfo.namespace).toEqual('');
+      expect(authInfo.password).toEqual('');
+	  
+	  
+	  authInfo.namespace = TEST_USERNAME;
+	  authInfo.password = TEST_INVALID_PASSWORD;
+	  
+      expect($scope.progressMessage).not.toBeDefined();
+      expect($scope.errorMessage).not.toBeDefined();
+	  
+	  $httpBackend.expectPOST(ApiUri.api + '/authenticate', { username: TEST_USERNAME, password: TEST_INVALID_PASSWORD });
+	  $scope.login();
+	  
+      expect($scope.progressMessage).toEqual('Please wait...');
+      expect($scope.errorMessage).toEqual('');
+	  
+	  $httpBackend.flush();
+	  
+	  // Progress resets on completion, error message shows for error
+      expect($scope.progressMessage).toEqual('');
+      expect($scope.errorMessage).toEqual('Invalid username or password');
+	  
   	});
   });
   
-  
-  
   describe('$scope.logout()', function() {
-  	it('purges auth user state', function($location) {
+  	it('purges auth user state', function() {
   	  $scope.logout();
   	  
   	  // Nothing async here, so no progress/error messages expected
       expect($scope.errorMessage).toEqual('');
       expect($scope.progressMessage).toEqual('');
       
-      console.debug(AuthInfo);
-      console.debug(AuthInfo.get());
+	  var authInfo = AuthInfo.get();
+	  
+      expect(authInfo.namespace).toEqual('');
+      expect(authInfo.password).toEqual('');
       
       //expect()
       // TODO: How to verify route changes?
