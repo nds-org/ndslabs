@@ -26,10 +26,14 @@ angular
   $scope.showVerify = false;
   
   $scope.ok = function(account) {
+    if (account.password !== account.passwordConfirmation) {
+      return false;
+    }
+    
     $scope.progressMessage = 'Please wait...';
     $scope.errorMessage = '';
     
-    NdsLabsApi.postRegister({ 'account': account }).then(function(data, xhr) {
+    return NdsLabsApi.postRegister({ 'account': account }).then(function(data, xhr) {
       $scope.errorMessage = '';
       $scope.showVerify = true;
     }, function(response) {

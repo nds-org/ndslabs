@@ -18,33 +18,34 @@ module.exports = function(config) {
     files: [
       'bower_components/angular/angular.js',
       'bower_components/angular-mocks/angular-mocks.js',
-	  'bower_components/jquery/dist/jquery.min.js',
-	  'bower_components/bootstrap/dist/js/bootstrap.min.js',
-	  'bower_components/lodash/dist/lodash.min.js',
-	  'bower_components/angular-route/angular-route.min.js',
-	  'bower_components/angular-resource/angular-resource.min.js',
-	  'bower_components/angular-animate/angular-animate.min.js',
-	  'bower_components/angular-cookies/angular-cookies.min.js',
-	  'bower_components/angular-messages/angular-messages.min.js',
-	  'bower_components/angular-sanitize/angular-sanitize.min.js',
-	  'bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js',
-	  'bower_components/angular-swagger-ui/dist/scripts/swagger-ui.js',
-	  'bower_components/term.js/src/term.js',
-	  'bower_components/angular-bootstrap-pwgen/angular-bootstrap-pwgen.js',
-	  'bower_components/ng-password-strength/dist/scripts/ng-password-strength.js',
-	  'bower_components/angular-clipboard/angular-clipboard.js',
-	  'bower_components/ng-tags-input/ng-tags-input.min.js',
-	  'bower_components/angular-gravatar/build/angular-gravatar.js',
-	  'bower_components/angular-busy/dist/angular-busy.js',
-	  'bower_components/angular-wizard/angular-wizard.js',
-	  'bower_components/angular-grid/angular-grid.js',
-	  'bower_components/angular-alert/angular-alert.js',
+  	  'bower_components/jquery/dist/jquery.min.js',
+  	  'bower_components/bootstrap/dist/js/bootstrap.min.js',
+  	  'bower_components/lodash/dist/lodash.min.js',
+  	  'bower_components/angular-route/angular-route.min.js',
+  	  'bower_components/angular-resource/angular-resource.min.js',
+  	  'bower_components/angular-animate/angular-animate.min.js',
+  	  'bower_components/angular-cookies/angular-cookies.min.js',
+  	  'bower_components/angular-messages/angular-messages.min.js',
+  	  'bower_components/angular-sanitize/angular-sanitize.min.js',
+  	  'bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js',
+  	  'bower_components/angular-swagger-ui/dist/scripts/swagger-ui.js',
+  	  'bower_components/term.js/src/term.js',
+  	  'bower_components/angular-bootstrap-pwgen/angular-bootstrap-pwgen.js',
+  	  'bower_components/ng-password-strength/dist/scripts/ng-password-strength.js',
+  	  'bower_components/angular-clipboard/angular-clipboard.js',
+  	  'bower_components/ng-tags-input/ng-tags-input.min.js',
+  	  'bower_components/angular-gravatar/build/angular-gravatar.js',
+  	  'bower_components/angular-busy/dist/angular-busy.js',
+  	  'bower_components/angular-wizard/angular-wizard.js',
+  	  'bower_components/angular-grid/angular-grid.js',
+  	  'bower_components/angular-alert/angular-alert.js',
+      'app/shared/api.js',
       'app/shared/*.js',
       'app/shared/**/*.js',
       'app/*.js',          // Module definitions
-	  'app/**/*.js',       // View controllers
-	  'app/**/**/*.js',    // Subview controllers
-	  'app/**/**/**/*.js', // Modal controllers
+	    'app/**/*.js',       // View controllers
+	    'app/**/**/*.js',    // Subview controllers
+	    'app/**/**/**/*.js', // Modal controllers
       'app/login/signUp/*.js',
       'tests/unit/spec.js'
     ],
@@ -52,8 +53,8 @@ module.exports = function(config) {
 
     // list of files to exclude
     exclude: [
-	  'app/api/swagger.js',
-	  'app/api/jsonify.js'
+  	  'app/api/swagger.js',
+  	  'app/api/jsonify.js'
     ],
 
 
@@ -61,8 +62,8 @@ module.exports = function(config) {
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
 	// See http://stackoverflow.com/questions/19117092/jasmine-tests-in-karma-uncaught-referenceerror-require-is-not-defined
     preprocessors: {
-	//	'app/tests/*.js': [ 'browserify' ]
-		'app/login/signUp/*.js': 'coverage'
+	//	'app/tests/*.js': [ 'browserify' ],
+		  'app/login/signUp/*.js': 'coverage'
     },
 
 
@@ -71,14 +72,14 @@ module.exports = function(config) {
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
     reporters: ['progress', 'coverage', 'html'],
 	
-	htmlReporter: {
-	  outputFile: 'tests/reports/unit.html'
-	},
+  	htmlReporter: {
+  	  outputFile: 'tests/reports/unit.html'
+  	},
  
     coverageReporter: {
       type : 'html',
       dir : 'tests/reports/coverage/'
-    }
+    },
 
     // web server port
     port: 9876,
@@ -111,3 +112,4 @@ module.exports = function(config) {
     concurrency: Infinity
   })
 }
+

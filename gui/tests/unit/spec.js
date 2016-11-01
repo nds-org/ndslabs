@@ -1,38 +1,108 @@
+/* global angular:false expect:false inject:false module:false */
+
 describe('SignUpController', function() {
+  // Inject ndslabs module before each test
   beforeEach(module('ndslabs'));
+  beforeEach(module('ndslabs-api'));
 
-  var $controller;
+  // Injected / mocked angular services
+  var $controller, controller, $scope;
+  
+  // Parameterized test case data
+  var TEST_NAME = 'Test User';
+  var TEST_USERNAME = 'testuser';
+  var TEST_PASSWORD = '123456';
+  var TEST_UNMATCHED_PASSWORD = 'Not The Same Password';
+  var TEST_EMAIL = 'test@user.com';
+  var TEST_ORGANIZATION = 'NDS'
+  var TEST_DESCRIPTION = 'Running unit tests against Labs Workbench';
 
+  // Inject the $controller service, initialize controller and $scope before each test
   beforeEach(inject(function(_$controller_){
     // The injector unwraps the underscores (_) from around the parameter names when matching
     $controller = _$controller_;
+      
+    $scope = {};
+    controller = $controller('SignUpController', { $scope: $scope });
   }));
-	
-  describe('product name', function() {
-	it('has the correct value', function() {
-      var $scope = {};
-      var controller = $controller('SignUpController', { $scope: $scope });
+  
+  describe('$scope.productName', function() {
+  	it('has the correct value', function() {
       expect($scope.productName).toEqual('Labs Workbench');
-	});
+  	});
   });
   
-  describe('eula link', function() {
-	it('has the correct value', function (){
-      var $scope = {};
-      var controller = $controller('SignUpController', { $scope: $scope });
+  describe('$scope.eulaLink', function() {
+  	it('has the correct values', function (){
+  	  expect($scope.eulaLink.name).toEqual('Acceptable Use Policy');
       expect($scope.eulaLink.url).toEqual('https://nationaldataservice.atlassian.net/wiki/display/NDSC/Acceptable+Use+Policy');
-	});
+  	});
   });
 
-  describe('signUp form', function() {
-    it('is invalid if passwords do not match', function() {
-      var $scope = {};
-      var controller = $controller('SignUpController', { $scope: $scope });
-      $scope.newProject.password = 'longerthaneightchars';
-	  
-	 
-	  // TODO: How to write expecations?
-      //expect($scope.forms['registerForm).toEqual(false);
+  describe('$scope.ok(account)', function() {
+    // Mock NdsLabsApi service
+    
+    // Mock Project service
+    var Project, ApiUri, $httpBackend;
+    beforeEach(inject(function (_ApiUri_, _Project_, _$httpBackend_) {
+      ApiUri = _ApiUri_;
+      Project = _Project_;
+      $httpBackend = _$httpBackend_;
+      
+      $httpBackend.when('POST', ApiUri.api + '/register').respond("an order form");
+    }));
+  
+    it('does not accept invalid account registration', function() {
+      var account = Project.create();
+      
+      // Input mismatched passwords
+      account.email = TEST_EMAIL;
+      account.name = TEST_NAME;
+      account.description = TEST_DESCRIPTION;
+      account.organization = TEST_ORGANIZATION;
+      
+      account.namespace = TEST_USERNAME;
+      account.password = TEST_PASSWORD;
+      account.passwordConfirmation = TEST_UNMATCHED_PASSWORD;
+      
+      // Progress message should not display before clicking submit
+      expect($scope.progressMessage).toEqual('');
+      var valid = $scope.ok(account);
+      
+      // Progress message should not change when clicking submit
+      expect(valid).toEqual(false);
+      expect($scope.progressMessage).toEqual('');
+      expect($scope.showVerify).toEqual(false);
+    });
+    
+    it('accepts valid account registration', function() {
+      var account = Project.create();
+      
+      // Input valid account information
+      account.namespace = TEST_USERNAME;
+      account.password = account.passwordConfirmation = TEST_PASSWORD;
+      account.email = TEST_EMAIL;
+      account.name = TEST_NAME;
+      account.description = TEST_DESCRIPTION;
+      account.organization = TEST_ORGANIZATION;
+    
+      // Progress message should not display before clicking submit
+      expect($scope.progressMessage).toEqual('');
+      
+      // Expect a POST to the /register endpoint
+      $httpBackend.expectPOST(ApiUri.api + '/register', account);
+      var valid = $scope.ok(account);
+      
+      expect(valid).not.toEqual(false);
+      
+      // Progress message should change during request
+      expect($scope.progressMessage).toEqual('Please wait...');
+      $httpBackend.flush();
+      
+      // Ensure that all of our values came back as expected
+      expect($scope.progressMessage).toEqual('');
+      expect($scope.errorMessage).toMatch('');
+      expect($scope.showVerify).toEqual(true);
     });
   });
 });
