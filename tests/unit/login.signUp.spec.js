@@ -6,7 +6,7 @@ describe('SignUpController', function() {
   beforeEach(module('ndslabs-api'));
 
   // Injected / mocked angular services
-  var $controller, controller, $scope;
+  var $controller, controller, $scope, $rootScope;
   
   // Parameterized test case data
   var TEST_NAME = 'Test User';
@@ -18,11 +18,12 @@ describe('SignUpController', function() {
   var TEST_DESCRIPTION = 'Running unit tests against Labs Workbench';
 
   // Inject the $controller service, initialize controller and $scope before each test
-  beforeEach(inject(function(_$controller_){
+  beforeEach(inject(function(_$controller_, _$rootScope_) {
     // The injector unwraps the underscores (_) from around the parameter names when matching
     $controller = _$controller_;
-      
-    $scope = {};
+    $rootScope = _$rootScope_;
+    
+    $scope = $rootScope.new();
     controller = $controller('SignUpController', { $scope: $scope });
   }));
   
@@ -67,10 +68,14 @@ describe('SignUpController', function() {
       
       // Progress message should not display before clicking submit
       expect($scope.progressMessage).toEqual('');
+      expect($scope.errorMessage).not.toBeDefined();
       var valid = $scope.ok(account);
       
-      // Progress message should not change when clicking submit
+      // Method should return false
       expect(valid).toEqual(false);
+      
+      // Progress message should not change when submit is clicked
+      expect($scope.errorMessage).not.toBeDefined();
       expect($scope.progressMessage).toEqual('');
       expect($scope.showVerify).toEqual(false);
     });
@@ -88,15 +93,18 @@ describe('SignUpController', function() {
     
       // Progress message should not display before clicking submit
       expect($scope.progressMessage).toEqual('');
+      expect($scope.errorMessage).not.toBeDefined();
       
       // Expect a POST to the /register endpoint
       $httpBackend.expectPOST(ApiUri.api + '/register', account);
       var valid = $scope.ok(account);
       
+      // Method should return a Promise
       expect(valid).not.toEqual(false);
       
       // Progress message should change during request
       expect($scope.progressMessage).toEqual('Please wait...');
+      expect($scope.errorMessage).toEqual('');
       $httpBackend.flush();
       
       // Ensure that all of our values came back as expected
