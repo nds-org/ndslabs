@@ -23,7 +23,7 @@ describe('SignUpController', function() {
     $controller = _$controller_;
     $rootScope = _$rootScope_;
     
-    $scope = $rootScope.new();
+    $scope = $rootScope.$new();
     controller = $controller('SignUpController', { $scope: $scope });
   }));
   
@@ -52,6 +52,12 @@ describe('SignUpController', function() {
       
       $httpBackend.when('POST', ApiUri.api + '/register').respond("a successful response");
     }));
+  
+    // Ensure backend has responded to all requests before finishing
+	afterEach(function() {
+      $httpBackend.verifyNoOutstandingExpectation();
+      $httpBackend.verifyNoOutstandingRequest();
+    });
   
     it('does not accept invalid account registration', function() {
       var account = Project.create();
