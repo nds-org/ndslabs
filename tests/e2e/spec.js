@@ -5,12 +5,10 @@
 describe('Labs Workbench', function() {
   var ptor;
   
-  // TODO: Load these from a config file on .gitignore
-  var TEST_HOSTNAME = 'https://www.mldev.ndslabs.org/#';
-  // var TEST_HOSTNAME = 'https://www.workbench.nationaldataservice.org/';
-  
-  var TEST_USERNAME = 'lambert8';
-  var TEST_PASSWORD = '123456';
+  // Load these from athe e2e.auth.json file
+  var TEST_HOSTNAME = '';
+  var TEST_USERNAME = '';
+  var TEST_PASSWORD = '';
   
   var TEST_INVALID_PASSWORD = '654321';
   
