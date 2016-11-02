@@ -88,7 +88,7 @@ describe('Labs Workbench', function() {
     });
     
     
-    it('should deny invalid login', function() {
+    it('should accept valid login', function() {
       element(by.id(INPUT_USERNAME_ID)).sendKeys(TEST_USERNAME);
       element(by.id(INPUT_PASSWORD_ID)).sendKeys(TEST_PASSWORD);
       
