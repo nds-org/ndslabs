@@ -49,8 +49,8 @@ describe('LoginController', function() {
   	it('accepts valid login', function() {
 	  var authInfo = AuthInfo.get();
 	  
-      expect(authInfo.namespace).toEqual('');
-      expect(authInfo.password).toEqual('');
+    expect(authInfo.namespace).toEqual('');
+    expect(authInfo.password).toEqual('');
 	  
 	  authInfo.namespace = TEST_USERNAME;
 	  authInfo.password = TEST_PASSWORD;
