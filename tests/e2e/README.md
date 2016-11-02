@@ -4,7 +4,7 @@ See [Protractor](https://github.com/angular/protractor)
 
 # Goals
 * Test form validation
-* Test routing (?)
+* Test routing
 * Test against a live running instance
 * Test live application in a real browser
 * Test using mulstiple browsers
