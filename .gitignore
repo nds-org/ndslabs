@@ -6,3 +6,4 @@
 **/build/
 **/*.log
 gui/tests/reports/*
+gui/e2e.auth.json

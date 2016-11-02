@@ -13,7 +13,7 @@
   </div>
   
   <!-- Main Panel -->
-  <div class="panel panel-primary" id="loginPanel" ng-if="!showVerify">
+  <div class="panel panel-primary" id="loginPanel">
     <div class="panel-heading">
       <small class="pull-right"><a class="btn btn-xs" ng-style="{ color: hover ? 'blue' : 'white' }" ng-mouseenter="hover=true" ng-mouseleave="hover=false" ng-href="#/recover">Forgot your password?</a></small>
       <h3 class="panel-title"><i class="fa fa-fw fa-unlock-alt"></i> Sign In</h3>
@@ -42,7 +42,7 @@
         <!-- Login Button -->
         <div class="row">
           <div class="col-xs-12">
-            <button type="submit" class="btn btn-primary" ng-click="login()" style="width:100%">Sign In <i class="fa fa-fw fa-sign-in"></i></button>
+            <button type="submit" class="btn btn-primary" id="loginBtn" ng-click="login()" style="width:100%">Sign In <i class="fa fa-fw fa-sign-in"></i></button>
           </div>
         </div>
         

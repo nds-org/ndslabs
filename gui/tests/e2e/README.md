@@ -20,6 +20,20 @@ git clone https://github.com/nds-org/ndslabs
 cd ndslabs/gui/
 ```
 
+## Create an e2e.auth.js file
+Create `e2e.auth.js` alongside `e2e.conf.js`.
+
+Be sure to substitute in the values for the server and credentials you would like to test with:
+```javascript
+{
+    "hostname": "",
+    "username": "",
+    "password": "",
+}
+```
+
+WARNING: This file should **not** be checked into source control.
+
 # Node.js in Docker
 ```bash
 docker run -it -v `pwd`:/data -w /data bodom0015/nodejs-bower-grunt bash
