@@ -7,6 +7,7 @@ var helpers = require('./helpers.e2e.js');
 var shared = require('./pages/shared.page.js');
 
 var login = require('./pages/login.page.js');
+var landing = require('./pages/landing.page.js');
 var dashboard = require('./pages/dashboard.page.js');
 
 // login.e2e.js
@@ -18,37 +19,34 @@ describe('Labs Workbench Login View', function() {
   
   // Do not allow user past login view with invalid credentials
   it('should deny invalid login', function() {
-    login.startOnLoginView();
+    login.get();
     
     // Attempt to sign in with invalid credentials
-    login.invalidSignIn();
+    login.signIn(true);
     
     // We should remain on the login view
-    expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/login');
+    login.verify();
   });
   
   // Allow user past login view with valid credentials
   it('should accept valid login', function() {
-    login.startOnLoginView();
+    login.get();
     
     // Attempt to sign in with valid credentials
-    login.validSignIn();
+    login.signIn();
     
     // We should be taken to the Dashboard View
-    expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/home');
+    dashboard.verify();
   });
   
   // Allow user to logout
   it('should allow logout', function() {
-    dashboard.startOnDashboardView(true);
-    
-    // We should be taken to the Dashboard View
-    expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/home');
+    dashboard.get(true);
     
     // Sign out using helper function
     shared.signOut();
     
     // We should be taken to the Landing Page View
-    expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/');
+    landing.verify();
   });
 });

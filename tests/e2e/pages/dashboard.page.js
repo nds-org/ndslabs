@@ -12,18 +12,20 @@ var PAGE_TITLE = 'Labs Workbench Dashboard';
 var PAGE_ROUTE = shared.config.TEST_HOSTNAME + '/home';
 
 // Ensure we are on the dashboard page
-module.exports.verifyDashboardView = function() {
+module.exports.verify = function() {
   expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 
 // Navigate to the dashboard view
-module.exports.startOnDashboardView = function(loggedIn) {
+module.exports.get = function(loggedIn) {
   if (loggedIn) {
-    landing.startOnLandingView();
-    landing.gotoDashboard();
+    landing.get();
+    landing.clickDashboardLink();
   } else {
-    login.startOnLoginView();
-    login.validSignIn();
+    login.get();
+    login.signIn();
   }
+  
+  module.exports.verify();
 };

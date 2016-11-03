@@ -11,11 +11,11 @@ var dashboard = require('./pages/dashboard.page.js');
 describe('Labs Workbench Dashboard View', function() {
   beforeAll(function() { 
     helpers.beforeAll();
-    dashboard.startOnDashboardView(false);
+    dashboard.get(false);
   });
   
   beforeEach(function() { helpers.beforeEach(); 
-    dashboard.startOnDashboardView(true);
+    dashboard.get(true);
   });
   
   afterEach(function() { helpers.afterEach(); });
