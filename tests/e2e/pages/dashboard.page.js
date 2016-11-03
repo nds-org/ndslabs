@@ -21,9 +21,9 @@ module.exports.verifyDashboardView = function() {
 module.exports.startOnDashboardView = function(loggedIn) {
   if (loggedIn) {
     landing.startOnLandingView();
-    landing.clickDashboardLink();
+    landing.gotoDashboard();
   } else {
     login.startOnLoginView();
-    login.signIn();
+    login.validSignIn();
   }
 };

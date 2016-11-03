@@ -3,24 +3,25 @@
 "use strict"
 
 // Import shared PageObjects
-var shared = require('./pageObjects/shared.page.js');
+var helpers = require('./helpers.e2e.js');
+var shared = require('./pages/shared.page.js');
+
+var login = require('./pages/login.page.js');
+var dashboard = require('./pages/dashboard.page.js');
 
 // login.e2e.js
 describe('Labs Workbench Login View', function() {
-  beforeEach(function() { shared.beforeEach(); });
-  beforeAll(function() { shared.beforeAll(); });
-  afterEach(function() { shared.afterEach(); });
-  afterAll(function() { shared.afterAll(); });
+  beforeEach(function() { helpers.beforeEach(); });
+  beforeAll(function() { helpers.beforeAll(); });
+  afterEach(function() { helpers.afterEach(); });
+  afterAll(function() { helpers.afterAll(); });
   
   // Do not allow user past login view with invalid credentials
   it('should deny invalid login', function() {
-    shared.startOnLoginView();
+    login.startOnLoginView();
     
-    // Attempt to sign in with vinalid credentials
-    shared.signIn(shared.config.TEST_USERNAME, shared.config.TEST_INVALID_PASSWORD);
-    
-    // TODO: change this to id selector
-    element(by.css('[ng-click="login()"]')).click();
+    // Attempt to sign in with invalid credentials
+    login.invalidSignIn();
     
     // We should remain on the login view
     expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/login');
@@ -28,10 +29,10 @@ describe('Labs Workbench Login View', function() {
   
   // Allow user past login view with valid credentials
   it('should accept valid login', function() {
-    shared.startOnLoginView();
+    login.startOnLoginView();
     
     // Attempt to sign in with valid credentials
-    shared.signIn();
+    login.validSignIn();
     
     // We should be taken to the Dashboard View
     expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/home');
@@ -39,7 +40,7 @@ describe('Labs Workbench Login View', function() {
   
   // Allow user to logout
   it('should allow logout', function() {
-    shared.startOnDashboardView();
+    dashboard.startOnDashboardView(true);
     
     // We should be taken to the Dashboard View
     expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/home');

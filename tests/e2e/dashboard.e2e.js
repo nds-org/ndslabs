@@ -3,26 +3,25 @@
 "use strict"
 
 // Import shared PageObjects
-var shared = require("./pageObjects/shared.page.js");
+var helpers = require("./helpers.e2e.js");
+var shared = require("./pages/shared.page.js");
+var dashboard = require('./pages/dashboard.page.js');
 
 // dashboard.e2e.js
 describe('Labs Workbench Dashboard View', function() {
   beforeAll(function() { 
-    shared.beforeAll();
-    
-    // Sign in to access Dashboard View
-    shared.startOnLoginView();
-    shared.signIn();
+    helpers.beforeAll();
+    dashboard.startOnDashboardView(false);
   });
   
-  beforeEach(function() { shared.beforeEach(); 
-    shared.startOnDashboardView();
+  beforeEach(function() { helpers.beforeEach(); 
+    dashboard.startOnDashboardView(true);
   });
   
-  afterEach(function() { shared.afterEach(); });
+  afterEach(function() { helpers.afterEach(); });
   
   afterAll(function() { 
-    shared.afterAll();
+    helpers.afterAll();
     shared.signOut();
   });
   
