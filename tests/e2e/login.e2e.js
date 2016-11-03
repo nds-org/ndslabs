@@ -2,7 +2,8 @@
 
 "use strict"
 
-var shared = require('./shared.e2e.js');
+// Import shared PageObjects
+var shared = require('./pageObjects/shared.page.js');
 
 // login.e2e.js
 describe('Labs Workbench Login View', function() {
