@@ -13,6 +13,8 @@ See [Protractor](https://github.com/angular/protractor)
 * [Git](https://git-scm.com/)
 * [Docker](https://www.docker.com/)
 * [Google Chrome](https://www.google.com/chrome/browser/desktop/)
+* A running instance of Labs Workbench to test against
+* Approved account credentials on the Labs Workbench test instance
 
 # Clone this repo
 ```bash
@@ -21,9 +23,7 @@ cd ndslabs/gui/
 ```
 
 ## Create an e2e.auth.js file
-Create `e2e.auth.js` alongside `e2e.conf.js`.
-
-Be sure to substitute in the values for the server and credentials you would like to test with:
+Create `e2e.auth.js` alongside `e2e.conf.js`:
 ```javascript
 {
     "hostname": "",
@@ -31,6 +31,10 @@ Be sure to substitute in the values for the server and credentials you would lik
     "password": "",
 }
 ```
+
+* **hostname**: The Labs Workbench instance to run the tests against
+* **username**: The username of an approved account to use to log in for the tests
+* **password**: The correct password of the above user's account
 
 WARNING: This file should **not** be checked into source control.
 
