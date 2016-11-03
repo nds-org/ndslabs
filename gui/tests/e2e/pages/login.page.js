@@ -26,24 +26,19 @@ var usernameInput = function() { return helpers.getInput(by.id(INPUT_USERNAME_ID
 var passwordInput = function() {  return helpers.getInput(by.id(INPUT_PASSWORD_ID)); };
 
 // Ensure that we are on the login page
-module.exports.verifyLoginView = function() {
+module.exports.verify = function() {
   expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 
-module.exports.startOnLoginView = function() {
-  landing.startOnLandingView();
-  landing.gotoSignIn();
+module.exports.get = function() {
+  landing.get();
+  landing.clickSignIn();
+  module.exports.verify();
 };
   
-module.exports.invalidSignIn = function() {
+module.exports.signIn = function(fail) {
   usernameInput().sendKeys(TEST_USERNAME);
-  passwordInput().sendKeys(TEST_INVALID_PASSWORD);
-  loginBtn().click();
-};
-  
-module.exports.validSignIn = function() {
-  usernameInput().sendKeys(TEST_USERNAME);
-  passwordInput().sendKeys(TEST_PASSWORD);
+  passwordInput().sendKeys(fail ? TEST_INVALID_PASSWORD : TEST_PASSWORD);
   loginBtn().click();
 };

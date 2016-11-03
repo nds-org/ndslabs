@@ -14,56 +14,53 @@ var PAGE_TITLE = 'Labs Workbench Landing Page';
 var PAGE_ROUTE = shared.config.TEST_HOSTNAME + '/';
 
 var learnMoreBtn = function() {  return element(by.id('learnMoreBtn')); };
-
 var signInBtn = function() { return element(by.id('signInBtn')); };
 var signUpBtn = function() {  return element(by.id('signUpBtn')); };
 
 var dashboardLink = function() {  return element(by.id('dashboardLink')); };
-
 var apiLink = function() {  return element(by.id('apiLink')); };
 var contactUsLink = function() {  return element(by.id('contactUsLink')); };
-
 var helpLink = function(index) {  return element(by.id('helpLink' + index.toString())); };
 
 // Ensure that we are on the landing page
-module.exports.verifyLandingView = function() {
+module.exports.verify = function() {
   expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 
-module.exports.startOnLandingView = function() {
+module.exports.get = function() {
   browser.get(PAGE_ROUTE);
-  module.exports.verifyLandingView();
+  module.exports.verify();
 };
 
-module.exports.gotoSignIn = function() {
+module.exports.clickLearnMore = function() {
+  learnMoreBtn().click();
+};
+
+module.exports.clickSignIn = function() {
   signInBtn().click();
-  login.verifyLoginView();
+  login.verify();
 };
 
-module.exports.gotoSignUp = function() {
+module.exports.clickSignUp = function() {
   signUpBtn().click();
 };
 
-module.exports.gotoDashboard = function() {
+module.exports.clickDashboardLink = function() {
   dashboardLink().click();
-  dashboard.verifyDashboardView();
+  dashboard.verify();
 };
 
-module.exports.gotoApiReference = function(predicate) {
+module.exports.clickApiLink = function(predicate) {
   helpers.scrollToAndThen(0,10000, function () {
     apiLink().click();
   }).then(predicate);
 };
 
-module.exports.gotoContactUs = function(predicate) {
+module.exports.clickContactUsLink = function(predicate) {
   helpers.scrollToAndThen(0,10000, function () {
     contactUsLink().click();
   }).then(predicate);
-};
-
-module.exports.clickLearnMore = function() {
-  learnMoreBtn().click();
 };
 
 module.exports.clickHelpLink = function(index) {

@@ -14,7 +14,7 @@ describe('Labs Workbench Landing Page View', function() {
   beforeAll(function() { helpers.beforeAll(); });
   beforeEach(function() { 
     helpers.beforeEach(); 
-    landing.startOnLandingView();
+    landing.get();
   });
   afterEach(function() { helpers.afterEach(); });
   afterAll(function() { helpers.afterAll(); });
@@ -25,17 +25,17 @@ describe('Labs Workbench Landing Page View', function() {
   });
   
   it('should offer sign-up', function() {
-    landing.gotoSignUp();
+    landing.clickSignUp();
     
     // We should be taken to the Sign Up View
     expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/register');
   });
 
   it('should offer sign-in', function() {
-    landing.gotoSignIn();
+    landing.clickSignIn();
     
     // We should be taken to the Sign In View
-    login.verifyLoginView();
+    login.verify();
   });
   
   it('should offer help link 0', function() {
@@ -64,13 +64,13 @@ describe('Labs Workbench Landing Page View', function() {
   });
   
   it('should offer API reference link', function() { 
-    landing.gotoApiReference(function() {
+    landing.clickApiLink(function() {
       expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/swagger');
     });
   });
   
   it('should offer "Contact Us" link', function() { 
-    landing.gotoContactUs(function() {
+    landing.clickContactUsLink(function() {
       expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/contact');
     });
   });
