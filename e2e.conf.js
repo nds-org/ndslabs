@@ -27,5 +27,5 @@ exports.config = {
   /*
    * Specify which test spec(s) to run
    */
-  specs: ['tests/e2e/*.js']
+  specs: ['tests/e2e/*.e2e.js']
 }
