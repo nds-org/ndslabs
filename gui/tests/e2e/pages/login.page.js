@@ -12,6 +12,7 @@ var landing = require('./landing.page.js');
 var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 var TEST_USERNAME = shared.config.TEST_USERNAME;
 var TEST_PASSWORD = shared.config.TEST_PASSWORD;
+var TEST_INVALID_PASSWORD = shared.config.TEST_INVALID_PASSWORD;
 
 var INPUT_USERNAME_ID = 'inputNamespace';
 var INPUT_PASSWORD_ID = 'inputPassword';
@@ -24,17 +25,25 @@ var loginBtn = function() {  return element(by.css('[ng-click="login()"]')); };
 var usernameInput = function() { return helpers.getInput(by.id(INPUT_USERNAME_ID)); };
 var passwordInput = function() {  return helpers.getInput(by.id(INPUT_PASSWORD_ID)); };
 
-module.exports.startOnLoginView = function() {
-  landing.startOnLandingView();
-  landing.gotoSignIn();
-  
-  // Ensure that we are on the login page
+// Ensure that we are on the login page
+module.exports.verifyLoginView = function() {
   expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
+
+module.exports.startOnLoginView = function() {
+  landing.startOnLandingView();
+  landing.gotoSignIn();
+};
   
-module.exports.signIn = function(username, password) {
-  usernameInput().sendKeys(username || TEST_USERNAME);
-  passwordInput().sendKeys(password || TEST_PASSWORD);
+module.exports.invalidSignIn = function() {
+  usernameInput().sendKeys(TEST_USERNAME);
+  passwordInput().sendKeys(TEST_INVALID_PASSWORD);
+  loginBtn().click();
+};
+  
+module.exports.validSignIn = function() {
+  usernameInput().sendKeys(TEST_USERNAME);
+  passwordInput().sendKeys(TEST_PASSWORD);
   loginBtn().click();
 };

@@ -3,51 +3,74 @@
 "use strict"
 
 // Import shared PageObjects
-var shared = require('./pageObjects/shared.page.js');
+var helpers = require("./helpers.e2e.js");
+var shared = require("./pages/shared.page.js");
+
+var landing = require("./pages/landing.page.js");
+var login = require("./pages/login.page.js");
 
 // landing.e2e.js
 describe('Labs Workbench Landing Page View', function() {
-  beforeEach(function() { shared.beforeEach(); });
-  beforeAll(function() { shared.beforeAll(); });
-  afterEach(function() { shared.afterEach(); });
-  afterAll(function() { shared.afterAll(); });
+  beforeAll(function() { helpers.beforeAll(); });
+  beforeEach(function() { 
+    helpers.beforeEach(); 
+    landing.startOnLandingView();
+  });
+  afterEach(function() { helpers.afterEach(); });
+  afterAll(function() { helpers.afterAll(); });
   
   it('should offer a "Learn More" button', function() {
-    shared.expectNewTabOpenOnClick(element(by.id('learnMoreBtn')), shared.config.FEATURE_OVERVIEW_LINK);
+    landing.clickLearnMore();
+    helpers.expectNewTabOpen(shared.config.FEATURE_OVERVIEW_LINK);
   });
   
   it('should offer sign-up', function() {
-    element(by.id('signUpBtn')).click();
+    landing.gotoSignUp();
     
     // We should be taken to the Sign Up View
     expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/register');
   });
 
-  it('should offer sign-in', function() { 
-    element(by.id('signInBtn')).click();
+  it('should offer sign-in', function() {
+    landing.gotoSignIn();
     
     // We should be taken to the Sign In View
-    expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/login');
+    login.verifyLoginView();
   });
   
-  it('should offer help links', function() { 
-    shared.expectNewTabOpenOnClick(element(by.id('helpLink0')), shared.config.FEATURE_OVERVIEW_LINK);
-    shared.expectNewTabOpenOnClick(element(by.id('helpLink1')), shared.config.FAQ_LINK);
-    shared.expectNewTabOpenOnClick(element(by.id('helpLink2')), shared.config.USER_GUIDE_LINK);
-    shared.expectNewTabOpenOnClick(element(by.id('helpLink3')), shared.config.DEV_GUIDE_LINK);
-    shared.expectNewTabOpenOnClick(element(by.id('helpLink4')), shared.config.USE_POLICY_LINK);
+  it('should offer help link 0', function() {
+    landing.clickHelpLink(0);
+    helpers.expectNewTabOpen(shared.config.FEATURE_OVERVIEW_LINK);
+  });
+  
+  it('should offer help link 1', function() {
+    landing.clickHelpLink(1);
+    helpers.expectNewTabOpen(shared.config.FAQ_LINK);
+  });
+  
+  it('should offer help link 2', function() {
+    landing.clickHelpLink(2);
+    helpers.expectNewTabOpen(shared.config.USER_GUIDE_LINK);
+  });
+  
+  it('should offer help link 3', function() {
+    landing.clickHelpLink(3);
+    helpers.expectNewTabOpen(shared.config.DEV_GUIDE_LINK);
+  });
+  
+  it('should offer help link 4', function() {
+    landing.clickHelpLink(4);
+    helpers.expectNewTabOpen(shared.config.USE_POLICY_LINK);
   });
   
   it('should offer API reference link', function() { 
-    browser.executeScript('window.scrollTo(0,10000);').then(function () {
-      element(by.id('apiLink')).click();
+    landing.gotoApiReference(function() {
       expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/swagger');
     });
   });
   
   it('should offer "Contact Us" link', function() { 
-    browser.executeScript('window.scrollTo(0,10000);').then(function () {
-      element(by.id('contactUsLink')).click();
+    landing.gotoContactUs(function() {
       expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/contact');
     });
   });
