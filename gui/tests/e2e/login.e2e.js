@@ -9,6 +9,7 @@ var shared = require('./pages/shared.page.js');
 var login = require('./pages/login.page.js');
 var landing = require('./pages/landing.page.js');
 var dashboard = require('./pages/dashboard.page.js');
+var signup = require('./pages/signup.page.js');
 
 // login.e2e.js
 describe('Labs Workbench Login View', function() {
