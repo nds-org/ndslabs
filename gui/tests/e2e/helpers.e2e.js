@@ -25,7 +25,8 @@ module.exports.getInput = function(selector) {
   return input;
 };
 
-// Check that a new tab is open and, if second param is true, close the tab afterward
+// Check that a new tab is open and close the tab
+// If second param is false, the tab is left open
 module.exports.expectNewTabOpen = function(expectedUrl, leaveOpen) {
   browser.ignoreSynchronization = true;
   

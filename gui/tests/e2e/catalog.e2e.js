@@ -16,7 +16,7 @@ describe('Labs Workbench Catalog View', function() {
   
   beforeEach(function() {
     helpers.beforeEach(); 
-    catalog.get(false);
+    catalog.get();
   });
   
   afterEach(function() { 
