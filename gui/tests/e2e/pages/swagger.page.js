@@ -9,17 +9,13 @@ var helpers = require('../helpers.e2e.js');
 var shared = require('./shared.page.js');
 
 var landing = require('./landing.page.js');
-var login = require('./login.page.js');
-var dashboard = require('./dashboard.page.js');
 
 var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 
-var PAGE_TITLE = 'Labs Workbench Catalog';
-var PAGE_ROUTE = TEST_HOSTNAME + '/store';
-
-var BUTTON_CREATE_APPLICATION_ID = 'createApplicationBtn';
-
-var createApplicationBtn = function() {  return element(by.id(BUTTON_CREATE_APPLICATION_ID)); };
+// TODO: How to handle "service name" in title?
+// TODO: How to handle "stackServiceId" in url?
+var PAGE_TITLE = 'Swagger UI';
+var PAGE_ROUTE = TEST_HOSTNAME + '/swagger';
 
 // Ensure that we are on the correct page
 module.exports.verify = function() { 
@@ -27,14 +23,21 @@ module.exports.verify = function() {
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 
-// Navigate to the addSpec view
-module.exports.get = function(loggedIn) {
-  dashboard.get(loggedIn);
-  dashboard.clickCatalogLink();
-  
+module.exports.get = function() {
+  landing.get();
+  landing.clickApiLink();
+	
   module.exports.verify();
 };
 
-module.exports.clickCreateButton = function() {
-	createApplicationBtn().click();
-};
+/**
+ * Insert private member vars here for page element IDs
+ */
+
+/**
+ * Insert private Getter functions here for page elements
+ */
+
+/**
+ * Insert public Getter functions here for user interactions
+ */

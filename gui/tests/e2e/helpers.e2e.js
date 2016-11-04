@@ -5,6 +5,13 @@
 // This module exports shared generic helper functions that do not reference particular page element
 module.exports = {};
 
+// Debug Only: Sleep for the given number of milliseconds.
+// WARNING: This should not be used in production
+module.exports.sleep = function(ms) {
+  var startTime = new Date().getTime();
+  while(new Date().getTime() < startTime + ms) { /* noop */ }
+};
+
 // Scroll to the given x,y coordinates, then execute the predicate function
 module.exports.scrollToAndThen = function(x, y, predicate) {
   return browser.executeScript('window.scrollTo(' + x.toString() + ',' + y.toString() + ');').then(predicate);

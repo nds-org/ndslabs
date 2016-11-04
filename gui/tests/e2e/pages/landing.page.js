@@ -18,6 +18,9 @@ var signInBtn = function() { return element(by.id('signInBtn')); };
 var signUpBtn = function() {  return element(by.id('signUpBtn')); };
 
 var dashboardLink = function() {  return element(by.id('dashboardLink')); };
+var catalogLink = function() {  return element(by.id('catalogLink')); };
+var catalogAddLink = function() {  return element(by.id('catalogAddLink')); };
+
 var apiLink = function() {  return element(by.id('apiLink')); };
 var contactUsLink = function() {  return element(by.id('contactUsLink')); };
 var helpLink = function(index) {  return element(by.id('helpLink' + index.toString())); };
@@ -48,7 +51,14 @@ module.exports.clickSignUp = function() {
 
 module.exports.clickDashboardLink = function() {
   dashboardLink().click();
-  dashboard.verify();
+};
+
+module.exports.clickCatalogLink = function() {
+  catalogLink().click();
+};
+
+module.exports.clickCatalogAddLink = function() {
+  catalogAddLink().click();
 };
 
 module.exports.clickApiLink = function(predicate) {
