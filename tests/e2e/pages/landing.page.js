@@ -42,7 +42,6 @@ module.exports.clickLearnMore = function() {
 
 module.exports.clickSignIn = function() {
   signInBtn().click();
-  login.verify();
 };
 
 module.exports.clickSignUp = function() {

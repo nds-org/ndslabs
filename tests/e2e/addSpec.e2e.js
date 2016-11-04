@@ -16,7 +16,7 @@ describe('Labs Workbench Add Spec View', function() {
   
   beforeEach(function() {
     helpers.beforeEach(); 
-    addSpec.get(false);
+    addSpec.get();
   });
   
   afterEach(function() { 

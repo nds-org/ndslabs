@@ -42,17 +42,23 @@ module.exports.get = function() {
   landing.clickSignIn();
   module.exports.verify();
 };
+
+module.exports.enterUsername = function(text) {
+  usernameInput().sendKeys(text);
+};
   
-module.exports.signIn = function(invalid) {
-  usernameInput().sendKeys(TEST_USERNAME);
-  passwordInput().sendKeys(invalid ? TEST_INVALID_PASSWORD : TEST_PASSWORD);
+ module.exports.enterPassword = function(text) {
+  passwordInput().sendKeys(text);
+};
+  
+module.exports.clickLogin = function() {
   loginBtn().click();
 };
   
-module.exports.clickRequestAccessLink = function(invalid) {
+module.exports.clickRequestAccessLink = function() {
   requestAccessLink().click();
 };
   
-module.exports.clickForgotPasswordLink = function(invalid) {
+module.exports.clickForgotPasswordLink = function() {
   forgotPasswordLink().click();
 };

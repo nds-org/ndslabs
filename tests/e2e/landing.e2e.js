@@ -8,6 +8,7 @@ var shared = require("./pages/shared.page.js");
 
 var landing = require("./pages/landing.page.js");
 var login = require("./pages/login.page.js");
+var signup = require("./pages/signup.page.js");
 
 var dashboard = require("./pages/dashboard.page.js");
 var catalog = require("./pages/catalog.page.js");
@@ -32,13 +33,13 @@ describe('Labs Workbench Landing Page View', function() {
     landing.clickSignUp();
     
     // We should be taken to the Sign Up View
-    expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/register');
+    signup.verify();
   });
 
   it('should offer sign-in', function() {
     landing.clickSignIn();
     
-    // We should be taken to the Sign In View
+    // We should be taken to the Login View
     login.verify();
   });
   
@@ -86,6 +87,7 @@ describe('Labs Workbench Landing Page View', function() {
     
     afterAll(function() {
       shared.signOut();
+      landing.verify();
     });
       
     it('should link user to dashboard', function() {

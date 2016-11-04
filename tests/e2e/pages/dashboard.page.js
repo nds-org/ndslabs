@@ -8,6 +8,9 @@ var shared = require('./shared.page.js');
 var landing = require('./landing.page.js');
 var login = require('./login.page.js');
 
+var TEST_USERNAME = shared.config.TEST_USERNAME;
+var TEST_PASSWORD = shared.config.TEST_PASSWORD;
+
 var PAGE_TITLE = 'Labs Workbench Dashboard';
 var PAGE_ROUTE = shared.config.TEST_HOSTNAME + '/home';
 
@@ -28,7 +31,9 @@ module.exports.get = function(loggedIn) {
     landing.clickDashboardLink();
   } else {
     login.get();
-    login.signIn();
+    login.enterUsername(TEST_USERNAME);
+    login.enterPassword(TEST_PASSWORD);
+    login.clickLogin();
   }
   
   module.exports.verify();
