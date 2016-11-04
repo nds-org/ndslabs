@@ -6,17 +6,17 @@
 var helpers = require("./helpers.e2e.js");
 var shared = require("./pages/shared.page.js");
 
-var dashboard = require('./pages/dashboard.page.js');
+var catalog = require('./pages/catalog.page.js');
 
-// dashboard.e2e.js
-describe('Labs Workbench Dashboard View', function() {
+// catalog.e2e.js
+describe('Labs Workbench Catalog View', function() {
   beforeAll(function() { 
     helpers.beforeAll();
   });
   
   beforeEach(function() {
     helpers.beforeEach(); 
-    dashboard.get(false);
+    catalog.get(false);
   });
   
   afterEach(function() { 

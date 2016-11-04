@@ -6,22 +6,21 @@
 var helpers = require("./helpers.e2e.js");
 var shared = require("./pages/shared.page.js");
 
-var dashboard = require('./pages/dashboard.page.js');
+var signup = require('./pages/signup.page.js');
 
-// dashboard.e2e.js
-describe('Labs Workbench Dashboard View', function() {
+// signup.e2e.js
+describe('Labs Workbench Sign Up View', function() {
   beforeAll(function() { 
     helpers.beforeAll();
   });
   
   beforeEach(function() {
     helpers.beforeEach(); 
-    dashboard.get(false);
+    signup.get();
   });
   
   afterEach(function() { 
     helpers.afterEach();
-    shared.signOut();
   });
   
   afterAll(function() { 

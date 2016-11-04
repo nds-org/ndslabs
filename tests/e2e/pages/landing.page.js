@@ -66,3 +66,6 @@ module.exports.clickContactUsLink = function(predicate) {
 module.exports.clickHelpLink = function(index) {
   helpLink(index).click();
 };
+
+// TODO: "Catalog" link
+// TODO: "Create Application" link
