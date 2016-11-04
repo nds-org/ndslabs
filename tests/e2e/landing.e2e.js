@@ -9,6 +9,10 @@ var shared = require("./pages/shared.page.js");
 var landing = require("./pages/landing.page.js");
 var login = require("./pages/login.page.js");
 
+var dashboard = require("./pages/dashboard.page.js");
+var catalog = require("./pages/catalog.page.js");
+var addSpec = require("./pages/addEditSpec.page.js");
+
 // landing.e2e.js
 describe('Labs Workbench Landing Page View', function() {
   beforeAll(function() { helpers.beforeAll(); });
@@ -38,40 +42,65 @@ describe('Labs Workbench Landing Page View', function() {
     login.verify();
   });
   
-  it('should offer help link 0', function() {
+  it('should link to the Feature Overview wiki page', function() {
     landing.clickHelpLink(0);
     helpers.expectNewTabOpen(shared.config.FEATURE_OVERVIEW_LINK);
   });
   
-  it('should offer help link 1', function() {
+  it('should link to the F.A.Q. wiki page', function() {
     landing.clickHelpLink(1);
     helpers.expectNewTabOpen(shared.config.FAQ_LINK);
   });
   
-  it('should offer help link 2', function() {
+  it('should link to the User\'s Guide wiki page', function() {
     landing.clickHelpLink(2);
     helpers.expectNewTabOpen(shared.config.USER_GUIDE_LINK);
   });
   
-  it('should offer help link 3', function() {
+  it('should link to the Developer\'s Guide wiki page', function() {
     landing.clickHelpLink(3);
     helpers.expectNewTabOpen(shared.config.DEV_GUIDE_LINK);
   });
   
-  it('should offer help link 4', function() {
+  it('should link to the Acceptable Use Policy wiki page', function() {
     landing.clickHelpLink(4);
     helpers.expectNewTabOpen(shared.config.USE_POLICY_LINK);
   });
   
-  it('should offer API reference link', function() { 
+  it('should link user to the "Swagger UI" view', function() { 
     landing.clickApiLink(function() {
       expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/swagger');
     });
   });
   
-  it('should offer "Contact Us" link', function() { 
+  it('should link user to the "Contact Us" view', function() { 
     landing.clickContactUsLink(function() {
       expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/contact');
+    });
+  });
+  
+  describe('Landing Page View while Signed In', function() {
+    beforeAll(function() {
+      dashboard.get();
+    });
+    
+    afterAll(function() {
+      shared.signOut();
+    });
+      
+    it('should link user to dashboard', function() {
+      landing.clickDashboardLink();
+      dashboard.verify();
+    });
+    
+    it('should link user to catalog', function() {
+      landing.clickCatalogLink();
+      catalog.verify();
+    });
+    
+    it('should link user to create a new application', function() {
+      landing.clickCatalogAddLink();
+      addSpec.verify();
     });
   });
 });
