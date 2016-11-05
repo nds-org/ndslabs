@@ -20,6 +20,7 @@ var BTN_CHAT_ID = 'gitterBtn';
 var BTN_EMAIL_ID = 'emailBtn';
 var COMBO_TYPE_ID = 'typeField';
 var CHECK_ANON_ID = 'anonymousInput';
+var INPUT_MESSAGE_ID = 'messageField';
 var BTN_SUBMIT_ID = 'feedbackBtn';
 
 var forumBtn = function() {  return element(by.id(BTN_FORUM_ID)); };
@@ -28,6 +29,7 @@ var emailBtn = function() {  return element(by.id(BTN_EMAIL_ID)); };
 
 var feedbackTypeSelector = function() {  return element(by.id(COMBO_TYPE_ID)); };
 var feedbackAnonymousCheckbox = function() {  return element(by.id(CHECK_ANON_ID)); };
+var feedbackMessageInput = function() {  return element(by.id()); };
 
 var feedbackSubmitBtn = function() {  return element(by.id(BTN_SUBMIT_ID)); };
 
@@ -60,10 +62,22 @@ module.exports.toggleAnonymousCheckbox = function() {
   emailBtn().click();
 };
 
+// Make a selection in the Feedback Type dropdown
+module.exports.selectFeedbackType = function(index) {
+  /// TODO: How to interact with comboboxes?
+};
+
 // Click (toggle) the anonymous feedback checkbox
 module.exports.clickEmail = function() {
   feedbackAnonymousCheckbox().click();
 };
 
-// TODO: contact methods: gitter / group / e-mail
-// TODO: feedback inputs: type + anon + message
+// Send text to the Feedback Message input
+module.exports.enterFeedbackMessage = function(text) {
+  feedbackMessageInput().sendKeys(text);
+};
+
+// Click the Submit Feedback button
+module.exports.clickSubmitFeedback = function() {
+  feedbackSubmitBtn().click();
+};
