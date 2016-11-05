@@ -2,6 +2,8 @@
 
 "use strict"
 
+var fs = require('fs');
+
 // This module exports shared generic helper functions that do not reference particular page element
 module.exports = {};
 
@@ -10,6 +12,15 @@ module.exports = {};
 module.exports.sleep = function(ms) {
   var startTime = new Date().getTime();
   while(new Date().getTime() < startTime + ms) { /* noop */ }
+};
+
+// Save a screenshot of the browser's current state to the given file (helpful for failing tests)
+module.exports.saveScreenshotToFile = function(filename) {
+  browser.takeScreenshot().then(function (png) {
+    var stream = fs.createWriteStream(filename);
+    stream.write(new Buffer(png, 'base64'));
+    stream.end();
+  });
 };
 
 // Scroll to the given x,y coordinates, then execute the predicate function
@@ -44,20 +55,30 @@ module.exports.expectNewTabOpen = function(expectedUrl, leaveOpen) {
   });
 };
 
-// Misc setup to run before ALL test cases
+module.exports.selectDropdownbyNum = function (element, optionNum) {
+  if (optionNum){
+    var options = element.findElements(by.tagName('option'))   
+      .then(function(options){
+        options[optionNum].click();
+      });
+  }
+};
+
+// Misc shared setup to run before ALL test cases
 module.exports.beforeAll = function() {
   // Resize window (fixes "Element is not clickable at point (x,y)" in OSX)
   // See https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/2766
-  browser.driver.manage().window().setSize(1280, 1024);
+  //browser.driver.manage().window().setSize(1280, 1024);
+  browser.driver.manage().window().maximize();
 };
 
-// Misc setup to run before EACH test case
+// Misc shared setup to run before EACH test case
 module.exports.beforeEach = function() {  };
 
-// Misc setup to run after EACH test case
+// Misc shared setup to run after EACH test case
 module.exports.afterEach = function() {
   browser.ignoreSynchronization = false;
 };
 
-// Misc setup to run after ALL test cases
+// Misc shared setup to run after ALL test cases
 module.exports.afterAll = function() {  };

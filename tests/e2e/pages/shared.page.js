@@ -34,5 +34,9 @@ module.exports.config = {
   FAQ_LINK: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Frequently+Asked+Questions',
   USER_GUIDE_LINK: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/User%27s+Guide',
   DEV_GUIDE_LINK: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Developer%27s+Guide',
-  USE_POLICY_LINK: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Acceptable+Use+Policy'
+  USE_POLICY_LINK: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Acceptable+Use+Policy',
+  
+  FORUM_LINK: 'https://groups.google.com/forum/#!forum/ndslabs',
+  CHAT_LINK: 'https://gitter.im/nds-org/ndslabs',
+  EMAIL_LINK: 'mailto:' + browser.params['support-email'],
 };

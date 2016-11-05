@@ -34,8 +34,8 @@ exports.config = {
   suites: {
     // mixed-auth views
     landing: 'tests/e2e/landing.e2e.js',
-    swagger: 'test/e2e/swagger.e2e.js',
-    contact: 'test/e2e/contact.e2e.js',
+    swagger: 'tests/e2e/swagger.e2e.js',
+    help: 'tests/e2e/help.e2e.js',
     reset: 'tests/e2e/reset.e2e.js',
     
     // non-auth views
@@ -45,6 +45,6 @@ exports.config = {
     // auth-only views
     dashboard: 'tests/e2e/dashboard.e2e.js',
     catalog: 'tests/e2e/catalog.e2e.js',
-    addSpec: 'test/e2e/addSpec.e2e.js',
+    addSpec: 'tests/e2e/addSpec.e2e.js',
   }
 }
