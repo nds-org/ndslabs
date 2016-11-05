@@ -29,7 +29,7 @@ var emailBtn = function() {  return element(by.id(BTN_EMAIL_ID)); };
 
 var feedbackTypeSelector = function() {  return element(by.id(COMBO_TYPE_ID)); };
 var feedbackAnonymousCheckbox = function() {  return element(by.id(CHECK_ANON_ID)); };
-var feedbackMessageInput = function() {  return element(by.id()); };
+var feedbackMessageInput = function() {  return element(by.id(INPUT_MESSAGE_ID)); };
 
 var feedbackSubmitBtn = function() {  return element(by.id(BTN_SUBMIT_ID)); };
 
@@ -58,17 +58,18 @@ module.exports.clickChat = function() {
 };
 
 // Click the email button
-module.exports.toggleAnonymousCheckbox = function() {
+module.exports.clickEmail = function() {
   emailBtn().click();
 };
 
 // Make a selection in the Feedback Type dropdown
+// TODO: Can this be done without using the index?
 module.exports.selectFeedbackType = function(index) {
-  /// TODO: How to interact with comboboxes?
+  helpers.selectDropdownbyNum(feedbackTypeSelector(), index);
 };
 
 // Click (toggle) the anonymous feedback checkbox
-module.exports.clickEmail = function() {
+module.exports.toggleAnonymousCheckbox = function() {
   feedbackAnonymousCheckbox().click();
 };
 
