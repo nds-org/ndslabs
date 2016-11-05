@@ -9,7 +9,8 @@ angular
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
  
-.controller('HelpController', [ '$scope', '$timeout', 'NdsLabsApi', 'ProductName', function($scope, $timeout, NdsLabsApi, ProductName) {
+.controller('HelpController', [ '$scope', '$timeout', 'NdsLabsApi', 'ProductName', 'SupportEmail',
+    function($scope, $timeout, NdsLabsApi, ProductName, SupportEmail) {
   $scope.types = [
     { label: "Request Help", value: "help", placeholder: "Describe a specific scenario that is causing problems or preventing you from working in " + ProductName + "..." },
     { label: "Make a Wish", value: "wish", placeholder: "Describe a change or new feature you would like to see in " + ProductName + "..." },
@@ -42,7 +43,7 @@ angular
     $scope.links = [
       { id: "ggroup", label: "Google Group", url: contact.forum, icon: "fa-bullhorn", description: "Discuss with the support team and community" },
       { id: "gitter", label: "Gitter", url: contact.chat, icon: "fa-comments", description: "Chat with the support team and community" },
-      /* { id: "email", label: "E-mail", url:  "mailto:" + $scope.support.email, icon: "fa-message", description: "Account-related support" }, */
+      { id: "email", label: "E-mail", url:  "mailto:" + SupportEmail, icon: "fa-envelope", description: "Ask for support via free-form e-mail" },
     ];
   });
   
