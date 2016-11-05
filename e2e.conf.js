@@ -11,16 +11,19 @@ exports.config = {
    * Specify the parameters of the browsers to test
    */
   multiCapabilities:[
-    { 'browserName': 'chrome' }, // Working
+    // Working on Windows and OSX
+    { 'browserName': 'chrome' },
     
+    // Firefox: 46.0.1 and below supposedly work, latest does not
     // See http://stackoverflow.com/questions/38644703/org-openqa-selenium-firefox-notconnectedexception-when-running-selenium-from-com
     // { 'browserName': 'firefox' }, 
     
-    // OSX Only
-    // Untested
+    // Safari: has not been tested
+    // NOTE: OSX Only
     //{ 'browserName': 'safari' },
     
-    // Windows Only
+    // IE11: fails to connect to browser
+    // NOTE: Windows Only
     // See https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/6511
     // { 'browserName': 'internet explorer', 'version': '11' }, 
   ],
