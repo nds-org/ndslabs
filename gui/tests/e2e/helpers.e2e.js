@@ -43,8 +43,8 @@ module.exports.expectNewTabOpen = function(expectedUrl, leaveOpen) {
   
   // Retrieve all open window handles
   browser.getAllWindowHandles().then(function (handles) {
-    // Switch to new tab and verify that its URL is correct
-    browser.driver.switchTo().window(handles[1]);
+    // Switch to newest tab and verify that its URL is correct
+    browser.driver.switchTo().window(handles[handles.length - 1]);
     expect(browser.getCurrentUrl()).toBe(expectedUrl);
     
     if (!leaveOpen) {
