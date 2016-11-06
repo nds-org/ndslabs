@@ -52,8 +52,9 @@ describe('Labs Workbench Login View', function() {
   it('should allow logout', function() {
     dashboard.get(true);
     
-    // Sign out using helper function
-    shared.signOut();
+    // Sign out using the navbar
+      shared.navbar.expandAccountDropdown();
+      shared.navbar.clickSignOut();
     
     // We should be taken to the Landing Page View
     landing.verify();

@@ -2,15 +2,44 @@
 
 "use strict"
 
+// FIXME: change all of these to id selectors
+var clickBrandNav = function() {  return element(by.css('[ng-href="#/"]')); };
+var applicationsNav = function() {  return element(by.css('[ng-href="#/home"]')); };
+var catalogNav = function() {  return element(by.css('[ng-href="#/store"]')); };
+var filesNav = function() {  return element(by.css('[ng-click="launchFileManager()"]')); };
+
+var signupNav = function() {  return element(by.css('[ng-href="#/register"]')); };
+var signinNav = function() {  return element(by.css('[ng-href="#/login"]')); };
+
+var helpDropdown = function() {  return element(by.css('[class="dropdown-toggle"]')); };
+var apiReferenceNav = function() {  return element(by.css('[ng-href="#/swagger"]')); };
+var contactUsNav = function() {  return element(by.css('[ng-href="#/contact"]')); };
+
+// TODO: Other help links
+
 var accountDropdown = function() {  return element(by.css('[class="dropdown-toggle ng-binding"]')); };
+var changePasswordNav = function() {  return element(by.css('[ng-click="logout()"]')); };
 var logoutBtn = function() {  return element(by.css('[ng-click="logout()"]')); };
 
-module.exports.signOut = function() {
-  // TODO: change this to id selector
-  accountDropdown().click();
+module.exports.navbar = {
+  // Non-auth navs
+  clickSignIn: function() {  signinNav().click(); },
+  clickSignUp: function() {  signupNav().click(); },
   
-  // TODO: change this to id selector
-  logoutBtn().click();
+  // Help dropdown
+  expandHelpDropdown: function() {  accountDropdown().click(); },
+  clickApiReferenceNav: function() {  apiReferenceNav().click(); },
+  clickContactUsNav: function() {  contactUsNav().click(); },
+  
+  // Auth-only navs
+  clickApplicationsNav: function() {  applicationsNav().click(); },
+  clickCatalogNav: function() {  catalogNav().click(); },
+  clickFilesNav: function() {  filesNav().click(); },
+  
+  // Account dropdown (auth-only)
+  expandAccountDropdown: function() {  accountDropdown().click(); },
+  clickChangePassword: function() {  changePasswordNav.click(); },
+  clickSignOut: function() {  logoutBtn().click(); },
 };
 
 module.exports.config = {
