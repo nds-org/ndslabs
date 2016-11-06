@@ -1,77 +1,70 @@
-# NDSLabs Web Interface
+# NDS Labs Web Interface
 
-## Getting Started
-Building / modifying this code is not necessary unless you want to make modifications to the interface.
+## Prerequisites
+* [Git](https://git-scm.com/)
+* [Docker](https://www.docker.com/)
 
-Simply run the following command to retrieve a pre-built copy of the image:
+
+## Clone this Repository
+Clone the source repo onto your local machine:
 ```bash
-docker pull ndslabs/ndslabs-gui:latest
+git clone https://github.com/nds-org/ndslabs
+cd ndslabs/gui/
 ```
 
-## Modifying the GUI
-Several helper scripts are included to help you modify this code:
-* build.sh:     Builds the ndslabs/ndslabs-gui docker image.
-* release.sh:   Pushes a new release of the given tag and/or "latest".
-* start.sh:     Create a container from the ndslabs/ndslabs-gui image.
-* stop.sh:      Remove the running cloud9 / ndslabs-gui container(s).
-* swagger.sh:   Regenerate the REST API spec from Swagger.
 
-### build.sh
-Builds the ndslabs/ndslabs-gui docker image.
-
-Usage:
+## Building the Image
+The ndslabs/angular-ui image is built using the following command:
 ```bash
-./build.sh [-c] [-p]
+docker build -t ndslabs/angular-ui .
 ```
 
-Args:
-* -c: Clean (remove) the existing image before building the new one.
-* -p: Push the new image after building it.
 
-### release.sh
-Pushes a new release of the given tag and/or "latest".
+## Running the Image
+The ndslabs/angular-ui image is not supported in raw Docker, as we usually run it via [Kubernetes specs](https://github.com/nds-org/ndslabs-deploy-tools/tree/master/FILES.deploy-tools/usr/local/lib/ndslabs/ansible/roles/ndslabs-api-gui/templates).
 
-Usage:
+If you want to try to run it in Docker, it can be run using the following command:
 ```bash
-./release.sh [tagName] [-t]
+# Set these variables to point to a running API server instance
+APISERVER_HOST=
+APISERVER_PORT=
+APISERVER_PATH=
+docker run --name ndslabs-webui -it -d \
+           -p 80:8080 \
+           -e APISERVER_HOST=${APISERVER_HOST} \
+           -e APISERVER_PORT=${APISERVER_PORT} \
+           -e APISERVER_PATH=${APISERVER_PATH} \
+           ndslabs/angular-ui
 ```
 
-Args:
-* tagName: The name of the new tag to push in addition to "latest" (i.e. "1.0-alpha")
-* -t:      Specify this as a "test" release and skip pushing to "latest"
+NOTE: You may need to adjust the **CORS_ORIGIN_ADDR** of your API server in order to access it from this client, depending on your configuration.
 
-### start.sh
-Create a container from the ndslabs/ndslabs-gui image and, optionally, open an IDE allowing dynamic changes.
-This will remove the containers first, if they already exist.
 
-Usage:
+## Running the Development Environment
+For a cloud-based Node.js developer environment, you can run the following commands:
 ```bash
-./start.sh [-c] [-d|--dev]
+docker run --name cloud9 -it -d \
+           -p 8080:80 \
+           -v `pwd`:/workspace \
+           ndslabs/cloud9-nodejs
 ```
 
-Args:
-* -c:          (debug mode)       Run bash to open a console, instead of starting the http-server.
-* -d or --dev: (developer mode)   Start the container in developer mode instead.
+WARNING: It is not advised to run this on a publicly exposed port, as the built-in basic auth is broken.
 
-NOTE: -d will start an instance of the Cloud9 IDE, allowing you to modify the GUI on-the-fly.
 
-### stop.sh
-Remove the running cloud9 / ndslabs-gui container(s).
+## Regenerate Swagger API
+Regenerate the AngularJS REST API client code from a Swagger API spec
 
-Usage:
-```bash
-./stop.sh
-```
-
-### swagger.sh
-Regenerate the REST API spec from Swagger
+See [gui/swagger.sh]
 
 Usage:
 ```bash
 ./swagger.sh [URL]
 ```
 
-Args:
-* URL: The remote URL from which to download the swagger spec.
+If no URL is given, the spec from your local working copy of [apis/ndslabs.yaml] will be used instead.
 
-NOTE: If no URL is provided, the file locaated at ../apis/swagger-spec/ndslabs.json will be used instead.
+Args:
+* URL: An optional URL from which to download the swagger spec (must be in YAML format).
+
+NOTE: If no URL is provided, the file located at ../apis/swagger-spec/ndslabs.json will be used instead.
