@@ -31,8 +31,6 @@ Create `e2e.auth.json` alongside `e2e.conf.js`:
   "username": "",
   "password": "",
   "email": "",
-    
-  // Dummy credentials for signing up for a new Labs Workbench account
   "name": "John Doe",
   "organization": "NDS",
   "description": "Automated E2E testing of Labs Workbench",
@@ -50,6 +48,8 @@ Create `e2e.auth.json` alongside `e2e.conf.js`:
 * **username**: The username of an approved account to use to log in for the tests
 * **password**: The correct password of the above user's account
 * **email**: The e-mail address associated with the above user's account
+
+WARNING: The credentials supplied will be used for testing, during which applications will be created and deleted, started and stopped. You should register a special account to use for testing to avoid accidentally deleting relevant applications.
 
 ### Dummy User Info
 * **name**: The "Full Name" to enter when testing the SignUp view

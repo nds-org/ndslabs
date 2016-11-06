@@ -1,6 +1,6 @@
 /* global angular:false expect:false inject:false module:false element:false browser:false by:false */
 
-"use strict"
+'use strict';
 
 var fs = require('fs');
 
@@ -28,17 +28,19 @@ module.exports.scrollToAndThen = function(x, y, predicate) {
   return browser.executeScript('window.scrollTo(' + x.toString() + ',' + y.toString() + ');').then(predicate);
 };
 
-// Ensure that the desired input exists and is visible, then return it
-module.exports.getInput = function(selector) {
-  var input = element(selector);
-  expect(input.isPresent()).toBe(true);
-  expect(input.isDisplayed()).toBe(true);
-  return input;
+// Ensure that the desired element exists and is visible, then return it
+module.exports.expectElement = function(selector) {
+  var ele = element(selector);
+  if (ele.isPresent) { expect(ele.isPresent()).toBe(true); }
+  if (ele.isDisplayed) { expect(ele.isDisplayed()).toBe(true); }
+  if (ele.isEnabled) { expect(ele.isEnabled()).toBe(true); }
+  return ele;
 };
 
 // Check that a new tab is open and close the tab
 // If second param is false, the tab is left open
 module.exports.expectNewTabOpen = function(expectedUrl, leaveOpen) {
+  // This is required if our new page is not an AngularJS page
   browser.ignoreSynchronization = true;
   
   // Retrieve all open window handles
@@ -74,6 +76,10 @@ module.exports.selectDropdownbyNum = function (element, optionNum) {
 
 // Misc shared setup to run before ALL test cases
 module.exports.beforeAll = function() {
+  // Clear all cookies - this will ensure we are logged out at the start of our tests
+  // TODO: I haven't had any fail for this reason, but it seems like an edge case we should watch for
+  // browser.driver.manage().deleteAllCookies();
+  
   // Resize window (fixes "Element is not clickable at point (x,y)" in OSX)
   // See https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/2766
   //browser.driver.manage().window().setSize(1280, 1024);

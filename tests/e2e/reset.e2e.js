@@ -1,6 +1,6 @@
 /* global angular:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
 
-"use strict"
+'use strict';
 
 // Import shared PageObjects
 var helpers = require("./helpers.e2e.js");
@@ -28,6 +28,10 @@ describe('Labs Workbench Reset Password View', function() {
   });
   
   it('should verify page', function() {
+    
+  });
+  
+  describe('After Sign In', function() {
     
   });
 });
