@@ -43,11 +43,15 @@ module.exports.expectNewTabOpen = function(expectedUrl, leaveOpen) {
   
   // Retrieve all open window handles
   browser.getAllWindowHandles().then(function (handles) {
+    if (handles.length <= 1) {
+      return;
+    }
+    
     // Switch to newest tab and verify that its URL is correct
     browser.driver.switchTo().window(handles[handles.length - 1]);
     if (expectedUrl instanceof RegExp) {
       expect(browser.getCurrentUrl()).toMatch(expectedUrl);
-    else if (typeof expectedUrl === 'string') {
+    } else if (typeof expectedUrl === 'string') {
       expect(browser.getCurrentUrl()).toBe(expectedUrl);
     }
     

@@ -30,7 +30,7 @@ module.exports.verify = function() {
 // Navigate to the addSpec view
 module.exports.get = function(loggedIn) {
   dashboard.get(loggedIn);
-  dashboard.clickCatalogLink();
+  shared.navbar.clickCatalogNav();
   
   module.exports.verify();
 };

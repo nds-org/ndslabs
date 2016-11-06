@@ -31,8 +31,10 @@ module.exports.navbar = {
   clickHelpLink: function(index) {  helpLink(index).click(); },
   clickApiReferenceNav: function() {  apiReferenceNav().click(); },
   clickContactUsNav: function() {  contactUsNav().click(); },
+  
   clickSignIn: function() {  signinNav().click(); },
   clickSignUp: function() {  signupNav().click(); },
+  
   clickApplicationsNav: function() {  applicationsNav().click(); },
   clickCatalogNav: function() {  catalogNav().click(); },
   clickFilesNav: function() {  filesNav().click(); },

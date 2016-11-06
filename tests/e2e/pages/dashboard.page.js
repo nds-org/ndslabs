@@ -28,7 +28,7 @@ module.exports.verify = function() {
 module.exports.get = function(loggedIn) {
   if (loggedIn) {
     landing.get();
-    landing.clickDashboardLink();
+    shared.navbar.clickApplicationsNav();
   } else {
     login.get();
     login.enterUsername(TEST_USERNAME);
