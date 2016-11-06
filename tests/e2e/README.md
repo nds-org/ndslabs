@@ -5,9 +5,10 @@ See [Protractor](https://github.com/angular/protractor)
 # Goals
 * Test form validation
 * Test routing
-* Test against a live running instance
+* Test against a live running instance (API + UI)
 * Test live application in a real browser
-* Test using mulstiple browsers
+* Test using multiple browsers
+* Test performance
 
 # Prerequisites
 * [Git](https://git-scm.com/)
@@ -101,6 +102,14 @@ This will pop open a web browser (or multiple browsers) to run your tests.
 The test browsers should close automatically once your test suite(s) have concluded.
 
 Your console will print the results of running your e2e tests.
+
+### Suites
+All suites are run by default.
+
+To run only particular suites, you can pass in the `--suite` flag:
+```bash
+protractor e2e.conf.js --suite=dashboard,catalog,addSpec
+```
 
 # TODO
 * Expand test specs to encompass more use cases
