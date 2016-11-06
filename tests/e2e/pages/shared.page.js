@@ -28,6 +28,7 @@ var logoutBtn = function() {  return element(by.id('logoutBtn')); };
 module.exports.navbar = {
   clickBrandNav: function() {  clickBrandNav().click(); },
   expandHelpDropdown: function() {  helpDropdown().click(); },
+  clickHelpLink: function(index) {  helpLink(index).click(); },
   clickApiReferenceNav: function() {  apiReferenceNav().click(); },
   clickContactUsNav: function() {  contactUsNav().click(); },
   clickSignIn: function() {  signinNav().click(); },
