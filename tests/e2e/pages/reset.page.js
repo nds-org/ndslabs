@@ -13,19 +13,24 @@ var login = require('./login.page.js');
 var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 
 var PAGE_TITLE = 'Reset Password';
-var PAGE_ROUTE = TEST_HOSTNAME + '/recover';
+var PAGE_ROUTE = /^https\:\/\/.*\/\#\/recover(\?t=.*)?$/;
 
 // Ensure that we are on the correct page
 module.exports.verify = function() { 
-  expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
+  expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 
 // Navigate to the Reset Password view
-module.exports.get = function() {
-  login.get();
-  login.clickForgotPasswordLink();
-  
+module.exports.get = function(loggedIn) {
+  if (loggedIn) {
+    shared.navbar.expandAccountDropdown();
+    shared.navbar.clickChangePasswordNav();
+  } else {
+    login.get();
+    login.clickForgotPasswordLink();
+  }
+    
   module.exports.verify();
 };
 
