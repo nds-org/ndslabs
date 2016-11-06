@@ -86,7 +86,8 @@ describe('Labs Workbench Landing Page View', function() {
     });
     
     afterAll(function() {
-      shared.signOut();
+      shared.navbar.expandAccountDropdown();
+      shared.navbar.clickSignOut();
       landing.verify();
     });
       

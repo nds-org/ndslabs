@@ -21,7 +21,8 @@ describe('Labs Workbench Catalog View', function() {
   
   afterEach(function() { 
     helpers.afterEach();
-    shared.signOut();
+    shared.navbar.expandAccountDropdown();
+    shared.navbar.clickSignOut();
   });
   
   afterAll(function() { 

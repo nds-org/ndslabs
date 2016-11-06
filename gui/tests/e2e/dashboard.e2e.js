@@ -21,7 +21,8 @@ describe('Labs Workbench Dashboard View', function() {
   
   afterEach(function() { 
     helpers.afterEach();
-    shared.signOut();
+    shared.navbar.expandAccountDropdown();
+    shared.navbar.clickSignOut();
   });
   
   afterAll(function() { 
