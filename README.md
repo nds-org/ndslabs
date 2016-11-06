@@ -55,14 +55,14 @@ WARNING: It is not advised to run this on a publicly exposed port, as the built-
 ## Regenerate Swagger API
 Regenerate the AngularJS REST API client code from a Swagger API spec
 
-See [gui/swagger.sh]
+See [swagger.sh](swagger.sh)
 
 Usage:
 ```bash
 ./swagger.sh [URL]
 ```
 
-If no URL is given, the spec from your local working copy of [apis/ndslabs.yaml] will be used instead.
+If no URL is given, the spec from your local working copy of [../apis/swagger-spec/ndslabs.yaml](../apis/swagger-spec/ndslabs.yaml) will be used instead.
 
 Args:
 * URL: An optional URL from which to download the swagger spec (must be in YAML format).
