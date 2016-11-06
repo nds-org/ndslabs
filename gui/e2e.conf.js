@@ -34,6 +34,7 @@ exports.config = {
   suites: {
     // mixed-auth views
     landing: 'tests/e2e/landing.e2e.js',
+    navbar: 'tests/e2e/navbar.e2e.js',
     swagger: 'tests/e2e/swagger.e2e.js',
     help: 'tests/e2e/help.e2e.js',
     reset: 'tests/e2e/reset.e2e.js',

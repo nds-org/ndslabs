@@ -2,43 +2,41 @@
 
 "use strict"
 
-// FIXME: change all of these to id selectors
-var clickBrandNav = function() {  return element(by.css('[ng-href="#/"]')); };
-var applicationsNav = function() {  return element(by.css('[ng-href="#/home"]')); };
-var catalogNav = function() {  return element(by.css('[ng-href="#/store"]')); };
-var filesNav = function() {  return element(by.css('[ng-click="launchFileManager()"]')); };
+// Always visible
+var clickBrandNav = function() {  return element(by.id('navbarBrand')); };
 
-var signupNav = function() {  return element(by.css('[ng-href="#/register"]')); };
-var signinNav = function() {  return element(by.css('[ng-href="#/login"]')); };
+// Account dropdown (always visible)
+var helpDropdown = function() {  return element(by.id('helpDropdown')); };
+var helpLink = function(index) {  return element(by.id('helpLink' + index + 'Nav')); };
+var apiReferenceNav = function() {  return element(by.id('apiNav')); };
+var contactUsNav = function() {  return element(by.id('contactUsNav')); };
 
-var helpDropdown = function() {  return element(by.css('[class="dropdown-toggle"]')); };
-var apiReferenceNav = function() {  return element(by.css('[ng-href="#/swagger"]')); };
-var contactUsNav = function() {  return element(by.css('[ng-href="#/contact"]')); };
+// Non-auth
+var signupNav = function() {  return element(by.id('signupNav')); };
+var signinNav = function() {  return element(by.id('signinNav')); };
 
-// TODO: Other help links
+// Auth-only
+var applicationsNav = function() {  return element(by.id('applicationsNav')); };
+var catalogNav = function() {  return element(by.id('catalogNav')); };
+var filesNav = function() {  return element(by.id('filesNav')); };
 
-var accountDropdown = function() {  return element(by.css('[class="dropdown-toggle ng-binding"]')); };
-var changePasswordNav = function() {  return element(by.css('[ng-click="logout()"]')); };
-var logoutBtn = function() {  return element(by.css('[ng-click="logout()"]')); };
+// Account dropdown (auth-only)
+var accountDropdown = function() {  return element(by.id('accountDropdown')); };
+var changePasswordNav = function() {  return element(by.id('resetPasswordNav')); };
+var logoutBtn = function() {  return element(by.id('logoutBtn')); };
 
 module.exports.navbar = {
-  // Non-auth navs
-  clickSignIn: function() {  signinNav().click(); },
-  clickSignUp: function() {  signupNav().click(); },
-  
-  // Help dropdown
-  expandHelpDropdown: function() {  accountDropdown().click(); },
+  clickBrandNav: function() {  clickBrandNav().click(); },
+  expandHelpDropdown: function() {  helpDropdown().click(); },
   clickApiReferenceNav: function() {  apiReferenceNav().click(); },
   clickContactUsNav: function() {  contactUsNav().click(); },
-  
-  // Auth-only navs
+  clickSignIn: function() {  signinNav().click(); },
+  clickSignUp: function() {  signupNav().click(); },
   clickApplicationsNav: function() {  applicationsNav().click(); },
   clickCatalogNav: function() {  catalogNav().click(); },
   clickFilesNav: function() {  filesNav().click(); },
-  
-  // Account dropdown (auth-only)
   expandAccountDropdown: function() {  accountDropdown().click(); },
-  clickChangePassword: function() {  changePasswordNav.click(); },
+  clickChangePasswordNav: function() {  changePasswordNav().click(); },
   clickSignOut: function() {  logoutBtn().click(); },
 };
 

@@ -9,6 +9,7 @@ var shared = require('./pages/shared.page.js');
 var login = require('./pages/login.page.js');
 var landing = require('./pages/landing.page.js');
 var dashboard = require('./pages/dashboard.page.js');
+var reset = require('./pages/reset.page.js');
 var signup = require('./pages/signup.page.js');
 
 var TEST_USERNAME = shared.config.TEST_USERNAME;
@@ -17,15 +18,18 @@ var TEST_INVALID_PASSWORD_MISMATCH = shared.config.TEST_INVALID_PASSWORD_MISMATC
 
 // login.e2e.js
 describe('Labs Workbench Login View', function() {
-  beforeEach(function() { helpers.beforeEach(); });
   beforeAll(function() { helpers.beforeAll(); });
+  
+  beforeEach(function() { 
+    helpers.beforeEach(); 
+    login.get();
+  });
+  
   afterEach(function() { helpers.afterEach(); });
   afterAll(function() { helpers.afterAll(); });
   
   // Do not allow user past login view with invalid credentials
   it('should deny invalid login', function() {
-    login.get();
-    
     // Attempt to sign in with invalid credentials
     login.enterUsername(TEST_USERNAME);
     login.enterPassword(TEST_INVALID_PASSWORD_MISMATCH);
@@ -37,8 +41,6 @@ describe('Labs Workbench Login View', function() {
   
   // Allow user past login view with valid credentials
   it('should accept valid login', function() {
-    login.get();
-    
     // Attempt to sign in with valid credentials
     login.enterUsername(TEST_USERNAME);
     login.enterPassword(TEST_PASSWORD);
@@ -46,17 +48,20 @@ describe('Labs Workbench Login View', function() {
     
     // We should be taken to the Dashboard View
     dashboard.verify();
+    
+    // Log out to reset test state
+    shared.navbar.expandAccountDropdown();
+    shared.navbar.clickSignOut();
+    landing.verify();
   });
   
-  // Allow user to logout
-  it('should allow logout', function() {
-    dashboard.get(true);
-    
-    // Sign out using the navbar
-      shared.navbar.expandAccountDropdown();
-      shared.navbar.clickSignOut();
-    
-    // We should be taken to the Landing Page View
-    landing.verify();
+  it('should link to the Reset Password view', function() {
+    login.clickForgotPasswordLink();
+    reset.verify();
+  });
+  
+  it('should link to the Sign Up view', function() {
+    login.clickRequestAccessLink();
+    signup.verify();
   });
 });

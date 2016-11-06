@@ -51,15 +51,7 @@ describe('Labs Workbench Contact Us View', function() {
   });
   
   
-  describe('Landing Page View while Signed In', function() {
-    // FIXME: How to do verify error-handling with PageObjects
-    var submitBtn = function() {  return element(by.css('[ng-click="submitFeedback()"]')); };
-    
-    var expectBtn = function(enabled) {
-      expect(submitBtn().isDisplayed()).toBe(true);
-      expect(submitBtn().isEnabled()).toBe(enabled ? true : false);  // Handles null / undefined / etc
-    };
-    
+  describe('After Sign In', function() {
     beforeAll(function() {
       dashboard.get();
     });
@@ -69,6 +61,15 @@ describe('Labs Workbench Contact Us View', function() {
       shared.navbar.clickSignOut();
       landing.verify();
     });
+    
+    // FIXME: How to do verify error-handling with PageObjects
+    var submitBtn = function() {  return element(by.css('[ng-click="submitFeedback()"]')); };
+    
+    var expectBtn = function(enabled) {
+      expect(submitBtn().isDisplayed()).toBe(true);
+      expect(submitBtn().isEnabled()).toBe(enabled ? true : false);  // Handles null / undefined / etc
+    };
+    
   
     it('should prevent the user from sending an empty message', function() {
       expectBtn(false);
