@@ -65,7 +65,8 @@ describe('Labs Workbench Contact Us View', function() {
     });
     
     afterAll(function() {
-      shared.signOut();
+      shared.navbar.expandAccountDropdown();
+      shared.navbar.clickSignOut();
       landing.verify();
     });
   
