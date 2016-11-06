@@ -10,7 +10,7 @@ var help = require('./pages/help.page.js');
 var dashboard = require('./pages/dashboard.page.js');
 var landing = require('./pages/landing.page.js');
 
-var testMessage = function(type) { 
+var generateTestMessage = function(type) { 
   return 'This is a test of the "' + type + '" feedback submission system.'
       + ' No help is being requested. Please go about your normal business. I repeat, this is only a test.'; 
 };
@@ -70,7 +70,6 @@ describe('Labs Workbench Contact Us View', function() {
       expect(submitBtn().isEnabled()).toBe(enabled ? true : false);  // Handles null / undefined / etc
     };
     
-  
     it('should prevent the user from sending an empty message', function() {
       expectBtn(false);
       
@@ -81,11 +80,11 @@ describe('Labs Workbench Contact Us View', function() {
     it('should allow the user to send a help request', function() {
       // This should be a noop, as 'Request Help' is selected by default
       help.selectFeedbackType(0); 
-      help.enterFeedbackMessage(testMessage('Request Help'));
-      helpers.sleep(3000);
+      help.enterFeedbackMessage(generateTestMessage('Request Help'));
+      
       expectBtn(true);
       
-      // FIXME: How to do verify support e-mails without breaking the PageObjects pattern
+      // FIXME: How to verify support e-mails without breaking the PageObjects pattern?
       //help.clickSubmitFeedback();
     });
   });

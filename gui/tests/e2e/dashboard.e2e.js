@@ -6,27 +6,30 @@
 var helpers = require("./helpers.e2e.js");
 var shared = require("./pages/shared.page.js");
 
+var landing = require('./pages/landing.page.js');
 var dashboard = require('./pages/dashboard.page.js');
 
 // dashboard.e2e.js
 describe('Labs Workbench Dashboard View', function() {
   beforeAll(function() { 
     helpers.beforeAll();
+    dashboard.get();
   });
   
   beforeEach(function() {
     helpers.beforeEach(); 
-    dashboard.get(false);
+    dashboard.get(true);
   });
   
   afterEach(function() { 
     helpers.afterEach();
-    shared.navbar.expandAccountDropdown();
-    shared.navbar.clickSignOut();
   });
   
   afterAll(function() { 
     helpers.afterAll();
+    shared.navbar.expandAccountDropdown();
+    shared.navbar.clickSignOut();
+    landing.verify();
   });
   
   it('should verify page', function() {
