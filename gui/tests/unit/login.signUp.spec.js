@@ -1,5 +1,7 @@
 /* global angular:false expect:false inject:false module:false */
 
+'use strict';
+
 describe('SignUpController', function() {
   // Inject ndslabs module before each test
   beforeEach(module('ndslabs'));
@@ -14,7 +16,7 @@ describe('SignUpController', function() {
   var TEST_PASSWORD = '123456';
   var TEST_UNMATCHED_PASSWORD = 'Not The Same Password';
   var TEST_EMAIL = 'test@user.com';
-  var TEST_ORGANIZATION = 'NDS'
+  var TEST_ORGANIZATION = 'NDS';
   var TEST_DESCRIPTION = 'Running unit tests against Labs Workbench';
 
   // Inject the $controller service, initialize controller and $scope before each test

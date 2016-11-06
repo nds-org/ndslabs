@@ -1,6 +1,6 @@
 /* global angular:false expect:false inject:false module:false element:false browser:false by:false */
 
-"use strict"
+'use strict';
 
 module.exports = {}
 
@@ -15,7 +15,9 @@ var PAGE_TITLE = 'Labs Workbench Dashboard';
 var PAGE_ROUTE = shared.config.TEST_HOSTNAME + '/home';
 
 var LINK_CATALOG_ID = 'catalogLink';
+var HELPERTEXT_DASHBOARD_ID = 'dashHelperText';
 
+var helperText = function() {  return element(by.id(HELPERTEXT_DASHBOARD_ID)); }
 var catalogLink = function() {  return element(by.id(LINK_CATALOG_ID)); };
 
 // Ensure we are on the dashboard page
@@ -37,6 +39,10 @@ module.exports.get = function(loggedIn) {
   }
   
   module.exports.verify();
+};
+
+module.exports.isHelperTextPresent = function() {
+  return helperText() && helperText().isPresent();
 };
 
 module.exports.clickCatalogLink = function() {

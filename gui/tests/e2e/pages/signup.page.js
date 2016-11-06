@@ -1,6 +1,6 @@
 /* global angular:false expect:false inject:false module:false element:false browser:false by:false */
 
-"use strict"
+'use strict';
 
 module.exports = {};
 
@@ -26,13 +26,13 @@ var INPUT_PASSWORD_ID = 'password';
 var INPUT_CONFIRM_PASSWORD_ID = 'passwordConf';
 var LINK_USE_POLICY_ID = 'usePolicyLink';
 
-var fullNameInput = function() {  return helpers.getInput(by.id(INPUT_FULLNAME_ID)); };
-var emailInput = function() {  return helpers.getInput(by.id(INPUT_EMAIL_ID)); };
-var organizationInput = function() {  return helpers.getInput(by.id(INPUT_ORGANIZATION_ID)); };
-var descriptionInput = function() {  return helpers.getInput(by.id(INPUT_DESCRIPTION_ID)); };
-var usernameInput = function() {  return helpers.getInput(by.id(INPUT_USERNAME_ID)); };
-var passwordInput = function() {  return helpers.getInput(by.id(INPUT_PASSWORD_ID)); };
-var passwordConfirmInput = function() {  return helpers.getInput(by.id(INPUT_CONFIRM_PASSWORD_ID)); };
+var fullNameInput = function() {  return element(by.id(INPUT_FULLNAME_ID)); };
+var emailInput = function() {  return element(by.id(INPUT_EMAIL_ID)); };
+var organizationInput = function() {  return element(by.id(INPUT_ORGANIZATION_ID)); };
+var descriptionInput = function() {  return element(by.id(INPUT_DESCRIPTION_ID)); };
+var usernameInput = function() {  return element(by.id(INPUT_USERNAME_ID)); };
+var passwordInput = function() {  return element(by.id(INPUT_PASSWORD_ID)); };
+var passwordConfirmInput = function() {  return element(by.id(INPUT_CONFIRM_PASSWORD_ID)); };
 
 var usePolicyLink = function() {  return element(by.id(LINK_USE_POLICY_ID)); };
 

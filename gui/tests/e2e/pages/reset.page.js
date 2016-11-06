@@ -1,6 +1,6 @@
 /* global angular:false expect:false inject:false module:false element:false browser:false by:false */
 
-"use strict"
+'use strict';
 
 module.exports = {};
 
@@ -15,10 +15,31 @@ var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 var PAGE_TITLE = 'Reset Password';
 var PAGE_ROUTE = /^https\:\/\/.*\/\#\/recover(\?t=.*)?$/;
 
-// Ensure that we are on the correct page
-module.exports.verify = function() { 
+var INPUT_USERNAME_ID = 'accountId';
+var HELPERTEXT_EMAIL_SENT_ID = 'emailSentHelperText';
+var INPUT_NEW_PASSWORD_ID = 'password';
+var INPUT_NEW_PASSWORD_CONFIRMATION_ID = 'passwordConf';
+var HELPERTEXT_PASS_CHANGED_ID = 'passwordChangedHelperText';
+
+var usernameInput = function() {  return element(by.id(INPUT_USERNAME_ID)); };
+var emailSentHelperText = function() {  return element(by.id(HELPERTEXT_EMAIL_SENT_ID)); };
+var newPasswordInput = function() {  return element(by.id(INPUT_NEW_PASSWORD_ID)); };
+var newPasswordConfirmationInput = function() {  return element(by.id(INPUT_NEW_PASSWORD_CONFIRMATION_ID)); };
+var passwordChangedHelperText = function() {  return element(by.id(HELPERTEXT_PASS_CHANGED_ID)); };
+
+
+// Ensure that everything looks correct on the page, provided the given state parameters
+module.exports.verify = function(showHelperText, loggedIn) { 
   expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
+  
+  if (showHelperText) {
+    if (loggedIn) {
+      helpers.expectElement(passwordChangedHelperText());
+    } else {
+      
+    }
+  }
 };
 
 // Navigate to the Reset Password view
@@ -34,14 +55,14 @@ module.exports.get = function(loggedIn) {
   module.exports.verify();
 };
 
-/**
- * Insert private member vars here for page element IDs
- */
+module.exports.enterUsername = function(text) {
+  usernameInput().sendKeys(text);
+};
 
-/**
- * Insert private Getter functions here for page elements
- */
+module.exports.enterNewPassword = function(text) {
+  newPasswordInput().sendKeys(text);
+};
 
-/**
- * Insert public Getter functions here for user interactions
- */
+module.exports.enterNewPasswordConfirmation = function(text) {
+  newPasswordConfirmationInput().sendKeys(text);
+};

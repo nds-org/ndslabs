@@ -1,6 +1,6 @@
 /* global angular:false expect:false inject:false module:false element:false browser:false by:false */
 
-"use strict"
+'use strict';
 
 module.exports = {};
 
@@ -10,15 +10,13 @@ var shared = require('./shared.page.js');
 
 var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 
-// TODO: How to handle "service name" in title?
-// TODO: How to handle "stackServiceId" in url?
-var PAGE_TITLE = 'Service Console: ';
-var PAGE_ROUTE = TEST_HOSTNAME + '/home/id/console';
+var PAGE_TITLE = /Service Console: .*/;
+var PAGE_ROUTE = /https\:\/\/.*\/\#\/home\/.*\/console/;
 
 // Ensure that we are on the correct page
 module.exports.verify = function() { 
-  expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
-  expect(browser.getTitle()).toEqual(PAGE_TITLE);
+  expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
+  expect(browser.getTitle()).toMatch(PAGE_TITLE);
 };
 
 module.exports.get = function() {

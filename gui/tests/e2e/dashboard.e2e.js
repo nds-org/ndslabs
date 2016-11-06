@@ -1,6 +1,6 @@
 /* global angular:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
 
-"use strict"
+'use strict';
 
 // Import shared PageObjects
 var helpers = require("./helpers.e2e.js");
@@ -8,6 +8,7 @@ var shared = require("./pages/shared.page.js");
 
 var landing = require('./pages/landing.page.js');
 var dashboard = require('./pages/dashboard.page.js');
+var catalog = require('./pages/catalog.page.js');
 
 // dashboard.e2e.js
 describe('Labs Workbench Dashboard View', function() {
@@ -32,7 +33,9 @@ describe('Labs Workbench Dashboard View', function() {
     landing.verify();
   });
   
-  it('should verify page', function() {
-    
+  // How to test up for test? Is it safe to just delete applications?
+  it('should link to the catalog page if no applications are present', function() {
+    dashboard.clickCatalogLink();
+    catalog.verify();
   });
 });

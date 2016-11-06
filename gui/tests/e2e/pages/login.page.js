@@ -1,6 +1,6 @@
 /* global angular:false expect:false inject:false module:false element:false browser:false by:false */
 
-"use strict"
+'use strict';
 
 module.exports = {};
 
@@ -25,8 +25,8 @@ var LINK_FORGOT_PASSWORD_ID = 'forgotPasswordLink';
 
 // TODO: change this to id selector
 var loginBtn = function() {  return element(by.css('[ng-click="login()"]')); };
-var usernameInput = function() { return helpers.getInput(by.id(INPUT_USERNAME_ID)); };
-var passwordInput = function() {  return helpers.getInput(by.id(INPUT_PASSWORD_ID)); };
+var usernameInput = function() { return element(by.id(INPUT_USERNAME_ID)); };
+var passwordInput = function() {  return element(by.id(INPUT_PASSWORD_ID)); };
 
 var requestAccessLink = function() {  return element(by.id(LINK_REQUEST_ACCESS_ID)); };
 var forgotPasswordLink = function() {  return element(by.id(LINK_FORGOT_PASSWORD_ID)); };
@@ -39,7 +39,7 @@ module.exports.verify = function() {
 
 module.exports.get = function() {
   landing.get();
-  landing.clickSignIn();
+  shared.navbar.clickSignIn();
   module.exports.verify();
 };
 
@@ -50,7 +50,7 @@ module.exports.enterUsername = function(text) {
  module.exports.enterPassword = function(text) {
   passwordInput().sendKeys(text);
 };
-  
+
 module.exports.clickLogin = function() {
   loginBtn().click();
 };

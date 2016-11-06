@@ -1,6 +1,6 @@
 /* global angular:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
 
-"use strict"
+'use strict';
 
 // Import shared PageObjects
 var helpers = require("./helpers.e2e.js");
@@ -154,10 +154,10 @@ describe('Labs Workbench Navbar', function() {
     });
     
     // FIXME: Figure out how to handle basic auth via protractor
-    it('should allow the user to launch the file manager and take them to it', function() {
+    /*it('should allow the user to launch the file manager and take them to it', function() {
       //shared.navbar.clickFilesNav();
-      //helpers.expectNewTabOpen(/https\:\/\/.*\-cloudcmd\..*/);
-    });
+      //helpers.expectNewTabOpen(/^https\:\/\/.*\-cloudcmd\.$/);
+    });*/
     
     it('should link to the change password view', function() {
       shared.navbar.expandAccountDropdown();

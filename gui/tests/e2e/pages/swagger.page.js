@@ -1,6 +1,6 @@
 /* global angular:false expect:false inject:false module:false element:false browser:false by:false */
 
-"use strict"
+'use strict';
 
 module.exports = {};
 
@@ -25,7 +25,8 @@ module.exports.verify = function() {
 
 module.exports.get = function() {
   landing.get();
-  landing.clickApiLink();
+  shared.navbar.expandHelpDropdown();
+  shared.navbar.clickApiReferenceNav();
 	
   module.exports.verify();
 };

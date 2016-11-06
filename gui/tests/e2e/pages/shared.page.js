@@ -1,6 +1,6 @@
 /* global angular:false expect:false inject:false module:false element:false browser:false by:false */
 
-"use strict"
+'use strict';
 
 // Always visible
 var clickBrandNav = function() {  return element(by.id('navbarBrand')); };

@@ -147,24 +147,24 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   
   // Start with the protocol
   if (ApiSecure) {
-    ApiUri.api = 'https://' + ApiHost
-    ApiUri.ws = 'wss://' + ApiHost
+    ApiUri.api = 'https://' + ApiHost;
+    ApiUri.ws = 'wss://' + ApiHost;
   } else {
-    ApiUri.api = 'http://' + ApiHost
-    ApiUri.ws = 'ws://' + ApiHost
+    ApiUri.api = 'http://' + ApiHost;
+    ApiUri.ws = 'ws://' + ApiHost;
   }
   
   // Add on the port suffix, if applicable
   if (ApiPort) {
-    var portSuffix = ':' + ApiPort  
+    var portSuffix = ':' + ApiPort;  
     
-    ApiUri.api += portSuffix
-    ApiUri.ws += portSuffix
+    ApiUri.api += portSuffix;
+    ApiUri.ws += portSuffix;
   }
   
   // Add on the path suffix, if applicable
-   ApiUri.api += ApiPath
-   ApiUri.ws += ApiPath + WebsocketPath
+   ApiUri.api += ApiPath;
+   ApiUri.ws += ApiPath + WebsocketPath;
   
   // Instantiate a new client for the ApiServer using our newly built uri
   return new ApiServer(ApiUri.api);
