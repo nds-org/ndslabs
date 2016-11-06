@@ -32,6 +32,36 @@ describe('Labs Workbench Navbar', function() {
     landing.verify();
   });
   
+  it('should link to the Feature Overview wiki page', function() {
+    shared.navbar.expandHelpDropdown();
+    shared.navbar.clickHelpLink(0);
+    helpers.expectNewTabOpen(shared.config.FEATURE_OVERVIEW_LINK);
+  });
+  
+  it('should link to the F.A.Q. wiki page', function() {
+    shared.navbar.expandHelpDropdown();
+    shared.navbar.clickHelpLink(1);
+    helpers.expectNewTabOpen(shared.config.FAQ_LINK);
+  });
+  
+  it('should link to the User\'s Guide wiki page', function() {
+    shared.navbar.expandHelpDropdown();
+    shared.navbar.clickHelpLink(2);
+    helpers.expectNewTabOpen(shared.config.USER_GUIDE_LINK);
+  });
+  
+  it('should link to the Developer\'s Guide wiki page', function() {
+    shared.navbar.expandHelpDropdown();
+    shared.navbar.clickHelpLink(3);
+    helpers.expectNewTabOpen(shared.config.DEV_GUIDE_LINK);
+  });
+  
+  it('should link to the Acceptable Use Policy wiki page', function() {
+    shared.navbar.expandHelpDropdown();
+    shared.navbar.clickHelpLink(4);
+    helpers.expectNewTabOpen(shared.config.USE_POLICY_LINK);
+  });
+  
   it('should link to the api reference view', function() {
     shared.navbar.expandHelpDropdown();
     shared.navbar.clickApiReferenceNav();
@@ -70,6 +100,36 @@ describe('Labs Workbench Navbar', function() {
       shared.navbar.clickBrandNav();
       landing.verify();
     });
+  
+    it('should link to the Feature Overview wiki page', function() {
+      shared.navbar.expandHelpDropdown();
+      shared.navbar.clickHelpLink(0);
+      helpers.expectNewTabOpen(shared.config.FEATURE_OVERVIEW_LINK);
+    });
+    
+    it('should link to the F.A.Q. wiki page', function() {
+      shared.navbar.expandHelpDropdown();
+      shared.navbar.clickHelpLink(1);
+      helpers.expectNewTabOpen(shared.config.FAQ_LINK);
+    });
+    
+    it('should link to the User\'s Guide wiki page', function() {
+      shared.navbar.expandHelpDropdown();
+      shared.navbar.clickHelpLink(2);
+      helpers.expectNewTabOpen(shared.config.USER_GUIDE_LINK);
+    });
+    
+    it('should link to the Developer\'s Guide wiki page', function() {
+      shared.navbar.expandHelpDropdown();
+      shared.navbar.clickHelpLink(3);
+      helpers.expectNewTabOpen(shared.config.DEV_GUIDE_LINK);
+    });
+    
+    it('should link to the Acceptable Use Policy wiki page', function() {
+      shared.navbar.expandHelpDropdown();
+      shared.navbar.clickHelpLink(4);
+      helpers.expectNewTabOpen(shared.config.USE_POLICY_LINK);
+    });
     
     it('should link to the api reference view', function() {
       shared.navbar.expandHelpDropdown();
@@ -93,9 +153,10 @@ describe('Labs Workbench Navbar', function() {
       catalog.verify();
     });
     
+    // FIXME: How to verify this works correctly? URL changes everytime
     it('should allow the user to launch the file manager and take them to it', function() {
-      //shared.navbar.clickFilesNav();
-      // How to verify this works correctly? URL changes everytime
+      shared.navbar.clickFilesNav();
+      helpers.expectNewTabOpen(/https\:\/\/.*\-cloudcmd\..*/);
     });
     
     it('should link to the change password view', function() {
