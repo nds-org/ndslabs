@@ -22,21 +22,45 @@ git clone https://github.com/nds-org/ndslabs
 cd ndslabs/gui/
 ```
 
-## Create an e2e.auth.js file
-Create `e2e.auth.js` alongside `e2e.conf.js`:
+## Create an e2e.auth.json file
+Create `e2e.auth.json` alongside `e2e.conf.js`:
 ```javascript
 {
-    "hostname": "",
-    "username": "",
-    "password": "",
+  "hostname": "",
+  "username": "",
+  "password": "",
+  "email": "",
+    
+  // Dummy credentials for signing up for a new Labs Workbench account
+  "name": "John Doe",
+  "organization": "NDS",
+  "description": "Automated E2E testing of Labs Workbench",
+  "email-alternative": "",
+  "username-alternative": "",
+  "support-email": ""
 }
 ```
 
+### Server Info
 * **hostname**: The Labs Workbench instance to run the tests against
+* **support-email**: The SUPPORT_EMAIL asociated with this instance of the Labs Workbench API/UI
+
+### Approved User Info
 * **username**: The username of an approved account to use to log in for the tests
 * **password**: The correct password of the above user's account
+* **email**: The e-mail address associated with the above user's account
+
+### Dummy User Info
+* **name**: The "Full Name" to enter when testing the SignUp view
+* **organization**: The "Organization" to enter when testing the SignUp view
+* **description**: The "Description" to enter when testing the SignUp view
+* **email-alternative**: The "E-mail Address" to enter when testing the SignUp view (must not be registered)
+* **username-alternative**: The "Username" to enter when testing the SignUp view (must not be registered)
+
+NOTE: The approved account's password will be reused during the dummy account's testing of the SignUp view.
 
 WARNING: This file should **not** be checked into source control.
+
 
 # Node.js in Docker
 ```bash
