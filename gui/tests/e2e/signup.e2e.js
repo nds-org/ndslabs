@@ -46,13 +46,17 @@ describe('Labs Workbench Sign Up View', function() {
   var submitBtn = function() {  return element(by.css('[ng-click="signUp(newProject)"]')); };
   
   var expectBtn = function(enabled) {
-    expect(submitBtn().isDisplayed()).toBe(true);
-    expect(submitBtn().isEnabled()).toBe(enabled ? true : false);  // Handles null / undefined / etc
+    helpers.scrollToAndThen(0, 10000, function() {
+      expect(submitBtn().isDisplayed()).toBe(true);
+      expect(submitBtn().isEnabled()).toBe(enabled ? true : false);  // Handles null / undefined / etc
+    });
   };
   
   it('should link to the "Acceptable Use Policy" wiki page', function(){ 
-    signup.clickUsePolicyLink();
-    helpers.expectNewTabOpen(shared.config.USE_POLICY_LINK);
+    helpers.scrollToAndThen(0, 10000, function() {
+      signup.clickUsePolicyLink();
+      helpers.expectNewTabOpen(shared.config.USE_POLICY_LINK);
+    });
   });
   
   it('should allow submission with valid information', function() {
@@ -206,13 +210,14 @@ describe('Labs Workbench Sign Up View', function() {
     signup.enterPasswordConfirmation(TEST_NEW_PASSWORD);
     
     // We should be able to click submit
-    signup.clickSubmit();
-    
-    // Our request should fail, since this username is already registered
-    signup.verify();
+    helpers.scrollToAndThen(0, 10000, function() {
+      // Our request should fail, since this username is already registered
+      signup.clickSubmit();
+      signup.verify();
+    });
   });
   
-  it('should not allow submission with a previously registered email address', function() {
+  it('should not allow submission with a previously registered e-mail address', function() {
     // Reuse an email that has already been registered
     signup.enterEmail(TEST_INVALID_EMAIL_REGISTERED);
     
@@ -224,11 +229,11 @@ describe('Labs Workbench Sign Up View', function() {
     signup.enterPassword(TEST_NEW_PASSWORD);
     signup.enterPasswordConfirmation(TEST_NEW_PASSWORD);
     
-    // We should be able to click submit
-    signup.clickSubmit();
-    
-    // Our request should fail, since this email is already registered
-    signup.verify();
+    helpers.scrollToAndThen(0, 10000, function() {
+      // Our request should fail, since this e-mail is already registered
+      signup.clickSubmit();
+      signup.verify();
+    });
   });
   
   it('should require password to match confirmation', function() {

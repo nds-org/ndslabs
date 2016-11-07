@@ -82,8 +82,8 @@ module.exports.beforeAll = function() {
   
   // Resize window (fixes "Element is not clickable at point (x,y)" in OSX)
   // See https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/2766
-  //browser.driver.manage().window().setSize(1280, 1024);
-  browser.driver.manage().window().maximize();
+  browser.driver.manage().window().setSize(1280, 1024);
+  //browser.driver.manage().window().maximize();
 };
 
 // Misc shared setup to run before EACH test case

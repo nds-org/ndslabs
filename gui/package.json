@@ -30,6 +30,6 @@
   "scripts": {
     "postinstall": "bower install",
     "unit": "karma start karma.conf.js",
-    "e2e": "protractor protractor.conf.js"
+    "e2e": "protractor e2e.conf.js"
   }
 }
