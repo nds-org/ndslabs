@@ -1,4 +1,4 @@
-/* global angular:false expect:false inject:false module:false element:false browser:false by:false */
+/* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
 'use strict';
 
@@ -64,7 +64,7 @@ CatalogPage.prototype.applyTag = function(tagName) {
   
   // Select first (only) suggestion from the autocomplete
   this.autocompleteSuggestions.then(function(suggestions) {
-    expect(suggestions.length).toBeGreaterThan(0);
+    expect(suggestions.length).toBe(1);
     suggestions[0].click();
   });
 };
@@ -85,6 +85,16 @@ CatalogPage.prototype.toggleCardsView = function(setTo) {
   } else {                                                 // Toggle state
     this.toggleCardsBtn().click();
   } 
+};
+
+CatalogPage.prototype.installApp = function(specKey) {
+  var model = this;
+  helpers.selectByModel(model.cards, "spec.key", function(key) { 
+    return key === specKey; // How to know we've found our match
+  }, 
+  function(card) {  // What to do with our match
+    helpers.scrollIntoViewAndClick(model.addBtn(card));
+  });
 };
 
 module.exports = CatalogPage;

@@ -1,4 +1,4 @@
-/* global angular:false expect:false inject:false module:false element:false browser:false by:false */
+/* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
 'use strict';
 
@@ -32,9 +32,13 @@ catalogPage.cards.filter(function (card) {
 
 */
 module.exports.selectByModel = function(src, binding, matcher, predicate) {
-  src.filter(function (card) {
+  return src.filter(function (card) {
     return card.evaluate(binding).then(matcher);
   }).then(function(matches) {
+    if (!predicate) {
+      console.log("WARNING: No predicate defined... skipping...");
+      return;
+    }
     if (matches.length > 1) {
       console.log("WARNING: more than one element found for given matcher - executing pedicate on the first match: " + matcher.toString());
     }
@@ -58,14 +62,19 @@ module.exports.saveScreenshotToFile = function(filename) {
 };
 
 module.exports.waitForThenClick = function(ele, timeout) {
-  var EC = protractor.ExpectedConditions;
-  var isClickableConf = EC.elementToBeClickable(ele);
+  var isClickableConf = protractor.ExpectedConditions.elementToBeClickable(ele);
   browser.wait(isClickableConf, timeout || 5000);
+  ele.click();
 };
 
 // Scroll to the given x,y coordinates, then execute the predicate function
 module.exports.scrollToAndThen = function(x, y, predicate) {
   return browser.executeScript('window.scrollTo(' + x.toString() + ',' + y.toString() + ');').then(predicate);
+};
+
+// Scroll to the given WebElement, then execute the predicate function
+module.exports.scrollIntoViewAndClick = function(ele) {
+  browser.actions().mouseMove(ele).perform();
 };
 
 module.exports.expectClass = function (selector, clazz) {
