@@ -1,9 +1,10 @@
-/* global angular:false expect:false inject:false module:false element:false browser:false by:false */
+/* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
 'use strict';
 
 module.exports = {}
 
+var helpers = require('../helpers.e2e.js');
 var shared = require('./shared.page.js');
 var landing = require('./landing.page.js');
 var login = require('./login.page.js');
@@ -13,6 +14,8 @@ var TEST_PASSWORD = shared.config.TEST_PASSWORD;
 
 var PAGE_TITLE = 'Labs Workbench Dashboard';
 var PAGE_ROUTE = shared.config.TEST_HOSTNAME + '/home';
+
+var EC = protractor.ExpectedConditions;
 
 var DashboardPage = function() {
   this.helperText = element(by.id('dashHelperText'));
@@ -27,11 +30,10 @@ var DashboardPage = function() {
   this.closeBtn = element(by.id('closeBtn'));
 
   // Application Stuff
-  this.applicationHeading = function(app) {  return app ? app.element(by.id('accordionHeading')) : element(by.id('accordionHeading')); };
   this.renameBtn = function(app) {  return app.element(by.id('renameBtn')); };
   this.toggleAuthBtn = function(app) {  return app.element(by.id('toggleAuthBtn')); };
   this.launchBtn = function(app) {  return app.element(by.id('launchBtn')); };
-  this.deleteBtn = function(app) {  return !app ? element(by.id('deleteBtn')) : app.element(by.id('deleteBtn')); };
+  this.deleteBtn = function(app) {  return app.element(by.id('deleteBtn')); };
   this.addServiceBtn = function(app) {  return app.element(by.id('addServiceBtn')); };
   this.shutdownBtn = function(app) {  return app.element(by.id('shutdownBtn')); };
 
@@ -65,6 +67,32 @@ DashboardPage.prototype.get = function(loggedIn) {
   }
   
   this.verify();
+};
+
+DashboardPage.prototype.removeApp = function(applicationId) {
+  var predicate = function(application) {  // What to do with our match
+    helpers.scrollIntoViewAndClick(application);
+    browser.wait(EC.elementToBeClickable(application), 5000);
+    application.click();
+    
+    var deleteBtn = application.element(by.id('deleteBtn'));
+    browser.wait(EC.elementToBeClickable(deleteBtn), 5000);
+    helpers.scrollIntoViewAndClick(deleteBtn);
+    
+    var confirmBtn = element(by.id('confirmBtn'));
+    browser.wait(EC.elementToBeClickable(confirmBtn), 5000);
+    helpers.scrollIntoViewAndClick(confirmBtn);
+    
+    browser.wait(3000);
+  };
+  
+  if (!applicationId && this.applications.count() > 1) {
+    predicate(this.applications.get(0));
+  } else {
+    return helpers.selectByModel(this.applications, "stack.id", function(application) { 
+      return application.id === applicationId; // How to know we've found our match
+    }, predicate);
+  }
 };
 
 module.exports = DashboardPage;

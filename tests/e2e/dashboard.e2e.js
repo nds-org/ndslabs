@@ -1,4 +1,4 @@
-/* global angular:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
+/* global protractor:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
 
 'use strict';
 
@@ -10,8 +10,6 @@ var landing = require('./pages/landing.page.js');
 var DashboardPage = require('./pages/dashboard.page.js');
 var CatalogPage = require('./pages/catalog.page.js');
 
-var EC = protractor.ExpectedConditions;
-
 // dashboard.e2e.js
 describe('Labs Workbench Dashboard View', function() {
   var catalogPage = new CatalogPage();
@@ -22,29 +20,9 @@ describe('Labs Workbench Dashboard View', function() {
     dashboardPage.get();
     
     // TODO: Shut down all applications
-    console.log(dashboardPage.applications);
+    //console.log(dashboardPage.applications);
     
     // FIXME: Remove all applications
-    dashboardPage.applications.each(function(application, index) {
-      var isClickableApp = EC.elementToBeClickable(application);
-      browser.wait(isClickableApp, 5000);
-      application.click();
-      
-      var deleteBtn = application.element(by.id('deleteBtn'));
-      var isClickable = EC.elementToBeClickable(deleteBtn);
-      
-      browser.wait(isClickable, 5000);
-      
-      deleteBtn.click();
-      
-      var confirmBtn = element(by.id('confirmBtn'));
-      var isClickableConf = EC.elementToBeClickable(confirmBtn);
-      
-      browser.wait(isClickableConf, 5000);
-      confirmBtn.click();
-    });
-    
-    
   });
   
   beforeEach(function() {
@@ -65,8 +43,17 @@ describe('Labs Workbench Dashboard View', function() {
   
   // How to set up for test? Is it safe to simply delete all existing applications?
   it('should link to the catalog page if no applications are present', function() {
-    //dashboardPage.catalogLink.click();
-    //catalogPage.verify();
+    dashboardPage.catalogLink.click();
+    catalogPage.verify();
+    
+    var target = 'dataverse';
+    catalogPage.installApp(target);
+    
+    dashboardPage.get(true);
+    
+    dashboardPage.removeApp().then(function() {
+      dashboardPage.catalogLink.click();
+    });
   });
   /*
   describe('With Applications', function() {
