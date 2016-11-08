@@ -156,7 +156,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   
   // Add on the port suffix, if applicable
   if (ApiPort) {
-    var portSuffix = ':' + ApiPort;  
+    var portSuffix = ':' + ApiPort; 
     
     ApiUri.api += portSuffix;
     ApiUri.ws += portSuffix;
