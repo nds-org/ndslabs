@@ -57,6 +57,12 @@ module.exports.saveScreenshotToFile = function(filename) {
   });
 };
 
+module.exports.waitForThenClick = function(ele, timeout) {
+  var EC = protractor.ExpectedConditions;
+  var isClickableConf = EC.elementToBeClickable(ele);
+  browser.wait(isClickableConf, timeout || 5000);
+};
+
 // Scroll to the given x,y coordinates, then execute the predicate function
 module.exports.scrollToAndThen = function(x, y, predicate) {
   return browser.executeScript('window.scrollTo(' + x.toString() + ',' + y.toString() + ');').then(predicate);
