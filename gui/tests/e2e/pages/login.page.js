@@ -23,9 +23,10 @@ var PAGE_ROUTE = TEST_HOSTNAME + '/login';
 var LINK_REQUEST_ACCESS_ID = 'requestAccessLink';
 var LINK_FORGOT_PASSWORD_ID = 'forgotPasswordLink';
 
-// TODO: change this to id selector
-var loginBtn = function() {  return element(by.css('[ng-click="login()"]')); };
-var usernameInput = function() { return element(by.id(INPUT_USERNAME_ID)); };
+var BTN_LOGIN_ID = 'loginBtn';
+
+var loginBtn = function() {  return element(by.id(BTN_LOGIN_ID)); };
+var usernameInput = function() {  return element(by.id(INPUT_USERNAME_ID)); };
 var passwordInput = function() {  return element(by.id(INPUT_PASSWORD_ID)); };
 
 var requestAccessLink = function() {  return element(by.id(LINK_REQUEST_ACCESS_ID)); };

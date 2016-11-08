@@ -14,6 +14,40 @@ module.exports.sleep = function(ms) {
   while(new Date().getTime() < startTime + ms) { /* noop */ }
 };
 
+/*
+Example:
+Executing:
+selectByModel(catalogPage.cards, "spec.key", function(key) { return key === 'toolmanager' }, function(cards) {  });
+
+Will execute:
+catalogPage.cards.filter(function (card) {
+      return card.evaluate("spec.key").then(function (key) {
+          return key == target;
+      });
+    }).then(function (matches) {
+      if (matches) {  // we have a match - find and click the Add button
+        matches[0].element(by.id('addBtn')).click();
+      }
+    })
+
+*/
+module.exports.selectByModel = function(src, binding, matcher, predicate) {
+  src.filter(function (card) {
+    return card.evaluate(binding).then(matcher);
+  }).then(function(matches) {
+    if (matches.length > 1) {
+      console.log("WARNING: more than one element found for given matcher - executing pedicate on the first match: " + matcher.toString());
+    }
+    if (matches && matches.length > 0) {
+      predicate(matches[0]);
+    } else {
+      console.log("WARNING: no elements found for given matcher - executing pedicate without arguments: " + matcher.toString());
+      predicate();
+    }
+    
+  });
+};
+
 // Save a screenshot of the browser's current state to the given file (helpful for failing tests)
 module.exports.saveScreenshotToFile = function(filename) {
   browser.takeScreenshot().then(function (png) {
@@ -26,6 +60,13 @@ module.exports.saveScreenshotToFile = function(filename) {
 // Scroll to the given x,y coordinates, then execute the predicate function
 module.exports.scrollToAndThen = function(x, y, predicate) {
   return browser.executeScript('window.scrollTo(' + x.toString() + ',' + y.toString() + ');').then(predicate);
+};
+
+module.exports.expectClass = function (selector, clazz) {
+  var ele = element(selector);
+  return ele.getAttribute('class').then(function (classes) {
+      return classes.split(' ').indexOf(clazz) !== -1;
+  });
 };
 
 // Ensure that the desired element exists and is visible, then return it
@@ -75,7 +116,7 @@ module.exports.selectDropdownbyNum = function (element, optionNum) {
 };
 
 // Misc shared setup to run before ALL test cases
-module.exports.beforeAll = function() {
+module.exports.beforeAll = function() {  
   // Clear all cookies - this will ensure we are logged out at the start of our tests
   // TODO: I haven't had any fail for this reason, but it seems like an edge case we should watch for
   // browser.driver.manage().deleteAllCookies();
