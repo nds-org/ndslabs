@@ -1,7 +1,7 @@
 <!-- The "Stop Stack" Confirmation Modal -->
 <section>
   <div class="modal-header">
-    <button type="button" class="btn btn-xs btn-default pull-right" data-dismiss="modal" aria-label="Close" ng-click="close()"><i class="fa fa-fw fa-times"></i></button>
+    <button id="closeBtn" type="button" class="btn btn-xs btn-default pull-right" data-dismiss="modal" aria-label="Close" ng-click="close()"><i class="fa fa-fw fa-times"></i></button>
     <h4 class="modal-title">Shutdown Confirmation</h4>
   </div>
   <div class="modal-body">
@@ -13,7 +13,7 @@
     </p>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-default pull-left" data-dismiss="modal" ng-click="close()">Cancel</button>
-    <button type="button" class="btn btn-danger pull-right" data-dismiss="modal" ng-click="ok()">Shut it Down</button>
+    <button id="cancelBtn" type="button" class="btn btn-default pull-left" data-dismiss="modal" ng-click="close()">Cancel</button>
+    <button id="confirmBtn" type="button" class="btn btn-danger pull-right" data-dismiss="modal" ng-click="ok()">Shut it Down</button>
   </div>
 </section>

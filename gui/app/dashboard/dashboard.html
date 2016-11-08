@@ -44,11 +44,11 @@
           <!-- TODO: This is a silly hack, since we can't bind to the accordion's panel-class attribute, \
           and we apparently cannot use ng-class to do the same thing, due to an implementation detail. -->
           <!-- See https://github.com/angular-ui/bootstrap/issues/5368 -->
-          <uib-accordion-group  ng-repeat="stack in configuredStacks | orderBy:['name','id'] track by stack.id" is-open="expandedStacks[stack.id]"
+          <uib-accordion-group ng-repeat="stack in configuredStacks | orderBy:['name','id'] track by stack.id" is-open="expandedStacks[stack.id]"
               class="{{ stack.status === 'started' ? 'panel-success' : 
                 (stack.status === 'stopped' ? 'panel-danger' : 'panel-warning')  }}">
             
-            <uib-accordion-heading id="application{{ $index }}AccordionHeading">
+            <uib-accordion-heading>
               <!-- Stack Status Indicator -->
               <div class="row">
                 <div class="col-xs-3 col-md-1 pull-left">
@@ -62,7 +62,7 @@
                 <div class="col-xs-6 col-md-10">
                   <h4>
                     <strong >{{ stack.name | capitalize }}</strong>
-                    <a id="application{{ $index }}RenameBtn" type="button" class="btn btn-xs btn-link" href ng-click="$event.stopPropagation();renameStack(stack)">
+                    <a id="renameBtn" type="button" class="btn btn-xs btn-link" href ng-click="$event.stopPropagation();renameStack(stack)">
                       <i class="fa fa-fw fa-pencil"></i>
                     </a>
                   </h4>
@@ -110,13 +110,13 @@
                             'text-danger  fa-warning  animated   faa-flash   faa-fast': svc.status === 'error',
                             'text-danger  fa-power-off': svc.status !== 'ready' && svc.status !== 'waiting' && svc.status !== 'starting' && svc.status !== 'stopping' && svc.status !== 'error'
                           }"></i>
-                          <span id="application{{ $parent.$index }}Service{{ $index }}StatusText" >{{  (svc.status | capitalize) || 'Stopped' }}</span>
+                          <span id="statusText" >{{  (svc.status | capitalize) || 'Stopped' }}</span>
                         </td>
                         
                         <!-- The Name of the Running Service and link to endpoint, if applicable -->
                         <td>
                           {{ svc.service | specProperty:'label' }}
-                          <a  ng-repeat="endpt in svc.endpoints track by endpt.port" id="application{{ $parent.$parent.$index }}Service{{ $parent.$index }}Ep{{ $parent.$index }}Link"
+                          <a  ng-repeat="endpt in svc.endpoints track by endpt.port" id="endpointLink"
                               uib-tooltip="Navigate to {{ svc.service | capitalize }} port {{ endpt.port }}"
                               ng-if="stack.status === 'started' && svc.status === 'ready' 
                                   && endpt !== '' && endpt.protocol === 'http'"  target="_blank"
@@ -131,7 +131,7 @@
                         
                         <!-- Console -->
                         <td class="text-center">
-                          <a  id="application{{ $parent.$index }}Service{{ $index }}ConsoleBtn"
+                          <a  id="consoleBtn"
                               type="button" class="btn btn-default btn-xs" target="_blank" ng-href="#/home/{{ stack.id }}/console/{{ svc.service }}"
                               ng-disabled="svc.status !== 'ready'">
                             <i class="fa fa-terminal"></i>
@@ -141,12 +141,12 @@
                         <!-- View/Edit Config buttons -->
                         <td class="text-center">
                           <!-- ng-click="showConfig(svc)" -->
-                          <a  id="application{{ $parent.$index }}Service{{ $index }}EditServiceBtn" type="button" class="btn btn-default btn-xs" ng-href="#/home/{{ stack.id }}/edit/{{ svc.service }}"
+                          <a  id="editServiceBtn" type="button" class="btn btn-default btn-xs" ng-href="#/home/{{ stack.id }}/edit/{{ svc.service }}"
                               ng-if="stack.status === 'stopped'">
                             <i class="fa fa-wrench"></i>
                           </a>
                           
-                          <button id="application{{ $parent.$index }}Service{{ $index }}ViewConfigBtn" type="button" class="btn btn-default btn-xs" ng-click="showConfig(svc)"
+                          <button id="viewConfigBtn" type="button" class="btn btn-default btn-xs" ng-click="showConfig(svc)"
                               ng-if="stack.status !== 'stopped' && (!_.isEmpty(svc.config) || svc.endpoints.length > 0)">
                             <i class="fa fa-puzzle-piece"></i>
                           </button>
@@ -155,7 +155,7 @@
                         <!-- View Logs of Running Service, or Remove Stopped Service -->
                         <td class="text-center">
                           <!-- View logs button -->
-                          <button type="button" class="btn btn-xs btn-default" id="application{{ $parent.$index }}Service{{ $index }}ViewLogsBtn" 
+                          <button type="button" class="btn btn-xs btn-default" id="viewLogsBtn" 
                               uib-tooltip="View {{ svc.service | specProperty:'label' }} Logs" 
                               ng-if="stack.status !== 'stopped'"
                               ng-disabled="stack.status === 'stopped'" tooltip-placement="left" ng-click="showLogs(svc)">
@@ -163,7 +163,7 @@
                           </button>
                           
                           <!-- Remove service from stack button -->
-                          <button type="button" ng-disabled="stack.services | isRecursivelyRequired:svc"  id="application{{ $parent.$index }}Service{{ $index }}RemoveBtn" 
+                          <button type="button" ng-disabled="stack.services | isRecursivelyRequired:svc"  id="removeBtn" 
                               ng-if="stack.status === 'stopped' && svc.service !== stack.key && !_.find((stack.key | requirements), [ 'key', svc.service ])" 
                               class="btn btn-xs btn-default" ng-click="removeStackSvc(stack, svc)" 
                               uib-tooltip="Remove {{ option.key | specProperty:'label' }} from this stack" tooltip-placement="left">
@@ -172,13 +172,13 @@
                         </td>
                         
                         <!-- Help Link -->
-                        <td class="text-center"><a  id="application{{ $parent.$index }}Service{{ $index }}HelpLink" ng-if="svc.service | specProperty:'info'" ng-href="{{ svc.service | specProperty:'info' }}" target="_blank"><i class="fa fa-fw fa-question-circle"></i></a></td>
+                        <td class="text-center"><a  id="helpLink" ng-if="svc.service | specProperty:'info'" ng-href="{{ svc.service | specProperty:'info' }}" target="_blank"><i class="fa fa-fw fa-question-circle"></i></a></td>
                       </tr>
                       
                       <!-- Add an artificial row (if necessary) for optional services -->
                       <tr ng-if="stack.status === 'stopped' && (stack.key | options | notPresent:stack).length > 0">
                         <td class="text-center">
-                          <a id="application{{ $index }}AddServiceBtn" 
+                          <a id="addServiceBtn" 
                             type="button" class="btn btn-xs btn-block btn-default" ng-href="#/home/{{ stack.id }}/add/{{ stack.selectedOption }}"
                             uib-tooltip="Add {{ option.key | specProperty:'label' }} to this stack" ng-disabled="!stack.selectedOption"
                             tooltip-placement="right">
@@ -186,12 +186,12 @@
                           </a>
                         </td>
                         <td>
-                           <select id="application{{ $index }}AddServiceDropdown"  class="form-control" ng-model="stack.selectedOption">
+                           <select id="addServiceDropdown"  class="form-control" ng-model="stack.selectedOption">
                              <option ng-repeat="option in stack.key | options | notPresent:stack track by option.key" value="{{ option.key }}">{{ option.key | specProperty:'label' }}</option>
                            </select> 
                         </td>
                         <td colspan="4">{{ stack.selectedOption | specProperty:'description' }}</td>
-                        <td class="text-center"><a id="application{{ $parent.$index }}Service{{ $index }}AddServiceHelp" ng-if="stack.selectedOption | specProperty:'info'" ng-href="{{ stack.selectedOption | specProperty:'info' }}" target="_blank"><i class="fa fa-fw fa-question-circle"></i></a></td>
+                        <td class="text-center"><a id="addServiceHelpLink" ng-if="stack.selectedOption | specProperty:'info'" ng-href="{{ stack.selectedOption | specProperty:'info' }}" target="_blank"><i class="fa fa-fw fa-question-circle"></i></a></td>
                       </tr>
                     </tbody>
                   </table>
@@ -203,14 +203,14 @@
             <!-- The Stack's "Button Bar" -->
             <div class="pull-right" role="group" aria-label="...">
               <span uib-tooltip="{{ (((stack.key | specProperty:'catalog') === 'user' || (stack.key | specProperty:'authRequired') == true) ? 'Authentication can only be disabled on select system applications' : (stack.status !== 'stopped' ? 'Authentication can only be toggled when this application is stopped' : 'Click here to ' + (stack.secure === true ? 'Disable' : 'Enable') + ' Basic Authentication')) }}" tooltip-placement="left">
-                <button id="application{{ $index }}ToggleAuthBtn" class="btn btn-sm btn-default" ng-click="toggleSecure(stack)" ng-disabled="stack.status !== 'stopped' || starting[stack.id] || ((stack.key | specProperty:'authRequired') === true) || ((stack.key | specProperty:'catalog') === 'user')">
+                <button id="toggleAuthBtn" class="btn btn-sm btn-default" ng-click="toggleSecure(stack)" ng-disabled="stack.status !== 'stopped' || starting[stack.id] || ((stack.key | specProperty:'authRequired') === true) || ((stack.key | specProperty:'catalog') === 'user')">
                   <i class="fa fa-fw" ng-class="{ 'fa-lock': stack.secure, 'fa-unlock': !stack.secure }"></i> <small ng-class="{ 'text-success': stack.secure, 'text-danger': !stack.secure }">HTTP Basic Authentication {{ stack.secure === true ? 'Enabled' : 'Disabled' }}</small>
                 </button>
               </span>
           
           
               <!-- Delete Application Button -->
-              <button id="application{{ $index }}DeleteBtn" class="btn btn-sm btn-default" ng-disabled="stack.status !== 'stopped' || starting[stack.id]" ng-if="stack.status.indexOf('start') === -1"
+              <button id="deleteBtn" class="btn btn-sm btn-default" ng-disabled="stack.status !== 'stopped' || starting[stack.id]" ng-if="stack.status.indexOf('start') === -1"
                   ng-click="deleteStack(stack)" uib-tooltip="Remove Application"
                   tooltip-placement="top-right">
                 <i class="fa fa-fw fa-trash"></i>
@@ -218,7 +218,7 @@
               </button>
               
               <!-- Launch Application Button -->
-              <button id="application{{ $index }}LaunchBtn" class="btn btn-sm btn-primary" ng-disabled="stack.status !== 'stopped' || starting[stack.id]" 
+              <button id="launchBtn" class="btn btn-sm btn-primary" ng-disabled="stack.status !== 'stopped' || starting[stack.id]" 
                    ng-click="startStack(stack)" ng-if="stack.status.indexOf('start') === -1" uib-tooltip="Launch application services"
                   tooltip-placement="top-right">
                 <i class="fa fa-fw fa-rocket"></i>
@@ -226,7 +226,7 @@
               </button>
           
               <!-- Stop Application Button -->
-              <button id="application{{ $index }}ShutdownBtn" class="btn btn-sm btn-primary" ng-disabled="(stack.statusMessages.length < 40 && stack.status !== 'started' && stack.status !== 'error') || stopping[stack.id]" 
+              <button id="shutdownBtn" class="btn btn-sm btn-primary" ng-disabled="(stack.statusMessages.length < 40 && stack.status !== 'started' && stack.status !== 'error') || stopping[stack.id]" 
                    ng-click="stopStack(stack)" ng-if="stack.status.indexOf('stop') === -1" uib-tooltip="Shutdown application services"
                   tooltip-placement="top-right">
                 <i class="fa fa-fw fa-power-off"></i>

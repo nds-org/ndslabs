@@ -1,7 +1,7 @@
 <!-- The "Export Spec" Modal -->
 <section>
   <div class="modal-header">
-    <button type="button" class="btn btn-xs btn-default pull-right" data-dismiss="modal" aria-label="Close" ng-click="close()"><i class="fa fa-fw fa-times"></i></button>
+    <button id="closeBtn" type="button" class="btn btn-xs btn-default pull-right" data-dismiss="modal" aria-label="Close" ng-click="close()"><i class="fa fa-fw fa-times"></i></button>
     <h4 class="modal-title">View Application Details</h4>
   </div>
   
@@ -16,7 +16,7 @@
   <div class="modal-footer">
     <div class="row">
       <div class="col-sm-2">
-        <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="close()"><i class="fa fa-fw fa-times"></i> Close</button>
+        <button id="cancelBtn" type="button" class="btn btn-default" data-dismiss="modal" ng-click="close()"><i class="fa fa-fw fa-times"></i> Close</button>
       </div>
         
       <!--<div class="col-sm-8 text-center">
@@ -25,8 +25,8 @@
       </div>-->
       
       <div class="col-sm-10">
-        <a ng-href="#/store/edit/{{ spec.key }}" ng-if="spec.catalog === 'user'" ng-disabled="showAlert" type="button" class="btn btn-default" data-dismiss="modal" ng-click="close()"><i class="fa fa-fw fa-edit"></i> Edit</a>
-        <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="copy()"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</button>
+        <a id="editBtn" ng-href="#/store/edit/{{ spec.key }}" ng-if="spec.catalog === 'user'" ng-disabled="showAlert" type="button" class="btn btn-default" data-dismiss="modal" ng-click="close()"><i class="fa fa-fw fa-edit"></i> Edit</a>
+        <button id="confirmBtn" type="button" class="btn btn-primary" data-dismiss="modal" ng-click="copy()"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</button>
       </div>
     </div>
   </div>
