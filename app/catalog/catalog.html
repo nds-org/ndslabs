@@ -102,7 +102,7 @@
                 
               <div class="pull-right">
                 <!-- Install button -->
-                <button id="{{ spec.key }}AddBtn" ng-if="installs[spec.key].progress === 0" ng-disabled="installs[spec.key].progress > 0" 
+                <button id="addBtn" ng-if="installs[spec.key].progress === 0" ng-disabled="installs[spec.key].progress > 0" 
                     class="btn btn-xs" ng-click="install(spec)" ng-class="{ 'btn-primary':installs[spec.key].count === 0, 'btn-default':installs[spec.key].count > 0 }" >
                   <i class="fa fa-fw" ng-class="{ 'fa-magic': installs[spec.key].count === 0, 'fa-repeat':installs[spec.key].count > 0 }"></i>
                   Add 
@@ -111,31 +111,31 @@
                   </span>
                 </button>
                 
-                <a id="{{ spec.key }}ViewBtn" type="button" class="btn btn-xs btn-primary" ng-href="#/home?expand={{ spec.key }}" ng-if="installs[spec.key].count > 0">
+                <a id="viewBtn" type="button" class="btn btn-xs btn-primary" ng-href="#/home?expand={{ spec.key }}" ng-if="installs[spec.key].count > 0">
                   <i class="fa fa-fw fa-eye"></i> View
                 </a>
                 
                 <!-- Simple dropdown -->
-                <span  id="{{ spec.key }}MoreActionsDropdown" uib-dropdown on-toggle="toggled(open)">
+                <span  id="moreActionsDropdown" uib-dropdown on-toggle="toggled(open)">
                   <small>
                     <a href id="simple-dropdown" class="btn btn-xs btn-link" uib-dropdown-toggle>
                       More <i class="fa fa-chevron-down"></i>
                     </a>
                   </small>
                   <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu aria-labelledby="simple-dropdown">
-                    <li><a id="{{ spec.key }}CloneBtn" href ng-click="cloneSpec(spec)"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
-                    <li><a id="{{ spec.key }}CopyToClipboardBtn" href ng-click="copyToClipboard(spec)"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</a></li>
-                    <li><a id="{{ spec.key }}ViewJsonBtn" href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> View JSON</a></li>
-                    <li ng-if="spec.info"><a id="{{ spec.key }}ViewDocsBtn" ng-href="{{ spec.info }}"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
-                    <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="{{ spec.key }}EditBtn" ng-href="#/store/edit/{{ spec.key }}" ><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
-                    <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="{{ spec.key }}DeleteBtn" href ng-click="openDelete(spec)"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
+                    <li><a id="cloneBtn" href ng-click="cloneSpec(spec)"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
+                    <li><a id="copyToClipboardBtn" href ng-click="copyToClipboard(spec)"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</a></li>
+                    <li><a id="viewJsonBtn" href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> View JSON</a></li>
+                    <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
+                    <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="editBtn" ng-href="#/store/edit/{{ spec.key }}" ><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
+                    <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="deleteBtn" href ng-click="openDelete(spec)"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
                   </ul>
                 </span>
               </div>
             </td>
             
             <td>
-              <a id="{{ spec.key }}HelpLink" class="pull-right" target="_blank" ng-if="spec.info" ng-href="{{ spec.info }}"><i class="fa fa-fw fa-question-circle-o"></i></a>
+              <a id="helpLink" class="pull-right" target="_blank" ng-if="spec.info" ng-href="{{ spec.info }}"><i class="fa fa-fw fa-question-circle-o"></i></a>
             </td>
           </tr>
         </tbody>
@@ -149,14 +149,14 @@
               <div class="media">
                 <!-- Logo -->
                 <div class="media-left">
-                  <a id="{{ spec.key }}CloneBtn" ng-href="{{ spec.info }}" target="_blank">
+                  <a id="cloneBtn" ng-href="{{ spec.info }}" target="_blank">
                     <img ng-if="spec.logo" style="margin:15px;max-height:64px;max-width:64px;min-height:64px;min-width:64px;" class="pull-right" ng-src="{{ spec.logo }}" alt="{{ spec.key }}" />
                   </a>
                 </div>
                 
                 <!-- Name / Description -->
                 <div class="media-body caption">
-                  <a id="{{ spec.key }}CardHelpLink" class="pull-right" target="_blank" ng-if="spec.info" ng-href="{{ spec.info }}"><i class="fa fa-fw fa-question-circle-o"></i></a>
+                  <a id="helpLink" class="pull-right" target="_blank" ng-if="spec.info" ng-href="{{ spec.info }}"><i class="fa fa-fw fa-question-circle-o"></i></a>
                   <h4 class="media-heading">{{ spec.label }}</h4>
                   <p><small>{{ spec.description }}</small></p>
                 </div>
@@ -167,7 +167,7 @@
                 <small class="pull-right" uib-tooltip="Source: {{ spec.catalog | capitalize }}" tooltip-placement="left"><small><i class="fa fa-fw" ng-class="{ 'fa-user': spec.catalog === 'user', 'fa-server': spec.catalog === 'system' }"></i> {{ spec.key }}</small></small>
                 <div class="pull-left">
                   <div class="text-center" style="padding:0;">
-                    <button id="{{ spec.key }}CardTag{{ $index }}" style="padding:0 4px 0 4px;margin:0 4px 0 4px;" class="btn btn-xs btn-default" 
+                    <button id="tag{{ $index }}" style="padding:0 4px 0 4px;margin:0 4px 0 4px;" class="btn btn-xs btn-default" 
                         ng-repeat="tag in spec.tags" ng-click="addFilterTag(tag)" 
                         uib-tooltip="{{ tag | tagProperty:'definition' }}">
                       <small>{{ tag | tagProperty:'name' }}</small>
@@ -214,12 +214,12 @@
                       </a>
                     </small>
                     <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu aria-labelledby="simple-dropdown">
-                      <li><a id="{{ spec.key }}CardCloneBtn" href ng-click="cloneSpec(spec)"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
-                      <li><a id="{{ spec.key }}CardCopyToClipboardBtn" href ng-click="copyToClipboard(spec)"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</a></li>
-                      <li><a id="{{ spec.key }}CardViewJsonBtn" href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> View JSON</a></li>
-                      <li ng-if="spec.info"><a id="{{ spec.key }}CardViewDocsBtn" ng-href="{{ spec.info }}"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
-                      <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="{{ spec.key }}CardEditBtn" ng-href="#/store/edit/{{ spec.key }}" ><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
-                      <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="{{ spec.key }}CardDeleteBtn" href ng-click="openDelete(spec)"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
+                      <li><a id="cloneBtn" href ng-click="cloneSpec(spec)"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
+                      <li><a id="copyToClipboardBtn" href ng-click="copyToClipboard(spec)"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</a></li>
+                      <li><a id="viewJsonBtn" href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> View JSON</a></li>
+                      <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
+                      <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="editBtn" ng-href="#/store/edit/{{ spec.key }}" ><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
+                      <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="deleteBtn" href ng-click="openDelete(spec)"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
                     </ul>
                   </span>
                 </div>

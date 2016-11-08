@@ -1,7 +1,7 @@
 <!-- The Config Viewer Modal -->
 <section>
   <div class="modal-header">
-    <button type="button" class="btn btn-default pull-right btn-xs" data-dismiss="modal" aria-label="Close" ng-click="close()">
+    <button id="closeBtn" type="button" class="btn btn-default pull-right btn-xs" data-dismiss="modal" aria-label="Close" ng-click="close()">
       <i class="fa fa-fw fa-times"></i>
     </button>
     <h4 class="modal-title">Configuration for {{ service.service | specProperty:'label' }}</h4>
@@ -92,7 +92,7 @@
   
   
   <div class="modal-footer">
-    <button class="btn btn-default pull-right" ng-click="close()">
+    <button id="cancelBtn" class="btn btn-default pull-right" ng-click="close()">
       <i class="fa fa-fw fa-times"></i> Close
     </button>
   </div>
