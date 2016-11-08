@@ -25,6 +25,7 @@ var INPUT_USERNAME_ID = 'namespace';
 var INPUT_PASSWORD_ID = 'password';
 var INPUT_CONFIRM_PASSWORD_ID = 'passwordConf';
 var LINK_USE_POLICY_ID = 'usePolicyLink';
+var BTN_SUBMIT_ID = 'submitBtn';
 
 var fullNameInput = function() {  return element(by.id(INPUT_FULLNAME_ID)); };
 var emailInput = function() {  return element(by.id(INPUT_EMAIL_ID)); };
@@ -36,8 +37,7 @@ var passwordConfirmInput = function() {  return element(by.id(INPUT_CONFIRM_PASS
 
 var usePolicyLink = function() {  return element(by.id(LINK_USE_POLICY_ID)); };
 
-// TODO: change this to id selector
-var submitBtn = function() {  return element(by.css('[ng-click="signUp(newProject)"]')); };
+var submitBtn = function() {  return element(by.id(BTN_SUBMIT_ID)); };
 
 // Ensure that we are on the correct page
 module.exports.verify = function() {

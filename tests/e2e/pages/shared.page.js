@@ -3,7 +3,7 @@
 'use strict';
 
 // Always visible
-var clickBrandNav = function() {  return element(by.id('navbarBrand')); };
+var brandNav = function() {  return element(by.id('navbarBrand')); };
 
 // Account dropdown (always visible)
 var helpDropdown = function() {  return element(by.id('helpDropdown')); };
@@ -26,7 +26,7 @@ var changePasswordNav = function() {  return element(by.id('resetPasswordNav'));
 var logoutBtn = function() {  return element(by.id('logoutBtn')); };
 
 module.exports.navbar = {
-  clickBrandNav: function() {  clickBrandNav().click(); },
+  clickBrandNav: function() {  brandNav().click(); },
   expandHelpDropdown: function() {  helpDropdown().click(); },
   clickHelpLink: function(index) {  helpLink(index).click(); },
   clickApiReferenceNav: function() {  apiReferenceNav().click(); },
@@ -41,6 +41,15 @@ module.exports.navbar = {
   expandAccountDropdown: function() {  accountDropdown().click(); },
   clickChangePasswordNav: function() {  changePasswordNav().click(); },
   clickSignOut: function() {  logoutBtn().click(); },
+};
+
+// Footer links
+var supportEmailLink = function() {  return element(by.id('supportEmailLink')); };
+var uIllinoisLink = function() {  return element(by.id('uIllinoisLink')); };
+
+module.exports.footer = {
+  clickUIllinoisLink: function() {  uIllinoisLink().click(); },
+  clickSupportEmailLink: function() {  supportEmailLink().click(); },
 };
 
 module.exports.config = {
