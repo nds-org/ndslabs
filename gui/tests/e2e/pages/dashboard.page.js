@@ -14,46 +14,46 @@ var TEST_PASSWORD = shared.config.TEST_PASSWORD;
 var PAGE_TITLE = 'Labs Workbench Dashboard';
 var PAGE_ROUTE = shared.config.TEST_HOSTNAME + '/home';
 
-var LINK_CATALOG_ID = 'catalogLink';
-var HELPERTEXT_DASHBOARD_ID = 'dashHelperText';
+var DashboardPage = function() {
+  this.helperText = element(by.id('dashHelperText'));
+  this.catalogLink = element(by.id('catalogLink'));
+  
+  this.applications = element.all(by.repeater("stack in configuredStacks | orderBy:['name','id'] track by stack.id"));
+  this.services = function(app) {  return app.element.all(by.repeater("svc in stack.services track by svc.id")); };
+  
+  // Modal Stuff
+  this.confirmBtn = element(by.id('confirmBtn'));
+  this.cancelBtn = element(by.id('cancelBtn'));
+  this.closeBtn = element(by.id('closeBtn'));
 
-var helperText = function() {  return element(by.id(HELPERTEXT_DASHBOARD_ID)); };
-var catalogLink = function() {  return element(by.id(LINK_CATALOG_ID)); };
+  // Application Stuff
+  this.applicationHeading = function(app) {  return app ? app.element(by.id('accordionHeading')) : element(by.id('accordionHeading')); };
+  this.renameBtn = function(app) {  return app.element(by.id('renameBtn')); };
+  this.toggleAuthBtn = function(app) {  return app.element(by.id('toggleAuthBtn')); };
+  this.launchBtn = function(app) {  return app.element(by.id('launchBtn')); };
+  this.deleteBtn = function(app) {  return !app ? element(by.id('deleteBtn')) : app.element(by.id('deleteBtn')); };
+  this.addServiceBtn = function(app) {  return app.element(by.id('addServiceBtn')); };
+  this.shutdownBtn = function(app) {  return app.element(by.id('shutdownBtn')); };
 
-// Application Stuff
-var applicationHeading = function(appIndex) {  return element(by.id('application' + appIndex + 'AccordionHeading')); };
-
-//var applications = element(by.repeater());
-
-var renameBtn = function(appIndex) {  return element(by.id('application' + appIndex + 'RenameBtn')); };
-var toggleAuthBtn = function(appIndex) {  return element(by.id('application' + appIndex + 'ToggleAuthBtn')); };
-var launchBtn = function(appIndex) {  return element(by.id('application' + appIndex + 'LaunchBtn')); };
-var removeBtn = function(appIndex) {  return element(by.id('application' + appIndex + 'DeleteBtn')); };
-
-// Service Stuff
-var statusText = function(appIndex, svcIndex) {  return element(by.id('application' + appIndex + 'Service' + svcIndex + 'StatusText')); };
-var editServiceBtn = function(appIndex, svcIndex) {  return element(by.id('application' + appIndex + 'Service' + svcIndex + 'EditServiceBtn')); };
-var helpLink = function(appIndex, svcIndex) {  return element(by.id('application' + appIndex + 'Service' + svcIndex + 'HelpLink')); };
-var removeServiceBtn = function(appIndex, svcIndex) {  return element(by.id('application' + appIndex + 'Service' + svcIndex + 'RemoveBtn')); };
-
-// Started Service Stuff
-var endpointLink = function(appIndex, svcIndex, epIndex) {  return element(by.id('application' + appIndex + 'Service' + svcIndex + 'Ep' + epIndex + 'Link')); };
-var consoleBtn = function(appIndex, svcIndex) {  return element(by.id('application' + appIndex + 'Service' + svcIndex + 'ConsoleBtn')); };
-var viewLogsBtn = function(appIndex, svcIndex) {  return element(by.id('application' + appIndex + 'Service' + svcIndex + 'ViewLogsBtn')); };
-var viewConfigBtn = function(appIndex, svcIndex) {  return element(by.id('application' + appIndex + 'Service' + svcIndex + 'ViewConfigBtn')); };
-
-// Started Application Stuff
-var addServiceBtn = function(appIndex) {  return element(by.id('application' + appIndex + 'AddServiceBtn')); };
-var shutdownBtn = function(appIndex) {  return element(by.id('application' + appIndex + 'ShutdownBtn')); };
+  // Service Stuff
+  this.statusText = function(svc) {  return svc.element(by.id('statusText')); };
+  this.editServiceBtn = function(svc) {  return svc.element(by.id('editServiceBtn')); };
+  this.helpLink = function(svc) {  return svc.element(by.id('helpLink')); };
+  this.removeServiceBtn = function(svc) {  return svc.element(by.id('removeBtn')); };
+  this.endpointLink = function(svc) {  return svc.element(by.id('endpointLink')); };
+  this.consoleBtn = function(svc) {  return svc.element(by.id('consoleBtn')); };
+  this.viewLogsBtn = function(svc) {  return svc.element(by.id('viewLogsBtn')); };
+  this.viewConfigBtn = function(svc) {  return svc.element(by.id('viewConfigBtn')); };
+};
 
 // Ensure we are on the dashboard page
-module.exports.verify = function() {
+DashboardPage.prototype.verify = function() {
   expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 
 // Navigate to the dashboard view
-module.exports.get = function(loggedIn) {
+DashboardPage.prototype.get = function(loggedIn) {
   if (loggedIn) {
     landing.get();
     shared.navbar.clickApplicationsNav();
@@ -64,14 +64,7 @@ module.exports.get = function(loggedIn) {
     login.clickLogin();
   }
   
-  module.exports.verify();
+  this.verify();
 };
 
-module.exports.isHelperTextPresent = function() {
-  return helperText() && helperText().isPresent();
-};
-
-module.exports.clickCatalogLink = function() {
-  catalogLink().click();
-};
-
+module.exports = DashboardPage;

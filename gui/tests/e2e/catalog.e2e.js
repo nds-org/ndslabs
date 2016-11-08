@@ -7,7 +7,7 @@ var helpers = require("./helpers.e2e.js");
 var shared = require("./pages/shared.page.js");
 
 var landing = require('./pages/landing.page.js');
-var dashboard = require('./pages/dashboard.page.js');
+var DashboardPage = require('./pages/dashboard.page.js');
 var CatalogPage = require('./pages/catalog.page.js');
 
 var _ = require('lodash');
@@ -15,12 +15,13 @@ var _ = require('lodash');
 // catalog.e2e.js
 describe('Labs Workbench Catalog View', function() {  
   var catalogPage = new CatalogPage();
+  var dashboardPage = new DashboardPage();
 
   beforeAll(function() { 
     console.log("Now Testing: Labs Workbench Catalog View");
     
     helpers.beforeAll();
-    dashboard.get();
+    dashboardPage.get();
   });
   
   beforeEach(function() {
@@ -40,20 +41,11 @@ describe('Labs Workbench Catalog View', function() {
   });
   
   it('should verify page', function() {
-    var target = 'cloud9go';
-    /*catalogPage.cards.filter(function (card) {
-      return card.evaluate("spec.key").then(function (key) {
-          return key == target;
-      });
-    }).then(function (matches) {
-      if (matches) {  // we have a match - find and click the Add button
-        matches[0].element(by.id('addBtn')).click();
-      }
-    });*/
+    var target = 'clowder';
     helpers.selectByModel(catalogPage.cards, "spec.key", function(key) { 
-      return key === target 
+      return key === target; // How to know we've found our match
     }, 
-    function(card) { 
+    function(card) {  // What to do with our match
       card.element(by.id('addBtn')).click();
     });
   });

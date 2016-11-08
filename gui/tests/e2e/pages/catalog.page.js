@@ -10,7 +10,9 @@ var shared = require('./shared.page.js');
 
 var landing = require('./landing.page.js');
 var login = require('./login.page.js');
-var dashboard = require('./dashboard.page.js');
+var DashboardPage = require('./dashboard.page.js');
+
+var dashboardPage = new DashboardPage();
 
 var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 var PAGE_TITLE = 'Labs Workbench Catalog';
@@ -25,29 +27,26 @@ var CatalogPage = function() {
   this.createButton = element(by.id('createApplicationBtn'));
   this.autocompleteSuggestions = element.all(by.repeater('item in suggestionList.items track by track(item)'));
   this.table = element.all(by.repeater("spec in specs | display | showTags:tags.selected | orderBy:'label' track by spec.key"));
-  this.cardRows = element.all(by.repeater('set in chunkedSpecs'));
   this.cards = element.all(by.repeater('spec in set'));
     
-  // Default is to show cards
-  // TODO: Need a better pattern here
-  this.addBtn = function(specId) {  return element(by.id(specId + 'AddBtn')); };
-  this.viewBtn = function(specId) {  return element(by.id(specId + 'ViewBtn')); };
-  this.helpLink = function(specId) {  return element(by.id(specId + 'HelpLink')); };
-  this.moreActionsDropdown = function(specId) {  return element(by.id(specId + 'MoreActionsDropdown')); };
-  this.cloneBtn = function(specId) {  return element(by.id(specId + 'CloneBtn')); };
-  this.copyToClipboardBtn = function(specId) {  return element(by.id(specId + 'CopyToClipboardBtn')); };
-  this.viewJsonBtn = function(specId) {  return element(by.id(specId + 'ViewJsonBtn')); };
-  this.viewDocsBtn = function(specId) {  return element(by.id(specId + 'ViewDocsBtn')); };
+  // Pass in a card or table row to get its inner buttons
+  this.addBtn = function(cardOrRow) {  return cardOrRow.element(by.id('addBtn')); };
+  this.viewBtn = function(cardOrRow) {  return cardOrRow.element(by.id('viewBtn')); };
+  this.helpLink = function(cardOrRow) {  return cardOrRow.element(by.id('helpLink')); };
+  this.moreActionsDropdown = function(cardOrRow) {  return cardOrRow.element(by.id('moreActionsDropdown')); };
+  this.cloneBtn = function(cardOrRow) {  return cardOrRow.element(by.id('cloneBtn')); };
+  this.copyToClipboardBtn = function(cardOrRow) {  return cardOrRow.element(by.id('copyToClipboardBtn')); };
+  this.viewJsonBtn = function(cardOrRow) {  return cardOrRow.element(by.id('viewJsonBtn')); };
+  this.viewDocsBtn = function(cardOrRow) {  return cardOrRow.element(by.id('viewDocsBtn')); };
 
   // User-applications only
-  // TODO: Need a better pattern here
-  this.editBtn = function(specId, hideCards) {  return element(by.id(specId + 'EditBtn')); };
-  this.deleteBtn = function(specId, hideCards) {  return element(by.id(specId + 'DeleteBtn')); };
+  this.editBtn = function(cardOrRow) {  return cardOrRow.element(by.id('editBtn')); };
+  this.deleteBtn = function(cardOrRow) {  return cardOrRow.element(by.id('deleteBtn')); };
 };
 
 // Navigate to the catalog view
 CatalogPage.prototype.get = function(loggedIn) {
-  dashboard.get(loggedIn);
+  dashboardPage.get(loggedIn);
   shared.navbar.clickCatalogNav();
   
   this.verify();
