@@ -1,4 +1,4 @@
-/* global angular:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
+/* global protractor:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
 
 'use strict';
 
@@ -6,172 +6,184 @@
 var helpers = require("./helpers.e2e.js");
 var shared = require("./pages/shared.page.js");
 
-var landing = require("./pages/landing.page.js");
-var login = require("./pages/login.page.js");
-var signup = require("./pages/signup.page.js");
-var help = require("./pages/help.page.js");
-var reset = require("./pages/reset.page.js");
-var swagger = require("./pages/swagger.page.js");
+var Navbar = require('./pages/navbar.page.js');
+var LandingPage = require("./pages/landing.page.js");
+var LoginPage = require("./pages/login.page.js");
+var SignUpPage = require("./pages/signup.page.js");
+var ContactUsPage = require("./pages/help.page.js");
+var ResetPasswordPage = require("./pages/reset.page.js");
+var SwaggerUiPage = require("./pages/swagger.page.js");
 
-var dashboard = require("./pages/dashboard.page.js");
-var catalog = require("./pages/catalog.page.js");
+var DashboardPage = require("./pages/dashboard.page.js");
+var CatalogPage = require("./pages/catalog.page.js");
 
 // landing.e2e.js
 describe('Labs Workbench Navbar', function() {
+  var navbar = new Navbar();
+  var landingPage = new LandingPage();
+  var loginPage = new LoginPage();
+  var signUpPage = new SignUpPage();
+  var contactUsPage = new ContactUsPage();
+  var resetPasswordPage = new ResetPasswordPage();
+  var swaggerUiPage = new SwaggerUiPage();
+  
+  var dashboardPage = new DashboardPage();
+  var catalogPage = new CatalogPage();
+  
   beforeAll(function() { helpers.beforeAll(); });
   beforeEach(function() { 
     helpers.beforeEach(); 
-    landing.get();
+    landingPage.get();
   });
   afterEach(function() { helpers.afterEach(); });
   afterAll(function() { helpers.afterAll(); });
   
   it('should link back to the landing page', function() {
-    login.get();
-    shared.navbar.clickBrandNav();
-    landing.verify();
+    loginPage.get();
+    navbar.clickBrandNav();
+    landingPage.verify();
   });
   
   it('should link to the Feature Overview wiki page', function() {
-    shared.navbar.expandHelpDropdown();
-    shared.navbar.clickHelpLink(0);
+    navbar.expandHelpDropdown();
+    navbar.clickHelpLink(0);
     helpers.expectNewTabOpen(shared.config.FEATURE_OVERVIEW_LINK);
   });
   
   it('should link to the F.A.Q. wiki page', function() {
-    shared.navbar.expandHelpDropdown();
-    shared.navbar.clickHelpLink(1);
+    navbar.expandHelpDropdown();
+    navbar.clickHelpLink(1);
     helpers.expectNewTabOpen(shared.config.FAQ_LINK);
   });
   
   it('should link to the User\'s Guide wiki page', function() {
-    shared.navbar.expandHelpDropdown();
-    shared.navbar.clickHelpLink(2);
+    navbar.expandHelpDropdown();
+    navbar.clickHelpLink(2);
     helpers.expectNewTabOpen(shared.config.USER_GUIDE_LINK);
   });
   
   it('should link to the Developer\'s Guide wiki page', function() {
-    shared.navbar.expandHelpDropdown();
-    shared.navbar.clickHelpLink(3);
+    navbar.expandHelpDropdown();
+    navbar.clickHelpLink(3);
     helpers.expectNewTabOpen(shared.config.DEV_GUIDE_LINK);
   });
   
   it('should link to the Acceptable Use Policy wiki page', function() {
-    shared.navbar.expandHelpDropdown();
-    shared.navbar.clickHelpLink(4);
+    navbar.expandHelpDropdown();
+    navbar.clickHelpLink(4);
     helpers.expectNewTabOpen(shared.config.USE_POLICY_LINK);
   });
   
   it('should link to the api reference view', function() {
-    shared.navbar.expandHelpDropdown();
-    shared.navbar.clickApiReferenceNav();
-    swagger.verify();
+    navbar.expandHelpDropdown();
+    navbar.clickApiReferenceNav();
+    swaggerUiPage.verify();
   });
   
   it('should link to the contact us view', function() {
-    shared.navbar.expandHelpDropdown();
-    shared.navbar.clickContactUsNav();
-    help.verify();
+    navbar.expandHelpDropdown();
+    navbar.clickContactUsNav();
+    contactUsPage.verify();
   });
   
   it('should link to the login view', function() {
-    shared.navbar.clickSignIn();
-    login.verify();
+    navbar.clickSignIn();
+    loginPage.verify();
   });
   
   it('should link to the signup view', function() {
-    shared.navbar.clickSignUp();
-    signup.verify();
+    navbar.clickSignUp();
+    signUpPage.verify();
   });
   
   describe('After Sign In', function() {
     beforeAll(function() {
-      dashboard.get();
+      dashboardPage.get();
     });
     
     afterAll(function() {
-      shared.navbar.expandAccountDropdown();
-      shared.navbar.clickSignOut();
-      landing.verify();
+      navbar.expandAccountDropdown();
+      navbar.clickSignOut();
+      landingPage.verify();
     });
     
     it('should link back to the landing page', function() {
-      dashboard.get(true);
-      shared.navbar.clickBrandNav();
-      landing.verify();
+      dashboardPage.get(true);
+      navbar.clickBrandNav();
+      landingPage.verify();
     });
   
     it('should link to the Feature Overview wiki page', function() {
-      shared.navbar.expandHelpDropdown();
-      shared.navbar.clickHelpLink(0);
+      navbar.expandHelpDropdown();
+      navbar.clickHelpLink(0);
       helpers.expectNewTabOpen(shared.config.FEATURE_OVERVIEW_LINK);
     });
     
     it('should link to the F.A.Q. wiki page', function() {
-      shared.navbar.expandHelpDropdown();
-      shared.navbar.clickHelpLink(1);
+      navbar.expandHelpDropdown();
+      navbar.clickHelpLink(1);
       helpers.expectNewTabOpen(shared.config.FAQ_LINK);
     });
     
     it('should link to the User\'s Guide wiki page', function() {
-      shared.navbar.expandHelpDropdown();
-      shared.navbar.clickHelpLink(2);
+      navbar.expandHelpDropdown();
+      navbar.clickHelpLink(2);
       helpers.expectNewTabOpen(shared.config.USER_GUIDE_LINK);
     });
     
     it('should link to the Developer\'s Guide wiki page', function() {
-      shared.navbar.expandHelpDropdown();
-      shared.navbar.clickHelpLink(3);
+      navbar.expandHelpDropdown();
+      navbar.clickHelpLink(3);
       helpers.expectNewTabOpen(shared.config.DEV_GUIDE_LINK);
     });
     
     it('should link to the Acceptable Use Policy wiki page', function() {
-      shared.navbar.expandHelpDropdown();
-      shared.navbar.clickHelpLink(4);
+      navbar.expandHelpDropdown();
+      navbar.clickHelpLink(4);
       helpers.expectNewTabOpen(shared.config.USE_POLICY_LINK);
     });
     
     it('should link to the api reference view', function() {
-      shared.navbar.expandHelpDropdown();
-      shared.navbar.clickApiReferenceNav();
-      swagger.verify();
+      navbar.expandHelpDropdown();
+      navbar.clickApiReferenceNav();
+      swaggerUiPage.verify();
     });
     
     it('should link to the contact us view', function() {
-      shared.navbar.expandHelpDropdown();
-      shared.navbar.clickContactUsNav();
-      help.verify();
+      navbar.expandHelpDropdown();
+      navbar.clickContactUsNav();
+      contactUsPage.verify();
     });
     
     it('should link to the dashboard view', function() {
-      shared.navbar.clickApplicationsNav();
-      dashboard.verify();
+      navbar.clickApplicationsNav();
+      dashboardPage.verify();
     });
     
     it('should link to the catalog view', function() {
-      shared.navbar.clickCatalogNav();
-      catalog.verify();
+      navbar.clickCatalogNav();
+      catalogPage.verify();
     });
     
     // FIXME: Figure out how to handle basic auth via protractor
     /*it('should allow the user to launch the file manager and take them to it', function() {
-      //shared.navbar.clickFilesNav();
+      //navbar.clickFilesNav();
       //helpers.expectNewTabOpen(/^https\:\/\/.*\-cloudcmd\.$/);
     });*/
     
     it('should link to the change password view', function() {
-      shared.navbar.expandAccountDropdown();
-      shared.navbar.clickChangePasswordNav();
-      reset.verify();
+      navbar.expandAccountDropdown();
+      navbar.clickChangePasswordNav();
+      resetPasswordPage.verify();
     });
     
     it('should allow the user to sign out', function() {
-      shared.navbar.expandAccountDropdown();
-      shared.navbar.clickSignOut();
-      landing.verify();
+      navbar.expandAccountDropdown();
+      navbar.clickSignOut();
+      landingPage.verify();
       
       // Log back in to reset test state
-      dashboard.get();
+      dashboardPage.get();
     });
   });
   

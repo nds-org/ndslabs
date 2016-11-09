@@ -6,12 +6,15 @@
 var helpers = require("./helpers.e2e.js");
 var shared = require("./pages/shared.page.js");
 
-var landing = require('./pages/landing.page.js');
+var Navbar = require('./pages/navbar.page.js');
+var LandingPage = require('./pages/landing.page.js');
 var DashboardPage = require('./pages/dashboard.page.js');
 var CatalogPage = require('./pages/catalog.page.js');
 
 // dashboard.e2e.js
 describe('Labs Workbench Dashboard View', function() {
+  var navbar = new Navbar();
+  var landingPage = new LandingPage();
   var catalogPage = new CatalogPage();
   var dashboardPage = new DashboardPage();
   
@@ -36,14 +39,14 @@ describe('Labs Workbench Dashboard View', function() {
   
   afterAll(function() { 
     helpers.afterAll();
-    shared.navbar.expandAccountDropdown();
-    shared.navbar.clickSignOut();
-    landing.verify();
+    navbar.expandAccountDropdown();
+    navbar.clickSignOut();
+    landingPage.verify();
   });
   
   // How to set up for test? Is it safe to simply delete all existing applications?
   it('should link to the catalog page if no applications are present', function() {
-    dashboardPage.catalogLink.click();
+    /*dashboardPage.catalogLink.click();
     catalogPage.verify();
     
     var target = 'dataverse';
@@ -53,7 +56,7 @@ describe('Labs Workbench Dashboard View', function() {
     
     dashboardPage.removeApp().then(function() {
       dashboardPage.catalogLink.click();
-    });
+    });*/
   });
   /*
   describe('With Applications', function() {

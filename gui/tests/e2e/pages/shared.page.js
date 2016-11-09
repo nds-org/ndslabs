@@ -1,56 +1,6 @@
-/* global angular:false expect:false inject:false module:false element:false browser:false by:false */
+/* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
 'use strict';
-
-// Always visible
-var brandNav = function() {  return element(by.id('navbarBrand')); };
-
-// Account dropdown (always visible)
-var helpDropdown = function() {  return element(by.id('helpDropdown')); };
-var helpLink = function(index) {  return element(by.id('helpLink' + index + 'Nav')); };
-var apiReferenceNav = function() {  return element(by.id('apiNav')); };
-var contactUsNav = function() {  return element(by.id('contactUsNav')); };
-
-// Non-auth
-var signupNav = function() {  return element(by.id('signupNav')); };
-var signinNav = function() {  return element(by.id('signinNav')); };
-
-// Auth-only
-var applicationsNav = function() {  return element(by.id('applicationsNav')); };
-var catalogNav = function() {  return element(by.id('catalogNav')); };
-var filesNav = function() {  return element(by.id('filesNav')); };
-
-// Account dropdown (auth-only)
-var accountDropdown = function() {  return element(by.id('accountDropdown')); };
-var changePasswordNav = function() {  return element(by.id('resetPasswordNav')); };
-var logoutBtn = function() {  return element(by.id('logoutBtn')); };
-
-module.exports.navbar = {
-  clickBrandNav: function() {  brandNav().click(); },
-  expandHelpDropdown: function() {  helpDropdown().click(); },
-  clickHelpLink: function(index) {  helpLink(index).click(); },
-  clickApiReferenceNav: function() {  apiReferenceNav().click(); },
-  clickContactUsNav: function() {  contactUsNav().click(); },
-  
-  clickSignIn: function() {  signinNav().click(); },
-  clickSignUp: function() {  signupNav().click(); },
-  
-  clickApplicationsNav: function() {  applicationsNav().click(); },
-  clickCatalogNav: function() {  catalogNav().click(); },
-  clickFilesNav: function() {  filesNav().click(); },
-  expandAccountDropdown: function() {  accountDropdown().click(); },
-  clickChangePasswordNav: function() {  changePasswordNav().click(); },
-  clickSignOut: function() {  logoutBtn().click(); },
-};
-
-// Footer links
-var supportEmailLink = function() {  return element(by.id('supportEmailLink')); };
-var uIllinoisLink = function() {  return element(by.id('uIllinoisLink')); };
-
-module.exports.footer = {
-  clickUIllinoisLink: function() {  uIllinoisLink().click(); },
-  clickSupportEmailLink: function() {  supportEmailLink().click(); },
-};
 
 module.exports.config = {
   // Load these from the e2e.auth.json file

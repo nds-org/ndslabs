@@ -2,21 +2,17 @@
 
 'use strict';
 
-module.exports = {};
-
 // Load other modules
 var helpers = require('../helpers.e2e.js');
 var shared = require('./shared.page.js');
 
-var landing = require('./landing.page.js');
-var login = require('./login.page.js');
+var Navbar = require('./navbar.page.js');
 var DashboardPage = require('./dashboard.page.js');
 
-var dashboardPage = new DashboardPage();
-
 var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
+
 var PAGE_TITLE = 'Labs Workbench Catalog';
-var PAGE_ROUTE = TEST_HOSTNAME + '/store';
+var PAGE_ROUTE = /https\:\/\/.+\/\#\/store/;
 
 var CatalogPage = function() {
   this.searchFilter = element(by.id('filterTagsInput'));
@@ -44,17 +40,20 @@ var CatalogPage = function() {
   this.deleteBtn = function(cardOrRow) {  return cardOrRow.element(by.id('deleteBtn')); };
 };
 
-// Navigate to the catalog view
+// Navigate to the Catalog view
 CatalogPage.prototype.get = function(loggedIn) {
+  var navbar = new Navbar();
+  var dashboardPage = new DashboardPage();
+
   dashboardPage.get(loggedIn);
-  shared.navbar.clickCatalogNav();
+  navbar.clickCatalogNav();
   
   this.verify();
 };
 
 // Ensure that we are on the correct page
 CatalogPage.prototype.verify = function() { 
-  expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
+  expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 

@@ -2,18 +2,18 @@
 
 'use strict';
 
-module.exports = {}
-
 var helpers = require('../helpers.e2e.js');
 var shared = require('./shared.page.js');
-var landing = require('./landing.page.js');
-var login = require('./login.page.js');
+
+var LandingPage = require('./landing.page.js');
+var LoginPage = require('./login.page.js');
+var Navbar = require('./navbar.page.js');
 
 var TEST_USERNAME = shared.config.TEST_USERNAME;
 var TEST_PASSWORD = shared.config.TEST_PASSWORD;
 
 var PAGE_TITLE = 'Labs Workbench Dashboard';
-var PAGE_ROUTE = shared.config.TEST_HOSTNAME + '/home';
+var PAGE_ROUTE = /https\:\/\/.+\/\#\/home/
 
 var EC = protractor.ExpectedConditions;
 
@@ -48,25 +48,29 @@ var DashboardPage = function() {
   this.viewConfigBtn = function(svc) {  return svc.element(by.id('viewConfigBtn')); };
 };
 
-// Ensure we are on the dashboard page
-DashboardPage.prototype.verify = function() {
-  expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
-  expect(browser.getTitle()).toEqual(PAGE_TITLE);
-};
-
-// Navigate to the dashboard view
+// Navigate to the Dashboard view
 DashboardPage.prototype.get = function(loggedIn) {
+  var navbar = new Navbar();
+  var landingPage = new LandingPage();
+  var loginPage = new LoginPage();
+  
   if (loggedIn) {
-    landing.get();
-    shared.navbar.clickApplicationsNav();
+    landingPage.get();
+    navbar.clickApplicationsNav();
   } else {
-    login.get();
-    login.enterUsername(TEST_USERNAME);
-    login.enterPassword(TEST_PASSWORD);
-    login.clickLogin();
+    loginPage.get();
+    loginPage.enterUsername(TEST_USERNAME);
+    loginPage.enterPassword(TEST_PASSWORD);
+    loginPage.clickLogin();
   }
   
   this.verify();
+};
+
+// Ensure we are on the dashboard page
+DashboardPage.prototype.verify = function() {
+  expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
+  expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 
 DashboardPage.prototype.removeApp = function(applicationId) {

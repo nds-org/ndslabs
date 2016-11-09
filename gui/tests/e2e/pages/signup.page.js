@@ -1,4 +1,4 @@
-/* global angular:false expect:false inject:false module:false element:false browser:false by:false */
+/* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
 'use strict';
 
@@ -8,83 +8,78 @@ module.exports = {};
 var helpers = require('../helpers.e2e.js');
 var shared = require('./shared.page.js');
 
-var landing = require('./landing.page.js');
-var login = require('./login.page.js');
+var LoginPage = require('./login.page.js');
 
 var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 
 var PAGE_TITLE = 'Sign Up for Labs Workbench';
 var PAGE_ROUTE = TEST_HOSTNAME + '/register';
 
-// IDs for page elements
-var INPUT_FULLNAME_ID = 'fullName';
-var INPUT_EMAIL_ID = 'email';
-var INPUT_ORGANIZATION_ID = 'organization';
-var INPUT_DESCRIPTION_ID = 'description';
-var INPUT_USERNAME_ID = 'namespace';
-var INPUT_PASSWORD_ID = 'password';
-var INPUT_CONFIRM_PASSWORD_ID = 'passwordConf';
-var LINK_USE_POLICY_ID = 'usePolicyLink';
-var BTN_SUBMIT_ID = 'submitBtn';
 
-var fullNameInput = function() {  return element(by.id(INPUT_FULLNAME_ID)); };
-var emailInput = function() {  return element(by.id(INPUT_EMAIL_ID)); };
-var organizationInput = function() {  return element(by.id(INPUT_ORGANIZATION_ID)); };
-var descriptionInput = function() {  return element(by.id(INPUT_DESCRIPTION_ID)); };
-var usernameInput = function() {  return element(by.id(INPUT_USERNAME_ID)); };
-var passwordInput = function() {  return element(by.id(INPUT_PASSWORD_ID)); };
-var passwordConfirmInput = function() {  return element(by.id(INPUT_CONFIRM_PASSWORD_ID)); };
-
-var usePolicyLink = function() {  return element(by.id(LINK_USE_POLICY_ID)); };
-
-var submitBtn = function() {  return element(by.id(BTN_SUBMIT_ID)); };
-
-// Ensure that we are on the correct page
-module.exports.verify = function() {
-  expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
-  expect(browser.getTitle()).toEqual(PAGE_TITLE);
+var SignUpPage = function() {
+  this.fullNameInput = element(by.id('fullName'));
+  this.emailInput = element(by.id('email'));
+  this.organizationInput = element(by.id('organization'));
+  this.descriptionInput = element(by.id('description'));
+  this.usernameInput = element(by.id('namespace'));
+  this.passwordInput = element(by.id('password'));
+  this.passwordConfirmInput = element(by.id('passwordConf'));
+  
+  this.usePolicyLink = element(by.id('usePolicyLink'));
+  
+  this.submitBtn = element(by.id('submitBtn'));
 };
  
 // Navigate to the Sign Up view
-module.exports.get = function() { 
-  login.get();
-  login.clickRequestAccessLink();
+SignUpPage.prototype.get = function() {
+  var loginPage = new LoginPage();
   
-  module.exports.verify();
+  loginPage.get();
+  loginPage.clickRequestAccessLink();
+  
+  this.verify();
 };
 
-module.exports.enterFullName = function(text) {
-  fullNameInput().sendKeys(text);
+// Ensure that we are on the correct page
+SignUpPage.prototype.verify = function() {
+  expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
+  expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 
-module.exports.enterEmail = function(text) {
-  emailInput().sendKeys(text);
+SignUpPage.prototype.enterFullName = function(text) {
+  this.fullNameInput.sendKeys(text);
 };
 
-module.exports.enterOrganization = function(text) {
-  organizationInput().sendKeys(text);
+SignUpPage.prototype.enterEmail = function(text) {
+  this.emailInput.sendKeys(text);
 };
 
-module.exports.enterDescription = function(text) {
-  descriptionInput().sendKeys(text);
+SignUpPage.prototype.enterOrganization = function(text) {
+  this.organizationInput.sendKeys(text);
 };
 
-module.exports.enterUsername = function(text) {
-  usernameInput().sendKeys(text);
+SignUpPage.prototype.enterDescription = function(text) {
+  this.descriptionInput.sendKeys(text);
 };
 
-module.exports.enterPassword = function(text) {
-  passwordInput().sendKeys(text);
+SignUpPage.prototype.enterUsername = function(text) {
+  this.usernameInput.sendKeys(text);
 };
 
-module.exports.enterPasswordConfirmation = function(text) {
-  passwordConfirmInput().sendKeys(text);
+SignUpPage.prototype.enterPassword = function(text) {
+  this.passwordInput.sendKeys(text);
 };
 
-module.exports.clickSubmit = function() {
-  submitBtn().click();
+SignUpPage.prototype.enterPasswordConfirmation = function(text) {
+  this.passwordConfirmInput.sendKeys(text);
 };
 
-module.exports.clickUsePolicyLink = function() {
-  usePolicyLink().click();
+SignUpPage.prototype.clickSubmit = function() {
+  this.submitBtn.click();
 };
+
+SignUpPage.prototype.clickUsePolicyLink = function() {
+  this.usePolicyLink.click();
+};
+
+module.exports = SignUpPage;
