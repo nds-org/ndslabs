@@ -1,34 +1,38 @@
-/* global angular:false expect:false inject:false module:false element:false browser:false by:false */
+/* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
 'use strict';
-
-module.exports = {};
 
 // Load other modules
 var helpers = require('../helpers.e2e.js');
 var shared = require('./shared.page.js');
 
-var catalog = require('./catalog.page.js');
+var CatalogPage = require('./catalog.page.js');
 
 var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 
 // TODO: How to handle "edit" case?
 // TODO: How to handle "spec name" in title?
 // TODO: How to handle "id" in url?
-var PAGE_TITLE = 'Add Application';
-var PAGE_ROUTE = TEST_HOSTNAME + '/store/add';
+var PAGE_TITLE = /Add Application/;
+var PAGE_ROUTE = /https\:\/\/.+\/\#\/store\/add/;
 
-// Ensure that we are on the correct page
-module.exports.verify = function() { 
-  expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
-  expect(browser.getTitle()).toEqual(PAGE_TITLE);
+var AddSpecPage = function() {
+  
 };
 
-module.exports.get = function(loggedIn) {
-  catalog.get(loggedIn);
-  catalog.clickCreateButton();
+// Navigate to the Add Spec view
+AddSpecPage.prototype.get = function(loggedIn) {
+  var catalogPage = new CatalogPage();
+  catalogPage.get(loggedIn);
+  catalogPage.createButton.click();
 	
-  module.exports.verify();
+  this.verify();
+};
+
+// Ensure that we are on the correct page
+AddSpecPage.prototype.verify = function() { 
+  expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
+  expect(browser.getTitle()).toMatch(PAGE_TITLE);
 };
 
 /**
@@ -42,3 +46,5 @@ module.exports.get = function(loggedIn) {
 /**
  * Insert public Getter functions here for user interactions
  */
+
+module.exports = AddSpecPage;

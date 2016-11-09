@@ -1,4 +1,4 @@
-/* global angular:false expect:false inject:false module:false element:false browser:false by:false */
+/* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
 'use strict';
 
@@ -8,7 +8,8 @@ module.exports = {};
 var helpers = require('../helpers.e2e.js');
 var shared = require('./shared.page.js');
 
-var landing = require('./landing.page.js');
+var Navbar = require('./navbar.page.js');
+var LandingPage = require('./landing.page.js');
 
 var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 
@@ -17,28 +18,32 @@ var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 var PAGE_TITLE = 'Swagger UI';
 var PAGE_ROUTE = TEST_HOSTNAME + '/swagger';
 
+var SwaggerUiPage = function() {
+  /**
+   * Insert public Getters here for page elements
+   */
+};
+
+// Naviagte to Swagger UI view
+SwaggerUiPage.prototype.get = function() {
+  var landingPage = new LandingPage();
+  var navbar = new Navbar();
+  landingPage.get();
+  
+  navbar.expandHelpDropdown();
+  navbar.clickApiReferenceNav();
+	
+  this.verify();
+};
+
 // Ensure that we are on the correct page
-module.exports.verify = function() { 
+SwaggerUiPage.prototype.verify = function() { 
   expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 
-module.exports.get = function() {
-  landing.get();
-  shared.navbar.expandHelpDropdown();
-  shared.navbar.clickApiReferenceNav();
-	
-  module.exports.verify();
-};
-
 /**
- * Insert private member vars here for page element IDs
+ * Insert public functions here for user interactions
  */
 
-/**
- * Insert private Getter functions here for page elements
- */
-
-/**
- * Insert public Getter functions here for user interactions
- */
+module.exports = SwaggerUiPage;

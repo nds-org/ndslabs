@@ -1,4 +1,4 @@
-/* global angular:false expect:false inject:false module:false element:false browser:false by:false */
+/* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
 'use strict';
 
@@ -7,71 +7,75 @@ module.exports = {}
 var helpers = require('../helpers.e2e.js');
 var shared = require('./shared.page.js');
 
-var dashboard = require('./dashboard.page.js');
-var login = require('./login.page.js');
-
 var PAGE_TITLE = 'Labs Workbench Landing Page';
 var PAGE_ROUTE = shared.config.TEST_HOSTNAME + '/';
 
-var learnMoreBtn = function() {  return element(by.id('learnMoreBtn')); };
-var signInBtn = function() { return element(by.id('signInBtn')); };
-var signUpBtn = function() {  return element(by.id('signUpBtn')); };
+var LandingPage = function() {
+  this.learnMoreBtn = element(by.id('learnMoreBtn'));
+  this.signInBtn = element(by.id('signInBtn'));
+  this.signUpBtn = element(by.id('signUpBtn'));
+  
+  this.dashboardLink = element(by.id('dashboardLink'));
+  this.catalogLink = element(by.id('catalogLink'));
+  this.catalogAddLink = element(by.id('catalogAddLink'));
+  
+  this.apiLink = element(by.id('apiLink'));
+  this.contactUsLink = element(by.id('contactUsLink'));
+  
+  this.helpLink = function(index) {  return element(by.id('helpLink' + index.toString())); };
+};
 
-var dashboardLink = function() {  return element(by.id('dashboardLink')); };
-var catalogLink = function() {  return element(by.id('catalogLink')); };
-var catalogAddLink = function() {  return element(by.id('catalogAddLink')); };
-
-var apiLink = function() {  return element(by.id('apiLink')); };
-var contactUsLink = function() {  return element(by.id('contactUsLink')); };
-var helpLink = function(index) {  return element(by.id('helpLink' + index.toString())); };
+LandingPage.prototype.get = function() {
+  browser.get(PAGE_ROUTE);
+  this.verify();
+};
 
 // Ensure that we are on the landing page
-module.exports.verify = function() {
+LandingPage.prototype.verify = function() {
   expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 
-module.exports.get = function() {
-  browser.get(PAGE_ROUTE);
-  module.exports.verify();
+LandingPage.prototype.clickLearnMore = function() {
+  this.learnMoreBtn.click();
 };
 
-module.exports.clickLearnMore = function() {
-  learnMoreBtn().click();
+LandingPage.prototype.clickSignIn = function() {
+  this.signInBtn.click();
 };
 
-module.exports.clickSignIn = function() {
-  signInBtn().click();
+LandingPage.prototype.clickSignUp = function() {
+  this.signUpBtn.click();
 };
 
-module.exports.clickSignUp = function() {
-  signUpBtn().click();
+LandingPage.prototype.clickDashboardLink = function() {
+  this.dashboardLink.click();
 };
 
-module.exports.clickDashboardLink = function() {
-  dashboardLink().click();
+LandingPage.prototype.clickCatalogLink = function() {
+  this.catalogLink.click();
 };
 
-module.exports.clickCatalogLink = function() {
-  catalogLink().click();
+LandingPage.prototype.clickCatalogAddLink = function() {
+  this.catalogAddLink.click();
 };
 
-module.exports.clickCatalogAddLink = function() {
-  catalogAddLink().click();
-};
-
-module.exports.clickApiLink = function(predicate) {
+LandingPage.prototype.clickApiLink = function(predicate) {
+  var context = this;
   helpers.scrollToAndThen(0,10000, function () {
-    apiLink().click();
+    context.apiLink.click();
   }).then(predicate);
 };
 
-module.exports.clickContactUsLink = function(predicate) {
+LandingPage.prototype.clickContactUsLink = function(predicate) {
+  var context = this;
   helpers.scrollToAndThen(0,10000, function () {
-    contactUsLink().click();
+    context.contactUsLink.click();
   }).then(predicate);
 };
 
-module.exports.clickHelpLink = function(index) {
-  helpLink(index).click();
+LandingPage.prototype.clickHelpLink = function(index) {
+  this.helpLink(index).click();
 };
+
+module.exports = LandingPage;

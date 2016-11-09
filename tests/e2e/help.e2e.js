@@ -1,4 +1,4 @@
-/* global angular:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
+/* global protractor:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
 
 'use strict';
 
@@ -6,9 +6,10 @@
 var helpers = require("./helpers.e2e.js");
 var shared = require("./pages/shared.page.js");
 
-var help = require('./pages/help.page.js');
-var dashboard = require('./pages/dashboard.page.js');
-var landing = require('./pages/landing.page.js');
+var Navbar = require('./pages/navbar.page.js');
+var ContactUsPage = require('./pages/help.page.js');
+var DashboardPage = require('./pages/dashboard.page.js');
+var LandingPage = require('./pages/landing.page.js');
 
 var generateTestMessage = function(type) { 
   return 'This is a test of the "' + type + '" feedback submission system.'
@@ -17,13 +18,18 @@ var generateTestMessage = function(type) {
 
 // help.e2e.js
 describe('Labs Workbench Contact Us View', function() {
+  var navbar = new Navbar();
+  var contactUsPage = new ContactUsPage();
+  var dashboardPage = new DashboardPage();
+  var landingPage = new LandingPage();
+  
   beforeAll(function() { 
     helpers.beforeAll();
   });
   
   beforeEach(function() {
     helpers.beforeEach(); 
-    help.get();
+    contactUsPage.get();
   });
   
   afterEach(function() { 
@@ -35,12 +41,12 @@ describe('Labs Workbench Contact Us View', function() {
   });
   
   it('should link to the support forum', function() {
-    help.clickForum();
+    contactUsPage.clickForum();
     helpers.expectNewTabOpen(shared.config.FORUM_LINK);
   });
   
   it('should link to the support chat', function() {
-    help.clickChat();
+    contactUsPage.clickChat();
     helpers.expectNewTabOpen(shared.config.CHAT_LINK);
   });
   
@@ -53,13 +59,13 @@ describe('Labs Workbench Contact Us View', function() {
   
   describe('After Sign In', function() {
     beforeAll(function() {
-      dashboard.get();
+      dashboardPage.get();
     });
     
     afterAll(function() {
-      shared.navbar.expandAccountDropdown();
-      shared.navbar.clickSignOut();
-      landing.verify();
+      navbar.expandAccountDropdown();
+      navbar.clickSignOut();
+      landingPage.verify();
     });
     
     // FIXME: How to do verify error-handling with PageObjects
@@ -79,8 +85,8 @@ describe('Labs Workbench Contact Us View', function() {
   
     it('should allow the user to send a help request', function() {
       // This should be a noop, as 'Request Help' is selected by default
-      help.selectFeedbackType(0); 
-      help.enterFeedbackMessage(generateTestMessage('Request Help'));
+      contactUsPage.selectFeedbackType(0); 
+      contactUsPage.enterFeedbackMessage(generateTestMessage('Request Help'));
       
       expectBtn(true);
       

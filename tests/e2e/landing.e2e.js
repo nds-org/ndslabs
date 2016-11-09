@@ -1,4 +1,4 @@
-/* global angular:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
+/* global protractor:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
 
 'use strict';
 
@@ -6,104 +6,113 @@
 var helpers = require("./helpers.e2e.js");
 var shared = require("./pages/shared.page.js");
 
-var landing = require("./pages/landing.page.js");
-var login = require("./pages/login.page.js");
-var signup = require("./pages/signup.page.js");
+var Navbar = require('./pages/navbar.page.js');
+var LandingPage = require("./pages/landing.page.js");
+var LoginPage = require("./pages/login.page.js");
+var SignUpPage = require("./pages/signup.page.js");
 
-var dashboard = require("./pages/dashboard.page.js");
-var catalog = require("./pages/catalog.page.js");
-var addSpec = require("./pages/addEditSpec.page.js");
+var DashboardPage = require("./pages/dashboard.page.js");
+var CatalogPage = require("./pages/catalog.page.js");
+var AddSpecPage = require("./pages/addEditSpec.page.js");
 
 // landing.e2e.js
 describe('Labs Workbench Landing Page View', function() {
+  var navbar = new Navbar();
+  var landingPage = new LandingPage();
+  var loginPage = new LoginPage();
+  var signUpPage = new SignUpPage();
+  var dashboardPage = new DashboardPage();
+  var catalogPage = new CatalogPage();
+  var addSpecPage = new AddSpecPage();
+  
   beforeAll(function() { helpers.beforeAll(); });
   beforeEach(function() { 
     helpers.beforeEach(); 
-    landing.get();
+    landingPage.get();
   });
   afterEach(function() { helpers.afterEach(); });
   afterAll(function() { helpers.afterAll(); });
   
   it('should offer a "Learn More" button', function() {
-    landing.clickLearnMore();
+    landingPage.clickLearnMore();
     helpers.expectNewTabOpen(shared.config.FEATURE_OVERVIEW_LINK);
   });
   
   it('should offer sign-up', function() {
-    landing.clickSignUp();
+    landingPage.clickSignUp();
     
     // We should be taken to the Sign Up View
-    signup.verify();
+    signUpPage.verify();
   });
 
   it('should offer sign-in', function() {
-    landing.clickSignIn();
+    landingPage.clickSignIn();
     
     // We should be taken to the Login View
-    login.verify();
+    loginPage.verify();
   });
   
   it('should link to the Feature Overview wiki page', function() {
-    landing.clickHelpLink(0);
+    landingPage.clickHelpLink(0);
     helpers.expectNewTabOpen(shared.config.FEATURE_OVERVIEW_LINK);
   });
   
   it('should link to the F.A.Q. wiki page', function() {
-    landing.clickHelpLink(1);
+    landingPage.clickHelpLink(1);
     helpers.expectNewTabOpen(shared.config.FAQ_LINK);
   });
   
   it('should link to the User\'s Guide wiki page', function() {
-    landing.clickHelpLink(2);
+    landingPage.clickHelpLink(2);
     helpers.expectNewTabOpen(shared.config.USER_GUIDE_LINK);
   });
   
   it('should link to the Developer\'s Guide wiki page', function() {
-    landing.clickHelpLink(3);
+    landingPage.clickHelpLink(3);
     helpers.expectNewTabOpen(shared.config.DEV_GUIDE_LINK);
   });
   
   it('should link to the Acceptable Use Policy wiki page', function() {
-    landing.clickHelpLink(4);
+    landingPage.clickHelpLink(4);
     helpers.expectNewTabOpen(shared.config.USE_POLICY_LINK);
   });
   
   it('should link user to the "Swagger UI" view', function() { 
-    landing.clickApiLink(function() {
+    landingPage.clickApiLink(function() {
       expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/swagger');
     });
   });
   
   it('should link user to the "Contact Us" view', function() { 
-    landing.clickContactUsLink(function() {
+    landingPage.clickContactUsLink(function() {
       expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/contact');
     });
   });
   
   describe('Landing Page View while Signed In', function() {
     beforeAll(function() {
-      dashboard.get();
+      dashboardPage.get();
     });
     
     afterAll(function() {
-      shared.navbar.expandAccountDropdown();
-      shared.navbar.clickSignOut();
-      landing.verify();
+      navbar.expandAccountDropdown();
+      navbar.clickSignOut();
+      landingPage.verify();
     });
       
     it('should link user to dashboard', function() {
-      landing.clickDashboardLink();
-      dashboard.verify();
+      landingPage.clickDashboardLink();
+      dashboardPage.verify();
     });
     
     it('should link user to catalog', function() {
-      landing.clickCatalogLink();
-      catalog.verify();
+      landingPage.clickCatalogLink();
+      catalogPage.verify();
     });
     
     it('should link user to create a new application', function() {
-      landing.clickCatalogAddLink();
-      addSpec.verify();
+      landingPage.clickCatalogAddLink();
+      addSpecPage.verify();
     });
   });
 });

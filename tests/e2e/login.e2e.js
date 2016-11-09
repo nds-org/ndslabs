@@ -1,4 +1,4 @@
-/* global angular:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
+/* global protractor:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
 
 'use strict';
 
@@ -6,11 +6,12 @@
 var helpers = require('./helpers.e2e.js');
 var shared = require('./pages/shared.page.js');
 
-var login = require('./pages/login.page.js');
-var landing = require('./pages/landing.page.js');
-var dashboard = require('./pages/dashboard.page.js');
-var reset = require('./pages/reset.page.js');
-var signup = require('./pages/signup.page.js');
+var Navbar = require('./pages/navbar.page.js');
+var LoginPage = require('./pages/login.page.js');
+var LandingPage = require('./pages/landing.page.js');
+var DashboardPage = require('./pages/dashboard.page.js');
+var ResetPasswordPage = require('./pages/reset.page.js');
+var SignUpPage = require('./pages/signup.page.js');
 
 var TEST_USERNAME = shared.config.TEST_USERNAME;
 var TEST_PASSWORD = shared.config.TEST_PASSWORD;
@@ -18,11 +19,18 @@ var TEST_INVALID_PASSWORD_MISMATCH = shared.config.TEST_INVALID_PASSWORD_MISMATC
 
 // login.e2e.js
 describe('Labs Workbench Login View', function() {
+  var navbar = new Navbar();
+  var loginPage = new LoginPage();
+  var signUpPage = new SignUpPage();
+  var resetPasswordPage = new ResetPasswordPage();
+  var dashboardPage = new DashboardPage();
+  var landingPage = new LandingPage();
+  
   beforeAll(function() { helpers.beforeAll(); });
   
   beforeEach(function() { 
     helpers.beforeEach(); 
-    login.get();
+    loginPage.get();
   });
   
   afterEach(function() { helpers.afterEach(); });
@@ -31,37 +39,37 @@ describe('Labs Workbench Login View', function() {
   // Do not allow user past login view with invalid credentials
   it('should deny invalid login', function() {
     // Attempt to sign in with invalid credentials
-    login.enterUsername(TEST_USERNAME);
-    login.enterPassword(TEST_INVALID_PASSWORD_MISMATCH);
-    login.clickLogin();
+    loginPage.enterUsername(TEST_USERNAME);
+    loginPage.enterPassword(TEST_INVALID_PASSWORD_MISMATCH);
+    loginPage.clickLogin();
     
     // We should remain on the login view
-    login.verify();
+    loginPage.verify();
   });
   
   // Allow user past login view with valid credentials
   it('should accept valid login', function() {
     // Attempt to sign in with valid credentials
-    login.enterUsername(TEST_USERNAME);
-    login.enterPassword(TEST_PASSWORD);
-    login.clickLogin();
+    loginPage.enterUsername(TEST_USERNAME);
+    loginPage.enterPassword(TEST_PASSWORD);
+    loginPage.clickLogin();
     
     // We should be taken to the Dashboard View
-    dashboard.verify();
+    dashboardPage.verify();
     
     // Log out to reset test state
-    shared.navbar.expandAccountDropdown();
-    shared.navbar.clickSignOut();
-    landing.verify();
+    navbar.expandAccountDropdown();
+    navbar.clickSignOut();
+    landingPage.verify();
   });
   
   it('should link to the Reset Password view', function() {
-    login.clickForgotPasswordLink();
-    reset.verify();
+    loginPage.clickForgotPasswordLink();
+    resetPasswordPage.verify();
   });
   
   it('should link to the Sign Up view', function() {
-    login.clickRequestAccessLink();
-    signup.verify();
+    loginPage.clickRequestAccessLink();
+    signUpPage.verify();
   });
 });

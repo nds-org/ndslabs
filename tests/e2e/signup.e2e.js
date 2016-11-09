@@ -1,4 +1,4 @@
-/* global angular:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
+/* global protractor:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
 
 'use strict';
 
@@ -6,8 +6,8 @@
 var helpers = require("./helpers.e2e.js");
 var shared = require("./pages/shared.page.js");
 
-var signup = require('./pages/signup.page.js');
-var landing = require ('./pages/landing.page.js');
+var SignUpPage = require('./pages/signup.page.js');
+var LandingPage = require ('./pages/landing.page.js');
 
 // Valid test data
 var TEST_NEW_FULLNAME = shared.config.TEST_NEW_FULLNAME;
@@ -23,15 +23,18 @@ var TEST_INVALID_USERNAME_REGISTERED = shared.config.TEST_USERNAME;   // Usernam
 var TEST_INVALID_PASSWORD_TOOSHORT = shared.config.TEST_INVALID_PASSWORD_TOOSHORT; // Password is too short
 var TEST_INVALID_PASSWORD_MISMATCH = shared.config.TEST_INVALID_PASSWORD_MISMATCH; // Password is incorrect
 
-// signup.e2e.js
+// signUpPage.e2e.js
 describe('Labs Workbench Sign Up View', function() {
+  var landingPage = new LandingPage();
+  var signUpPage = new SignUpPage();
+  
   beforeAll(function() { 
     helpers.beforeAll();
   });
   
   beforeEach(function() {
     helpers.beforeEach(); 
-    signup.get();
+    signUpPage.get();
   });
   
   afterEach(function() { 
@@ -54,22 +57,22 @@ describe('Labs Workbench Sign Up View', function() {
   
   it('should link to the "Acceptable Use Policy" wiki page', function(){ 
     helpers.scrollToAndThen(0, 10000, function() {
-      signup.clickUsePolicyLink();
+      signUpPage.clickUsePolicyLink();
       helpers.expectNewTabOpen(shared.config.USE_POLICY_LINK);
     });
   });
   
   it('should allow submission with valid information', function() {
     // All fields are required
-    signup.enterFullName(TEST_NEW_FULLNAME);
-    signup.enterEmail(TEST_NEW_EMAIL);
-    signup.enterOrganization(TEST_NEW_ORGANIZATION);
-    signup.enterDescription(TEST_NEW_DESCRIPTION);
-    signup.enterUsername(TEST_NEW_USERNAME);
+    signUpPage.enterFullName(TEST_NEW_FULLNAME);
+    signUpPage.enterEmail(TEST_NEW_EMAIL);
+    signUpPage.enterOrganization(TEST_NEW_ORGANIZATION);
+    signUpPage.enterDescription(TEST_NEW_DESCRIPTION);
+    signUpPage.enterUsername(TEST_NEW_USERNAME);
     
     // Passwords must match
-    signup.enterPassword(TEST_NEW_PASSWORD);
-    signup.enterPasswordConfirmation(TEST_NEW_PASSWORD);
+    signUpPage.enterPassword(TEST_NEW_PASSWORD);
+    signUpPage.enterPasswordConfirmation(TEST_NEW_PASSWORD);
     
     // FIXME: Figure out how to automate account approval workflow
     expectBtn(true);
@@ -77,17 +80,17 @@ describe('Labs Workbench Sign Up View', function() {
   
   it('should require user to enter a name', function() {
     // Do not enter a name
-    signup.enterFullName('');
+    signUpPage.enterFullName('');
     
     // All other fields are valid
-    signup.enterEmail(TEST_NEW_EMAIL);
-    signup.enterOrganization(TEST_NEW_ORGANIZATION);
-    signup.enterDescription(TEST_NEW_DESCRIPTION);
-    signup.enterUsername(TEST_NEW_USERNAME);
+    signUpPage.enterEmail(TEST_NEW_EMAIL);
+    signUpPage.enterOrganization(TEST_NEW_ORGANIZATION);
+    signUpPage.enterDescription(TEST_NEW_DESCRIPTION);
+    signUpPage.enterUsername(TEST_NEW_USERNAME);
     
     // Passwords must match
-    signup.enterPassword(TEST_NEW_PASSWORD);
-    signup.enterPasswordConfirmation(TEST_NEW_PASSWORD);
+    signUpPage.enterPassword(TEST_NEW_PASSWORD);
+    signUpPage.enterPasswordConfirmation(TEST_NEW_PASSWORD);
     
     // FIXME: Figure out how to automate account approval workflow
     expectBtn(false);
@@ -95,17 +98,17 @@ describe('Labs Workbench Sign Up View', function() {
   
   it('should require user to enter an email', function() {
     // Do not enter an email address
-    signup.enterEmail('');
+    signUpPage.enterEmail('');
     
     // All other fields are valid
-    signup.enterFullName(TEST_NEW_FULLNAME);
-    signup.enterOrganization(TEST_NEW_ORGANIZATION);
-    signup.enterDescription(TEST_NEW_DESCRIPTION);
-    signup.enterUsername(TEST_NEW_USERNAME);
+    signUpPage.enterFullName(TEST_NEW_FULLNAME);
+    signUpPage.enterOrganization(TEST_NEW_ORGANIZATION);
+    signUpPage.enterDescription(TEST_NEW_DESCRIPTION);
+    signUpPage.enterUsername(TEST_NEW_USERNAME);
     
     // Passwords must match
-    signup.enterPassword(TEST_NEW_PASSWORD);
-    signup.enterPasswordConfirmation(TEST_NEW_PASSWORD);
+    signUpPage.enterPassword(TEST_NEW_PASSWORD);
+    signUpPage.enterPasswordConfirmation(TEST_NEW_PASSWORD);
     
     // FIXME: Figure out how to automate account approval workflow
     expectBtn(false);
@@ -113,17 +116,17 @@ describe('Labs Workbench Sign Up View', function() {
   
   it('should require user to enter an organization', function() {
     // Do not enter an organization
-    signup.enterOrganization('');
+    signUpPage.enterOrganization('');
     
     // All other fields are valid
-    signup.enterEmail(TEST_NEW_EMAIL);
-    signup.enterFullName(TEST_NEW_FULLNAME);
-    signup.enterDescription(TEST_NEW_DESCRIPTION);
-    signup.enterUsername(TEST_NEW_USERNAME);
+    signUpPage.enterEmail(TEST_NEW_EMAIL);
+    signUpPage.enterFullName(TEST_NEW_FULLNAME);
+    signUpPage.enterDescription(TEST_NEW_DESCRIPTION);
+    signUpPage.enterUsername(TEST_NEW_USERNAME);
     
     // Passwords must match
-    signup.enterPassword(TEST_NEW_PASSWORD);
-    signup.enterPasswordConfirmation(TEST_NEW_PASSWORD);
+    signUpPage.enterPassword(TEST_NEW_PASSWORD);
+    signUpPage.enterPasswordConfirmation(TEST_NEW_PASSWORD);
     
     // FIXME: Figure out how to automate account approval workflow
     expectBtn(false);
@@ -131,17 +134,17 @@ describe('Labs Workbench Sign Up View', function() {
   
   it('should require user to enter a description', function() {
     // Do not enter a description
-    signup.enterDescription('');
+    signUpPage.enterDescription('');
     
     // All other fields are valid
-    signup.enterEmail(TEST_NEW_EMAIL);
-    signup.enterFullName(TEST_NEW_FULLNAME);
-    signup.enterOrganization(TEST_NEW_ORGANIZATION);
-    signup.enterUsername(TEST_NEW_USERNAME);
+    signUpPage.enterEmail(TEST_NEW_EMAIL);
+    signUpPage.enterFullName(TEST_NEW_FULLNAME);
+    signUpPage.enterOrganization(TEST_NEW_ORGANIZATION);
+    signUpPage.enterUsername(TEST_NEW_USERNAME);
     
     // Passwords must match
-    signup.enterPassword(TEST_NEW_PASSWORD);
-    signup.enterPasswordConfirmation(TEST_NEW_PASSWORD);
+    signUpPage.enterPassword(TEST_NEW_PASSWORD);
+    signUpPage.enterPasswordConfirmation(TEST_NEW_PASSWORD);
     
     // FIXME: Figure out how to automate account approval workflow
     expectBtn(false);
@@ -149,17 +152,17 @@ describe('Labs Workbench Sign Up View', function() {
   
   it('should require user to enter a username', function() {
     // Do not enter a description
-    signup.enterUsername('');
+    signUpPage.enterUsername('');
     
     // All other fields are valid
-    signup.enterEmail(TEST_NEW_EMAIL);
-    signup.enterFullName(TEST_NEW_FULLNAME);
-    signup.enterOrganization(TEST_NEW_ORGANIZATION);
-    signup.enterDescription(TEST_NEW_DESCRIPTION);
+    signUpPage.enterEmail(TEST_NEW_EMAIL);
+    signUpPage.enterFullName(TEST_NEW_FULLNAME);
+    signUpPage.enterOrganization(TEST_NEW_ORGANIZATION);
+    signUpPage.enterDescription(TEST_NEW_DESCRIPTION);
     
     // Passwords must match
-    signup.enterPassword(TEST_NEW_PASSWORD);
-    signup.enterPasswordConfirmation(TEST_NEW_PASSWORD);
+    signUpPage.enterPassword(TEST_NEW_PASSWORD);
+    signUpPage.enterPasswordConfirmation(TEST_NEW_PASSWORD);
     
     // FIXME: Figure out how to automate account approval workflow
     expectBtn(false);
@@ -167,15 +170,15 @@ describe('Labs Workbench Sign Up View', function() {
   
   it('should require user to enter a password', function() {
     // Do not enter a description
-    signup.enterPassword('');
+    signUpPage.enterPassword('');
     
     // All other fields are valid
-    signup.enterEmail(TEST_NEW_EMAIL);
-    signup.enterFullName(TEST_NEW_FULLNAME);
-    signup.enterOrganization(TEST_NEW_ORGANIZATION);
-    signup.enterDescription(TEST_NEW_DESCRIPTION);
-    signup.enterUsername(TEST_NEW_USERNAME);
-    signup.enterPasswordConfirmation(TEST_NEW_PASSWORD);
+    signUpPage.enterEmail(TEST_NEW_EMAIL);
+    signUpPage.enterFullName(TEST_NEW_FULLNAME);
+    signUpPage.enterOrganization(TEST_NEW_ORGANIZATION);
+    signUpPage.enterDescription(TEST_NEW_DESCRIPTION);
+    signUpPage.enterUsername(TEST_NEW_USERNAME);
+    signUpPage.enterPasswordConfirmation(TEST_NEW_PASSWORD);
     
     // FIXME: Figure out how to automate account approval workflow
     expectBtn(false);
@@ -183,15 +186,15 @@ describe('Labs Workbench Sign Up View', function() {
   
   it('should require user to enter a password confirmation', function() {
     // Do not enter a password confirmation
-    signup.enterPasswordConfirmation('');
+    signUpPage.enterPasswordConfirmation('');
     
     // All other fields are valid
-    signup.enterEmail(TEST_NEW_EMAIL);
-    signup.enterFullName(TEST_NEW_FULLNAME);
-    signup.enterOrganization(TEST_NEW_ORGANIZATION);
-    signup.enterDescription(TEST_NEW_DESCRIPTION);
-    signup.enterUsername(TEST_NEW_USERNAME);
-    signup.enterPassword(TEST_NEW_PASSWORD);
+    signUpPage.enterEmail(TEST_NEW_EMAIL);
+    signUpPage.enterFullName(TEST_NEW_FULLNAME);
+    signUpPage.enterOrganization(TEST_NEW_ORGANIZATION);
+    signUpPage.enterDescription(TEST_NEW_DESCRIPTION);
+    signUpPage.enterUsername(TEST_NEW_USERNAME);
+    signUpPage.enterPassword(TEST_NEW_PASSWORD);
     
     // FIXME: Figure out how to automate account approval workflow
     expectBtn(false);
@@ -199,52 +202,52 @@ describe('Labs Workbench Sign Up View', function() {
   
   it('should not allow submission with a previously registered username', function() {
     // Reuse a username that has already been registered
-    signup.enterUsername(TEST_INVALID_USERNAME_REGISTERED);
+    signUpPage.enterUsername(TEST_INVALID_USERNAME_REGISTERED);
     
     // All other fields are valid
-    signup.enterFullName(TEST_NEW_FULLNAME);
-    signup.enterEmail(TEST_NEW_EMAIL);
-    signup.enterOrganization(TEST_NEW_ORGANIZATION);
-    signup.enterDescription(TEST_NEW_DESCRIPTION);
-    signup.enterPassword(TEST_NEW_PASSWORD);
-    signup.enterPasswordConfirmation(TEST_NEW_PASSWORD);
+    signUpPage.enterFullName(TEST_NEW_FULLNAME);
+    signUpPage.enterEmail(TEST_NEW_EMAIL);
+    signUpPage.enterOrganization(TEST_NEW_ORGANIZATION);
+    signUpPage.enterDescription(TEST_NEW_DESCRIPTION);
+    signUpPage.enterPassword(TEST_NEW_PASSWORD);
+    signUpPage.enterPasswordConfirmation(TEST_NEW_PASSWORD);
     
     // We should be able to click submit
     helpers.scrollToAndThen(0, 10000, function() {
       // Our request should fail, since this username is already registered
-      signup.clickSubmit();
-      signup.verify();
+      signUpPage.clickSubmit();
+      signUpPage.verify();
     });
   });
   
   it('should not allow submission with a previously registered e-mail address', function() {
     // Reuse an email that has already been registered
-    signup.enterEmail(TEST_INVALID_EMAIL_REGISTERED);
+    signUpPage.enterEmail(TEST_INVALID_EMAIL_REGISTERED);
     
     // All other fields are valid
-    signup.enterFullName(TEST_NEW_FULLNAME);
-    signup.enterOrganization(TEST_NEW_ORGANIZATION);
-    signup.enterDescription(TEST_NEW_DESCRIPTION);
-    signup.enterUsername(TEST_NEW_USERNAME);
-    signup.enterPassword(TEST_NEW_PASSWORD);
-    signup.enterPasswordConfirmation(TEST_NEW_PASSWORD);
+    signUpPage.enterFullName(TEST_NEW_FULLNAME);
+    signUpPage.enterOrganization(TEST_NEW_ORGANIZATION);
+    signUpPage.enterDescription(TEST_NEW_DESCRIPTION);
+    signUpPage.enterUsername(TEST_NEW_USERNAME);
+    signUpPage.enterPassword(TEST_NEW_PASSWORD);
+    signUpPage.enterPasswordConfirmation(TEST_NEW_PASSWORD);
     
     helpers.scrollToAndThen(0, 10000, function() {
       // Our request should fail, since this e-mail is already registered
-      signup.clickSubmit();
-      signup.verify();
+      signUpPage.clickSubmit();
+      signUpPage.verify();
     });
   });
   
   it('should require password to match confirmation', function() {
     // All fields are required
-    signup.enterFullName(TEST_NEW_FULLNAME);
-    signup.enterEmail(TEST_NEW_EMAIL);
-    signup.enterOrganization(TEST_NEW_ORGANIZATION);
-    signup.enterDescription(TEST_NEW_DESCRIPTION);
-    signup.enterUsername(TEST_NEW_USERNAME);
-    signup.enterPassword(TEST_NEW_PASSWORD);
-    signup.enterPasswordConfirmation(TEST_INVALID_PASSWORD_MISMATCH);
+    signUpPage.enterFullName(TEST_NEW_FULLNAME);
+    signUpPage.enterEmail(TEST_NEW_EMAIL);
+    signUpPage.enterOrganization(TEST_NEW_ORGANIZATION);
+    signUpPage.enterDescription(TEST_NEW_DESCRIPTION);
+    signUpPage.enterUsername(TEST_NEW_USERNAME);
+    signUpPage.enterPassword(TEST_NEW_PASSWORD);
+    signUpPage.enterPasswordConfirmation(TEST_INVALID_PASSWORD_MISMATCH);
     
     // FIXME: Figure out how to automate account approval workflow
     expectBtn(false);
@@ -252,13 +255,13 @@ describe('Labs Workbench Sign Up View', function() {
   
   it('should require password to be longer than 6 characters', function() {
     // All fields are required
-    signup.enterFullName(TEST_NEW_FULLNAME);
-    signup.enterEmail(TEST_NEW_EMAIL);
-    signup.enterOrganization(TEST_NEW_ORGANIZATION);
-    signup.enterDescription(TEST_NEW_DESCRIPTION);
-    signup.enterUsername(TEST_NEW_USERNAME);
-    signup.enterPassword(TEST_INVALID_PASSWORD_TOOSHORT);
-    signup.enterPasswordConfirmation(TEST_INVALID_PASSWORD_TOOSHORT);
+    signUpPage.enterFullName(TEST_NEW_FULLNAME);
+    signUpPage.enterEmail(TEST_NEW_EMAIL);
+    signUpPage.enterOrganization(TEST_NEW_ORGANIZATION);
+    signUpPage.enterDescription(TEST_NEW_DESCRIPTION);
+    signUpPage.enterUsername(TEST_NEW_USERNAME);
+    signUpPage.enterPassword(TEST_INVALID_PASSWORD_TOOSHORT);
+    signUpPage.enterPasswordConfirmation(TEST_INVALID_PASSWORD_TOOSHORT);
     
     // FIXME: Figure out how to automate account approval workflow
     expectBtn(false);
