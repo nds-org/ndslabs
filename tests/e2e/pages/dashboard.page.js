@@ -73,30 +73,26 @@ DashboardPage.prototype.verify = function() {
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 
-DashboardPage.prototype.removeApp = function(applicationId) {
-  var predicate = function(application) {  // What to do with our match
-    helpers.scrollIntoViewAndClick(application);
-    browser.wait(EC.elementToBeClickable(application), 5000);
-    application.click();
-    
-    var deleteBtn = application.element(by.id('deleteBtn'));
-    browser.wait(EC.elementToBeClickable(deleteBtn), 5000);
-    helpers.scrollIntoViewAndClick(deleteBtn);
-    
-    var confirmBtn = element(by.id('confirmBtn'));
-    browser.wait(EC.elementToBeClickable(confirmBtn), 5000);
-    helpers.scrollIntoViewAndClick(confirmBtn);
-    
-    browser.wait(3000);
-  };
-  
-  if (!applicationId && this.applications.count() > 1) {
-    predicate(this.applications.get(0));
-  } else {
-    return helpers.selectByModel(this.applications, "stack.id", function(application) { 
-      return application.id === applicationId; // How to know we've found our match
-    }, predicate);
+DashboardPage.prototype.shutdownApplication = function(application) {
+  application.click();
+  var shutdownBtn = application.shutdownBtn(application);
+  if (shutdownBtn.isPresent()) {
+    shutdownBtn.click();
+    this.confirmBtn.click();
   }
+};
+
+DashboardPage.prototype.removeApplication = function(application) {
+  application.click();
+  var deleteBtn = this.deleteBtn(application);
+  if (deleteBtn.isPresent()) {
+    deleteBtn.click();
+    this.confirmBtn.click();
+  }
+  /*return helpers.selectByModel(this.applications, "stack.id", function(application) { 
+    return application.id === application; // How to know we've found our match
+  }, predicate);*/
+  
 };
 
 module.exports = DashboardPage;

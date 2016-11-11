@@ -74,7 +74,8 @@ module.exports.scrollToAndThen = function(x, y, predicate) {
 
 // Scroll to the given WebElement, then execute the predicate function
 module.exports.scrollIntoViewAndClick = function(ele) {
-  browser.actions().mouseMove(ele).perform();
+  //return browser.actions().mouseMove(ele).perform();
+  return browser.executeScript('arguments[0].scrollIntoView()', ele.getWebElement());
 };
 
 module.exports.expectClass = function (selector, clazz) {
@@ -140,6 +141,10 @@ module.exports.beforeAll = function() {
   // See https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/2766
   browser.driver.manage().window().setSize(1280, 1024);
   //browser.driver.manage().window().maximize();
+  
+  // Disable CSS Animations
+  // See http://stackoverflow.com/questions/26584451/how-to-disable-animations-in-protractor-for-angular-js-application/32264842#32264842
+  browser.executeScript("document.body.className += ' notransition';");
 };
 
 // Misc shared setup to run before EACH test case
