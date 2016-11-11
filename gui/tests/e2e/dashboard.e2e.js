@@ -11,6 +11,8 @@ var LandingPage = require('./pages/landing.page.js');
 var DashboardPage = require('./pages/dashboard.page.js');
 var CatalogPage = require('./pages/catalog.page.js');
 
+
+    
 // dashboard.e2e.js
 describe('Labs Workbench Dashboard View', function() {
   var navbar = new Navbar();
@@ -18,14 +20,62 @@ describe('Labs Workbench Dashboard View', function() {
   var catalogPage = new CatalogPage();
   var dashboardPage = new DashboardPage();
   
-  beforeAll(function() { 
+  
+  var forEachApplication = function(func) {
+    var queue = [];
+    return dashboardPage.applications.each(function(application) {
+      queue.push(application);
+    }).then(function() {
+      // Operate on all applications
+      while (queue.length > 0) {
+        func(queue.shift());
+        helpers.sleep(1000);
+      }
+    });
+  };
+  
+  
+  var shutdownOne = function(application) {
+    application.click();
+    var shutdownBtn = dashboardPage.shutdownBtn(application);
+    if (shutdownBtn.isPresent()) {
+      shutdownBtn.click();
+      dashboardPage.confirmBtn.click();
+    }
+  };
+  
+  var removeOne = function(application) {
+    application.click();
+    var deleteBtn = dashboardPage.deleteBtn(application);
+    if (deleteBtn.isPresent()) {
+      deleteBtn.click();
+      dashboardPage.confirmBtn.click();
+      helpers.sleep(1000);
+    }
+  };
+  
+  beforeAll(function(done) { 
     helpers.beforeAll();
     dashboardPage.get();
     
     // TODO: Shut down all applications
     //console.log(dashboardPage.applications);
     
+    var shutdownQueue = [];
+    var removeQueue = [];
+    
     // FIXME: Remove all applications
+    dashboardPage.applications.each(function(application) {
+      shutdownQueue.push(application);
+      removeQueue.push(application);
+    }).then(function() {
+      // Remove all applications
+      while (removeQueue.length > 0) {
+        dashboardPage.removeApplication(removeQueue.shift());
+        helpers.sleep(1000);
+      }
+      done();
+    });
   });
   
   beforeEach(function() {
@@ -46,34 +96,42 @@ describe('Labs Workbench Dashboard View', function() {
   
   // How to set up for test? Is it safe to simply delete all existing applications?
   it('should link to the catalog page if no applications are present', function() {
-    /*dashboardPage.catalogLink.click();
+    console.log("Running test spec...");
+    dashboardPage.catalogLink.click();
     catalogPage.verify();
     
-    var target = 'dataverse';
-    catalogPage.installApp(target);
-    
-    dashboardPage.get(true);
-    
-    dashboardPage.removeApp().then(function() {
+    /*dashboardPage.removeApp().then(function() {
       dashboardPage.catalogLink.click();
     });*/
   });
-  /*
   describe('With Applications', function() {
     beforeAll(function() {  
       // Install an application
+      catalogPage.get(true);
+    
+      var target = 'toolmanager';
+      helpers.selectByModel(catalogPage.cards, "spec.key", function(key) { 
+        return key === target; // How to know we've found our match
+      }, 
+      function(card) {  // What to do with our match
+        catalogPage.addBtn(card).click();
+        dashboardPage.get(true);
+      });
     });
     
-    afterAll(function() { 
+    afterAll(function(done) { 
       // Remove the application
+      dashboardPage.applications.each(function(application) {
+        removeOne(application);
+        done();
+      })
     });
   
     // How to set up for test? Is it safe to simply delete all existing applications?
     it('should enumerate added applications', function() {
-      dashboard.clickCatalogLink();
-      catalog.verify();
+      expect(dashboardPage.applications.count()).toBe(1);
     });
-    
+    /*
     it('should allow the user to change the label of an application', function() {
       
     });
@@ -148,6 +206,6 @@ describe('Labs Workbench Dashboard View', function() {
     // FIXME: Test order should not affect success
     it('should allow the user to remove the application', function() {
       
-    });
-  });*/
+    });*/
+  });
 });
