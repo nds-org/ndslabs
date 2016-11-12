@@ -22,39 +22,6 @@ describe('Labs Workbench Dashboard View', function() {
   
   var WAIT_TIME_APPLICATION_SHUTDOWN = 120000;
   
-  var forEachApplication = function(func) {
-    var queue = [];
-    return dashboardPage.applications.each(function(application) {
-      queue.push(application);
-    }).then(function() {
-      // Operate on all applications
-      while (queue.length > 0) {
-        func(queue.shift());
-        helpers.sleep(1000);
-      }
-    });
-  };
-  
-  var shutdownOne = function(application) {
-    application.click();
-    var shutdownBtn = dashboardPage.shutdownBtn(application);
-    if (shutdownBtn.isPresent()) {
-      shutdownBtn.click();
-      dashboardPage.confirmBtn.click();
-      helpers.sleep(1000);
-    }
-  };
-  
-  var removeOne = function(application) {
-    application.click();
-    var deleteBtn = dashboardPage.deleteBtn(application);
-    if (deleteBtn.isPresent()) {
-      deleteBtn.click();
-      dashboardPage.confirmBtn.click();
-      helpers.sleep(1000);
-    }
-  };
-  
   beforeAll(function(done) {
     helpers.beforeAll();
     dashboardPage.get();
@@ -69,8 +36,6 @@ describe('Labs Workbench Dashboard View', function() {
     var stopCount = 0;
     var removeCount = 0;
     
-    var flow = browser.controlFlow();
-    
     // FIXME: Shutdown and remove all applications
     dashboardPage.applications.then(function(applications) {
       for (let i = 0; i < applications.length; i++) {
@@ -81,8 +46,8 @@ describe('Labs Workbench Dashboard View', function() {
         application.click();
         
         // Success == running => we need to shut it down
-        helpers.hasClass(application, 'panel-success').then(function(hasClass) {
-          if (hasClass) {
+        helpers.hasClass(application, 'panel-danger').then(function(hasClass) {
+          if (!hasClass) {
             console.log("Shutting down: " + i);
             let shutdownBtn = dashboardPage.shutdownBtn(application);
             shutdownBtn.click();
@@ -121,16 +86,10 @@ describe('Labs Workbench Dashboard View', function() {
   
   // How to set up for test? Is it safe to simply delete all existing applications?
   it('should link to the catalog page if no applications are present', function() {
-    console.log("Running test spec...");
-    expect(dashboardPage.catalogLink.isPresent()).toBe(true);
-    expect(dashboardPage.catalogLink.isEnabled()).toBe(true);
     dashboardPage.catalogLink.click();
     catalogPage.verify();
-    
-    /*dashboardPage.removeApp().then(function() {
-      dashboardPage.catalogLink.click();
-    });*/
   });
+
   describe('With Applications', function() {
     beforeAll(function() {  
       // Install an application

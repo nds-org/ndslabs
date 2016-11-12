@@ -24,10 +24,12 @@ var DashboardPage = function() {
   this.applications = element.all(by.repeater("stack in configuredStacks | orderBy:['name','id'] track by stack.id"));
   this.services = function(app) {  return app.element.all(by.repeater("svc in stack.services track by svc.id")); };
   
-  // Modal Stuff
+  // Shared Modal Stuff
+  this.nameInput = element(by.id('nameInput'));       // Rename modal
   this.confirmBtn = element(by.id('confirmBtn'));
   this.cancelBtn = element(by.id('cancelBtn'));
   this.closeBtn = element(by.id('closeBtn'));
+  
 
   // Application Stuff
   this.renameBtn = function(app) {  return app.element(by.id('renameBtn')); };
