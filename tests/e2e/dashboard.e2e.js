@@ -11,7 +11,7 @@ var LandingPage = require('./pages/landing.page.js');
 var DashboardPage = require('./pages/dashboard.page.js');
 var CatalogPage = require('./pages/catalog.page.js');
 
-
+var EC = protractor.ExpectedConditions;
     
 // dashboard.e2e.js
 describe('Labs Workbench Dashboard View', function() {
@@ -20,6 +20,7 @@ describe('Labs Workbench Dashboard View', function() {
   var catalogPage = new CatalogPage();
   var dashboardPage = new DashboardPage();
   
+  var WAIT_TIME_APPLICATION_SHUTDOWN = 120000;
   
   var forEachApplication = function(func) {
     var queue = [];
@@ -34,13 +35,13 @@ describe('Labs Workbench Dashboard View', function() {
     });
   };
   
-  
   var shutdownOne = function(application) {
     application.click();
     var shutdownBtn = dashboardPage.shutdownBtn(application);
     if (shutdownBtn.isPresent()) {
       shutdownBtn.click();
       dashboardPage.confirmBtn.click();
+      helpers.sleep(1000);
     }
   };
   
@@ -54,7 +55,7 @@ describe('Labs Workbench Dashboard View', function() {
     }
   };
   
-  beforeAll(function(done) { 
+  beforeAll(function(done) {
     helpers.beforeAll();
     dashboardPage.get();
     
@@ -64,19 +65,43 @@ describe('Labs Workbench Dashboard View', function() {
     var shutdownQueue = [];
     var removeQueue = [];
     
-    // FIXME: Remove all applications
-    dashboardPage.applications.each(function(application) {
-      shutdownQueue.push(application);
-      removeQueue.push(application);
-    }).then(function() {
-      // Remove all applications
-      while (removeQueue.length > 0) {
-        dashboardPage.removeApplication(removeQueue.shift());
-        helpers.sleep(1000);
+    var expandCount = 0;
+    var stopCount = 0;
+    var removeCount = 0;
+    
+    var flow = browser.controlFlow();
+    
+    // FIXME: Shutdown and remove all applications
+    dashboardPage.applications.then(function(applications) {
+      for (let i = 0; i < applications.length; i++) {
+        let application = applications[i];
+          
+        browser.wait(EC.elementToBeClickable(application), WAIT_TIME_APPLICATION_SHUTDOWN);
+        console.log("Expanding: " + i);
+        application.click();
+        
+        // Success == running => we need to shut it down
+        helpers.hasClass(application, 'panel-success').then(function(hasClass) {
+          if (hasClass) {
+            console.log("Shutting down: " + i);
+            let shutdownBtn = dashboardPage.shutdownBtn(application);
+            shutdownBtn.click();
+            dashboardPage.confirmBtn.click();
+          }
+          
+          let deleteBtn = dashboardPage.deleteBtn(application);
+          browser.wait(EC.elementToBeClickable(deleteBtn), WAIT_TIME_APPLICATION_SHUTDOWN);
+          deleteBtn.click();
+          dashboardPage.confirmBtn.click();
+          console.log("Removed: " + i);
+        });
       }
+      
+      return applications;
+    }).then(function() {
       done();
     });
-  });
+  }, 600000);
   
   beforeEach(function() {
     helpers.beforeEach(); 
@@ -97,6 +122,8 @@ describe('Labs Workbench Dashboard View', function() {
   // How to set up for test? Is it safe to simply delete all existing applications?
   it('should link to the catalog page if no applications are present', function() {
     console.log("Running test spec...");
+    expect(dashboardPage.catalogLink.isPresent()).toBe(true);
+    expect(dashboardPage.catalogLink.isEnabled()).toBe(true);
     dashboardPage.catalogLink.click();
     catalogPage.verify();
     

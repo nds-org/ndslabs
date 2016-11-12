@@ -78,8 +78,7 @@ module.exports.scrollIntoViewAndClick = function(ele) {
   return browser.executeScript('arguments[0].scrollIntoView()', ele.getWebElement());
 };
 
-module.exports.expectClass = function (selector, clazz) {
-  var ele = element(selector);
+module.exports.hasClass = function (ele, clazz) {
   return ele.getAttribute('class').then(function (classes) {
       return classes.split(' ').indexOf(clazz) !== -1;
   });
