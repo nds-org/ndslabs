@@ -74,20 +74,30 @@ DashboardPage.prototype.verify = function() {
 };
 
 DashboardPage.prototype.shutdownApplication = function(application) {
-  application.click();
-  var shutdownBtn = application.shutdownBtn(application);
+  //if (!shutdownBtn.isPresent()) {
+    application.click();
+  //}
+  
+  var shutdownBtn = this.shutdownBtn(application);
   if (shutdownBtn.isPresent()) {
     shutdownBtn.click();
     this.confirmBtn.click();
+  } else {
+    console.log("ERROR: Shutdown button cannot be clicked: not present");
   }
 };
 
 DashboardPage.prototype.removeApplication = function(application) {
-  application.click();
+  //if (!deleteBtn.isPresent()) {
+    application.click();
+  //}
+  
   var deleteBtn = this.deleteBtn(application);
   if (deleteBtn.isPresent()) {
     deleteBtn.click();
     this.confirmBtn.click();
+  } else {
+    console.log("ERROR: Delete button cannot be clicked: not present");
   }
   /*return helpers.selectByModel(this.applications, "stack.id", function(application) { 
     return application.id === application; // How to know we've found our match
