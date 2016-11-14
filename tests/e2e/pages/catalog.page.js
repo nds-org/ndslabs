@@ -88,7 +88,7 @@ CatalogPage.prototype.toggleCardsView = function(setTo) {
 
 CatalogPage.prototype.installApplication = function(specKey) {
   var model = this;
-  helpers.selectByModel(this.cards, "spec.key", function(key) { 
+  helpers.selectByModel(model.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
   }, 
   function(card) {  // What to do with our match

@@ -12,8 +12,8 @@ var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 // TODO: How to handle "edit" case?
 // TODO: How to handle "service name" in title?
 // TODO: How to handle "stackServiceId" in url?
-var PAGE_TITLE = /Add Service/;
-var PAGE_ROUTE = /https\:\/\/.+\/\#\/home\/.+\/add\/.+/;
+var PAGE_TITLE = /(Add|Edit) Application Service(\: .*)?/;
+var PAGE_ROUTE = /https\:\/\/.+\/\#\/home\/.+\/(add|edit)\/?.*/;
 
 var AddServicePage = function() {
   this.cfgBadge = element(by.id('cfgBadge'));
