@@ -171,13 +171,13 @@ describe('Labs Workbench Dashboard View', function() {
       });
     });
     
-    it('should prevent basic auth toggle on user applications', function() {
+    /*it('should prevent basic auth toggle on user applications', function() {
       // TODO
     });
     
     it('should prevent basic auth toggle on authRequired applications', function() {
       // TODO
-    });
+    });*/
     
     it('should link to each application service\'s help documentation', function() {
       dashboardPage.applications.each(function(application) {
@@ -200,9 +200,31 @@ describe('Labs Workbench Dashboard View', function() {
       });
     });
     
-    it('should allow the user to add optional services to the application', function() {
+   /*it('should allow the user to add optional services to their application', function() {
       // TODO
     });
+    
+    it('should allow the user to remove optional services from their application', function() {
+      // TODO
+    });*/
+    
+    // Test order should not affect success
+    it('should allow the user to remove the application', function() {
+      dashboardPage.applications.each(function(application) {
+        application.click();
+        
+        browser.wait(EC.elementToBeClickable(dashboardPage.deleteBtn(application)), WAIT_TIME_APPLICATION_STARTUP);
+        dashboardPage.deleteBtn(application).click();
+        dashboardPage.confirmBtn.click();
+      });
+      
+      // Reinstall the application to reset test state
+      catalogPage.get(true);
+      installApplication('toolmanager');
+      
+      
+      dashboardPage.get(true);
+    }, 120000);
   
     // After starting an application
     describe('Running', function() {      
@@ -346,31 +368,5 @@ describe('Labs Workbench Dashboard View', function() {
         });
       }, 300000);
     });
-    
-   /*it('should allow the user to add optional services to their application', function() {
-      // TODO
-    });
-    
-    it('should allow the user to remove optional services from their application', function() {
-      // TODO
-    });*/
-    
-    // Test order should not affect success
-    it('should allow the user to remove the application', function() {
-      dashboardPage.applications.each(function(application) {
-        application.click();
-        
-        browser.wait(EC.elementToBeClickable(dashboardPage.deleteBtn(application)), WAIT_TIME_APPLICATION_STARTUP);
-        dashboardPage.deleteBtn(application).click();
-        dashboardPage.confirmBtn.click();
-      });
-      
-      // Reinstall the application to reset test state
-      catalogPage.get(true);
-      installApplication('toolmanager');
-      
-      
-      dashboardPage.get(true);
-    }, 120000);
   });
 });
