@@ -125,7 +125,7 @@
                     <li><a id="cloneBtn" href ng-click="cloneSpec(spec)"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
                     <li><a id="copyToClipboardBtn" href ng-click="copyToClipboard(spec)"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</a></li>
                     <li><a id="viewJsonBtn" href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> View JSON</a></li>
-                    <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
+                    <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}" target="_blank"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
                     <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="editBtn" ng-href="#/store/edit/{{ spec.key }}" ><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
                     <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="deleteBtn" href ng-click="openDelete(spec)"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
                   </ul>
@@ -148,7 +148,7 @@
               <div class="media">
                 <!-- Logo -->
                 <div class="media-left">
-                  <a id="cloneBtn" ng-href="{{ spec.info }}" target="_blank">
+                  <a id="logoLink" ng-href="{{ spec.info }}" target="_blank">
                     <img ng-if="spec.logo" style="margin:15px;max-height:64px;max-width:64px;min-height:64px;min-width:64px;" class="pull-right" ng-src="{{ spec.logo }}" alt="{{ spec.key }}" />
                   </a>
                 </div>
@@ -216,7 +216,7 @@
                       <li><a id="cloneBtn" href ng-click="cloneSpec(spec)"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
                       <li><a id="copyToClipboardBtn" href ng-click="copyToClipboard(spec)"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</a></li>
                       <li><a id="viewJsonBtn" href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> View JSON</a></li>
-                      <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
+                      <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}" target="_blank"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
                       <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="editBtn" ng-href="#/store/edit/{{ spec.key }}" ><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
                       <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="deleteBtn" href ng-click="openDelete(spec)"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
                     </ul>
