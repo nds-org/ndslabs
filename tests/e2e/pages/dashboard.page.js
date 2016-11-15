@@ -144,7 +144,7 @@ DashboardPage.prototype.shutdownAndRemoveAllApplications = function() {
     for (let i = 0; i < applications.length; i++) {
       let application = applications[i];
         
-      browser.wait(EC.elementToBeClickable(application), WAIT_TIME_APPLICATION_SHUTDOWN);
+      browser.wait(EC.elementToBeClickable(application), 120000);
       console.log("Expanding: " + i);
       application.click();
       
@@ -158,7 +158,7 @@ DashboardPage.prototype.shutdownAndRemoveAllApplications = function() {
         }
         
         let deleteBtn = self.deleteBtn(application);
-        browser.wait(EC.elementToBeClickable(deleteBtn), WAIT_TIME_APPLICATION_SHUTDOWN);
+        browser.wait(EC.elementToBeClickable(deleteBtn), 120000);
         deleteBtn.click();
         self.confirmBtn.click();
         console.log("Removed: " + i);
