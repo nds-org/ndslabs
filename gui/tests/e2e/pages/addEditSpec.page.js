@@ -127,7 +127,7 @@ var AddSpecPage = function() {
 AddSpecPage.prototype.get = function(loggedIn) {
   var catalogPage = new CatalogPage();
   catalogPage.get(loggedIn);
-  catalogPage.createButton.click();
+  catalogPage.createBtn.click();
 	
   this.verify();
 };

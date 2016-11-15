@@ -35,6 +35,14 @@ describe('Labs Workbench Add Spec View', function() {
     navbar.clickSignOut();
   });
   
+  var expectBtn = function(enabled) {
+    var saveBtn = addSpecPage.saveBtn;
+    helpers.scrollToAndThen(0, 10000, function() {
+      expect(saveBtn.isDisplayed()).toBe(true);
+      expect(saveBtn.isEnabled()).toBe(enabled ? true : false);  // Handles null / undefined / etc
+    });
+  };
+  
   it('should verify page', function() {
     
   });
