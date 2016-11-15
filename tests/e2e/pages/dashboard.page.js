@@ -145,13 +145,13 @@ DashboardPage.prototype.shutdownAndRemoveAllApplications = function() {
       let application = applications[i];
         
       browser.wait(EC.elementToBeClickable(application), 120000);
-      console.log("Expanding: " + i);
+      //console.log("Expanding: " + i);
       application.click();
       
       // Success == running => we need to shut it down
       helpers.hasClass(application, 'panel-danger').then(function(hasClass) {
         if (!hasClass) {
-          console.log("Shutting down: " + i);
+          //console.log("Shutting down: " + i);
           let shutdownBtn = self.shutdownBtn(application);
           shutdownBtn.click();
           self.confirmBtn.click();
@@ -161,7 +161,7 @@ DashboardPage.prototype.shutdownAndRemoveAllApplications = function() {
         browser.wait(EC.elementToBeClickable(deleteBtn), 120000);
         deleteBtn.click();
         self.confirmBtn.click();
-        console.log("Removed: " + i);
+        //console.log("Removed: " + i);
       });
     }
     

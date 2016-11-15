@@ -10,6 +10,10 @@ var LandingPage = require('./pages/landing.page.js');
 var DashboardPage = require('./pages/dashboard.page.js');
 var CatalogPage = require('./pages/catalog.page.js');
 
+var EC = protractor.ExpectedConditions;
+
+var TEST_HELP_LINK_TARGET = /https\:\/\/nationaldataservice\.atlassian\.net\/wiki\/display\/NDSC\/.+/;
+
 // catalog.e2e.js
 describe('Labs Workbench Catalog View', function() {  
   var navbar = new Navbar();
@@ -39,10 +43,6 @@ describe('Labs Workbench Catalog View', function() {
     landingPage.verify();
   });
   
-  it('should verify page', function() {
-    catalogPage.verify();
-  });
-  
   // FIXME: Directive error?
   /*it('should allow the user to filter using a search query', function() {
     //catalogPage.applyFilter('clowder');
@@ -59,58 +59,84 @@ describe('Labs Workbench Catalog View', function() {
     // TODO: Expect Dataverse
   });*/
   
-  describe('As Cards', function() {
-    beforeAll(function() {
-      //catalogPage.toggleCardsView(true);
+  describe('As Cards', function() {    
+    it('should allow the user to install an application', function() {
+      catalogPage.installApplication('toolmanager').then(function() {
+        dashboardPage.get(true);
+        dashboardPage.shutdownAndRemoveAllApplications();
+      });
     });
     
-    beforeEach(function() {
-      // View as cards by default
+    it('should allow the user to clone a spec', function() {
+      var specKey = 'toolmanager';
+      var cloneKey = 'clonedspec';
+      
+      catalogPage.cloneSpec(specKey, cloneKey).then(function() {
+        catalogPage.deleteSpec(cloneKey);
+      });
     });
-    
-    /*it('should allow the user to install an application', function() {
-      catalogPage.installApplication('toolmanager');
-      dashboardPage.shutdownAndRemoveAllApplications();
-    });*/
     
     it('should allow the user to view the JSON format of the spec', function() {
-      
-      // TODO: Expect Dataverse
+      var specKey = 'toolmanager';
+      catalogPage.viewJsonModal(specKey).then(function(match) {    
+        browser.wait(EC.visibilityOf(catalogPage.exportSpecModal), 5000);
+        catalogPage.cancelBtn.click();
+        // TODO: How to verify clipboard contents?
+      });
     });
     
-    // TODO: View JSON
-    // TODO: Clone
-    // TODO: Export
-    // TODO: Help Link(s)
+    it('should offer the user a help link', function() {
+      var specKey = 'toolmanager';
+      catalogPage.clickHelpLink(specKey).then(function() {
+        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET);
+      });
+    });
+    
+    it('should offer the user a link to view documentation', function() {
+      var specKey = 'toolmanager';
+      catalogPage.clickViewDocumentation(specKey).then(function() {
+        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET);
+      });
+    });
   });
   
   describe('As Table', function() {
-    beforeAll(function() {
-      
-    });
-    
     beforeEach(function() {
       // Toggle to view as table
       catalogPage.toggleCardsBtn.click();
+    });
+    
+    it('should allow the user to clone a spec', function() {
+      var specKey = 'toolmanager';
+      var cloneKey = 'clonedspec';
       
-      // Wait for the view to toggle
-      browser.wait(function() {
-        return helpers.hasClass(catalogPage.viewAsIcon, 'fa-table');
-      }, 5000);
-      
-      expect(helpers.hasClass(catalogPage.viewAsIcon, 'fa-table')).toBe(true);
-      expect(helpers.hasClass(catalogPage.viewAsIcon, 'fa-list')).toBe(false);
+      catalogPage.cloneSpec(specKey, cloneKey, true).then(function() {
+        catalogPage.deleteSpec(cloneKey, true);
+      });
     });
     
     it('should allow the user to view the JSON format of the spec', function() {
-      
-      // TODO: Expect Dataverse
+      var specKey = 'toolmanager';
+      catalogPage.viewJsonModal(specKey, true).then(function(match) {    
+        browser.wait(EC.visibilityOf(catalogPage.exportSpecModal), 5000);
+        catalogPage.cancelBtn.click();
+        // TODO: How to verify clipboard contents?
+      });
     });
     
-    // TODO: View JSON
-    // TODO: Clone
-    // TODO: Export
-    // TODO: Help Link(s)
+    it('should offer the user a help link', function() {
+      var specKey = 'toolmanager';
+      catalogPage.clickHelpLink(specKey, true).then(function() {
+        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET);
+      });
+    });
+    
+    it('should offer the user a link to view documentation', function() {
+      var specKey = 'toolmanager';
+      catalogPage.clickViewDocumentation(specKey, true).then(function() {
+        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET);
+      });
+    });
   });
   
   describe('User Specs', function() {
@@ -118,6 +144,7 @@ describe('Labs Workbench Catalog View', function() {
     // TODO: Create
     // TODO: Edit
     // TODO: Delete
+    // TODO: Clone error (duplicate key)
     
     describe('With an existing application instances', function (){
       // TODO: Edit (error due to existing instance)
