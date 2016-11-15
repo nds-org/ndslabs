@@ -16,9 +16,9 @@ var PAGE_ROUTE = /https\:\/\/.+\/\#\/store/;
 
 var CatalogPage = function() {
   this.searchFilter = element(by.id('filterTagsInput'));
+  this.removeTagBtn = element(by.css('[ng-click="$removeTag()"]'));
   this.toggleCardsBtn = element(by.id('toggleCardsBtn'));
-  this.tableIcon = element(by.id('tableIcon'));
-  this.cardsIcon = element(by.id('cardsIcon'));
+  this.viewAsIcon = element(by.id('viewAsIcon'));
   this.importButton = element(by.id('importApplicationBtn'));
   this.createButton = element(by.id('createApplicationBtn'));
   this.autocompleteSuggestions = element.all(by.repeater('item in suggestionList.items track by track(item)'));
@@ -58,7 +58,7 @@ CatalogPage.prototype.verify = function() {
 };
 
 CatalogPage.prototype.applyTag = function(tagName) {
-// Type into the search filter, but do not press enter
+  // Type into the search filter, but do not press enter
   this.searchFilter.sendKeys(tagName);
   
   // Select first (only) suggestion from the autocomplete
@@ -70,29 +70,35 @@ CatalogPage.prototype.applyTag = function(tagName) {
 
 CatalogPage.prototype.applyFilter = function(text) {
   // Type into the search filter
-  this.searchFilter().sendKeys(text);
+  this.searchFilter.sendKeys(text);
   
   // Press the Enter key
   browser.actions().sendKeys(protractor.Key.ENTER).perform();
 };
 
+// setTo === true => enable cards view
+// setTo === false => enable table view
+// setTo === null => toggle
 CatalogPage.prototype.toggleCardsView = function(setTo) {
-  if (setTo === true && this.cardsIcon().isPresent()) {         // Enable cards view
-    this.toggleCardsBtn().click();
-  } else if (setTo === false && this.tableIcon().isPresent()) { // Enable table view
-    this.toggleCardsBtn().click();
-  } else {                                                 // Toggle state
-    this.toggleCardsBtn().click();
-  } 
+  var self = this;
+  helpers.hasClass(this.viewAsIcon, 'fa-table').then(function(hasClass) {
+    if (hasClass && setTo !== true) {
+      // We are currently in the cards view
+      self.toggleCardsBtn.click();
+    } else if (!hasClass && setTo !== false) {
+      self.toggleCardsBtn.click();
+    }
+  });
 };
 
 CatalogPage.prototype.installApplication = function(specKey) {
   var model = this;
-  helpers.selectByModel(model.cards, "spec.key", function(key) { 
+  return helpers.selectByModel(model.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
   }, 
   function(card) {  // What to do with our match
-    helpers.scrollIntoViewAndClick(model.addBtn(card));
+    //helpers.scrollIntoViewAndClick(model.addBtn(card));
+    model.addBtn(card).click();
   });
 };
 
