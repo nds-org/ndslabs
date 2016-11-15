@@ -15,6 +15,7 @@ var PAGE_TITLE = 'Labs Workbench Catalog';
 var PAGE_ROUTE = /https\:\/\/.+\/\#\/store/;
 
 var CatalogPage = function() {
+  // Search Header
   this.searchFilter = element(by.id('filterTagsInput'));
   this.removeTagBtn = element(by.css('[ng-click="$removeTag()"]'));
   this.toggleCardsBtn = element(by.id('toggleCardsBtn'));
@@ -22,8 +23,16 @@ var CatalogPage = function() {
   this.importButton = element(by.id('importApplicationBtn'));
   this.createButton = element(by.id('createApplicationBtn'));
   this.autocompleteSuggestions = element.all(by.repeater('item in suggestionList.items track by track(item)'));
+  
+  // Mutually exclusive app spec list (view as)
   this.table = element.all(by.repeater("spec in specs | display | showTags:tags.selected | orderBy:'label' track by spec.key"));
   this.cards = element.all(by.repeater('spec in set'));
+  
+  // Modals
+  this.exportSpecModal = element(by.id('exportSpecModal'));
+  this.cloneSpecModal = element(by.id('cloneSpecModal'));
+  this.importSpecModal = element(by.id('importSpecModal'));
+  this.deleteSpecModal = element(by.id('deleteSpecModal'));
     
   // Pass in a card or table row to get its inner buttons
   this.addBtn = function(cardOrRow) {  return cardOrRow.element(by.id('addBtn')); };
@@ -81,12 +90,11 @@ CatalogPage.prototype.applyFilter = function(text) {
 // setTo === null => toggle
 CatalogPage.prototype.toggleCardsView = function(setTo) {
   var self = this;
-  helpers.hasClass(this.viewAsIcon, 'fa-table').then(function(hasClass) {
-    if (hasClass && setTo !== true) {
+  helpers.hasClass(this.viewAsIcon, 'fa-table').then(function(showCards) {
+    if ((showCards && setTo !== true) || (!showCards && setTo !== false)) {
       // We are currently in the cards view
       self.toggleCardsBtn.click();
-    } else if (!hasClass && setTo !== false) {
-      self.toggleCardsBtn.click();
+      console.log("Toggling view...");
     }
   });
 };
