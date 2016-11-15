@@ -42,9 +42,9 @@ var CatalogPage = function() {
   this.closeBtn = element(by.id('closeBtn'));
   
   // Other Modal Stuff
-  this.cloneKeyInput = element(by.id('cloneKeyInput'));            // Clone spec modal
-  this.editBtn = element(by.id('editBtn'));                        // Export spec modal
-  this.copyToClipboardModalBtn = element(by.id('copyToClipboardModalBtn'));                        // Export spec modal
+  this.cloneKeyInput = element(by.id('cloneKeyInput'));                     // Clone spec modal
+  this.editBtn = element(by.id('editBtn'));                                 // Export spec modal
+  this.copyToClipboardModalBtn = element(by.id('copyToClipboardModalBtn')); // Export spec modal
     
   // Pass in a card or table row to get its inner buttons
   this.logoLink = function(cardOrRow) {  return cardOrRow.element(by.id('logoLink')); };
@@ -123,6 +123,17 @@ CatalogPage.prototype.installApplication = function(specKey) {
   });
 };
 
+CatalogPage.prototype.viewApplicationOnDashboard = function(specKey) {
+  var self = this;
+  return helpers.selectByModel(self.cards, "spec.key", function(key) { 
+    return key === specKey; // How to know we've found our match
+  }, 
+  function(card) {  // What to do with our match
+    //helpers.scrollIntoViewAndClick(self.addBtn(card));
+    self.viewBtn(card).click();
+  });
+};
+
 CatalogPage.prototype.viewJsonModal = function(specKey, asTable) {
   var self = this;
   return helpers.selectByModel(asTable ? self.table : self.cards, "spec.key", function(key) { 
@@ -133,6 +144,20 @@ CatalogPage.prototype.viewJsonModal = function(specKey, asTable) {
     
     browser.wait(EC.elementToBeClickable(self.viewJsonBtn(match)), 5000);
     self.viewJsonBtn(match).click();
+  });
+};
+
+CatalogPage.prototype.copySpecToClipboard = function(specKey, asTable) {
+  var self = this;
+  return helpers.selectByModel(asTable ? self.table : self.cards, "spec.key", function(key) { 
+    return key === specKey; // How to know we've found our match
+  }, 
+  function(match) {  // What to do with our match
+    self.moreActionsDropdown(match).click();
+    
+    var copyToClipboardBtn = self.copyToClipboardBtn(match);
+    browser.wait(EC.elementToBeClickable(copyToClipboardBtn), 5000);
+    copyToClipboardBtn.click();
   });
 };
 
