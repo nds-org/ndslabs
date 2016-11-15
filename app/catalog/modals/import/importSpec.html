@@ -9,7 +9,7 @@
     <div class="row">
       <div class="col-sm-12">
         <form name="specImport" ng-submit="import()">
-          <textarea class="form-control" style="height:350px;" placeholder="Paste your JSON spec here..." ng-model="json" ng-model-options="{ updateOn: 'default blur', debounce: { 'default': 400, 'blur': 0 } }"></textarea>
+          <textarea id="specJsonTextArea" class="form-control" style="height:350px;" placeholder="Paste your JSON spec here..." ng-model="json" ng-model-options="{ updateOn: 'default blur', debounce: { 'default': 400, 'blur': 0 } }"></textarea>
         </form>
       </div>
     </div>
