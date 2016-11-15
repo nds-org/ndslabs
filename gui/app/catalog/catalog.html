@@ -29,8 +29,7 @@
         
         <div class="input-group-btn">
           <button id="toggleCardsBtn" type="button" class="btn btn-default" style="border-radius:0 !important;" ng-click="showCards = !showCards">
-            <span ng-if="showCards"><i id="tableIcon" class="fa fa-fw fa-table"></i></span>
-            <span ng-if="!showCards"><i id="cardsIcon" class="fa fa-fw fa-list"></i></span>
+            <i id="viewAsIcon" class="fa fa-fw" ng-class="{ 'fa-table': showCards, 'fa-list': !showCards }"></i>
           </button>
         </div>
         <div class="input-group-btn">
