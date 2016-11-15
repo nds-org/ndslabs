@@ -22,8 +22,8 @@ var CatalogPage = function() {
   this.removeTagBtn = element(by.css('[ng-click="$removeTag()"]'));
   this.toggleCardsBtn = element(by.id('toggleCardsBtn'));
   this.viewAsIcon = element(by.id('viewAsIcon'));
-  this.importButton = element(by.id('importApplicationBtn'));
-  this.createButton = element(by.id('createApplicationBtn'));
+  this.importBtn = element(by.id('importApplicationBtn'));
+  this.createBtn = element(by.id('createApplicationBtn'));
   this.autocompleteSuggestions = element.all(by.repeater('item in suggestionList.items track by track(item)'));
   
   // Mutually exclusive app spec list (view as)
@@ -37,11 +37,13 @@ var CatalogPage = function() {
   this.deleteSpecModal = element(by.id('deleteSpecModal'));
   
   // Shared Modal Stuff
+  this.validationText = element(by.id('validationText'));
   this.confirmBtn = element(by.id('confirmBtn'));
   this.cancelBtn = element(by.id('cancelBtn'));
   this.closeBtn = element(by.id('closeBtn'));
   
   // Other Modal Stuff
+  this.specJsonTextArea = element(by.id('specJsonTextArea'));               // Import spec modal
   this.cloneKeyInput = element(by.id('cloneKeyInput'));                     // Clone spec modal
   this.editBtn = element(by.id('editBtn'));                                 // Export spec modal
   this.copyToClipboardModalBtn = element(by.id('copyToClipboardModalBtn')); // Export spec modal
@@ -119,7 +121,9 @@ CatalogPage.prototype.installApplication = function(specKey, viewAsTable) {
   }, 
   function(match) {  // What to do with our match
     //helpers.scrollIntoViewAndClick(self.addBtn(card));
-    self.addBtn(match).click();
+    var addBtn = self.addBtn(match);
+    browser.wait(EC.elementToBeClickable(addBtn), 5000);
+    addBtn.click();
   });
 };
 
@@ -130,8 +134,30 @@ CatalogPage.prototype.viewApplicationOnDashboard = function(specKey, viewAsTable
   }, 
   function(match) {  // What to do with our match
     //helpers.scrollIntoViewAndClick(self.addBtn(card));
-    self.viewBtn(match).click();
+    var viewBtn = self.viewBtn(match);
+    browser.wait(EC.elementToBeClickable(viewBtn), 5000);
+    viewBtn.click();
   });
+};
+
+CatalogPage.prototype.importSpec = function(specJson) {
+  // Click the import button
+  var importBtn = this.importBtn;
+  browser.wait(EC.elementToBeClickable(importBtn), 5000);
+  importBtn.click();
+  
+  // Wait for the modal to popup
+  browser.wait(EC.visibilityOf(this.importSpecModal), 5000);
+  browser.wait(EC.visibilityOf(this.specJsonTextArea), 5000);
+  
+  // Input the new spec JSON
+  this.specJsonTextArea.clear();
+  this.specJsonTextArea.sendKeys(specJson);
+  
+  // Click the confirm button
+  var confirmBtn = this.confirmBtn;
+  browser.wait(EC.elementToBeClickable(confirmBtn), 5000);
+  confirmBtn.click();
 };
 
 CatalogPage.prototype.viewJsonModal = function(specKey, viewAsTable) {
@@ -140,7 +166,9 @@ CatalogPage.prototype.viewJsonModal = function(specKey, viewAsTable) {
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
-    self.moreActionsDropdown(match).click();
+    var moreActionsDropdown = self.moreActionsDropdown(match); 
+    browser.wait(EC.elementToBeClickable(moreActionsDropdown), 5000);
+    moreActionsDropdown.click();
     
     browser.wait(EC.elementToBeClickable(self.viewJsonBtn(match)), 5000);
     self.viewJsonBtn(match).click();
@@ -153,7 +181,9 @@ CatalogPage.prototype.copySpecToClipboard = function(specKey, viewAsTable) {
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
-    self.moreActionsDropdown(match).click();
+    var moreActionsDropdown = self.moreActionsDropdown(match); 
+    browser.wait(EC.elementToBeClickable(moreActionsDropdown), 5000);
+    moreActionsDropdown.click();
     
     var copyToClipboardBtn = self.copyToClipboardBtn(match);
     browser.wait(EC.elementToBeClickable(copyToClipboardBtn), 5000);
@@ -167,7 +197,9 @@ CatalogPage.prototype.cloneSpec = function(oldKey, newKey, viewAsTable) {
     return key === oldKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
-    self.moreActionsDropdown(match).click();
+    var moreActionsDropdown = self.moreActionsDropdown(match); 
+    browser.wait(EC.elementToBeClickable(moreActionsDropdown), 5000);
+    moreActionsDropdown.click();
     
     var cloneBtn = self.cloneBtn(match);
     browser.wait(EC.elementToBeClickable(cloneBtn), 5000);
@@ -177,8 +209,8 @@ CatalogPage.prototype.cloneSpec = function(oldKey, newKey, viewAsTable) {
     browser.wait(EC.visibilityOf(self.cloneKeyInput), 5000);
     
     var cloneKeyInput = self.cloneKeyInput;
-    // Field should default to current key
     
+    // Field should default to current key
     expect(cloneKeyInput.getAttribute('value')).toBe(oldKey);
     
     // Enter a new key
@@ -197,7 +229,9 @@ CatalogPage.prototype.editSpec = function(specKey, viewAsTable) {
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
-    self.moreActionsDropdown(match).click();
+    var moreActionsDropdown = self.moreActionsDropdown(match); 
+    browser.wait(EC.elementToBeClickable(moreActionsDropdown), 5000);
+    moreActionsDropdown.click();
     
     var editBtn = self.editBtn(match);
     browser.wait(EC.elementToBeClickable(editBtn), 5000);
@@ -211,7 +245,9 @@ CatalogPage.prototype.deleteSpec = function(specKey, viewAsTable) {
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
-    self.moreActionsDropdown(match).click();
+    var moreActionsDropdown = self.moreActionsDropdown(match); 
+    browser.wait(EC.elementToBeClickable(moreActionsDropdown), 5000);
+    moreActionsDropdown.click();
     
     var deleteBtn = self.deleteBtn(match);
     browser.wait(EC.elementToBeClickable(deleteBtn), 5000);
@@ -231,7 +267,9 @@ CatalogPage.prototype.clickViewDocumentation = function(specKey, viewAsTable) {
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
-    self.moreActionsDropdown(match).click();
+    var moreActionsDropdown = self.moreActionsDropdown(match); 
+    browser.wait(EC.elementToBeClickable(moreActionsDropdown), 5000);
+    moreActionsDropdown.click();
     
     var viewDocsBtn = self.viewDocsBtn(match);
     browser.wait(EC.elementToBeClickable(viewDocsBtn), 5000);
@@ -245,7 +283,9 @@ CatalogPage.prototype.clickHelpLink = function(specKey, viewAsTable) {
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
-    self.helpLink(match).click();
+    var helpLink = self.helpLink(match); 
+    browser.wait(EC.elementToBeClickable(helpLink), 5000);
+    helpLink.click();
   });
 };
 
