@@ -16,6 +16,7 @@ var PAGE_TITLE = /(Add|Edit) Application Service(\: .*)?/;
 var PAGE_ROUTE = /https\:\/\/.+\/\#\/home\/.+\/(add|edit)\/?.*/;
 
 var AddServicePage = function() {
+  this.configs = element.all(by.repeater("cfg in configs | orderBy:['spec.canOverride', 'spec.isPassword'] track by cfg.name"));
   this.cfgBadge = element(by.id('cfgBadge'));
   this.cfgNameInput = element(by.id('cfgName'));
   this.newCfgValueType = element(by.id('newCfgValueType'));
@@ -29,6 +30,7 @@ var AddServicePage = function() {
   this.newCfgValidationText = element(by.id('newCfgValidationText'));
   this.cfgAddBtn = element(by.id('cfgAddBtn'));
   
+  this.volumes = element.all(by.repeater("volume in volumes | orderBy:'canEdit':true"));
   this.volumeBadge = element(by.id('volumeBadge'));
   this.volumeFromInput = element(by.id('volumeFromInput'));
   this.volumeToInput = element(by.id('volumeToInput'));
@@ -37,6 +39,7 @@ var AddServicePage = function() {
   this.newVolumeTo = element(by.id('newVolumeTo'));
   this.volumeAddBtn = element(by.id('volumeAddBtn'));
   
+  this.dockerTags = element.all(by.repeater('tag in spec.image.tags track by tag'));
   this.dockerImageRegistryText = element(by.id('dockerImageRegistryText'));
   this.dockerImageNameText = element(by.id('dockerImageNameText'));
   this.dockerImageTagSelect = element(by.id('dockerImageTagSelect'));

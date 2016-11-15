@@ -39,16 +39,17 @@ module.exports.selectByModel = function(src, binding, matcher, predicate) {
       console.log("WARNING: No predicate defined... skipping...");
       return;
     }
+    
     if (matches.length > 1) {
       console.log("WARNING: more than one element found for given matcher - executing pedicate on the first match: " + matcher.toString());
     }
+    
     if (matches && matches.length > 0) {
       predicate(matches[0]);
     } else {
       console.log("WARNING: no elements found for given matcher - executing pedicate without arguments: " + matcher.toString());
       predicate();
     }
-    
   });
 };
 
