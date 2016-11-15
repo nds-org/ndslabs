@@ -14,6 +14,8 @@ var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 var PAGE_TITLE = 'Labs Workbench Catalog';
 var PAGE_ROUTE = /https\:\/\/.+\/\#\/store/;
 
+var EC = protractor.ExpectedConditions;
+
 var CatalogPage = function() {
   // Search Header
   this.searchFilter = element(by.id('filterTagsInput'));
@@ -33,8 +35,19 @@ var CatalogPage = function() {
   this.cloneSpecModal = element(by.id('cloneSpecModal'));
   this.importSpecModal = element(by.id('importSpecModal'));
   this.deleteSpecModal = element(by.id('deleteSpecModal'));
+  
+  // Shared Modal Stuff
+  this.confirmBtn = element(by.id('confirmBtn'));
+  this.cancelBtn = element(by.id('cancelBtn'));
+  this.closeBtn = element(by.id('closeBtn'));
+  
+  // Other Modal Stuff
+  this.cloneKeyInput = element(by.id('cloneKeyInput'));            // Clone spec modal
+  this.editBtn = element(by.id('editBtn'));                        // Export spec modal
+  this.copyToClipboardModalBtn = element(by.id('copyToClipboardModalBtn'));                        // Export spec modal
     
   // Pass in a card or table row to get its inner buttons
+  this.logoLink = function(cardOrRow) {  return cardOrRow.element(by.id('logoLink')); };
   this.addBtn = function(cardOrRow) {  return cardOrRow.element(by.id('addBtn')); };
   this.viewBtn = function(cardOrRow) {  return cardOrRow.element(by.id('viewBtn')); };
   this.helpLink = function(cardOrRow) {  return cardOrRow.element(by.id('helpLink')); };
@@ -100,13 +113,114 @@ CatalogPage.prototype.toggleCardsView = function(setTo) {
 };
 
 CatalogPage.prototype.installApplication = function(specKey) {
-  var model = this;
-  return helpers.selectByModel(model.cards, "spec.key", function(key) { 
+  var self = this;
+  return helpers.selectByModel(self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
   }, 
   function(card) {  // What to do with our match
-    //helpers.scrollIntoViewAndClick(model.addBtn(card));
-    model.addBtn(card).click();
+    //helpers.scrollIntoViewAndClick(self.addBtn(card));
+    self.addBtn(card).click();
+  });
+};
+
+CatalogPage.prototype.viewJsonModal = function(specKey, asTable) {
+  var self = this;
+  return helpers.selectByModel(asTable ? self.table : self.cards, "spec.key", function(key) { 
+    return key === specKey; // How to know we've found our match
+  }, 
+  function(match) {  // What to do with our match
+    self.moreActionsDropdown(match).click();
+    
+    browser.wait(EC.elementToBeClickable(self.viewJsonBtn(match)), 5000);
+    self.viewJsonBtn(match).click();
+  });
+};
+
+CatalogPage.prototype.cloneSpec = function(oldKey, newKey, asTable) {
+  var self = this;
+  return helpers.selectByModel(asTable ? self.table : self.cards, "spec.key", function(key) { 
+    return key === oldKey; // How to know we've found our match
+  }, 
+  function(match) {  // What to do with our match
+    self.moreActionsDropdown(match).click();
+    
+    var cloneBtn = self.cloneBtn(match);
+    browser.wait(EC.elementToBeClickable(cloneBtn), 5000);
+    cloneBtn.click();
+    
+    browser.wait(EC.visibilityOf(self.cloneSpecModal), 5000);
+    browser.wait(EC.visibilityOf(self.cloneKeyInput), 5000);
+    
+    var cloneKeyInput = self.cloneKeyInput;
+    // Field should default to current key
+    
+    expect(cloneKeyInput.getAttribute('value')).toBe(oldKey);
+    
+    // Enter a new key
+    cloneKeyInput.clear();
+    cloneKeyInput.sendKeys(newKey);
+    
+    var confirmBtn = self.confirmBtn;
+    browser.wait(EC.elementToBeClickable(confirmBtn), 5000);
+    confirmBtn.click();
+  });
+};
+
+CatalogPage.prototype.editSpec = function(specKey, asTable) {
+  var self = this;
+  return helpers.selectByModel(asTable ? self.table : self.cards, "spec.key", function(key) { 
+    return key === specKey; // How to know we've found our match
+  }, 
+  function(match) {  // What to do with our match
+    self.moreActionsDropdown(match).click();
+    
+    var editBtn = self.editBtn(match);
+    browser.wait(EC.elementToBeClickable(editBtn), 5000);
+    editBtn.click();
+  });
+};
+
+CatalogPage.prototype.deleteSpec = function(specKey, asTable) {
+  var self = this;
+  return helpers.selectByModel(asTable ? self.table : self.cards, "spec.key", function(key) { 
+    return key === specKey; // How to know we've found our match
+  }, 
+  function(match) {  // What to do with our match
+    self.moreActionsDropdown(match).click();
+    
+    var deleteBtn = self.deleteBtn(match);
+    browser.wait(EC.elementToBeClickable(deleteBtn), 5000);
+    deleteBtn.click();
+    
+    browser.wait(EC.visibilityOf(self.deleteSpecModal), 5000);
+    
+    var confirmBtn = self.confirmBtn;
+    browser.wait(EC.elementToBeClickable(confirmBtn), 5000);
+    confirmBtn.click();
+  });
+};
+
+CatalogPage.prototype.clickViewDocumentation = function(specKey, asTable) {
+  var self = this;
+  return helpers.selectByModel(asTable ? self.table : self.cards, "spec.key", function(key) { 
+    return key === specKey; // How to know we've found our match
+  }, 
+  function(match) {  // What to do with our match
+    self.moreActionsDropdown(match).click();
+    
+    var viewDocsBtn = self.viewDocsBtn(match);
+    browser.wait(EC.elementToBeClickable(viewDocsBtn), 5000);
+    viewDocsBtn.click();
+  });
+};
+
+CatalogPage.prototype.clickHelpLink = function(specKey, asTable) {
+  var self = this;
+  return helpers.selectByModel(asTable ? self.table : self.cards, "spec.key", function(key) { 
+    return key === specKey; // How to know we've found our match
+  }, 
+  function(match) {  // What to do with our match
+    self.helpLink(match).click();
   });
 };
 
