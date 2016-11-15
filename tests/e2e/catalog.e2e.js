@@ -9,6 +9,7 @@ var Navbar = require('./pages/navbar.page.js');
 var LandingPage = require('./pages/landing.page.js');
 var DashboardPage = require('./pages/dashboard.page.js');
 var CatalogPage = require('./pages/catalog.page.js');
+var AddEditSpecPage = require('./pages/addEditSpec.page.js');
 
 var EC = protractor.ExpectedConditions;
 
@@ -20,6 +21,8 @@ describe('Labs Workbench Catalog View', function() {
   var catalogPage = new CatalogPage();
   var dashboardPage = new DashboardPage();
   var landingPage = new LandingPage();
+  var addSpecPage = new AddEditSpecPage();
+  var editSpecPage = new AddEditSpecPage();
 
   beforeAll(function() { 
     helpers.beforeAll();
@@ -43,6 +46,36 @@ describe('Labs Workbench Catalog View', function() {
     landingPage.verify();
   });
   
+  it('should offer view as cards or table', function() {
+    expect(catalogPage.toggleCardsBtn.isPresent()).toBe(true);
+    expect(catalogPage.toggleCardsBtn.isDisplayed()).toBe(true);
+    expect(catalogPage.toggleCardsBtn.isEnabled()).toBe(true);
+    
+    // FIXME: Verify that cicking actually toggles view
+  });
+  
+  it('should allow the user to import a custom spec', function() {
+    var specKey = 'testing';
+    var specJson = '{ "key": "' + specKey + '" }';
+    catalogPage.importSpec(specJson);
+    
+    helpers.sleep(3000);
+    
+    // Verify imported spec exists
+    helpers.selectByModel(catalogPage.cards, "spec.key", function(key) { 
+      return key === specKey; // How to know we've found our match
+    }, 
+    function(match) {  // What to do with our match
+      expect(match.isPresent()).toBe(true);
+      expect(match.isDisplayed()).toBe(true);
+    });
+  });
+  
+  it('should allow the user to create a custom spec', function() {
+    catalogPage.createBtn.click();
+    addSpecPage.verify();
+  });
+  
   // FIXME: Directive error?
   /*it('should allow the user to filter using a search query', function() {
     //catalogPage.applyFilter('clowder');
@@ -59,7 +92,7 @@ describe('Labs Workbench Catalog View', function() {
     // TODO: Expect Dataverse
   });*/
   
-  describe('As Cards', function() {    
+  describe('As Cards', function() {
     it('should allow the user to install an application', function() {
       catalogPage.installApplication('toolmanager').then(function() {
         dashboardPage.get(true);
@@ -67,6 +100,7 @@ describe('Labs Workbench Catalog View', function() {
       });
     });
     
+    // TODO: Clone error (duplicate key)
     it('should allow the user to clone a spec', function() {
       var specKey = 'toolmanager';
       var cloneKey = 'clonedspec';
@@ -98,6 +132,45 @@ describe('Labs Workbench Catalog View', function() {
         helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET);
       });
     });
+    
+    describe('With Custom Spec', function() {
+      var specKey = 'toolmanager';
+      var cloneKey = 'clonedspec';
+      
+      beforeAll(function(done) {
+        catalogPage.get(true);
+        catalogPage.cloneSpec(specKey, cloneKey).then(function() {
+          done();
+        });
+      }, 5000);
+      
+      afterAll(function(done) {
+        catalogPage.get(true);
+        catalogPage.deleteSpec(cloneKey).then(function() {
+          done();
+        });
+      }, 5000);
+      
+      // TODO: Edit (error due to existing instance)
+      // TODO: Delete (error due to existing instance)
+      
+      it('should allow the user to edit a custom spec', function() {
+        
+        catalogPage.editSpec(cloneKey, true).then(function() {
+          editSpecPage.verify();
+          
+          // Delete clone to reset test state
+          catalogPage.get(true);
+        });
+      });
+      
+      it('should allow the user to delete a custom spec', function() {
+        catalogPage.deleteSpec(cloneKey);
+        
+        // Recreate the clone to reset test state
+        catalogPage.cloneSpec(specKey, cloneKey, true);
+      });
+    });
   });
   
   describe('As Table', function() {
@@ -106,6 +179,7 @@ describe('Labs Workbench Catalog View', function() {
       catalogPage.toggleCardsBtn.click();
     });
     
+    // TODO: Clone error (duplicate key)
     it('should allow the user to clone a spec', function() {
       var specKey = 'toolmanager';
       var cloneKey = 'clonedspec';
@@ -137,18 +211,40 @@ describe('Labs Workbench Catalog View', function() {
         helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET);
       });
     });
-  });
-  
-  describe('User Specs', function() {
-    // TODO: Import
-    // TODO: Create
-    // TODO: Edit
-    // TODO: Delete
-    // TODO: Clone error (duplicate key)
     
-    describe('With an existing application instances', function (){
+    describe('With Custom Spec', function() {
+      var specKey = 'toolmanager';
+      var cloneKey = 'clonedspec';
+      
+      beforeAll(function(done) {
+        catalogPage.get(true);
+        catalogPage.cloneSpec(specKey, cloneKey, true).then(function() {
+          done();
+        });
+      }, 12000);
+      
+      afterAll(function(done) {
+        catalogPage.get(true);
+        catalogPage.deleteSpec(cloneKey, true).then(function() {
+          done();
+        });
+      }, 12000);
+      
       // TODO: Edit (error due to existing instance)
       // TODO: Delete (error due to existing instance)
+      
+      it('should allow the user to edit a custom spec', function() {
+        catalogPage.editSpec(cloneKey, true).then(function() {
+          editSpecPage.verify();
+        });
+      });
+      
+      it('should allow the user to delete a custom spec', function() {
+        catalogPage.deleteSpec(cloneKey);
+        
+        // Recreate the clone to reset test state
+        catalogPage.cloneSpec(specKey, cloneKey, true);
+      });
     });
   });
 });

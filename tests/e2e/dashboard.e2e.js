@@ -47,6 +47,7 @@ describe('Labs Workbench Dashboard View', function() {
     
     // Shutdown and remove all applications
     dashboardPage.shutdownAndRemoveAllApplications();
+    done();
   }, WAIT_TIME_ALL_APPLICATIONS_SHUTDOWN);
   
   beforeEach(function() {

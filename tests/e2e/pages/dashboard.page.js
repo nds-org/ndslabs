@@ -93,9 +93,11 @@ DashboardPage.prototype.verify = function() {
 
 DashboardPage.prototype.launchApplication = function(application) {
   var launchBtn = this.launchBtn(application);
-  //if (!launchBtn.isPresent()) {
-    application.click();
-  //}
+  launchBtn.isDisplayed().then(function(isDisplayed) {
+    if (!isDisplayed) {
+      application.click();
+    }
+  });
   
   // Wait for the shutdown button to be clickable
   browser.wait(EC.elementToBeClickable(launchBtn), 120000);
@@ -109,9 +111,11 @@ DashboardPage.prototype.launchApplication = function(application) {
 
 DashboardPage.prototype.shutdownApplication = function(application) {
   var shutdownBtn = this.shutdownBtn(application);
-  //if (!shutdownBtn.isPresent()) {
-    application.click();
-  //}
+  shutdownBtn.isDisplayed().then(function(isDisplayed) {
+    if (!isDisplayed) {
+      application.click();
+    }
+  });
   
   // Wait for the shutdown button to be clickable
   browser.wait(EC.elementToBeClickable(shutdownBtn), 120000);
@@ -127,10 +131,13 @@ DashboardPage.prototype.shutdownApplication = function(application) {
 
 DashboardPage.prototype.removeApplication = function(application) {
   var deleteBtn = this.deleteBtn(application);
-  //if (!deleteBtn.isPresent()) {
-    application.click();
-  //}
+  deleteBtn.isDisplayed().then(function(isDisplayed) {
+    if (!isDisplayed) {
+      application.click();
+    }
+  });
   
+    
   browser.wait(EC.elementToBeClickable(deleteBtn), 120000);
   deleteBtn.click();
   this.confirmBtn.click();
@@ -144,7 +151,7 @@ DashboardPage.prototype.shutdownAndRemoveAllApplications = function() {
     for (let i = 0; i < applications.length; i++) {
       let application = applications[i];
         
-      browser.wait(EC.elementToBeClickable(application), 120000);
+      browser.wait(EC.elementToBeClickable(application), 5000);
       //console.log("Expanding: " + i);
       application.click();
       
@@ -153,8 +160,12 @@ DashboardPage.prototype.shutdownAndRemoveAllApplications = function() {
         if (!hasClass) {
           //console.log("Shutting down: " + i);
           let shutdownBtn = self.shutdownBtn(application);
+          browser.wait(EC.elementToBeClickable(shutdownBtn), 120000);
           shutdownBtn.click();
-          self.confirmBtn.click();
+          
+          var confirmBtn = self.confirmBtn;
+          browser.wait(EC.elementToBeClickable(confirmBtn), 120000);
+          confirmBtn.click();
         }
         
         let deleteBtn = self.deleteBtn(application);
