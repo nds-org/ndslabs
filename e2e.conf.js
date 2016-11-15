@@ -6,7 +6,7 @@ exports.config = {
   seleniumAddress: 'http://localhost:4444/wd/hub',
   chromeOnly: true,
   params: config,
-  jasmineNodeOpts: { defaultTimeoutInterval: 120000 },
+  //jasmineNodeOpts: { defaultTimeoutInterval: 120000 },
   
   /*
    * Specify the parameters of the browsers to test

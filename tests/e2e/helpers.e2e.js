@@ -48,10 +48,10 @@ module.exports.selectByModel = function(src, binding, matcher, predicate) {
     //console.log("Executing predicate: " + predicate.toString());
     if (matches && matches.length > 0) {
       //console.log("Match: " + matches[0].toString());
-      predicate(matches[0]);
+      return predicate(matches[0]);
     } else {
       console.log("WARNING: no elements found for given matcher - executing pedicate without arguments: " + matcher.toString());
-      predicate();
+      return predicate();
     }
   });
 };

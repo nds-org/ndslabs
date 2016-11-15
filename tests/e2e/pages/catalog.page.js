@@ -124,6 +124,8 @@ CatalogPage.prototype.installApplication = function(specKey, viewAsTable) {
     var addBtn = self.addBtn(match);
     browser.wait(EC.elementToBeClickable(addBtn), 5000);
     addBtn.click();
+    
+    return match;
   });
 };
 
@@ -137,6 +139,8 @@ CatalogPage.prototype.viewApplicationOnDashboard = function(specKey, viewAsTable
     var viewBtn = self.viewBtn(match);
     browser.wait(EC.elementToBeClickable(viewBtn), 5000);
     viewBtn.click();
+    
+    return match;
   });
 };
 
@@ -172,6 +176,8 @@ CatalogPage.prototype.viewJsonModal = function(specKey, viewAsTable) {
     
     browser.wait(EC.elementToBeClickable(self.viewJsonBtn(match)), 5000);
     self.viewJsonBtn(match).click();
+    
+    return match;
   });
 };
 
@@ -188,6 +194,8 @@ CatalogPage.prototype.copySpecToClipboard = function(specKey, viewAsTable) {
     var copyToClipboardBtn = self.copyToClipboardBtn(match);
     browser.wait(EC.elementToBeClickable(copyToClipboardBtn), 5000);
     copyToClipboardBtn.click();
+    
+    return match;
   });
 };
 
@@ -220,6 +228,8 @@ CatalogPage.prototype.cloneSpec = function(oldKey, newKey, viewAsTable) {
     var confirmBtn = self.confirmBtn;
     browser.wait(EC.elementToBeClickable(confirmBtn), 5000);
     confirmBtn.click();
+    
+    return match;
   });
 };
 
@@ -236,6 +246,8 @@ CatalogPage.prototype.editSpec = function(specKey, viewAsTable) {
     var editBtn = self.editBtn(match);
     browser.wait(EC.elementToBeClickable(editBtn), 5000);
     editBtn.click();
+    
+    return match;
   });
 };
 
@@ -258,6 +270,8 @@ CatalogPage.prototype.deleteSpec = function(specKey, viewAsTable) {
     var confirmBtn = self.confirmBtn;
     browser.wait(EC.elementToBeClickable(confirmBtn), 5000);
     confirmBtn.click();
+    
+    return match;
   });
 };
 
@@ -274,6 +288,8 @@ CatalogPage.prototype.clickViewDocumentation = function(specKey, viewAsTable) {
     var viewDocsBtn = self.viewDocsBtn(match);
     browser.wait(EC.elementToBeClickable(viewDocsBtn), 5000);
     viewDocsBtn.click();
+    
+    return match;
   });
 };
 
@@ -286,6 +302,8 @@ CatalogPage.prototype.clickHelpLink = function(specKey, viewAsTable) {
     var helpLink = self.helpLink(match); 
     browser.wait(EC.elementToBeClickable(helpLink), 5000);
     helpLink.click();
+    
+    return match;
   });
 };
 
