@@ -6,9 +6,7 @@ var PAGE_TITLE = /Service Console: .*/;
 var PAGE_ROUTE = /https\:\/\/.*\/\#\/home\/.*\/console/;
 
 var ConsolePage = function() {
-  /**
-   * Insert public Getters here for page elements
-   */
+  this.terminal = element(by.id('terminal'));
 };
 
 // Navigate to the Console view

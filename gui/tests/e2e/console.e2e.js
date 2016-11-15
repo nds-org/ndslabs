@@ -7,23 +7,35 @@ var helpers = require("./helpers.e2e.js");
 
 var Navbar = require('./pages/navbar.page.js');
 var DashboardPage = require('./pages/dashboard.page.js');
-var ResetPasswordPage = require('./pages/reset.page.js');
 var LandingPage = require('./pages/landing.page.js');
+var CatalogPage = require('./pages/catalog.page.js');
+
+var WAIT_TIME_APPLICATION_STARTUP = 120000;
+var WAIT_TIME_APPLICATION_SHUTDOWN = 120000;
+
+var TEST_SPEC_KEY = 'toolmanager';
 
 // dashboard.e2e.js
 describe('Labs Workbench Reset Password View', function() {
   var navbar = new Navbar();
   var landingPage = new LandingPage();
   var dashboardPage = new DashboardPage();
-  var resetPasswordPage = new ResetPasswordPage();
+  var catalogPage = new CatalogPage();
+  
+  var serviceId;
   
   beforeAll(function() { 
     helpers.beforeAll();
-  });
+    dashboardPage.get();
+    dashboardPage.shutdownAndRemoveAllApplications();
+    
+    catalogPage.get();
+    catalogPage.installApplication(TEST_SPEC_KEY);
+  }, WAIT_TIME_APPLICATION_STARTUP);
   
   beforeEach(function() {
     helpers.beforeEach(); 
-    resetPasswordPage.get();
+    console.get();
   });
   
   afterEach(function() { 
@@ -32,23 +44,9 @@ describe('Labs Workbench Reset Password View', function() {
   
   afterAll(function() { 
     helpers.afterAll();
-  });
+  }, WAIT_TIME_APPLICATION_SHUTDOWN);
   
   it('should verify page', function() {
     
-  });
-  
-  describe('After Sign In', function() {
-    beforeAll(function() { 
-      dashboardPage.get();
-      resetPasswordPage.get(true);
-    });
-    
-    afterAll(function() {
-    // Log out to reset test state
-      navbar.expandAccountDropdown();
-      navbar.clickSignOut();
-      landingPage.verify();
-    });
   });
 });

@@ -41,19 +41,19 @@ describe('Labs Workbench Contact Us View', function() {
   });
   
   it('should link to the support forum', function() {
-    contactUsPage.clickForum();
+    contactUsPage.forumBtn.click();
     helpers.expectNewTabOpen(shared.config.FORUM_LINK);
   });
   
   it('should link to the support chat', function() {
-    contactUsPage.clickChat();
+    contactUsPage.chatBtn.click();
     helpers.expectNewTabOpen(shared.config.CHAT_LINK);
   });
   
   it('should link to the support e-mail', function() {
     //help.clickEmail();
     // FIXME: How to verify "mailto:" links without breaking the PageObject pattern?
-    expect(element(by.id('emailBtn')).getAttribute('href')).toEqual(shared.config.EMAIL_LINK);
+    expect(contactUsPage.emailBtn.getAttribute('href')).toEqual(shared.config.EMAIL_LINK);
   });
   
   

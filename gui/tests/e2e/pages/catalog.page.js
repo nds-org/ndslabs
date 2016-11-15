@@ -112,31 +112,31 @@ CatalogPage.prototype.toggleCardsView = function(setTo) {
   });
 };
 
-CatalogPage.prototype.installApplication = function(specKey) {
+CatalogPage.prototype.installApplication = function(specKey, viewAsTable) {
   var self = this;
-  return helpers.selectByModel(self.cards, "spec.key", function(key) { 
+  return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
   }, 
-  function(card) {  // What to do with our match
+  function(match) {  // What to do with our match
     //helpers.scrollIntoViewAndClick(self.addBtn(card));
-    self.addBtn(card).click();
+    self.addBtn(match).click();
   });
 };
 
-CatalogPage.prototype.viewApplicationOnDashboard = function(specKey) {
+CatalogPage.prototype.viewApplicationOnDashboard = function(specKey, viewAsTable) {
   var self = this;
-  return helpers.selectByModel(self.cards, "spec.key", function(key) { 
+  return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
   }, 
-  function(card) {  // What to do with our match
+  function(match) {  // What to do with our match
     //helpers.scrollIntoViewAndClick(self.addBtn(card));
-    self.viewBtn(card).click();
+    self.viewBtn(match).click();
   });
 };
 
-CatalogPage.prototype.viewJsonModal = function(specKey, asTable) {
+CatalogPage.prototype.viewJsonModal = function(specKey, viewAsTable) {
   var self = this;
-  return helpers.selectByModel(asTable ? self.table : self.cards, "spec.key", function(key) { 
+  return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
@@ -147,9 +147,9 @@ CatalogPage.prototype.viewJsonModal = function(specKey, asTable) {
   });
 };
 
-CatalogPage.prototype.copySpecToClipboard = function(specKey, asTable) {
+CatalogPage.prototype.copySpecToClipboard = function(specKey, viewAsTable) {
   var self = this;
-  return helpers.selectByModel(asTable ? self.table : self.cards, "spec.key", function(key) { 
+  return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
@@ -161,9 +161,9 @@ CatalogPage.prototype.copySpecToClipboard = function(specKey, asTable) {
   });
 };
 
-CatalogPage.prototype.cloneSpec = function(oldKey, newKey, asTable) {
+CatalogPage.prototype.cloneSpec = function(oldKey, newKey, viewAsTable) {
   var self = this;
-  return helpers.selectByModel(asTable ? self.table : self.cards, "spec.key", function(key) { 
+  return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === oldKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
@@ -191,9 +191,9 @@ CatalogPage.prototype.cloneSpec = function(oldKey, newKey, asTable) {
   });
 };
 
-CatalogPage.prototype.editSpec = function(specKey, asTable) {
+CatalogPage.prototype.editSpec = function(specKey, viewAsTable) {
   var self = this;
-  return helpers.selectByModel(asTable ? self.table : self.cards, "spec.key", function(key) { 
+  return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
@@ -205,9 +205,9 @@ CatalogPage.prototype.editSpec = function(specKey, asTable) {
   });
 };
 
-CatalogPage.prototype.deleteSpec = function(specKey, asTable) {
+CatalogPage.prototype.deleteSpec = function(specKey, viewAsTable) {
   var self = this;
-  return helpers.selectByModel(asTable ? self.table : self.cards, "spec.key", function(key) { 
+  return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
@@ -225,9 +225,9 @@ CatalogPage.prototype.deleteSpec = function(specKey, asTable) {
   });
 };
 
-CatalogPage.prototype.clickViewDocumentation = function(specKey, asTable) {
+CatalogPage.prototype.clickViewDocumentation = function(specKey, viewAsTable) {
   var self = this;
-  return helpers.selectByModel(asTable ? self.table : self.cards, "spec.key", function(key) { 
+  return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
@@ -239,9 +239,9 @@ CatalogPage.prototype.clickViewDocumentation = function(specKey, asTable) {
   });
 };
 
-CatalogPage.prototype.clickHelpLink = function(specKey, asTable) {
+CatalogPage.prototype.clickHelpLink = function(specKey, viewAsTable) {
   var self = this;
-  return helpers.selectByModel(asTable ? self.table : self.cards, "spec.key", function(key) { 
+  return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match

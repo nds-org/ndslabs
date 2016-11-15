@@ -18,9 +18,12 @@ var PAGE_ROUTE = /^https\:\/\/.*\/\#\/recover(\?t=.*)?$/;
 
 var ResetPasswordPage = function() {
   this.usernameInput = element(by.id('accountId'));
+  
   this.emailSentHelperText = element(by.id('emailSentHelperText'));
+  
   this.newPasswordInput = element(by.id('password'));
   this.newPasswordConfirmationInput = element(by.id('passwordConf'));
+  
   this.passwordChangedHelperText = element(by.id('passwordChangedHelperText'));
 };
 
@@ -52,18 +55,6 @@ ResetPasswordPage.prototype.verify = function(showHelperText, loggedIn) {
       
     }
   }
-};
-
-ResetPasswordPage.prototype.enterUsername = function(text) {
-  this.usernameInput.sendKeys(text);
-};
-
-ResetPasswordPage.prototype.enterNewPassword = function(text) {
-  this.newPasswordInput.sendKeys(text);
-};
-
-ResetPasswordPage.prototype.enterNewPasswordConfirmation = function(text) {
-  this.newPasswordConfirmationInput.sendKeys(text);
 };
 
 module.exports = ResetPasswordPage;
