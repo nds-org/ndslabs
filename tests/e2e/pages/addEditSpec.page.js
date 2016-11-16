@@ -125,13 +125,22 @@ var AddSpecPage = function() {
   this.cancelBtn = element(by.id('cancelBtn'));
 };
 
-// Navigate to the Add Spec view
-AddSpecPage.prototype.get = function(loggedIn) {
+// Navigate to the Add/Edit Spec view
+AddSpecPage.prototype.get = function(options) {
   var catalogPage = new CatalogPage();
-  catalogPage.get(loggedIn);
-  catalogPage.createBtn.click();
+  var self = this;
+  catalogPage.get(options.loggedIn);
+  
+  var promise;
+  if (options.editId) {
+    promise = catalogPage.editSpec(options.editId);
+  } else {
+    promise = catalogPage.createBtn.click();
+  }
 	
-  this.verify();
+	return promise.then(function() {
+    self.verify();
+  });
 };
 
 // Ensure that we are on the correct page
