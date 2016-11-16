@@ -185,13 +185,20 @@
                             <i class="fa fa-fw fa-plus-circle"></i> Add Service
                           </a>
                         </td>
+                        
                         <td>
                            <select id="addServiceDropdown"  class="form-control" ng-model="stack.selectedOption">
                              <option ng-repeat="option in stack.key | options | notPresent:stack track by option.key" value="{{ option.key }}">{{ option.key | specProperty:'label' }}</option>
                            </select> 
                         </td>
+                        
                         <td colspan="4">{{ stack.selectedOption | specProperty:'description' }}</td>
-                        <td class="text-center"><a id="addServiceHelpLink" ng-if="stack.selectedOption | specProperty:'info'" ng-href="{{ stack.selectedOption | specProperty:'info' }}" target="_blank"><i class="fa fa-fw fa-question-circle"></i></a></td>
+                        
+                        <td class="text-center">
+                          <a id="addServiceHelpLink" ng-if="stack.selectedOption | specProperty:'info'" ng-href="{{ stack.selectedOption | specProperty:'info' }}" target="_blank">
+                            <i class="fa fa-fw fa-question-circle"></i>
+                          </a>
+                        </td>
                       </tr>
                     </tbody>
                   </table>
