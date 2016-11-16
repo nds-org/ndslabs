@@ -55,9 +55,4 @@ ContactUsPage.prototype.selectFeedbackType = function(index) {
   helpers.selectDropdownbyNum(this.feedbackTypeSelector, index);
 };
 
-// Click (toggle) the anonymous feedback checkbox
-ContactUsPage.prototype.toggleAnonymousCheckbox = function() {
-  this.feedbackAnonymousCheckbox.click();
-};
-
 module.exports = ContactUsPage;

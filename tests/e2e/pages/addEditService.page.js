@@ -3,6 +3,7 @@
 'use strict';
 
 // Load other modules
+var helpers = require('../helpers.e2e.js');
 var shared = require('./shared.page.js');
 
 var DashboardPage = require('./dashboard.page.js');
@@ -14,6 +15,8 @@ var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 // TODO: How to handle "stackServiceId" in url?
 var PAGE_TITLE = /(Add|Edit) Application Service(\: .*)?/;
 var PAGE_ROUTE = /https\:\/\/.+\/\#\/home\/.+\/(add|edit)\/?.*/;
+
+var EC = protractor.ExpectedConditions;
 
 var AddServicePage = function() {
   this.configs = element.all(by.repeater("cfg in configs | orderBy:['spec.canOverride', 'spec.isPassword'] track by cfg.name"));
@@ -48,16 +51,60 @@ var AddServicePage = function() {
   this.cancelBtn = element(by.id('cancelBtn'));
 };
 
-// Navigate to the App Service view
-AddServicePage.prototype.get = function(loggedIn) {
+// FIXME: Code envy
+AddServicePage.prototype.getAsEdit = function(application, serviceId) {
   var dashboardPage = new DashboardPage();
+  var self = this;
+  
+  application.click();
+  
+  return helpers.selectByModel(dashboardPage.services(application), "svc.id", function(id) {
+    return id === serviceId;
+  }, function(svcMatch) {
+    // Click the "Edit" button next to the first service
+    dashboardPage.editServiceBtn(svcMatch).click();
+    self.verify();
+  });
+};
+
+// FIXME: Code envy
+AddServicePage.prototype.getAsAdd = function(application, serviceToAdd) {
+  var dashboardPage = new DashboardPage();
+  var self = this;
+  
+  application.click();
+
+  // Select the first optional service and click the "Add Service" button
+  return dashboardPage.selectServiceToAdd(application, serviceToAdd).then(function() {
+    var addServiceBtn = dashboardPage.addServiceBtn(application);
+    browser.wait(EC.elementToBeClickable(addServiceBtn), 5000);
+    addServiceBtn.click();
+    self.verify();
+  });
+};
+
+// Navigate to the Add Service view
+AddServicePage.prototype.get = function(stackId, serviceId, loggedIn) {
+  var dashboardPage = new DashboardPage();
+  var self = this;
+  
+  var editMode = (typeof serviceId === 'string');
+  
   dashboardPage.get(loggedIn);
-	
-  this.verify();
+  
+  return helpers.selectByModel(dashboardPage.applications, "stack.id", function(id) {
+    return id === stackId;
+  }, function(application) {
+    if (editMode) {
+      return self.getAsEdit(application, serviceId);
+    } else {
+      return self.getAsAdd(application, serviceId);
+    }
+  });
 };
 
 // Ensure that we are on the correct page
-AddServicePage.prototype.verify = function() { 
+AddServicePage.prototype.verify = function() {
   expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toMatch(PAGE_TITLE);
 };

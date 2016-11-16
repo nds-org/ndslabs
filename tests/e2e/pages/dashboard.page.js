@@ -49,7 +49,10 @@ var DashboardPage = function() {
   this.launchBtn = function(app) {  return app.element(by.id('launchBtn')); };
   this.deleteBtn = function(app) {  return app.element(by.id('deleteBtn')); };
   
+  this.addServiceDropdown = function(app) {  return app.element(by.id('addServiceDropdown')); };
+  this.addServiceDropdownOptions = function(app) {  return app.all(by.repeater('option in stack.key | options | notPresent:stack track by option.key')); };
   this.addServiceBtn = function(app) {  return app.element(by.id('addServiceBtn')); };
+  this.addServiceHelpLink = function(app) {  return app.element(by.id('addServiceHelpLink')); };
   
   this.shutdownBtn = function(app) {  return app.element(by.id('shutdownBtn')); };
 
@@ -89,6 +92,23 @@ DashboardPage.prototype.get = function(loggedIn) {
 DashboardPage.prototype.verify = function() {
   expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
+};
+
+// Make a selection in the Add Service dropdown
+// TODO: Can this be done without using the index?
+DashboardPage.prototype.selectServiceToAdd = function(application, index) {
+  var addServiceDropdown = this.addServiceDropdown(application);
+  
+  // Expand the dropdown menu
+  browser.wait(EC.elementToBeClickable(addServiceDropdown), 5000);
+  addServiceDropdown.click();
+  
+  // Select (click) an option by index
+  return this.addServiceDropdownOptions(application).then(function(options) {
+    var selection = options[index];
+    browser.wait(EC.elementToBeClickable(selection), 5000);
+    selection.click();
+  });
 };
 
 DashboardPage.prototype.launchApplication = function(application) {
