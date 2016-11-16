@@ -78,8 +78,11 @@ exports.config = {
     
     // auth-only views
     catalog: 'tests/e2e/catalog.e2e.js',
-    dashboard: 'tests/e2e/dashboard.e2e.js',
-    console: 'tests/e2e/console.e2e.js',
     addSpec: 'tests/e2e/addSpec.e2e.js',
+    editSpec: 'tests/e2e/editSpec.e2e.js',
+    dashboard: 'tests/e2e/dashboard.e2e.js',
+    addService: 'tests/e2e/addService.e2e.js',
+    editService: 'tests/e2e/editService.e2e.js',
+    console: 'tests/e2e/console.e2e.js',
   }
 }
