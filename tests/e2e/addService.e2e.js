@@ -29,6 +29,30 @@ describe('Labs Workbench Add Optional Application Service View', function() {
   var stackId;
   var serviceId;
   
+  var serviceKey;
+  
+  // FIXME: Test browser should scroll to card
+  // FIXME: Move this to helpers
+  var expectService = function(stackId, serviceKey) {
+    // Wait for new service to appear
+    return browser.wait(function() {
+      return helpers.selectByModel(dashboardPage.services(element), "svc.id", function(id) { 
+        // NOTE: This *should* always be 7, but will never be -1
+        return id === (stackId + '-' + serviceKey); // How to know we've found our match
+      }, function(service) { 
+        return service;
+      });
+    }, 5000);
+  };
+  
+  // FIXME: Move this to helpers
+  var expectBtn = function(enabled) {
+    var saveBtn = addServicePage.saveBtn;
+    helpers.scrollIntoView(saveBtn);
+    expect(saveBtn.isDisplayed()).toBe(true);
+    expect(saveBtn.isEnabled()).toBe(enabled ? true : false);  // Handles null / undefined / etc
+  };
+  
   beforeAll(function() { 
     helpers.beforeAll();
     
@@ -60,6 +84,12 @@ describe('Labs Workbench Add Optional Application Service View', function() {
   beforeEach(function() {
     helpers.beforeEach();
     addServicePage.get(stackId, TEST_SERVICE_INDEX_TO_ADD, true);
+    
+    // Retrieve added service key from the URL
+    browser.getCurrentUrl().then(function(url) {
+      var fragments = url.split('/');
+      return serviceKey = fragments[fragments.length - 1];
+    });
   });
   
   afterEach(function() { 
@@ -78,8 +108,33 @@ describe('Labs Workbench Add Optional Application Service View', function() {
     done();
   });
   
-  it('should verify page', function() {
-    console.log("Adding service to "+ stackId);
-    addServicePage.verify();
+  it('should allow the user to abort the creation process', function() {
+    // Click the cancel button
+    var cancelBtn = addServicePage.cancelBtn;
+    helpers.scrollIntoView(cancelBtn);
+    cancelBtn.click();
+    
+    // Ensure that we are brought back to the dashboard page
+    dashboardPage.verify();
+  });
+  
+  it('should allow the user to save after entering all required fields', function() {
+    //console.log("Adding service " + serviceKey + " to "+ stackId);
+    
+    // Click the save button
+    var saveBtn = addServicePage.saveBtn;
+    expectBtn(true);
+    helpers.scrollIntoView(saveBtn);
+    saveBtn.click();
+    
+    // Ensure that we are brought back to the catalog page
+    dashboardPage.verify();
+    
+    // Verify that our new spec was added
+    expectService(stackId, serviceKey).then(function(service) {
+      // Remove this service to reset the test state
+      var removeServiceBtn = dashboardPage.removeServiceBtn(service);
+      removeServiceBtn.click();
+    });
   });
 });

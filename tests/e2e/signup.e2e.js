@@ -46,13 +46,11 @@ describe('Labs Workbench Sign Up View', function() {
   });
   
   // FIXME: Figure out how to automate account approval workflow
-  var submitBtn = function() {  return element(by.css('[ng-click="signUp(newProject)"]')); };
-  
   var expectBtn = function(enabled) {
-    helpers.scrollToAndThen(0, 10000, function() {
-      expect(submitBtn().isDisplayed()).toBe(true);
-      expect(submitBtn().isEnabled()).toBe(enabled ? true : false);  // Handles null / undefined / etc
-    });
+    var submitBtn = signUpPage.submitBtn;
+    helpers.scrollIntoView(submitBtn);
+    expect(submitBtn.isDisplayed()).toBe(true);
+    expect(submitBtn.isEnabled()).toBe(enabled ? true : false);  // Handles null / undefined / etc
   };
   
   it('should link to the "Acceptable Use Policy" wiki page', function(){ 
@@ -68,6 +66,9 @@ describe('Labs Workbench Sign Up View', function() {
     signUpPage.enterEmail(TEST_NEW_EMAIL);
     signUpPage.enterOrganization(TEST_NEW_ORGANIZATION);
     signUpPage.enterDescription(TEST_NEW_DESCRIPTION);
+    
+    // Scroll down to the second half of the form
+    helpers.scrollIntoView(signUpPage.submitBtn);
     signUpPage.enterUsername(TEST_NEW_USERNAME);
     
     // Passwords must match
@@ -86,6 +87,9 @@ describe('Labs Workbench Sign Up View', function() {
     signUpPage.enterEmail(TEST_NEW_EMAIL);
     signUpPage.enterOrganization(TEST_NEW_ORGANIZATION);
     signUpPage.enterDescription(TEST_NEW_DESCRIPTION);
+    
+    // Scroll down to the second half of the form
+    helpers.scrollIntoView(signUpPage.submitBtn);
     signUpPage.enterUsername(TEST_NEW_USERNAME);
     
     // Passwords must match
@@ -104,6 +108,9 @@ describe('Labs Workbench Sign Up View', function() {
     signUpPage.enterFullName(TEST_NEW_FULLNAME);
     signUpPage.enterOrganization(TEST_NEW_ORGANIZATION);
     signUpPage.enterDescription(TEST_NEW_DESCRIPTION);
+    
+    // Scroll down to the second half of the form
+    helpers.scrollIntoView(signUpPage.submitBtn);
     signUpPage.enterUsername(TEST_NEW_USERNAME);
     
     // Passwords must match

@@ -9,12 +9,11 @@ var Navbar = require('./pages/navbar.page.js');
 var DashboardPage = require('./pages/dashboard.page.js');
 var LandingPage = require('./pages/landing.page.js');
 var CatalogPage = require('./pages/catalog.page.js');
-var ConsolePage = require('./pages/catalog.page.js');
 var AddEditServicePage = require('./pages/addEditService.page.js');
 
-var EC = protractor.ExpectedConditions;
-
 var TEST_SPEC_KEY = 'clowder';
+
+var EC = protractor.ExpectedConditions;
 
 // dashboard.e2e.js
 describe('Labs Workbench Edit Application Service View', function() {
@@ -22,11 +21,18 @@ describe('Labs Workbench Edit Application Service View', function() {
   var landingPage = new LandingPage();
   var dashboardPage = new DashboardPage();
   var catalogPage = new CatalogPage();
-  var consolePage = new ConsolePage();
   var editServicePage = new AddEditServicePage();
 
   var stackId;
   var serviceId;
+  
+  // FIXME: Move this to helpers
+  var expectBtn = function(enabled) {
+    var saveBtn = editServicePage.saveBtn;
+    helpers.scrollIntoView(saveBtn);
+    expect(saveBtn.isDisplayed()).toBe(true);
+    expect(saveBtn.isEnabled()).toBe(enabled ? true : false);  // Handles null / undefined / etc
+  };
   
   beforeAll(function() { 
     helpers.beforeAll();
@@ -77,10 +83,20 @@ describe('Labs Workbench Edit Application Service View', function() {
     done();
   });
   
-  it('should verify page', function() {
-    console.log("Edit service of " + stackId);
-    console.log("Editing service: " + serviceId);
+  it('should allow the user to abort the edit process', function() {
+    // Click the cancel button
+    var cancelBtn = editServicePage.cancelBtn;
+    helpers.scrollIntoView(cancelBtn);
+    cancelBtn.click();
     
-    editServicePage.verify();
+    // Ensure that we are brought back to the dashboard page
+    dashboardPage.verify();
+  });
+  
+  it('should allow the user to save after entering all required fields', function() {
+    //console.log("Edit service of " + stackId);
+    //console.log("Editing service: " + serviceId);
+    
+    expectBtn(true);
   });
 });

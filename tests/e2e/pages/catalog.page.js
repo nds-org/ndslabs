@@ -105,7 +105,7 @@ CatalogPage.prototype.applyFilter = function(text) {
 // setTo === null => toggle
 CatalogPage.prototype.toggleCardsView = function(setTo) {
   var self = this;
-  helpers.hasClass(this.viewAsIcon, 'fa-table').then(function(showCards) {
+  return helpers.hasClass(this.viewAsIcon, 'fa-table').then(function(showCards) {
     if ((showCards && setTo !== true) || (!showCards && setTo !== false)) {
       // We are currently in the cards view
       self.toggleCardsBtn.click();
@@ -121,10 +121,12 @@ CatalogPage.prototype.installApplication = function(specKey, viewAsTable) {
   }, 
   function(match) {  // What to do with our match
     //helpers.scrollIntoViewAndClick(self.addBtn(card));
+    helpers.scrollIntoView(match);
+    
     var addBtn = self.addBtn(match);
     browser.wait(EC.elementToBeClickable(addBtn), 5000);
     addBtn.click();
-    
+  
     return match;
   });
 };
@@ -187,7 +189,7 @@ CatalogPage.prototype.copySpecToClipboard = function(specKey, viewAsTable) {
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
-    var moreActionsDropdown = self.moreActionsDropdown(match); 
+    var moreActionsDropdown = self.moreActionsDropdown(match);
     browser.wait(EC.elementToBeClickable(moreActionsDropdown), 5000);
     moreActionsDropdown.click();
     

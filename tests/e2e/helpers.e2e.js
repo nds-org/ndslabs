@@ -77,9 +77,10 @@ module.exports.scrollToAndThen = function(x, y, predicate) {
 };
 
 // Scroll to the given WebElement, then execute the predicate function
-module.exports.scrollIntoViewAndClick = function(ele) {
+module.exports.scrollIntoView = function(ele) {
   //return browser.actions().mouseMove(ele).perform();
-  return browser.executeScript('arguments[0].scrollIntoView()', ele.getWebElement());
+  //return browser.executeScript('arguments[0].scrollIntoView()', ele.getWebElement());
+  return browser.executeScript("arguments[0].scrollIntoView(false);", ele.getWebElement());
 };
 
 module.exports.hasClass = function (ele, clazz) {

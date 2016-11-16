@@ -177,6 +177,15 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
         specs.system = _.filter(angular.copy(data), [ 'catalog', 'system']);
         specs.user = _.filter(angular.copy(data), [ 'catalog', 'user']);
         
+        // Default any HTTP ports to '/', if they are missing a contextPath
+        angular.forEach(specs.all, function(spec) {
+          angular.forEach(spec.ports, function(port) {
+            if (port.protocol === 'http' && !port.contextPath) {
+              port.contextPath = '/';
+            }
+          });
+        });
+        
         var devEnvTag = _.find(Vocabulary.all.terms, ['name', 'Development environment']);
         specs.devEnvs = _.filter(data, function(spec) {
           return spec.tags && spec.tags.indexOf(devEnvTag.id) !== -1;
@@ -290,7 +299,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       },
       "readinessProbe": {
           "type": '',
-          "path": '',
+          "path": '/',
           "port": 80,
           "initialDelay": 15,
           "timeout":45,
