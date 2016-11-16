@@ -78,15 +78,29 @@ describe('Labs Workbench Add Application Spec View', function() {
   });
   
   it('should allow the user to save after entering all required fields', function() {
-    // Enter all required fields: key, name, image name
-    addSpecPage.keyField.sendKeys(TEST_CREATED_SPEC_KEY);
-    addSpecPage.nameField.sendKeys(TEST_CREATED_SPEC_NAME);
-    addSpecPage.imageNameField.sendKeys(TEST_CREATED_SPEC_IMAGE_NAME);
     
-    // Click the save button
+    expectBtn(false);
+    // Enter all required fields: key, name, image name
+    var keyField = addSpecPage.keyField;
+    var nameField =  addSpecPage.nameField;
+    var imageNameField = addSpecPage.imageNameField;
     var saveBtn = addSpecPage.saveBtn;
-    helpers.scrollIntoView(saveBtn);
-    browser.wait(EC.elementToBeClickable(saveBtn), 120000);
+    
+    // Enter an application key (save button should remain disabled)
+    helpers.scrollIntoView(keyField);
+    keyField.sendKeys(TEST_CREATED_SPEC_KEY);
+    expectBtn(false);
+    
+    // Enter an application display name (save button should remain disabled)
+    helpers.scrollIntoView(nameField);
+    nameField.sendKeys(TEST_CREATED_SPEC_NAME);
+    expectBtn(false);
+    
+    // Enter an image name (this should enable the save button)
+    helpers.scrollIntoView(imageNameField);
+    imageNameField.sendKeys(TEST_CREATED_SPEC_IMAGE_NAME);
+    
+    // You should now be able to click the save button
     expectBtn(true);
     saveBtn.click();
     
