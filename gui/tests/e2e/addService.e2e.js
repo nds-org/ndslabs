@@ -14,10 +14,10 @@ var ConsolePage = require('./pages/catalog.page.js');
 var WAIT_TIME_APPLICATION_STARTUP = 120000;
 var WAIT_TIME_APPLICATION_SHUTDOWN = 120000;
 
-var TEST_SPEC_KEY = 'toolmanager';
+var TEST_SPEC_KEY = 'clowder';
 
 // dashboard.e2e.js
-describe('Labs Workbench Application Service Console View', function() {
+describe('Labs Workbench Add Optional Application Service View', function() {
   var navbar = new Navbar();
   var landingPage = new LandingPage();
   var dashboardPage = new DashboardPage();
@@ -72,6 +72,6 @@ describe('Labs Workbench Application Service Console View', function() {
   }, WAIT_TIME_APPLICATION_SHUTDOWN);
   
   it('should verify page', function() {
-    console.log("Console for "+ serviceId);
+    console.log("Add service to "+ serviceId);
   });
 });

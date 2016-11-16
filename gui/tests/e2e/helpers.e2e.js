@@ -125,11 +125,11 @@ module.exports.expectNewTabOpen = function(expectedUrl, leaveOpen) {
   });
 };
 
-module.exports.selectDropdownbyNum = function (element, optionNum) {
-  if (optionNum){
-    var options = element.findElements(by.tagName('option'))   
+module.exports.selectDropdownbyNum = function (ele, index) {
+  if (index){
+    var options = ele.all(by.tagName('option'))   
       .then(function(options){
-        options[optionNum].click();
+        options[index].click();
       });
   }
 };

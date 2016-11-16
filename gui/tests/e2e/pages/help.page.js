@@ -12,6 +12,14 @@ var LandingPage = require('./landing.page.js');
 var PAGE_TITLE = 'Contact Labs Workbench Support';
 var PAGE_ROUTE = /https\:\/\/.+\/\#\/contact/;
 
+
+// 
+// feedbackTypes:
+// 0 => Request Help
+// 1 => Make a Wish
+// 2 => Report a Bug
+// 3 => General Comment
+// 
 var ContactUsPage = function() {
   this.forumBtn = element(by.id('ggroupBtn'));
   this.chatBtn = element(by.id('gitterBtn'));
@@ -40,40 +48,16 @@ ContactUsPage.prototype.verify = function() {
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 
-// Click the forum button (i.e. Google Group)
-ContactUsPage.prototype.clickForum = function() {
-  this.forumBtn.click();
-};
-
-// Click the chat button (i.e. Gitter, Slack, etc)
-ContactUsPage.prototype.clickChat = function() {
-  this.chatBtn.click();
-};
-
-// Click the email button
-ContactUsPage.prototype.clickEmail = function() {
-  this.emailBtn.click();
-};
-
 // Make a selection in the Feedback Type dropdown
 // TODO: Can this be done without using the index?
 ContactUsPage.prototype.selectFeedbackType = function(index) {
+  this.feedbackTypeSelector.click();
   helpers.selectDropdownbyNum(this.feedbackTypeSelector, index);
 };
 
 // Click (toggle) the anonymous feedback checkbox
 ContactUsPage.prototype.toggleAnonymousCheckbox = function() {
   this.feedbackAnonymousCheckbox.click();
-};
-
-// Send text to the Feedback Message input
-ContactUsPage.prototype.enterFeedbackMessage = function(text) {
-  this.feedbackMessageInput.sendKeys(text);
-};
-
-// Click the Submit Feedback button
-ContactUsPage.prototype.clickSubmitFeedback = function() {
-  this.feedbackSubmitBtn.click();
 };
 
 module.exports = ContactUsPage;

@@ -14,16 +14,17 @@ var ConsolePage = require('./pages/catalog.page.js');
 var WAIT_TIME_APPLICATION_STARTUP = 120000;
 var WAIT_TIME_APPLICATION_SHUTDOWN = 120000;
 
-var TEST_SPEC_KEY = 'toolmanager';
+var TEST_SPEC_KEY = 'clowder';
 
 // dashboard.e2e.js
-describe('Labs Workbench Application Service Console View', function() {
+describe('Labs Workbench Edit Application Service View', function() {
   var navbar = new Navbar();
   var landingPage = new LandingPage();
   var dashboardPage = new DashboardPage();
   var catalogPage = new CatalogPage();
   var consolePage = new ConsolePage();
   
+  var stackId;
   var serviceId;
   
   beforeAll(function(done) { 
@@ -43,7 +44,11 @@ describe('Labs Workbench Application Service Console View', function() {
       dashboardPage.verify();
       dashboardPage.applications.each(function(application) {
         dashboardPage.serviceIdText(application).getText().then(function(text) {
+          // Store the stack and service IDs for testing
           serviceId = text;
+          stackId = text.split('-')[0];
+          
+          // Launch the test application
           dashboardPage.launchApplication(application);
           done();
         });
@@ -72,6 +77,7 @@ describe('Labs Workbench Application Service Console View', function() {
   }, WAIT_TIME_APPLICATION_SHUTDOWN);
   
   it('should verify page', function() {
-    console.log("Console for "+ serviceId);
+    console.log("Edit service of "+ stackId);
+    console.log("Existing service: "+ serviceId);
   });
 });
