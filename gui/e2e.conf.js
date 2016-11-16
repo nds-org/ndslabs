@@ -6,7 +6,10 @@ exports.config = {
   seleniumAddress: 'http://localhost:4444/wd/hub',
   chromeOnly: true,
   params: config,
-  //jasmineNodeOpts: { defaultTimeoutInterval: 120000 },
+  jasmineNodeOpts: { 
+    // defaultTimeoutInterval: 120000,
+    realtimeFailure: true
+  },
   
   /*
    * Specify the parameters of the browsers to test
@@ -47,11 +50,19 @@ exports.config = {
             var style = document.createElement('style');
             style.type = 'text/css';
             style.innerHTML = '* {' +
+                // See http://stackoverflow.com/questions/26584451/how-to-disable-animations-in-protractor-for-angular-js-application
+                // Disable CSS animation for e2e tests
                 '-webkit-transition: none !important;' +
                 '-moz-transition: none !important' +
                 '-o-transition: none !important' +
                 '-ms-transition: none !important' +
                 'transition: none !important' +
+                '}' +
+    
+                // See https://github.com/angular/protractor/issues/319
+                // Disable sticky footer for e2e tests
+                '#footer {' +
+                'position: static;' +
                 '}';
             document.getElementsByTagName('head')[0].appendChild(style);
         });

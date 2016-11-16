@@ -63,13 +63,25 @@ describe('Labs Workbench Edit Application Spec View', function() {
   
   var expectBtn = function(enabled) {
     var saveBtn = editSpecPage.saveBtn;
-    helpers.scrollToAndThen(0, 10000, function() {
-      expect(saveBtn.isDisplayed()).toBe(true);
-      expect(saveBtn.isEnabled()).toBe(enabled ? true : false);  // Handles null / undefined / etc
-    });
+    helpers.scrollIntoView(saveBtn);
+    expect(saveBtn.isDisplayed()).toBe(true);
+    expect(saveBtn.isEnabled()).toBe(enabled ? true : false);  // Handles null / undefined / etc
   };
   
-  it('should verify page', function() {
-    editSpecPage.verify();
+  it('should allow the user to abort the edit process', function() {
+    // Click the cancel button
+    var cancelBtn = editSpecPage.cancelBtn;
+    helpers.scrollIntoView(cancelBtn);
+    cancelBtn.click();
+    
+    // Ensure that we are brought back to the catalog page
+    catalogPage.verify();
+  });
+  
+  it('should allow the user to save after entering all required fields', function() {
+    var saveBtn = editSpecPage.saveBtn;
+    helpers.scrollIntoView(saveBtn);
+    expectBtn(true);
+    //saveBtn.click();
   });
 });

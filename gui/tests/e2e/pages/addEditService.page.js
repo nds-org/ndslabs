@@ -64,6 +64,8 @@ AddServicePage.prototype.getAsEdit = function(application, serviceId) {
     // Click the "Edit" button next to the first service
     dashboardPage.editServiceBtn(svcMatch).click();
     self.verify();
+    
+    return application;
   });
 };
 
@@ -80,6 +82,8 @@ AddServicePage.prototype.getAsAdd = function(application, serviceToAdd) {
     browser.wait(EC.elementToBeClickable(addServiceBtn), 5000);
     addServiceBtn.click();
     self.verify();
+    
+    return application;
   });
 };
 

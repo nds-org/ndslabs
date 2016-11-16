@@ -72,6 +72,6 @@ describe('Labs Workbench Application Service Console View', function() {
   }, WAIT_TIME_APPLICATION_SHUTDOWN);
   
   it('should verify page', function() {
-    console.log("Console for "+ serviceId);
+    //console.log("Console for "+ serviceId);
   });
 });
