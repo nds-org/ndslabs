@@ -81,5 +81,6 @@ describe('Labs Workbench Edit Application Service View', function() {
     console.log("Edit service of " + stackId);
     console.log("Editing service: " + serviceId);
     
+    editServicePage.verify();
   });
 });

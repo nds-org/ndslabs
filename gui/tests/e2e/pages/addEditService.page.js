@@ -51,7 +51,7 @@ var AddServicePage = function() {
   this.cancelBtn = element(by.id('cancelBtn'));
 };
 
-// FIXME: Code envy
+// FIXME: Feature envy
 AddServicePage.prototype.getAsEdit = function(application, serviceId) {
   var dashboardPage = new DashboardPage();
   var self = this;
@@ -67,7 +67,7 @@ AddServicePage.prototype.getAsEdit = function(application, serviceId) {
   });
 };
 
-// FIXME: Code envy
+// FIXME: Feature envy
 AddServicePage.prototype.getAsAdd = function(application, serviceToAdd) {
   var dashboardPage = new DashboardPage();
   var self = this;

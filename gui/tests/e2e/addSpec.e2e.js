@@ -8,14 +8,14 @@ var helpers = require("./helpers.e2e.js");
 var Navbar = require('./pages/navbar.page.js');
 var LandingPage = require('./pages/landing.page.js');
 var DashboardPage = require('./pages/dashboard.page.js');
-var AddSpecPage = require('./pages/addEditSpec.page.js');
+var AddEditSpecPage = require('./pages/addEditSpec.page.js');
 
 // addSpec.e2e.js
-describe('Labs Workbench Add Spec View', function() {
+describe('Labs Workbench Add Application Spec View', function() {
   var navbar = new Navbar();
   var landingPage = new LandingPage();
   var dashboardPage = new DashboardPage();
-  var addSpecPage = new AddSpecPage();
+  var addSpecPage = new AddEditSpecPage();
   
   beforeAll(function() { 
     helpers.beforeAll();
@@ -24,14 +24,14 @@ describe('Labs Workbench Add Spec View', function() {
   
   beforeEach(function() {
     helpers.beforeEach(); 
-    addSpecPage.get(true);
+    addSpecPage.get({ loggedIn: true });
   });
   
   afterEach(function() { 
     helpers.afterEach();
   });
   
-  afterAll(function() { 
+  afterAll(function() {
     helpers.afterAll();
     navbar.expandAccountDropdown();
     navbar.clickSignOut();
@@ -47,6 +47,6 @@ describe('Labs Workbench Add Spec View', function() {
   };
   
   it('should verify page', function() {
-    
+    addSpecPage.verify();
   });
 });
