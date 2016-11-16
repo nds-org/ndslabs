@@ -16,6 +16,8 @@ var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 var PAGE_TITLE = /(Add|Edit) Application\:?.*/;
 var PAGE_ROUTE = /https\:\/\/.+\/\#\/store\/(add|edit)\/?.*/;
 
+var EC = protractor.ExpectedConditions;
+
 var AddSpecPage = function() {
   // Details Tab (Left side - General)
   this.detailsTab = element(by.id('detailsTab'));
