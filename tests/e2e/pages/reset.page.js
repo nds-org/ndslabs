@@ -18,11 +18,13 @@ var PAGE_ROUTE = /^https\:\/\/.*\/\#\/recover(\?t=.*)?$/;
 
 var ResetPasswordPage = function() {
   this.usernameInput = element(by.id('accountId'));
+  this.submitUsernameBtn = element(by.id('submitUsernameBtn'));
   
   this.emailSentHelperText = element(by.id('emailSentHelperText'));
   
   this.newPasswordInput = element(by.id('password'));
   this.newPasswordConfirmationInput = element(by.id('passwordConf'));
+  this.submitPasswordBtn = element(by.id('submitPasswordBtn'));
   
   this.passwordChangedHelperText = element(by.id('passwordChangedHelperText'));
 };

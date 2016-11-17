@@ -33,7 +33,7 @@
             </div>
           </div>
         
-          <button type="submit" class="btn btn-primary" ng-disabled="!password.accountId" ng-click="sendResetLink()">Reset Password</button>
+          <button id="submitUsernameBtn" type="submit" class="btn btn-primary" ng-disabled="!password.accountId" ng-click="sendResetLink()">Reset Password</button>
         </form>
       </div>
     </div>
@@ -85,7 +85,7 @@
             </div>
           </div>
           
-          <button type="submit" class="btn btn-primary" ng-disabled="!password.password || !password.confirmation" ng-click="resetPassword()">Change Password</button>
+          <button id="submitPasswordBtn" type="submit" class="btn btn-primary" ng-disabled="!password.password || !password.confirmation" ng-click="resetPassword()">Change Password</button>
         </form>
       </div>
     </div>
