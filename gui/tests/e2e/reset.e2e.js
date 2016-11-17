@@ -3,12 +3,20 @@
 'use strict';
 
 // Import shared PageObjects
+var shared = require("./pages/shared.page.js");
 var helpers = require("./helpers.e2e.js");
 
 var Navbar = require('./pages/navbar.page.js');
 var DashboardPage = require('./pages/dashboard.page.js');
 var ResetPasswordPage = require('./pages/reset.page.js');
 var LandingPage = require('./pages/landing.page.js');
+
+var TEST_VALID_USERNAME = shared.config.TEST_USERNAME;
+var TEST_INVALID_USERNAME = shared.config.TEST_NEW_USERNAME;
+var TEST_ORIGINAL_PASSWORD = shared.config.TEST_PASSWORD;
+var TEST_NEW_PASSWORD = '123password';
+var TEST_INVALID_PASSWORD_TOOSHORT = shared.config.TEST_INVALID_PASSWORD_TOOSHORT;
+var TEST_INVALID_PASSWORD_MISMATCH = shared.config.TEST_INVALID_PASSWORD_MISMATCH;
 
 // dashboard.e2e.js
 describe('Labs Workbench Reset Password View', function() {
@@ -34,8 +42,37 @@ describe('Labs Workbench Reset Password View', function() {
     helpers.afterAll();
   });
   
-  it('should verify page', function() {
+  // FIXME: How do we verify e-mail workflows?
+  // FIXME: Move this to helpers
+  var expectBtn = function(btn, enabled) {
+    helpers.scrollIntoView(btn);
+    expect(btn.isDisplayed()).toBe(true);
+    expect(btn.isEnabled()).toBe(enabled ? true : false);  // Handles null / undefined / etc
+    return btn;
+  };
+  
+  it('should accept a valid username to reset their password', function() {
+    var usernameInput = resetPasswordPage.usernameInput;
+    usernameInput.sendKeys(TEST_VALID_USERNAME);
     
+    var submitBtn = resetPasswordPage.submitUsernameBtn;
+    expectBtn(submitBtn, true).click();
+    
+    // We should see our confirmation banner
+    expect(resetPasswordPage.emailSentHelperText.isPresent()).toBe(true);
+    expect(resetPasswordPage.emailSentHelperText.isDisplayed()).toBe(true);
+  });
+  
+  it('should accept an invalid username', function() {
+    var usernameInput = resetPasswordPage.usernameInput;
+    usernameInput.sendKeys(TEST_INVALID_USERNAME);
+    
+    var submitBtn = resetPasswordPage.submitUsernameBtn;
+    expectBtn(submitBtn, true).click();
+    
+    // Even though username is invalid, we should expect the same behavior
+    expect(resetPasswordPage.emailSentHelperText.isPresent()).toBe(true);
+    expect(resetPasswordPage.emailSentHelperText.isDisplayed()).toBe(true);
   });
   
   describe('After Sign In', function() {
@@ -45,10 +82,68 @@ describe('Labs Workbench Reset Password View', function() {
     });
     
     afterAll(function() {
-    // Log out to reset test state
+      // Change password back to original to reset test state
+      resetPasswordPage.newPasswordInput.sendKeys(TEST_ORIGINAL_PASSWORD);
+      resetPasswordPage.newPasswordConfirmationInput.sendKeys(TEST_ORIGINAL_PASSWORD);
+      resetPasswordPage.submitPasswordBtn.click();
+      
+      // Log out to reset test state
       navbar.expandAccountDropdown();
       navbar.clickSignOut();
       landingPage.verify();
+    });
+    
+    it('should accept passwords matching the combination', function() {
+      var newPasswordInput = resetPasswordPage.newPasswordInput;
+      var newPasswordConfirmationInput = resetPasswordPage.newPasswordConfirmationInput;
+      var submitBtn = resetPasswordPage.submitPasswordBtn;
+      
+      // Expect passwords to match
+      expectBtn(submitBtn, false);
+      newPasswordInput.sendKeys(TEST_NEW_PASSWORD);
+      expectBtn(submitBtn, false);
+      newPasswordConfirmationInput.sendKeys(TEST_NEW_PASSWORD);
+      
+      // Click the submit button
+      expectBtn(submitBtn, true).click();
+      
+      // We should see our confirmation banner
+      expect(resetPasswordPage.passwordChangedHelperText.isPresent()).toBe(true);
+      expect(resetPasswordPage.passwordChangedHelperText.isDisplayed()).toBe(true);
+    });
+    
+    it('should prohibit passwords less than 6 characters', function() {
+      var newPasswordInput = resetPasswordPage.newPasswordInput;
+      var newPasswordConfirmationInput = resetPasswordPage.newPasswordConfirmationInput;
+      var submitBtn = resetPasswordPage.submitPasswordBtn;
+      
+      // Expect passwords to be too short
+      expectBtn(submitBtn, false);
+      newPasswordInput.sendKeys(TEST_INVALID_PASSWORD_TOOSHORT);
+      expectBtn(submitBtn, false);
+      newPasswordConfirmationInput.sendKeys(TEST_INVALID_PASSWORD_TOOSHORT);
+      expectBtn(submitBtn, false);
+      
+      // We should not see our confirmation banner
+      expect(resetPasswordPage.passwordChangedHelperText.isPresent()).toBe(false);
+      expect(resetPasswordPage.passwordChangedHelperText.isDisplayed()).toBe(false);
+    });
+    
+    it('should prohibit mismatched passwords', function() {
+      var newPasswordInput = resetPasswordPage.newPasswordInput;
+      var newPasswordConfirmationInput = resetPasswordPage.newPasswordConfirmationInput;
+      var submitBtn = resetPasswordPage.submitPasswordBtn;
+      
+      // Expect passwords to be mismatched
+      expectBtn(submitBtn, false);
+      newPasswordInput.sendKeys(TEST_NEW_PASSWORD);
+      expectBtn(submitBtn, false);
+      newPasswordConfirmationInput.sendKeys(TEST_INVALID_PASSWORD_MISMATCH);
+      expectBtn(submitBtn, false);
+      
+      // We should not see our confirmation banner
+      expect(resetPasswordPage.passwordChangedHelperText.isPresent()).toBe(false);
+      expect(resetPasswordPage.passwordChangedHelperText.isDisplayed()).toBe(false);
     });
   });
 });
