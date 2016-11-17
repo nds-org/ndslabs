@@ -9,5 +9,8 @@
 # Substitute the SUPPORT_EMAIL passed in by "docker run -e" or kubernetes
 /bin/sed -i -e "s#^\.constant('SupportEmail', .*)#.constant('SupportEmail', '${SUPPORT_EMAIL}')#" "/home/app/app.js"
 
+# Substitute the ANALYTICS_ACCOUNT passed in by "docker run -e" or kubernetes
+/bin/sed -i -e "s#^\.constant('GaAccount', .*)#.constant('GaAccount', '${ANALYTICS_ACCOUNT}')#" "/home/app/app.js"
+
 # Start our HTTP Server
 http-server /home/
