@@ -13,7 +13,7 @@ var TEST_USERNAME = shared.config.TEST_USERNAME;
 var TEST_PASSWORD = shared.config.TEST_PASSWORD;
 
 var PAGE_TITLE = 'Labs Workbench Dashboard';
-var PAGE_ROUTE = /https\:\/\/.+\/\#\/home/
+var PAGE_ROUTE = /https\:\/\/.+\/\#\/home(\?t=.+|expand=.+)?/
 
 var EC = protractor.ExpectedConditions;
 
@@ -77,12 +77,12 @@ DashboardPage.prototype.get = function(loggedIn) {
   
   if (loggedIn) {
     landingPage.get();
-    navbar.clickApplicationsNav();
+    navbar.applicationsNav.click();
   } else {
     loginPage.get();
-    loginPage.enterUsername(TEST_USERNAME);
-    loginPage.enterPassword(TEST_PASSWORD);
-    loginPage.clickLogin();
+    loginPage.usernameInput.sendKeys(TEST_USERNAME);
+    loginPage.passwordInput.sendKeys(TEST_PASSWORD);
+    loginPage.loginBtn.click();
   }
   
   this.verify();
