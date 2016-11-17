@@ -50,13 +50,13 @@ ResetPasswordPage.prototype.verify = function(showHelperText, loggedIn) {
   expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
   
-  if (showHelperText) {
+  /*if (showHelperText) {
     if (loggedIn) {
       helpers.expectElement(this.passwordChangedHelperText);
     } else {
       
     }
-  }
+  }*/
 };
 
 module.exports = ResetPasswordPage;

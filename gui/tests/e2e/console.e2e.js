@@ -73,5 +73,6 @@ describe('Labs Workbench Application Service Console View', function() {
   
   it('should verify page', function() {
     //console.log("Console for "+ serviceId);
+    
   });
 });

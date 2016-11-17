@@ -111,18 +111,19 @@ module.exports.expectNewTabOpen = function(expectedUrl, leaveOpen) {
     }
     
     // Switch to newest tab and verify that its URL is correct
-    browser.driver.switchTo().window(handles[handles.length - 1]);
-    if (expectedUrl instanceof RegExp) {
-      expect(browser.getCurrentUrl()).toMatch(expectedUrl);
-    } else if (typeof expectedUrl === 'string') {
-      expect(browser.getCurrentUrl()).toBe(expectedUrl);
-    }
-    
-    if (!leaveOpen) {
-      // Close current tab and switch back to original
-      browser.driver.close();
-      browser.driver.switchTo().window(handles[0]);
-    }
+    return browser.driver.switchTo().window(handles[handles.length - 1]).then(function() {
+      if (expectedUrl instanceof RegExp) {
+        expect(browser.getCurrentUrl()).toMatch(expectedUrl);
+      } else if (typeof expectedUrl === 'string') {
+        expect(browser.getCurrentUrl()).toBe(expectedUrl);
+      }
+      
+      if (!leaveOpen) {
+        // Close current tab and switch back to original
+        browser.driver.close();
+        browser.driver.switchTo().window(handles[0]);
+      }
+    });
   });
 };
 
