@@ -8,7 +8,8 @@ var helpers = require('../helpers.e2e.js');
 var shared = require('./shared.page.js');
 
 var PAGE_TITLE = 'Labs Workbench Landing Page';
-var PAGE_ROUTE = shared.config.TEST_HOSTNAME + '/';
+var PAGE_ROUTE = /https\:\/\/.+\/\#\/(\?t=.+|expand=.+)?/
+var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 
 var LandingPage = function() {
   this.learnMoreBtn = element(by.id('learnMoreBtn'));
@@ -26,13 +27,13 @@ var LandingPage = function() {
 };
 
 LandingPage.prototype.get = function() {
-  browser.get(PAGE_ROUTE);
+  browser.get(TEST_HOSTNAME);
   this.verify();
 };
 
 // Ensure that we are on the landing page
 LandingPage.prototype.verify = function() {
-  expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
+  expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 
