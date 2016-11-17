@@ -76,18 +76,15 @@ exports.config = {
    * Specify which test spec(s) to run
    */
   suites: {
-    // mixed-auth views
     landing: 'tests/e2e/landing.e2e.js',
     navbar: 'tests/e2e/navbar.e2e.js',
     swagger: 'tests/e2e/swagger.e2e.js',
     help: 'tests/e2e/help.e2e.js',
-    reset: 'tests/e2e/reset.e2e.js',
     
-    // non-auth views
     signup: 'tests/e2e/signup.e2e.js',
     login: 'tests/e2e/login.e2e.js',
+    reset: 'tests/e2e/reset.e2e.js',
     
-    // auth-only views
     catalog: 'tests/e2e/catalog.e2e.js',
     addSpec: 'tests/e2e/addSpec.e2e.js',
     editSpec: 'tests/e2e/editSpec.e2e.js',

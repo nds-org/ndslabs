@@ -19,8 +19,6 @@ var TEST_NEW_PASSWORD = '123password';
 var TEST_INVALID_PASSWORD_TOOSHORT = shared.config.TEST_INVALID_PASSWORD_TOOSHORT;
 var TEST_INVALID_PASSWORD_MISMATCH = shared.config.TEST_INVALID_PASSWORD_MISMATCH;
 
-var loggedIn = false;
-
 // dashboard.e2e.js
 describe('Labs Workbench Reset Password View', function() {
   var navbar = new Navbar();
@@ -28,6 +26,8 @@ describe('Labs Workbench Reset Password View', function() {
   var loginPage = new LoginPage();
   var dashboardPage = new DashboardPage();
   var resetPasswordPage = new ResetPasswordPage();
+
+  var loggedIn = false;
   
   beforeAll(function() { 
     helpers.beforeAll();
@@ -99,6 +99,8 @@ describe('Labs Workbench Reset Password View', function() {
       // Log out to reset test state
       navbar.accountDropdown.click();
       navbar.logoutBtn.click();
+      
+      // Bug? See NDS-638
       landingPage.verify();
       
       loggedIn = false;
@@ -136,11 +138,11 @@ describe('Labs Workbench Reset Password View', function() {
       loginPage.loginBtn.click();
       dashboardPage.verify();
       
-      // Ensure we are on the ResetPassword view
-      resetPasswordPage.get(true);
-      
       // Reset the view (hide the confirmation banner, if it is displayed)
       browser.driver.navigate().refresh();
+      
+      // Ensure we are on the ResetPassword view
+      resetPasswordPage.get(true);
       
       // Change password back to original to reset test state
       resetPasswordPage.newPasswordInput.sendKeys(TEST_ORIGINAL_PASSWORD);

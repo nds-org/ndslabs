@@ -13,7 +13,7 @@ var TEST_USERNAME = shared.config.TEST_USERNAME;
 var TEST_PASSWORD = shared.config.TEST_PASSWORD;
 
 var PAGE_TITLE = 'Labs Workbench Dashboard';
-var PAGE_ROUTE = /https\:\/\/.+\/\#\/home(\?t=.+|expand=.+)?/
+var PAGE_ROUTE = /https\:\/\/.+\/\#\/home(\?t=.+|expand=.)?/
 
 var EC = protractor.ExpectedConditions;
 
@@ -77,7 +77,7 @@ DashboardPage.prototype.get = function(loggedIn) {
   
   if (loggedIn) {
     landingPage.get();
-    navbar.applicationsNav.click();
+    navbar.clickApplicationsNav();
   } else {
     loginPage.get();
     loginPage.usernameInput.sendKeys(TEST_USERNAME);
@@ -140,6 +140,8 @@ DashboardPage.prototype.shutdownApplication = function(application) {
   // Wait for the shutdown button to be clickable
   browser.wait(EC.elementToBeClickable(shutdownBtn), 120000);
   shutdownBtn.click();
+  
+  browser.wait(EC.elementToBeClickable(this.confirmBtn), 5000);
   this.confirmBtn.click();
   
   // Wait for the application to shut down before returning
@@ -157,7 +159,6 @@ DashboardPage.prototype.removeApplication = function(application) {
     }
   });
   
-    
   browser.wait(EC.elementToBeClickable(deleteBtn), 120000);
   deleteBtn.click();
   this.confirmBtn.click();
@@ -167,7 +168,7 @@ DashboardPage.prototype.shutdownAndRemoveAllApplications = function() {
   var self = this;
   
   // Shutdown and remove all applications
-  this.applications.then(function(applications) {
+  return this.applications.then(function(applications) {
     for (let i = 0; i < applications.length; i++) {
       let application = applications[i];
         
@@ -179,20 +180,11 @@ DashboardPage.prototype.shutdownAndRemoveAllApplications = function() {
       helpers.hasClass(application, 'panel-danger').then(function(hasClass) {
         if (!hasClass) {
           //console.log("Shutting down: " + i);
-          let shutdownBtn = self.shutdownBtn(application);
-          browser.wait(EC.elementToBeClickable(shutdownBtn), 120000);
-          shutdownBtn.click();
-          
-          var confirmBtn = self.confirmBtn;
-          browser.wait(EC.elementToBeClickable(confirmBtn), 120000);
-          confirmBtn.click();
+          self.shutdownApplication(application);
         }
         
-        let deleteBtn = self.deleteBtn(application);
-        browser.wait(EC.elementToBeClickable(deleteBtn), 120000);
-        deleteBtn.click();
-        self.confirmBtn.click();
-        //console.log("Removed: " + i);
+        //console.log("Removing: " + i);
+        return self.removeApplication(application);
       });
     }
     
