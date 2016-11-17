@@ -6,9 +6,11 @@
   </div>
   <div class="modal-body">
     <p>Are you sure that you want to shut this application down?</p>
-    <p ng-if="stack | allEndpoints">You and your peers will no longer be able to access the endpoints provided below:
+    <p ng-if="_.find(stack | allEndpoints, [ 'protocol', 'http' ])">You and your peers will no longer be able to access the endpoints provided below:
       <ul>
-        <li ng-repeat="endpt in stack | allEndpoints track by $index" ng-if="endpt && endpt !== '' && ((stack.key | specProperty:'access') === 'external') && (endpt.protocol === 'http')"><a href="{{ endpt | externalHostPort }}">{{ endpt | externalHostPort }}</a></li>
+        <li ng-repeat="endpt in stack | allEndpoints track by $index" ng-if="endpt && endpt !== '' && ((stack.key | specProperty:'access') === 'external') && (endpt.protocol === 'http')">
+          <a href="{{ endpt | externalHostPort }}">{{ endpt | externalHostPort }}</a>
+        </li>
       </ul>
     </p>
   </div>
