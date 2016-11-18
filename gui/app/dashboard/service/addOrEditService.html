@@ -66,15 +66,16 @@
                   <tr>
                     <td>
                       <input id="newCfgName" class="form-control" ng-model="newCfgName" placeholder="New Property Name..." />
-                      <p class="text-danger" style="margin:0;padding:0" ng-if="!newCfgName">New variable requires a name!</p>
-                      <p class="text-danger" style="margin:0;padding:0" ng-if="_.find(configs, ['name', newCfgName])">New variable name is not unique!</p>
+                      <p id="newCfgNameInvalidText" class="text-danger" style="margin:0;padding:0" ng-if="!newCfgName">New variable requires a name!</p>
+                      <p id="newCfgNameInvalidText" class="text-danger" style="margin:0;padding:0" ng-if="_.find(configs, ['name', newCfgName])">New variable name is not unique!</p>
+                      
                     </td>
                     <td>
                       <input id="newCfgValue" class="form-control" ng-model="newCfgValue" placeholder="New Property Value..." />
-                      <p class="text-danger" style="margin:0;padding:0" ng-if="!newCfgValue">New variable requires a value!</p>
+                      <p id="newCfgValueInvalidText" class="text-danger" style="margin:0;padding:0" ng-if="!newCfgValue">New variable requires a value!</p>
                     </td>
                     <td class="text-center">
-                      <p id="newCfgValidationText" class="text-success" ng-if="newCfgName && newCfgValue && !_.find(configs, ['name', newCfgName])">New variable is valid!</p>
+                      <p id="newCfgValidText" class="text-success" ng-if="newCfgName && newCfgValue && !_.find(configs, ['name', newCfgName])">New variable is valid!</p>
                     </td>
                     <td class="text-center">
                       <button id="cfgAddBtn" class="btn btn-xs btn-primary" ng-click="configs.push({ 'name': newCfgName, 'value': newCfgValue, 'spec': { 'default': '', canOverride: true, isPassword: false }, canEdit: true });newCfgName=newCfgValue=''" 
