@@ -15,6 +15,14 @@ var TEST_CREATED_SPEC_KEY = 'createdspec';
 var TEST_CREATED_SPEC_NAME = 'New Application';
 var TEST_CREATED_SPEC_IMAGE_NAME = 'ndslabs/cowsay-php';
 
+var TEST_DOCKER_IMAGE_TAG = 'latest';
+
+var TEST_SEARCH_TAG_NAME = 'Archive';
+
+var TEST_CFG_NAME = 'Config Name';
+var TEST_CFG_LABEL = 'Config Label';
+var TEST_CFG_VALUE = 'Config Value';
+
 var EC = protractor.ExpectedConditions;
 
 // addSpec.e2e.js
@@ -78,8 +86,8 @@ describe('Labs Workbench Add Application Spec View', function() {
   });
   
   it('should allow the user to save after entering all required fields', function() {
-    
     expectBtn(false);
+    
     // Enter all required fields: key, name, image name
     var keyField = addSpecPage.keyField;
     var nameField =  addSpecPage.nameField;
@@ -113,6 +121,90 @@ describe('Labs Workbench Add Application Spec View', function() {
     
       // Delete the new spec to reset test state
       catalogPage.deleteSpec(TEST_CREATED_SPEC_KEY);
+    });
+  });
+  
+  describe('Details Tab', function() {
+    beforeEach(function() {
+      addSpecPage.detailsTab.click();
+    });
+    
+    it('should allow the user to add search tags', function() {
+      
+    });
+    
+    it('should allow the user to add docker image tags', function() {
+      expect(this.addDockerTagBtn.isEnabled()).toBe(false);
+      
+      // Enter the port number
+      this.newDockerTagNameField.sendKeys(TEST_DOCKER_IMAGE_TAG);
+      
+      // Click the Add button
+      expect(this.addDockerTagBtn.isEnabled()).toBe(true);
+      this.addDockerTagBtn.click();
+    });
+    
+    describe('With Search Tags', function() {
+      beforeAll(function() {
+        addSpecPage.addSearchTag(TEST_SEARCH_TAG_NAME);
+      });
+      
+      it('should allow the user to remove search tags', function() {
+        
+      });
+    });
+    
+    describe('With Docker Tags', function() {
+      beforeAll(function() {
+        addSpecPage.addDockerTag('testing');
+      });
+      
+      it('should prevent adding duplicate Docker tags', function() {
+        
+      });
+      
+      it('should allow the user to remove Docker tags', function() {
+        
+      });
+    });
+  });
+  
+  describe('Environment Tab', function() {
+    beforeEach(function() {
+      addSpecPage.environmentTab.click();
+    });
+    
+    it('should allow the user to add search tags', function() {
+      
+    });
+    
+    it('should allow the user to add docker image tags', function() {
+      expect(this.addDockerTagBtn.isEnabled()).toBe(false);
+      
+      // Enter the port number
+      this.newDockerTagNameField.sendKeys(TEST_DOCKER_IMAGE_TAG);
+      
+      // Click the Add button
+      expect(this.addDockerTagBtn.isEnabled()).toBe(true);
+      this.addDockerTagBtn.click();
+    });
+    
+    describe('With Configs', function() {
+      beforeAll(function() {
+        addSpecPage.addConfig('explicit', {
+          name: '',
+          label: '',
+          value: ''
+        });
+      });
+      
+      it('should prevent adding duplicate Docker tags', function() {
+        
+      });
+      
+      it('should allow the user to remove Docker tags', function() {
+        
+      });
     });
   });
 });
