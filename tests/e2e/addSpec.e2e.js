@@ -19,9 +19,21 @@ var TEST_DOCKER_IMAGE_TAG = 'latest';
 
 var TEST_SEARCH_TAG_NAME = 'Archive';
 
-var TEST_CFG_NAME = 'Config Name';
+var TEST_DEPENDENCY_KEY = 'rabbitmq';
+
+var TEST_CFG_NAME = 'CONFIG_NAME';
 var TEST_CFG_LABEL = 'Config Label';
 var TEST_CFG_VALUE = 'Config Value';
+
+var TEST_VOLUME_PATH = '/appdata';
+
+var TEST_PORT_TYPE_HTTP = 'http';
+var TEST_PORT_TYPE_TCP = 'tcp';
+var TEST_PORT_NUMBER = 80;
+var TEST_PORT_PATH = '/some/path';
+
+var TEST_REPO_TYPE = 'git';
+var TEST_REPO_URL = 'https://github.com/nds-org/ndslabs';
 
 var EC = protractor.ExpectedConditions;
 
@@ -127,6 +139,8 @@ describe('Labs Workbench Add Application Spec View', function() {
   describe('Details Tab', function() {
     beforeEach(function() {
       addSpecPage.detailsTab.click();
+      expect(addSpecPage.addSearchTagBtn.isEnabled()).toBe(false);
+      expect(addSpecPage.addDockerTagBtn.isEnabled()).toBe(false);
     });
     
     it('should allow the user to add search tags', function() {
@@ -134,14 +148,13 @@ describe('Labs Workbench Add Application Spec View', function() {
     });
     
     it('should allow the user to add docker image tags', function() {
-      expect(this.addDockerTagBtn.isEnabled()).toBe(false);
-      
       // Enter the port number
-      this.newDockerTagNameField.sendKeys(TEST_DOCKER_IMAGE_TAG);
+      addSpecPage.newDockerTagNameField.sendKeys(TEST_DOCKER_IMAGE_TAG);
       
       // Click the Add button
-      expect(this.addDockerTagBtn.isEnabled()).toBe(true);
-      this.addDockerTagBtn.click();
+      var addBtn = addSpecPage.addDockerTagBtn;
+      expect(addBtn.isEnabled()).toBe(true);
+      addBtn.click();
     });
     
     describe('With Search Tags', function() {
@@ -159,11 +172,28 @@ describe('Labs Workbench Add Application Spec View', function() {
         addSpecPage.addDockerTag('testing');
       });
       
-      it('should prevent adding duplicate Docker tags', function() {
+      it('should allow the user to remove Docker tags', function() {
         
       });
+    });
+  });
+  
+  describe('Dependencies Tab', function() {
+    beforeEach(function() {
+      addSpecPage.dependenciesTab.click();
+      expect(addSpecPage.addNewDepBtn.isEnabled()).toBe(false);
+    });
+    
+    it('should allow the user to add service dependencies', function() {
       
-      it('should allow the user to remove Docker tags', function() {
+    });
+    
+    describe('With Dependencies', function() {
+      beforeAll(function() {
+        addSpecPage.addDependency(TEST_DEPENDENCY_KEY);
+      });
+      
+      it('should allow the user to remove service dependencies', function() {
         
       });
     });
@@ -172,37 +202,106 @@ describe('Labs Workbench Add Application Spec View', function() {
   describe('Environment Tab', function() {
     beforeEach(function() {
       addSpecPage.environmentTab.click();
+      expect(addSpecPage.addCfgBtn.isEnabled()).toBe(false);
     });
     
-    it('should allow the user to add search tags', function() {
+    it('should allow the user to add environment variables', function() {
       
-    });
-    
-    it('should allow the user to add docker image tags', function() {
-      expect(this.addDockerTagBtn.isEnabled()).toBe(false);
-      
-      // Enter the port number
-      this.newDockerTagNameField.sendKeys(TEST_DOCKER_IMAGE_TAG);
-      
-      // Click the Add button
-      expect(this.addDockerTagBtn.isEnabled()).toBe(true);
-      this.addDockerTagBtn.click();
     });
     
     describe('With Configs', function() {
       beforeAll(function() {
         addSpecPage.addConfig('explicit', {
-          name: '',
-          label: '',
-          value: ''
+          name: TEST_CFG_NAME,
+          label: TEST_CFG_LABEL,
+          value: TEST_CFG_VALUE
         });
       });
       
-      it('should prevent adding duplicate Docker tags', function() {
+      it('should prevent adding duplicate environment variables', function() {
         
       });
       
-      it('should allow the user to remove Docker tags', function() {
+      it('should allow the user to remove environment variables', function() {
+        
+      });
+    });
+  });
+  
+  describe('Data Tab', function() {
+    beforeEach(function() {
+      addSpecPage.dataTab.click();
+      expect(addSpecPage.volumeAddBtn.isEnabled()).toBe(false);
+    });
+    
+    it('should allow the user to add volume mounts', function() {
+      // Enter new mount path
+      this.newVolumePathField.sendKeys(TEST_VOLUME_PATH);
+      
+      // Click the Add button
+      var addBtn = this.volumeAddBtn;
+      expect(addBtn.isEnabled()).toBe(true);
+      addBtn.click();
+    });
+    
+    describe('With Volumes', function() {
+      beforeAll(function() {
+        addSpecPage.addVolume(TEST_VOLUME_PATH);
+      });
+      
+      it('should allow the user to remove volume mounts', function() {
+        
+      });
+    });
+  });
+  
+  describe('Ports Tab', function() {
+    beforeEach(function() {
+      addSpecPage.portsTab.click();
+      expect(addSpecPage.addPortBtn.isEnabled()).toBe(false);
+    });
+    
+    it('should allow the user to add ports', function() {
+      
+    });
+    
+    describe('With Ports', function() {
+      beforeAll(function() {
+        addSpecPage.addPort(TEST_PORT_NUMBER, TEST_PORT_PATH);
+      });
+      
+      it('should allow the user to remove ports', function() {
+        
+      });
+    });
+  });
+  
+  describe('Resource Limits Tab', function() {
+    beforeEach(function() {
+      addSpecPage.resourceLimitsTab.click();
+    });
+  });
+  
+  describe('Development Tab', function() {
+    beforeEach(function() {
+      addSpecPage.developmentTab.click();
+      expect(addSpecPage.addRepoBtn.isEnabled()).toBe(false);
+    });
+    
+    it('should allow the user to select a development environment', function() {
+      // NOOP
+    });
+    
+    it('should allow the user to source repos', function() {
+      
+    });
+    
+    describe('With Source Repos', function() {
+      beforeAll(function() {
+        addSpecPage.addSrcRepo(TEST_REPO_TYPE, TEST_REPO_URL);
+      });
+      
+      it('should allow the user to remove ports', function() {
         
       });
     });

@@ -32,7 +32,7 @@ var AddSpecPage = function() {
   this.internalAccessBtn = element(by.id('internalAccessBtn'));
   this.noAccessBtn = element(by.id('noAccessBtn'));
   this.newTagSelect = element(by.id('newTagSelect'));
-  this.addTagBtn = element(by.id('addTagBtn'));
+  this.addSearchTagBtn = element(by.id('addTagBtn'));
   this.searchTags = element.all(by.repeater('tagId in spec.tags'));
   this.searchTagText = function(tag) {  return tag.element(by.id('searchTagText')); };
   this.removeTagBtn = function(tag) {  return tag.element(by.id('removeTagBtn')); };
@@ -244,7 +244,7 @@ AddSpecPage.prototype.addSearchTag = function(tagName) {
   */
   
   // Click the Add button
-  this.addTagBtn.click();
+  this.addSearchTagBtn.click();
 };
 
 /**
