@@ -19,29 +19,34 @@ var PAGE_ROUTE = /https\:\/\/.+\/\#\/home\/.+\/(add|edit)\/?.*/;
 var EC = protractor.ExpectedConditions;
 
 var AddServicePage = function() {
+  this.environmentTab = element(by.id('environmentTab'));
   this.configs = element.all(by.repeater("cfg in configs | orderBy:['spec.canOverride', 'spec.isPassword'] track by cfg.name"));
   this.cfgBadge = element(by.id('cfgBadge'));
-  this.cfgNameInput = element(by.id('cfgName'));
-  this.newCfgValueType = element(by.id('newCfgValueType'));
-  this.cfgValueInput = element(by.id('cfgValue'));
-  this.cfgPasswordInput = element(by.id('cfgPassword'));
-  this.cfgPasswordStrength = element(by.id('cfgPasswordStrength'));
-  this.cfgDefaultBtn = element(by.id('cfgDefaultBtn'));
-  this.cfgRemoveBtn = element(by.id('cfgRemoveBtn'));
+  this.cfgNameInput = function(cfg) {  return cfg.element(by.id('cfgName')); };
+  this.cfgValueInput = function(cfg) {  return cfg.element(by.id('cfgValue')); };
+  this.cfgPasswordInput = function(cfg) {  return cfg.element(by.id('cfgPassword')); };
+  this.cfgPasswordStrength = function(cfg) {  return cfg.element(by.id('cfgPasswordStrength')); };
+  this.cfgDefaultBtn = function(cfg) {  return cfg.element(by.id('cfgDefaultBtn')); };
+  this.cfgRemoveBtn = function(cfg) {  return cfg.element(by.id('cfgRemoveBtn')); };
   this.newCfgNameInput = element(by.id('newCfgName'));
+  this.newCfgValueType = element(by.id('newCfgValueType'));
   this.newCfgValueInput = element(by.id('newCfgValue'));
-  this.newCfgValidationText = element(by.id('newCfgValidationText'));
+  this.newCfgNameInvalidText = element(by.id('newCfgNameInvalidText'));
+  this.newCfgValueInvalidText = element(by.id('newCfgValueInvalidText'));
+  this.newCfgValidText = element(by.id('newCfgValidText'));
   this.cfgAddBtn = element(by.id('cfgAddBtn'));
   
+  this.dataTab = element(by.id('dataTab'));
   this.volumes = element.all(by.repeater("volume in volumes | orderBy:'canEdit':true"));
   this.volumeBadge = element(by.id('volumeBadge'));
-  this.volumeFromInput = element(by.id('volumeFromInput'));
-  this.volumeToInput = element(by.id('volumeToInput'));
-  this.volumeRemoveBtn = element(by.id('volumeRemoveBtn'));
+  this.volumeFromInput = function(vol) {  return vol.element(by.id('volumeFromInput')); };
+  this.volumeToInput = function(vol) {  return vol.element(by.id('volumeToInput')); };
+  this.volumeRemoveBtn = function(vol) {  return vol.element(by.id('volumeRemoveBtn')); };
   this.newVolumeFrom = element(by.id('newVolumeFrom'));
   this.newVolumeTo = element(by.id('newVolumeTo'));
   this.volumeAddBtn = element(by.id('volumeAddBtn'));
   
+  this.dockerTab = element(by.id('dockerTab'));
   this.dockerTags = element.all(by.repeater('tag in spec.image.tags track by tag'));
   this.dockerImageRegistryText = element(by.id('dockerImageRegistryText'));
   this.dockerImageNameText = element(by.id('dockerImageNameText'));
@@ -111,6 +116,28 @@ AddServicePage.prototype.get = function(stackId, serviceId, loggedIn) {
 AddServicePage.prototype.verify = function() {
   expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toMatch(PAGE_TITLE);
+};
+
+AddServicePage.prototype.addConfig = function(name, value) {
+  // Enter a variable name
+  this.newCfgNameInput.sendKeys(name);
+  
+  // Enter a variable value
+  this.newCfgValueInput.sendKeys(value);
+  
+  // Click the Add button
+  this.cfgAddBtn.click();
+};
+
+AddServicePage.prototype.addVolume = function(from, to) {
+  // Enter a mount source
+  this.newVolumeFrom.sendKeys(from);
+  
+  // Enter a mount destination
+  this.newVolumeTo.sendKeys(to);
+  
+  // Click the Add button
+  this.volumeAddBtn.click();
 };
 
 
