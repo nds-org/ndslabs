@@ -49,6 +49,7 @@ var AddSpecPage = function() {
   this.registryField = element(by.id('registryField'));
   this.imageNameField = element(by.id('imageNameField'));
   this.newDockerTagNameField = element(by.id('newDockerTagNameField'));
+  this.addDockerTagBtn = element(by.id('addDockerTagBtn'));
   this.dockerTags = element.all(by.repeater('tag in spec.image.tags'));
   this.dockerTagText = function(tag) {  return tag.element(by.id('dockerTagText')); };
   this.removeDockerTagBtn = function(tag) {  return tag.element(by.id('removeDockerTagBtn')); };
@@ -147,6 +148,103 @@ AddSpecPage.prototype.get = function(options) {
 AddSpecPage.prototype.verify = function() { 
   expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toMatch(PAGE_TITLE);
+};
+
+AddSpecPage.prototype.addConfig = function(type, fields) {
+  /*
+    Populate inputs and click the button:
+    
+    this.newCfgTypeSelect = element(by.id('newCfgTypeSelect'));
+    this.newCfgSetToSelect = element(by.id('newCfgSetToSelect'));
+    this.newCfgUseFromSelect = element(by.id('newCfgUseFromSelect'));
+  */
+  
+  this.newCfgNameField.sendKeys(fields.name);
+  this.newCfgLblField.sendKeys(fields.label);
+  
+  if (type === 'useFrom') {
+    
+  } else if (type === 'setTo') {
+    this.newCfgValueField.sendKeys(fields);
+  } else {
+    this.newCfgValueField.sendKeys(fields);
+  }
+  
+  // Click the Add button
+  this.addCfgBtn.click();
+};
+
+AddSpecPage.prototype.addVolume = function(path) {
+  // Enter new mount path
+  this.newVolumePathField.sendKeys(path);
+  
+  // Click the Add button
+  this.volumeAddBtn.click();
+};
+
+AddSpecPage.prototype.addDependency = function(specKey, required) {
+  /*
+    Populate inputs and click the button:
+    
+    this.newDepSelect = element(by.id('newDepSelect'));
+  */
+  
+  // Check the box if this dependency is required
+  if (required) {
+    this.newDepRequiredCheckbox.click();
+  }
+  
+  this.addNewDepBtn.click();
+};
+
+AddSpecPage.prototype.addPort = function(number, path) {
+  // Enter the port number
+  this.newPortNumberField.sendKeys(number);
+    
+  if (path) {
+    // Path given => HTTP port
+    this.newPortHttpBtn.click();
+    this.newPortPathField.sendKeys(path);
+  } else {
+    // No path => TCP port
+    this.newPortTcpBtn.click();
+  }
+  
+  // Click the Add button
+  this.addPortBtn.click();
+};
+
+AddSpecPage.prototype.addDockerTag = function(tagName) {
+  // Enter the port number
+  this.newDockerTagNameField.sendKeys(tagName);
+  
+  // Click the Add button
+  this.addDockerTagBtn.click();
+};
+
+AddSpecPage.prototype.addSrcRepo = function(type, url) {
+  /*
+    Populate inputs and click the button:
+  
+    this.repoTypeSelect = element(by.id('repoTypeSelect'));
+  */
+  
+  // Enter the repository url
+  this.repoUrlField.sendKeys(url);
+  
+  // Click the Add button
+  this.addRepoBtn.click();
+};
+
+AddSpecPage.prototype.addSearchTag = function(tagName) {
+  /*
+    Populate inputs and click the button:
+  
+    this.newTagSelect = element(by.id('newTagSelect'));
+  */
+  
+  // Click the Add button
+  this.addTagBtn.click();
 };
 
 /**
