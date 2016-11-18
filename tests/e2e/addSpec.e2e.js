@@ -159,7 +159,7 @@ describe('Labs Workbench Add Application Spec View', function() {
     
     describe('With Search Tags', function() {
       beforeAll(function() {
-        addSpecPage.addSearchTag(TEST_SEARCH_TAG_NAME);
+        //addSpecPage.addSearchTag(TEST_SEARCH_TAG_NAME);
       });
       
       it('should allow the user to remove search tags', function() {
@@ -169,7 +169,7 @@ describe('Labs Workbench Add Application Spec View', function() {
     
     describe('With Docker Tags', function() {
       beforeAll(function() {
-        addSpecPage.addDockerTag('testing');
+        //addSpecPage.addDockerTag('testing');
       });
       
       it('should allow the user to remove Docker tags', function() {
@@ -190,7 +190,7 @@ describe('Labs Workbench Add Application Spec View', function() {
     
     describe('With Dependencies', function() {
       beforeAll(function() {
-        addSpecPage.addDependency(TEST_DEPENDENCY_KEY);
+        //addSpecPage.addDependency(TEST_DEPENDENCY_KEY);
       });
       
       it('should allow the user to remove service dependencies', function() {
@@ -236,10 +236,10 @@ describe('Labs Workbench Add Application Spec View', function() {
     
     it('should allow the user to add volume mounts', function() {
       // Enter new mount path
-      this.newVolumePathField.sendKeys(TEST_VOLUME_PATH);
+      addSpecPage.newVolumePathField.sendKeys(TEST_VOLUME_PATH);
       
       // Click the Add button
-      var addBtn = this.volumeAddBtn;
+      var addBtn = addSpecPage.volumeAddBtn;
       expect(addBtn.isEnabled()).toBe(true);
       addBtn.click();
     });
