@@ -13,7 +13,7 @@
         
       <uib-tabset active="activeTab">
         <!-- Config Mapper -->
-        <uib-tab index="1">
+        <uib-tab index="1" id="environmentTab">
           <uib-tab-heading>
             Variables <span id="cfgBadge" class="badge">{{ configs | countReqConfigs }}</span>
           </uib-tab-heading>
@@ -90,7 +90,7 @@
         </uib-tab>
       
         <!-- Volume Mapper -->
-        <uib-tab index="2">
+        <uib-tab index="2" id="dataTab">
           <uib-tab-heading>
             Data <span id="volumesBadge" class="badge">{{ volumes | countReqVolumes }}</span>
           </uib-tab-heading>
@@ -177,7 +177,7 @@
         </uib-tab> -->
         
         
-        <uib-tab heading="Docker" index="3">
+        <uib-tab heading="Docker" index="3" id="dockerTab">
           <fieldset class="border-nds">
             <legend class="legend-fix">Docker</legend>
             
