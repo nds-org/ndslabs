@@ -23,10 +23,6 @@ ConsolePage.prototype.get = function(applicationId, serviceId, loggedIn) {
   var dashboardPage = new DashboardPage();
   var self = this;
   
-  console.log("applicationId: " + applicationId);
-  console.log("serviceId: " + serviceId);
-  console.log("loggedIn: " + loggedIn);
-  
   dashboardPage.get(loggedIn);
   
   return helpers.selectByModel(dashboardPage.applications, "stack.id", function(id) {
@@ -38,24 +34,13 @@ ConsolePage.prototype.get = function(applicationId, serviceId, loggedIn) {
         application.click();
       }
       
-      return helpers.selectByModel(dashboardPage.services(application), "svc.id", function(id) {
-        return id === serviceId;
-      }, function(svcMatch) {
-        var consoleBtn = dashboardPage.consoleBtn(svcMatch);
-        browser.wait(EC.elementToBeClickable(consoleBtn), 5000);
-        // Click the "Edit" button next to the first service
-        consoleBtn.click();
-        helpers.expectNewTabOpen(PAGE_ROUTE, true);
-        self.verify();
-        
-        return svcMatch;
-      });
+      return self.getServiceConsole(application, serviceId);
     });
   });
 };
 
 // FIXME: Feature envy
-ConsolePage.prototype.getConsole = function(application, serviceId) {
+ConsolePage.prototype.getServiceConsole = function(application, serviceId) {
   var dashboardPage = new DashboardPage();
   var self = this;
   
