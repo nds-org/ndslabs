@@ -6,34 +6,50 @@
 var helpers = require('../helpers.e2e.js');
 var shared = require('./shared.page.js');
 
-var DashboardPage = require('./login.page.js');
+var DashboardPage = require('./dashboard.page.js');
 
-var PAGE_TITLE = /Service Console: .*/;
+var PAGE_TITLE = /Console: .*/;
 var PAGE_ROUTE = /https\:\/\/.*\/\#\/home\/.*\/console/;
 
 var EC = protractor.ExpectedConditions;
 
 var ConsolePage = function() {
-  this.terminal = element(by.id('terminal'));
+  this.console = element(by.id('console'));
 };
 
 // Navigate to the Console view
 // TODO: How to handle parameters here?
-ConsolePage.prototype.get = function(stackId, serviceId, loggedIn) {
+ConsolePage.prototype.get = function(applicationId, serviceId, loggedIn) {
   var dashboardPage = new DashboardPage();
   var self = this;
+  
+  console.log("applicationId: " + applicationId);
+  console.log("serviceId: " + serviceId);
+  console.log("loggedIn: " + loggedIn);
   
   dashboardPage.get(loggedIn);
   
   return helpers.selectByModel(dashboardPage.applications, "stack.id", function(id) {
-    return id === stackId;
+    return id === applicationId;
   }, function(application) {
     helpers.scrollIntoView(application);
     return dashboardPage.consoleBtn(application).isDisplayed().then(function(isDisplayed) {
       if (!isDisplayed) {
         application.click();
       }
-      return self.getConsole(application, serviceId);
+      
+      return helpers.selectByModel(dashboardPage.services(application), "svc.id", function(id) {
+        return id === serviceId;
+      }, function(svcMatch) {
+        var consoleBtn = dashboardPage.consoleBtn(svcMatch);
+        browser.wait(EC.elementToBeClickable(consoleBtn), 5000);
+        // Click the "Edit" button next to the first service
+        consoleBtn.click();
+        helpers.expectNewTabOpen(PAGE_ROUTE, true);
+        self.verify();
+        
+        return svcMatch;
+      });
     });
   });
 };
