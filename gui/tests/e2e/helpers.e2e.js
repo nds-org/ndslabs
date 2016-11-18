@@ -110,8 +110,11 @@ module.exports.expectNewTabOpen = function(expectedUrl, leaveOpen) {
       return;
     }
     
+    var newestIndex = handles.length - 1;
+    var newestTab = handles[newestIndex];
+    
     // Switch to newest tab and verify that its URL is correct
-    return browser.driver.switchTo().window(handles[handles.length - 1]).then(function() {
+    return browser.driver.switchTo().window(newestTab).then(function() {
       if (expectedUrl instanceof RegExp) {
         expect(browser.getCurrentUrl()).toMatch(expectedUrl);
       } else if (typeof expectedUrl === 'string') {
@@ -120,11 +123,15 @@ module.exports.expectNewTabOpen = function(expectedUrl, leaveOpen) {
       
       if (!leaveOpen) {
         // Close current tab and switch back to original
-        browser.driver.close();
-        browser.driver.switchTo().window(handles[0]);
+        module.exports.closeTab(handles[0]);
       }
     });
   });
+};
+
+module.exports.closeTab = function(nextHandle) {
+  browser.driver.close();
+  browser.driver.switchTo().window(nextHandle);
 };
 
 module.exports.selectDropdownbyNum = function (ele, index) {
