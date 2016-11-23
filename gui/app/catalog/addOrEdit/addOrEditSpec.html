@@ -204,7 +204,7 @@
                                                         <input id="newDockerTagNameField" name="newDockerTagNameField" class="form-control" ng-model="newTag" placeholder="Enter a Docker tag name..." />
                                                     </div>
                                                     <div class="col-sm-1">
-                                                        <button class="btn btn-primary btn-xs pull-right" ng-disabled="!newTag || (spec.image.tags && spec.image.tags.indexOf(newTag) !== -1)" ng-click="spec.image.tags.push(newTag);newTag=''">
+                                                        <button id="addDockerTagBtn" class="btn btn-primary btn-xs pull-right" ng-disabled="!newTag || (spec.image.tags && spec.image.tags.indexOf(newTag) !== -1)" ng-click="spec.image.tags.push(newTag);newTag=''">
                                                             <i class="fa fa-fw fa-plus"></i>
                                                         </button>
                                                     </div>
