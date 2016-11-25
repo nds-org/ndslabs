@@ -11,6 +11,8 @@ var LandingPage = require('./pages/landing.page.js');
 var CatalogPage = require('./pages/catalog.page.js');
 var ConsolePage = require('./pages/console.page.js');
 
+var EC = protractor.ExpectedConditions;
+
 var WAIT_TIME_APPLICATION_STARTUP = 120000;
 var WAIT_TIME_APPLICATION_SHUTDOWN = 120000;
 
@@ -86,15 +88,21 @@ describe('Labs Workbench Application Service Console View', function() {
   // (i.e. automate a simple Clowder or Dataverse use-case)
   
   it('should ensure that user\'s home folder is mounted via console', function() {
+    // Wait for console (WebSokcet) to connect
+    browser.wait(function() {
+      return consolePage.console.getText();
+    }, 3000);
+  
     // Send a test command to the console: "ls -al /home/$NAMESPACE"
+    // NOTE: We can't call .sendKeys on a <div> element, 
+    //   so we send the keys to the browser instead
     browser.actions().sendKeys(TEST_CONSOLE_CMD).perform();
+    
+    // Press ENTER
     browser.actions().sendKeys(protractor.Key.ENTER).perform();
     
-    // TODO: Verify the output in the console
-    consolePage.console.getText().then(function(text) {
-      //console.log(text);
-      expect(text).toContain('ls -al /home/$NAMESPACE');
-      expect(text).toContain('AppData');
-    });
+    // Wait for expected results
+    browser.wait(EC.textToBePresentInElement(consolePage.console, TEST_CONSOLE_CMD), 3000);
+    browser.wait(EC.textToBePresentInElement(consolePage.console, 'AppData'), 3000);
   });
 });
