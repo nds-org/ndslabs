@@ -89,9 +89,7 @@ describe('Labs Workbench Application Service Console View', function() {
   
   it('should ensure that user\'s home folder is mounted via console', function() {
     // Wait for console (WebSokcet) to connect
-    browser.wait(function() {
-      return consolePage.console.getText();
-    }, 3000);
+    browser.wait(EC.textToBePresentInElement(consolePage.console, '#'), 3000);
   
     // Send a test command to the console: "ls -al /home/$NAMESPACE"
     // NOTE: We can't call .sendKeys on a <div> element, 
