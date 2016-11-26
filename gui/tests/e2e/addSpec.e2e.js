@@ -15,7 +15,7 @@ var TEST_CREATED_SPEC_KEY = 'createdspec';
 var TEST_CREATED_SPEC_NAME = 'New Application';
 var TEST_CREATED_SPEC_IMAGE_NAME = 'ndslabs/cowsay-php';
 
-var TEST_DOCKER_IMAGE_TAG = 'latest';
+var TEST_DOCKER_IMAGE_TAG = 'sometagname';
 
 var TEST_SEARCH_TAG_NAME = 'Archive';
 
@@ -87,6 +87,7 @@ describe('Labs Workbench Add Application Spec View', function() {
     expect(saveBtn.isEnabled()).toBe(enabled ? true : false);  // Handles null / undefined / etc
   };
   
+  
   it('should allow the user to abort the creation process', function() {
     // Click the cancel button
     var cancelBtn = addSpecPage.cancelBtn;
@@ -148,17 +149,20 @@ describe('Labs Workbench Add Application Spec View', function() {
     });
     
     it('should allow the user to add docker image tags', function() {
+      helpers.scrollIntoView(addSpecPage.newDockerTagNameField);
+      
       // Enter the port number
       addSpecPage.newDockerTagNameField.sendKeys(TEST_DOCKER_IMAGE_TAG);
       
       // Click the Add button
       var addBtn = addSpecPage.addDockerTagBtn;
+      helpers.scrollIntoView(addBtn);
       expect(addBtn.isEnabled()).toBe(true);
       addBtn.click();
     });
     
     describe('With Search Tags', function() {
-      beforeAll(function() {
+      beforeEach(function() {
         //addSpecPage.addSearchTag(TEST_SEARCH_TAG_NAME);
       });
       
@@ -168,7 +172,7 @@ describe('Labs Workbench Add Application Spec View', function() {
     });
     
     describe('With Docker Tags', function() {
-      beforeAll(function() {
+      beforeEach(function() {
         //addSpecPage.addDockerTag('testing');
       });
       
@@ -189,7 +193,7 @@ describe('Labs Workbench Add Application Spec View', function() {
     });
     
     describe('With Dependencies', function() {
-      beforeAll(function() {
+      beforeEach(function() {
         //addSpecPage.addDependency(TEST_DEPENDENCY_KEY);
       });
       
@@ -210,7 +214,7 @@ describe('Labs Workbench Add Application Spec View', function() {
     });
     
     describe('With Configs', function() {
-      beforeAll(function() {
+      beforeEach(function() {
         addSpecPage.addConfig('explicit', {
           name: TEST_CFG_NAME,
           label: TEST_CFG_LABEL,
@@ -231,22 +235,26 @@ describe('Labs Workbench Add Application Spec View', function() {
   describe('Data Tab', function() {
     beforeEach(function() {
       addSpecPage.dataTab.click();
-      expect(addSpecPage.volumeAddBtn.isEnabled()).toBe(false);
+      expect(addSpecPage.addVolumeBtn.isEnabled()).toBe(false);
     });
     
     it('should allow the user to add volume mounts', function() {
+      // Clear initial value from the field
+      addSpecPage.newVolumePathField.clear();
+      
       // Enter new mount path
       addSpecPage.newVolumePathField.sendKeys(TEST_VOLUME_PATH);
       
       // Click the Add button
-      var addBtn = addSpecPage.volumeAddBtn;
+      var addBtn = addSpecPage.addVolumeBtn;
       expect(addBtn.isEnabled()).toBe(true);
       addBtn.click();
     });
     
     describe('With Volumes', function() {
-      beforeAll(function() {
+      beforeEach(function() {
         addSpecPage.addVolume(TEST_VOLUME_PATH);
+        helpers.sleep(3000);
       });
       
       it('should allow the user to remove volume mounts', function() {
@@ -258,7 +266,9 @@ describe('Labs Workbench Add Application Spec View', function() {
   describe('Ports Tab', function() {
     beforeEach(function() {
       addSpecPage.portsTab.click();
-      expect(addSpecPage.addPortBtn.isEnabled()).toBe(false);
+      
+      // These fields come pre-filled reasonable defaults
+      expect(addSpecPage.addPortBtn.isEnabled()).toBe(true);
     });
     
     it('should allow the user to add ports', function() {
@@ -266,7 +276,7 @@ describe('Labs Workbench Add Application Spec View', function() {
     });
     
     describe('With Ports', function() {
-      beforeAll(function() {
+      beforeEach(function() {
         addSpecPage.addPort(TEST_PORT_NUMBER, TEST_PORT_PATH);
       });
       
@@ -280,11 +290,15 @@ describe('Labs Workbench Add Application Spec View', function() {
     beforeEach(function() {
       addSpecPage.resourceLimitsTab.click();
     });
+    
+    it('should allow the user to set custom resource limits', function() {
+      
+    });
   });
   
   describe('Development Tab', function() {
     beforeEach(function() {
-      addSpecPage.developmentTab.click();
+      addSpecPage.developmentEnvironmentTab.click();
       expect(addSpecPage.addRepoBtn.isEnabled()).toBe(false);
     });
     
@@ -292,16 +306,16 @@ describe('Labs Workbench Add Application Spec View', function() {
       // NOOP
     });
     
-    it('should allow the user to source repos', function() {
+    it('should allow the user to add a source repo', function() {
       
     });
     
     describe('With Source Repos', function() {
-      beforeAll(function() {
-        addSpecPage.addSrcRepo(TEST_REPO_TYPE, TEST_REPO_URL);
+      beforeEach(function() {
+        addSpecPage.addSrcRepo(TEST_REPO_URL, TEST_REPO_TYPE);
       });
       
-      it('should allow the user to remove ports', function() {
+      it('should allow the user to remove a source repo', function() {
         
       });
     });

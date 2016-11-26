@@ -163,8 +163,9 @@ AddSpecPage.prototype.addConfig = function(type, fields) {
   this.newCfgLblField.sendKeys(fields.label);
   
   if (type === 'useFrom') {
-    
+    // TODO: useFrom dropdown
   } else if (type === 'setTo') {
+    // TODO: setTo dropdown
     this.newCfgValueField.sendKeys(fields);
   } else {
     this.newCfgValueField.sendKeys(fields);
@@ -175,11 +176,14 @@ AddSpecPage.prototype.addConfig = function(type, fields) {
 };
 
 AddSpecPage.prototype.addVolume = function(path) {
+  // Clear initial value from the field
+  this.newVolumePathField.clear();
+  
   // Enter new mount path
   this.newVolumePathField.sendKeys(path);
   
   // Click the Add button
-  this.volumeAddBtn.click();
+  this.addVolumeBtn.click();
 };
 
 AddSpecPage.prototype.addDependency = function(specKey, required) {
@@ -188,6 +192,8 @@ AddSpecPage.prototype.addDependency = function(specKey, required) {
     
     this.newDepSelect = element(by.id('newDepSelect'));
   */
+  
+  helpers.selectDropdownbyNum(this.newDepSelect, 0);
   
   // Check the box if this dependency is required
   if (required) {
@@ -198,6 +204,9 @@ AddSpecPage.prototype.addDependency = function(specKey, required) {
 };
 
 AddSpecPage.prototype.addPort = function(number, path) {
+  // Clear initial value from the field
+  this.newPortNumberField.clear();
+  
   // Enter the port number
   this.newPortNumberField.sendKeys(number);
     
@@ -222,12 +231,19 @@ AddSpecPage.prototype.addDockerTag = function(tagName) {
   this.addDockerTagBtn.click();
 };
 
-AddSpecPage.prototype.addSrcRepo = function(type, url) {
+AddSpecPage.prototype.addSrcRepo = function(url, type) {
   /*
     Populate inputs and click the button:
   
     this.repoTypeSelect = element(by.id('repoTypeSelect'));
   */
+  
+  // Expand dropdown menu
+  this.repoTypeSelect.click();
+  
+  // TODO: parameterize selected index
+  // FIXME: For some reason, this dropdown start at index '1'
+  helpers.selectDropdownbyNum(this.repoTypeSelect, 1);
   
   // Enter the repository url
   this.repoUrlField.sendKeys(url);
@@ -242,6 +258,12 @@ AddSpecPage.prototype.addSearchTag = function(tagName) {
   
     this.newTagSelect = element(by.id('newTagSelect'));
   */
+  
+  // Expand dropdown menu
+  this.newTagSelect.click();
+  
+  // TODO: parameterize selected index
+  helpers.selectDropdownbyNum(this.newTagSelect, 0);
   
   // Click the Add button
   this.addSearchTagBtn.click();
