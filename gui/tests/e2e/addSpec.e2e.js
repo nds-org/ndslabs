@@ -87,7 +87,6 @@ describe('Labs Workbench Add Application Spec View', function() {
     expect(saveBtn.isEnabled()).toBe(enabled ? true : false);  // Handles null / undefined / etc
   };
   
-  
   it('should allow the user to abort the creation process', function() {
     // Click the cancel button
     var cancelBtn = addSpecPage.cancelBtn;
