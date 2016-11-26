@@ -135,7 +135,7 @@ module.exports.closeTab = function(nextHandle) {
 };
 
 module.exports.selectDropdownbyNum = function (ele, index) {
-  if (index){
+  if (index || index === 0) {
     var options = ele.all(by.tagName('option'))   
       .then(function(options){
         options[index].click();
