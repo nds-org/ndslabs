@@ -65,7 +65,7 @@ WARNING: This file should **not** be checked into source control.
 
 # Node.js in Docker
 ```bash
-docker run -it -v `pwd`:/data -w /data bodom0015/nodejs-bower-grunt bash
+docker run -it --name=nodejs -v `pwd`:/data -w /data bodom0015/nodejs-bower-grunt bash
 ```
 
 ## Install depedencies
@@ -92,9 +92,9 @@ webdriver-manager start
 Protractor will use this server to run your E2E test suite(s).
 
 ## Run Protractor CLI
-Run the following command to run karma:
+Open a new terminal and run the following command to run protractor:
 ```bash
-protractor e2e.conf.js
+docker exec -it nodejs protractor e2e.conf.js
 ```
 
 This will pop open a web browser (or multiple browsers) to run your tests.
@@ -108,7 +108,7 @@ All suites are run by default.
 
 To run only particular suites, you can pass in the `--suite` flag:
 ```bash
-protractor e2e.conf.js --suite=dashboard,catalog,addSpec
+docker exec -it nodejs protractor e2e.conf.js --suite=dashboard,catalog,addSpec
 ```
 
 # TODO
