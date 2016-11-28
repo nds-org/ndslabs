@@ -12,7 +12,7 @@ See [Protractor](https://github.com/angular/protractor)
 
 # Prerequisites
 * [Git](https://git-scm.com/)
-* [Docker](https://www.docker.com/)
+* [Node.js](https://nodejs.org/en/)
 * [Google Chrome](https://www.google.com/chrome/browser/desktop/)
 * A running instance of Labs Workbench to test against
 * Approved account credentials on the Labs Workbench test instance
@@ -63,13 +63,12 @@ NOTE: The approved account's password will be reused during the dummy account's 
 WARNING: This file should **not** be checked into source control.
 
 
-# Node.js in Docker
-```bash
-docker run -it --name=nodejs -v `pwd`:/data -w /data bodom0015/nodejs-bower-grunt bash
-```
+## Install dependencies
+Ensure that you have installed Google Chrome and that Node.js is accessible in your environment.
 
-## Install depedencies
-Inside your new **nodejs-bower-grunt** container, run these commands to get all of the necessary dependencies:
+See [Node.js](https://nodejs.org/en/download/) for download links.
+
+Then, run these commands to get all of the necessary dependencies:
 ```bash
 npm install -g protractor
 npm install
@@ -78,23 +77,31 @@ bower install
 
 NOTE: This will automatically install the `protractor` and `webdriver-manager` executables onto your PATH.
 
+### Via Docker
+If you don't want to install Node.js on your host machine, you can try using Docker instead:
+```bash
+docker run -it --name=nodejs -v `pwd`:/data -w /data bodom0015/nodejs-bower-grunt bash
+```
+
 ## Run webdriver-manager
 Run the following command to download necessary selenium binaries:
 ```bash
 webdriver-manager update
 ```
 
+NOTE: you can pass update extra arguments like `--gecko`, `--ie`, `--ie32`, `--safari`, etc to download additional drivers.
+
 Then run the following command to start a selenium webserver:
 ```bash
 webdriver-manager start
 ```
 
-Protractor will use this server to run your E2E test suite(s).
+Selenium Server will start, and should be kept running -- protractor will use it to run your E2E test suite(s).
 
 ## Run Protractor CLI
 Open a new terminal and run the following command to run protractor:
 ```bash
-docker exec -it nodejs protractor e2e.conf.js
+protractor e2e.conf.js
 ```
 
 This will pop open a web browser (or multiple browsers) to run your tests.
@@ -108,7 +115,7 @@ All suites are run by default.
 
 To run only particular suites, you can pass in the `--suite` flag:
 ```bash
-docker exec -it nodejs protractor e2e.conf.js --suite=dashboard,catalog,addSpec
+protractor e2e.conf.js --suite=dashboard,catalog,addSpec
 ```
 
 # TODO
