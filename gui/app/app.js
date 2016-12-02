@@ -6,12 +6,17 @@
  * use the single-argument notation for angular.module()
  */
 angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-filters', 'ndslabs-directives',  'ndslabs-api', 'ngWizard', 'ngGrid', 'ngAlert', 'ngTagsInput', 'cgBusy', 'ngSanitize',
-    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ngMessages', 'ui.bootstrap', 'ngPasswordStrength', 'angular-clipboard', 'ui.pwgen', 'frapontillo.gage', 'chart.js', 'ui.gravatar', 'swaggerUi' ])
+    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ngMessages', 'ui.bootstrap', 'ngPasswordStrength', 'angular-clipboard', 'ui.pwgen', 'ui.gravatar', 'swaggerUi', 'angular-google-analytics' ])
 
 /**
  * If true, display verbose debug data as JSON
  */ 
 .constant('DEBUG', false)
+
+/**
+ * Account number for Google Analytics tracking
+ */
+.constant('GaAccount', '')
 
 /**
  *TODO: Whether or not to use mock data (false if talking to live etcd)
@@ -147,24 +152,24 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   
   // Start with the protocol
   if (ApiSecure) {
-    ApiUri.api = 'https://' + ApiHost
-    ApiUri.ws = 'wss://' + ApiHost
+    ApiUri.api = 'https://' + ApiHost;
+    ApiUri.ws = 'wss://' + ApiHost;
   } else {
-    ApiUri.api = 'http://' + ApiHost
-    ApiUri.ws = 'ws://' + ApiHost
+    ApiUri.api = 'http://' + ApiHost;
+    ApiUri.ws = 'ws://' + ApiHost;
   }
   
   // Add on the port suffix, if applicable
   if (ApiPort) {
-    var portSuffix = ':' + ApiPort  
+    var portSuffix = ':' + ApiPort; 
     
-    ApiUri.api += portSuffix
-    ApiUri.ws += portSuffix
+    ApiUri.api += portSuffix;
+    ApiUri.ws += portSuffix;
   }
   
   // Add on the path suffix, if applicable
-   ApiUri.api += ApiPath
-   ApiUri.ws += ApiPath + WebsocketPath
+   ApiUri.api += ApiPath;
+   ApiUri.ws += ApiPath + WebsocketPath;
   
   // Instantiate a new client for the ApiServer using our newly built uri
   return new ApiServer(ApiUri.api);
@@ -198,10 +203,22 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ConsoleRoute', 'AddServiceRoute', 'EditServiceRoute', 'AddSpecRoute', 'EditSpecRoute', 'VerifyAccountRoute', 'ResetPasswordRoute', 'SignUpRoute', 'ContactUsRoute', 'ProductName', 'LandingRoute',
-    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, HomeRoute, ConsoleRoute, AddServiceRoute, EditServiceRoute, AddSpecRoute, EditSpecRoute, VerifyAccountRoute, ResetPasswordRoute, SignUpRoute, ContactUsRoute, ProductName, LandingRoute) {
+.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ConsoleRoute', 'AddServiceRoute', 'EditServiceRoute', 'AddSpecRoute', 'EditSpecRoute', 'VerifyAccountRoute', 'ResetPasswordRoute', 'SignUpRoute', 'ContactUsRoute', 'ProductName', 'LandingRoute', 'GaAccount', 'AnalyticsProvider', 
+    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, HomeRoute, ConsoleRoute, AddServiceRoute, EditServiceRoute, AddSpecRoute, EditSpecRoute, VerifyAccountRoute, ResetPasswordRoute, SignUpRoute, ContactUsRoute, ProductName, LandingRoute, GaAccount, AnalyticsProvider) {
   // Squelch debug-level log messages
   $logProvider.debugEnabled(DEBUG);
+  
+  // Set up Google Analytics
+  AnalyticsProvider.setAccount(GaAccount)
+                   .useECommerce(false, false)
+                   .trackPages(true)
+                   .trackUrlParams(true)
+  //                 .ignoreFirstPageLoad(true)
+                   .readFromRoute(true)
+  //                 .setDomainName(ApiUri.api)
+  //                 .setHybridMobileSupport(true)
+                   .useDisplayFeatures(true)
+                   .useEnhancedLinkAttribution(true);
       
   // Setup default behaviors for encountering HTTP errors
   $httpProvider.interceptors.push(['$rootScope', '$cookies', '$q', '$location', '$log', '_', 'DEBUG', 'ApiUri', 'AuthInfo',
@@ -278,72 +295,86 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   .when(LoginRoute, {
     title: 'Sign In to ' + ProductName,
     controller: 'LoginController',
-    templateUrl: 'app/login/login.html'
+    templateUrl: 'app/login/login.html',
+    pageTrack: '/login'
   })
   .when('/swagger', {
     title: 'Swagger UI',
     controller: 'SwaggerController',
-    templateUrl: 'app/api/swagger.html'
+    templateUrl: 'app/api/swagger.html',
+    pageTrack: '/swagger'
   })
   .when(LandingRoute, {
     title: ProductName + ' Landing Page',
     controller: 'LandingController',
-    templateUrl: 'app/landing/landing.html'
+    templateUrl: 'app/landing/landing.html',
+    pageTrack: '/'
   })
   .when(SignUpRoute, {
     title: 'Sign Up for ' + ProductName,
     controller: 'SignUpController',
-    templateUrl: 'app/login/signUp/signUp.html'
+    templateUrl: 'app/login/signUp/signUp.html',
+    pageTrack: '/login/register'
   })
   .when(ContactUsRoute, {
     title: 'Contact ' + ProductName + ' Support',
     controller: 'HelpController',
-    templateUrl: 'app/help/help.html'
+    templateUrl: 'app/help/help.html',
+    pageTrack: '/contact'
   })
   .when(VerifyAccountRoute, {
     title: 'E-mail verified!',
     controller: 'VerifyAccountController',
-    templateUrl: 'app/login/verify/verify.html'
+    templateUrl: 'app/login/verify/verify.html',
+    pageTrack: '/verify'
   })
   .when(ResetPasswordRoute, {
     title: 'Reset Password',
     controller: 'ResetPasswordController',
-    templateUrl: 'app/login/reset/reset.html'
+    templateUrl: 'app/login/reset/reset.html',
+    pageTrack: '/recovery'
   })
   .when(AppStoreRoute, {
     title: ProductName + ' Catalog',
     controller: 'CatalogController',
-    templateUrl: 'app/catalog/catalog.html'
+    templateUrl: 'app/catalog/catalog.html',
+    pageTrack: '/catalog'
   })
   .when(AddSpecRoute, {
     title: 'Add Application',
     controller: 'AddOrEditSpecController',
-    templateUrl: 'app/catalog/addOrEdit/addOrEditSpec.html'
+    templateUrl: 'app/catalog/addOrEdit/addOrEditSpec.html',
+    pageTrack: '/catalog/add'
   })
   .when(EditSpecRoute, {
     title: 'Edit Application',
     controller: 'AddOrEditSpecController',
-    templateUrl: 'app/catalog/addOrEdit/addOrEditSpec.html'
+    templateUrl: 'app/catalog/addOrEdit/addOrEditSpec.html',
+    pageTrack: '/catalog/edit'
   })
   .when(HomeRoute, {
     title: ProductName + ' Dashboard',
     controller: 'DashboardController',
-    templateUrl: 'app/dashboard/dashboard.html'
+    templateUrl: 'app/dashboard/dashboard.html',
+    pageTrack: '/dashboard'
   })
   .when(AddServiceRoute, {
     title: 'Add Application Service',
     controller: 'AddOrEditServiceController',
-    templateUrl: 'app/dashboard/service/addOrEditService.html'
+    templateUrl: 'app/dashboard/service/addOrEditService.html',
+    pageTrack: '/dashboard/add'
   })
   .when(EditServiceRoute, {
     title: 'Edit Application Service',
     controller: 'AddOrEditServiceController',
-    templateUrl: 'app/dashboard/service/addOrEditService.html'
+    templateUrl: 'app/dashboard/service/addOrEditService.html',
+    pageTrack: '/dashboard/edit'
   })
   .when(ConsoleRoute, {
     title: 'Service Console',
     controller: 'ConsoleController',
-    templateUrl: 'app/dashboard/console/console.html'
+    templateUrl: 'app/dashboard/console/console.html',
+    pageTrack: '/dashboard/console'
   })
   .otherwise({ redirectTo: LandingRoute });
 }])
@@ -351,8 +382,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData', 'Loading', 'LandingRoute', 'VerifyAccountRoute',
-    function($rootScope, $window, $location, $log, $interval, $cookies, $uibModalStack, Stacks, _, authInfo, LoginRoute, AppStoreRoute, HomeRoute, NdsLabsApi, AutoRefresh, ServerData, Loading, LandingRoute, VerifyAccountRoute) {
+.run([ '$rootScope', '$window', '$location', '$routeParams', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData', 'Loading', 'LandingRoute', 'VerifyAccountRoute', 'Analytics',
+    function($rootScope, $window, $location, $routeParams, $log, $interval, $cookies, $uibModalStack, Stacks, _, authInfo, LoginRoute, AppStoreRoute, HomeRoute, NdsLabsApi, AutoRefresh, ServerData, Loading, LandingRoute, VerifyAccountRoute, Analytics) {
   
   // Make _ bindable in partial views
   // TODO: Investigate performance concerns here...
@@ -386,6 +417,11 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       ServerData.purgeAll();
       
       $log.debug("Terminating session... routing to Landing");
+      
+      if ($routeParams.t) {
+        // Remove any token from query string
+        $location.search('t', null);
+      }
       
       // redirect user to landing page
       $location.path(LandingRoute);

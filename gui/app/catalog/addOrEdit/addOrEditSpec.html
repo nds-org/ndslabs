@@ -17,7 +17,7 @@
                 <div class="row">
                     <div class="col-sm-12">
                         <uib-tabset active="activeTab">
-                            <uib-tab heading="Details" index="0">
+                            <uib-tab heading="Details" index="0" id="detailsTab">
                                 <!-- Application Spec Details -->
                                 <div class="row">
                                     <div class="col-sm-6">
@@ -59,7 +59,7 @@
                                             
                                             <!-- Info URL (optional) -->
                                             <div class="form-group">
-                                                <small class="pull-right">Create a page <i><a ng-href="https://nationaldataservice.atlassian.net/wiki/display/NDSC/NDS+Labs+Services/" target="_blank">here</a></i> and link to it!</small>
+                                                <small class="pull-right">Create a page <i><a id="infoLinkHelperLink" ng-href="https://nationaldataservice.atlassian.net/wiki/display/NDSC/NDS+Labs+Services/" target="_blank">here</a></i> and link to it!</small>
                                                 
                                                 <label for="infoLinkField">Information <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="top-right" uib-tooltip="Link to the NDS Confluence wiki where the user can find more information about this service"></i></sup></label>
                                                 
@@ -95,7 +95,8 @@
                                                         <div><label>Default Access <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="Who can access this application by default (can be overridden on a per-instance basis)"></i></sup></label></div>
                                                         <div class="btn-group" role="group">
                                                             <!-- Access: External -->
-                                                            <button type="button" class="btn" ng-click="spec.access='external'" ng-class="{ 'btn-default':spec.access !== 'external', 'btn-primary':spec.access === 'external' }" uib-tooltip="Publicly-accessible">
+                                                            <button id="externalAccessBtn" type="button" class="btn" ng-click="spec.access='external'" uib-tooltip="Publicly-accessible"
+                                                                    ng-class="{ 'btn-default':spec.access !== 'external', 'btn-primary':spec.access === 'external' }">
                                                                 <span class="fa-stack">
                                                                   <i class="fa fa-globe fa-stack-2x text-muted"></i>
                                                                   <i class="fa fa-eye fa-stack-1x"></i>
@@ -103,7 +104,8 @@
                                                             </button>
                                                             
                                                             <!-- Access: Internal  -->
-                                                            <button type="button" class="btn" ng-click="spec.access='internal'" ng-class="{ 'btn-default':spec.access !== 'internal', 'btn-primary':spec.access === 'internal' }" uib-tooltip="Accessible to other service within the cluster">
+                                                            <button id="internalAccessBtn" type="button" class="btn" ng-click="spec.access='internal'" uib-tooltip="Accessible to other service within the cluster"
+                                                                    ng-class="{ 'btn-default':spec.access !== 'internal', 'btn-primary':spec.access === 'internal' }" >
                                                                 <span class="fa-stack">
                                                                   <i class="fa fa-cloud fa-stack-2x text-muted"></i>
                                                                   <i class="fa fa-eye fa-stack-1x"></i>
@@ -111,7 +113,8 @@
                                                             </button>
                                                             
                                                             <!-- Access: None -->
-                                                            <button type="button" class="btn" ng-click="spec.access='none'" ng-class="{ 'btn-default':spec.access !== 'none', 'btn-primary':spec.access === 'none' }" uib-tooltip="Completely isolated">
+                                                            <button id="noAccessBtn" type="button" class="btn" ng-click="spec.access='none'" uib-tooltip="Completely isolated"
+                                                                    ng-class="{ 'btn-default':spec.access !== 'none', 'btn-primary':spec.access === 'none' }" >
                                                                <span class="fa-stack">
                                                                   <i class="fa fa-eye fa-stack-1x"></i>
                                                                   <i class="fa fa-ban fa-stack-2x text-danger"></i>
@@ -129,9 +132,9 @@
                                                     <li ng-repeat="tagId in spec.tags" class="item">
                                                         <i class="fa-li fa fa-search"></i>
                                                         <div class="row">
-                                                            <div class="col-xs-8">{{ tagId | tagProperty:'name' }}</div>
+                                                            <div class="col-xs-8" id="searchTagText">{{ tagId | tagProperty:'name' }}</div>
                                                             <div class="col-xs-4">
-                                                                <button class="btn btn-xs btn-default pull-right" ng-click="spec.tags.splice(spec.tags.indexOf(tag), 1)">
+                                                                <button id="removeTagBtn" class="btn btn-xs btn-default pull-right" ng-click="spec.tags.splice(spec.tags.indexOf(tag), 1)">
                                                                     <i class="fa fa-fw fa-trash"></i>
                                                                 </button>
                                                             </div>
@@ -142,12 +145,12 @@
                                                 <!-- Add new tag -->
                                                 <div class="row">
                                                     <div class="col-xs-8">
-                                                        <select class="form-control" ng-model="newKeyword">
+                                                        <select id="newTagSelect" class="form-control" ng-model="newKeyword">
                                                             <option ng-repeat="tag in tags" ng-value="{{ tag.id }}">{{ tag.name }}</option>
                                                         </select>
                                                     </div>
                                                     <div class="col-xs-4">
-                                                        <button class="btn btn-primary pull-right" ng-click="addKeyword(newKeyword)" ng-disabled="!newKeyword"><i class="fa fa-fw fa-plus"></i> Add</button>
+                                                        <button id="addTagBtn" class="btn btn-primary pull-right" ng-click="addKeyword(newKeyword)" ng-disabled="!newKeyword"><i class="fa fa-fw fa-plus"></i> Add</button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -184,9 +187,9 @@
                                                     <li ng-repeat="tag in spec.image.tags" class="item">
                                                         <i class="fa-li fa fa-tag"></i>
                                                         <div class="row">
-                                                            <div class="col-xs-8">{{ tag }}<span ng-if="$index === 0"> (Default)</span></div>
+                                                            <div class="col-xs-8" id="dockerTagText">{{ tag }}<span ng-if="$index === 0"> (Default)</span></div>
                                                             <div class="col-xs-4">
-                                                                <button class="btn btn-xs btn-default pull-right" ng-click="spec.image.tags.splice(spec.image.tags.indexOf(tag), 1)">
+                                                                <button id="removeDockerTagBtn" class="btn btn-xs btn-default pull-right" ng-click="spec.image.tags.splice(spec.image.tags.indexOf(tag), 1)">
                                                                     <i class="fa fa-fw fa-trash"></i>
                                                                 </button>
                                                             </div>
@@ -198,10 +201,10 @@
                                                 <div class="row">
                                                     <div class="col-sm-11">
                                                         <!-- <input style="width:100%;" class="form-control" ng-model="newDepName" placeholder="Key of another Application..." /> -->
-                                                        <input class="form-control" ng-model="newTag" placeholder="Enter a Docker tag name..." />
+                                                        <input id="newDockerTagNameField" name="newDockerTagNameField" class="form-control" ng-model="newTag" placeholder="Enter a Docker tag name..." />
                                                     </div>
                                                     <div class="col-sm-1">
-                                                        <button class="btn btn-primary btn-xs pull-right" ng-disabled="!newTag || (spec.image.tags && spec.image.tags.indexOf(newTag) !== -1)" ng-click="spec.image.tags.push(newTag);newTag=''">
+                                                        <button id="addDockerTagBtn" class="btn btn-primary btn-xs pull-right" ng-disabled="!newTag || (spec.image.tags && spec.image.tags.indexOf(newTag) !== -1)" ng-click="spec.image.tags.push(newTag);newTag=''">
                                                             <i class="fa fa-fw fa-plus"></i>
                                                         </button>
                                                     </div>
@@ -226,7 +229,7 @@
                                             <!-- Container Readiness Type -->
                                             <div class="form-group">
                                                 <label for="readinessProbeType">Readiness Probe  <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="How will we know that the container has successfully started?"></i></sup></label>
-                                                <select class="form-control" ng-model="probe.type">
+                                                <select id="readinessProbeTypeSelect" class="form-control" ng-model="probe.type">
                                                     <option value="">None</option>
                                                     <option value="http">HTTP GET</option>
                                                     <option value="tcp">TCP Socket</option>
@@ -252,7 +255,7 @@
                                                     <div class="col-xs-4">
                                                         <div class="checkbox">
                                                             <label ng-click="toggleHttps()">
-                                                                <input type="checkbox" ng-checked="probe.port === 443" /> Use HTTPS?
+                                                                <input id="readinessProbeHttpsCheckbox" type="checkbox" ng-checked="probe.port === 443" /> Use HTTPS?
                                                             </label>
                                                         </div>
                                                     </div>
@@ -300,7 +303,7 @@
                                 </div>
                             </uib-tab>
                             
-                            <uib-tab heading="Dependencies" index="2">
+                            <uib-tab heading="Dependencies" index="2" id="dependenciesTab">
                                 <!-- List / edit mapped dependencies -->
                                 <div class="row">
                                     <div class="col-sm-12">
@@ -317,19 +320,19 @@
                                                     </thead>
                                                     <tbody>
                                                         <tr ng-repeat="dep in spec.depends">
-                                                            <td>{{ dep.key | specProperty:'label' }} <span class="pull-right">({{ dep.key }})</span></td>
-                                                            <td><input type="checkbox" class="checkbox" ng-model="dep.required" /></td>
-                                                            <td><button class="btn btn-xs btn-default" ng-click="removeItem(spec.depends, dep)"><i class="fa fa-fw fa-trash"></i></button></td>
+                                                            <td id="depLabelText">{{ dep.key | specProperty:'label' }} <span class="pull-right">({{ dep.key }})</span></td>
+                                                            <td><input id="depRequiredCheckbox" type="checkbox" class="checkbox" ng-model="dep.required" /></td>
+                                                            <td><button id="removeDepBtn" class="btn btn-xs btn-default" ng-click="removeItem(spec.depends, dep)"><i class="fa fa-fw fa-trash"></i></button></td>
                                                         </tr>
                                                         
                                                         <!-- Add new dependency -->
                                                         <tr>
-                                                            <td><select class="form-control" ng-model="newDep">
+                                                            <td><select id="newDepSelect" class="form-control" ng-model="newDep">
                                                                 <option ng-repeat="dep in spec.depends | invertSpecList:spec.key | orderBy:'label' track by dep.key" value="{{ dep.key }}">{{ dep.label }} <{{ dep.key }}></option>
                                                             </select></td>
-                                                            <td><input type="checkbox" class="checkbox" ng-model="newDepReq" /></td>
+                                                            <td><input id="newDepRequiredCheckbox" type="checkbox" class="checkbox" ng-model="newDepReq" /></td>
                                                             <td>
-                                                                <button class="btn btn-primary btn-xs" ng-disabled="!newDep" ng-click="addItem('depends', { key: newDep, required: newDepReq });newDep=''">
+                                                                <button id="addNewDepBtn" class="btn btn-primary btn-xs" ng-disabled="!newDep" ng-click="addItem('depends', { key: newDep, required: newDepReq });newDep=''">
                                                                     <i class="fa fa-fw fa-plus"></i>
                                                                 </button>
                                                             </td>
@@ -343,7 +346,7 @@
                             </uib-tab>
                             
                             <!-- Environment Tab -->
-                            <uib-tab heading="Environment" index="4">
+                            <uib-tab heading="Environment" index="4" id="environmentTab">
                                 <!-- List / edit mapped environment variables -->
                                 <div class="row">
                                     <div class="col-sm-12">
@@ -364,26 +367,26 @@
                                                     <tbody>
                                                         <tr ng-repeat="cfg in spec.config">
                                                             <!-- Name -->
-                                                            <td>{{ cfg.name }}</td>
+                                                            <td id="cfgNameText">{{ cfg.name }}</td>
                                                             
                                                             <!-- Label -->
-                                                            <td>{{ cfg.label }}</td>
+                                                            <td id="cfgLabelText">{{ cfg.label }}</td>
                                                             
                                                             <!-- Config value / setTo / useFrom -->
-                                                            <td>
+                                                            <td id="cfgTypeText">
                                                                 <span ng-if="cfg.type === 'Set To'">Set {{ cfg.setTo }} to {{ cfg.value }}</span>
                                                                 <span ng-if="cfg.type === 'Use From'">Use From: {{ cfg.useFrom }}</span>
                                                                 <span ng-if="cfg.type === 'Explicit'">{{ cfg.value }}</span>
                                                             </td>
                                                             
                                                             <!-- Can Override? -->
-                                                            <td><input type="checkbox" class="checkbox" ng-model="cfg.canOverride"  /></td>
+                                                            <td><input id="cfgCanOverrideCheckbox" type="checkbox" class="checkbox" ng-model="cfg.canOverride"  /></td>
                                                             
                                                             <!-- Is Password? -->
-                                                            <td><input type="checkbox" class="checkbox" ng-model="cfg.isPassword" /></td>
+                                                            <td><input id="cfgIsPasswordCheckbox" type="checkbox" class="checkbox" ng-model="cfg.isPassword" /></td>
                                                             
                                                             <!-- Delete button -->
-                                                            <td><button class="btn btn-xs btn-default" ng-click="removeItem(spec.config, cfg)"><i class="fa fa-fw fa-trash"></i></button></td>
+                                                            <td><button id="removeCfgBtn" class="btn btn-xs btn-default" ng-click="removeItem(spec.config, cfg)"><i class="fa fa-fw fa-trash"></i></button></td>
                                                         </tr>
                                                 
                                                         <!-- Add new environment variable -->
@@ -408,12 +411,12 @@
                                                             <!-- New Config value / setTo / useFrom -->
                                                             <td>
                                                                 <div class="input-group  input-group-sm">
-                                                                  <select ng-show="newCfgType === 'Set To'" class="form-control" ng-model="newCfgSetTo">
+                                                                  <select id="newCfgSetToSelect" ng-show="newCfgType === 'Set To'" class="form-control" ng-model="newCfgSetTo">
                                                                     <option value="{{ svcVar }}" ng-repeat="svcVar in configSrcOptions">{{ svcVar }}</option>
                                                                   </select>
                                                                   
                                                                   <div class="input-group-btn dropup">
-                                                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ newCfgType }} <span class="caret"></span></button>
+                                                                    <button id="newCfgTypeSelect" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ newCfgType }} <span class="caret"></span></button>
                                                                     <ul class="dropdown-menu">
                                                                       <li><a href type="button" ng-class="{ 'active': newCfgType === 'Explicit' }" 
                                                                         ng-click="newCfgType = 'Explicit';newCfgUseFrom='';newCfgSetTo='';" uib-tooltip="Set an explicit value">Explicit</a></li>
@@ -426,7 +429,7 @@
                                                                     </ul>
                                                                   </div><!-- /input-group-btn -->
                                                                   
-                                                                  <select ng-show="newCfgType === 'Use From'" class="form-control" ng-model="newCfgUseFrom">
+                                                                  <select id="newCfgUseFromSelect" ng-show="newCfgType === 'Use From'" class="form-control" ng-model="newCfgUseFrom">
                                                                     <option value="{{ svcVar }}" ng-repeat="svcVar in configSrcOptions">{{ svcVar }}</option>
                                                                   </select>
                                                                   
@@ -438,14 +441,14 @@
                                                             </td>
                                                             
                                                             <!-- New Config Can Override? -->
-                                                            <td><input type="checkbox" class="checkbox" ng-model="newCfgCanOverride" ng-disabled="newCfgIsPassword" /></td>
+                                                            <td><input id="newCfgCanOverrideChackbox" type="checkbox" class="checkbox" ng-model="newCfgCanOverride" ng-disabled="newCfgIsPassword" /></td>
                                                             
                                                             <!-- New Config Is Password? -->
-                                                            <td><input type="checkbox" class="checkbox" ng-model="newCfgIsPassword" /></td>
+                                                            <td><input id="newCfgIsPasswordChackbox" type="checkbox" class="checkbox" ng-model="newCfgIsPassword" /></td>
                                                             
                                                             <!-- New Config Add button -->
                                                             <td>
-                                                                <button class="btn btn-xs btn-primary" ng-disabled="!newCfgName" ng-click="addItem('config', { name: newCfgName, label: newCfgLbl, type: newCfgType, useFrom: newCfgUseFrom, setTo: newCfgSetTo, value: newCfgValue, canOverride: newCfgCanOverride, isPassword: newCfgIsPassword });newCfgName=newCfgValue='';newCfgLbl='';newCfgType='Explicit';">
+                                                                <button id="addCfgBtn" class="btn btn-xs btn-primary" ng-disabled="!newCfgName" ng-click="addItem('config', { name: newCfgName, label: newCfgLbl, type: newCfgType, useFrom: newCfgUseFrom, setTo: newCfgSetTo, value: newCfgValue, canOverride: newCfgCanOverride, isPassword: newCfgIsPassword });newCfgName=newCfgValue='';newCfgLbl='';newCfgType='Explicit';">
                                                                     <i class="fa fa-fw fa-plus"></i>
                                                                 </button>
                                                             </td>
@@ -459,7 +462,7 @@
                             </uib-tab>
                             
                             <!-- Data Tab -->
-                            <uib-tab heading="Data" index="5">
+                            <uib-tab heading="Data" index="5" id="dataTab">
                                 <!-- List / edit mapped volumes -->
                                 <div class="row">
                                     <div class="col-sm-12">
@@ -475,9 +478,9 @@
                                                     </thead>
                                                     <tbody>
                                                         <tr ng-repeat="vol in spec.volumeMounts | orderBy:'mountPath'">
-                                                            <td>{{ vol.mountPath }}</td>
+                                                            <td id="mountPathText">{{ vol.mountPath }}</td>
                                                             <td>
-                                                                <button class="btn btn-xs btn-default" ng-click="removeItem(spec.volumeMounts, vol)">
+                                                                <button id="removeVolumeBtn" class="btn btn-xs btn-default" ng-click="removeItem(spec.volumeMounts, vol)">
                                                                     <i class="fa fa-fw fa-trash"></i>
                                                                 </button>
                                                             </td>
@@ -492,7 +495,7 @@
                                                                 </ng-messages>
                                                             </td>
                                                             <td>
-                                                                <button class="btn btn-primary" ng-disabled="!newVolPath"
+                                                                <button id="addVolumeBtn" class="btn btn-primary" ng-disabled="!newVolPath"
                                                                         ng-click="addItem('volumeMounts', { mountPath: newVolPath });newVolName=newVolPath=''">
                                                                     <i class="fa fa-fw fa-plus"></i>
                                                                 </button>
@@ -506,7 +509,7 @@
                                 </div>
                             </uib-tab>
                             
-                            <uib-tab heading="Ports" index="6">
+                            <uib-tab heading="Ports" index="6" id="portsTab">
                                 <!-- List / edit mapped ports -->
                                 <div class="row">
                                     <div class="col-sm-12">
@@ -526,8 +529,8 @@
                                               <tr ng-repeat="port in spec.ports">
                                                 <td class="text-center">
                                                     <div class="btn-group" role="group">
-                                                      <button type="button" class="btn btn-xs" ng-click="port.protocol='http'" ng-class="{ 'btn-primary': port.protocol === 'http', 'btn-default': port.protocol !== 'http' }">HTTP</button>
-                                                      <button type="button" class="btn btn-xs" ng-click="port.protocol='tcp'" ng-class="{ 'btn-primary': port.protocol === 'tcp', 'btn-default': port.protocol !== 'tcp' }">TCP</button>
+                                                      <button id="portHttpBtn" type="button" class="btn btn-xs" ng-click="port.protocol='http'" ng-class="{ 'btn-primary': port.protocol === 'http', 'btn-default': port.protocol !== 'http' }">HTTP</button>
+                                                      <button id="portTcpBtn" type="button" class="btn btn-xs" ng-click="port.protocol='tcp'" ng-class="{ 'btn-primary': port.protocol === 'tcp', 'btn-default': port.protocol !== 'tcp' }">TCP</button>
                                                     </div>
                                                 </td>
                                                 <td>
@@ -548,15 +551,15 @@
                                                     </ng-messages>
                                                   </div>
                                                 </td>
-                                                <td><button class="btn btn-xs btn-default" ng-click="spec.ports.splice(spec.ports.indexOf(port), 1)"><i class="fa fa-fw fa-trash"></i></button></td>
+                                                <td><button id="removePortBtn" class="btn btn-xs btn-default" ng-click="spec.ports.splice(spec.ports.indexOf(port), 1)"><i class="fa fa-fw fa-trash"></i></button></td>
                                               </tr>
                                               
                                               <!-- Map a new port -->
                                               <tr>
                                                 <td class="text-center">
                                                   <div class="btn-group" role="group">
-                                                    <button type="button" class="btn btn-xs" ng-click="portProtocol='http'" ng-class="{ 'btn-primary': portProtocol === 'http', 'btn-default': portProtocol !== 'http' }">HTTP</button>
-                                                    <button type="button" class="btn btn-xs" ng-click="portProtocol='tcp'" ng-class="{ 'btn-primary': portProtocol === 'tcp', 'btn-default': portProtocol !== 'tcp' }">TCP</button>
+                                                    <button id="newPortHttpBtn" type="button" class="btn btn-xs" ng-click="portProtocol='http'" ng-class="{ 'btn-primary': portProtocol === 'http', 'btn-default': portProtocol !== 'http' }">HTTP</button>
+                                                    <button id="newPortTcpBtn" type="button" class="btn btn-xs" ng-click="portProtocol='tcp'" ng-class="{ 'btn-primary': portProtocol === 'tcp', 'btn-default': portProtocol !== 'tcp' }">TCP</button>
                                                   </div>
                                                 </td>
                                                 <td class="text-center">
@@ -576,7 +579,7 @@
                                                     </ng-messages>
                                                   </div>
                                                 </td>
-                                                <td><button class="btn btn-xs btn-primary" ng-click="spec.ports.push({ protocol: portProtocol, port: portNumber, contextPath: portPath });portNumber=1;portPath='/';" 
+                                                <td><button id="addPortBtn" class="btn btn-xs btn-primary" ng-click="spec.ports.push({ protocol: portProtocol, port: portNumber, contextPath: portPath });portNumber=1;portPath='/';" 
                                                     ng-disabled="!portNumber || (portProtocol === 'http' && modifySpec['portPathField'].$invalid) || _.find(spec.ports, { protocol:portProtocol, port:portNumber })" ><i class="fa fa-fw fa-plus"></i></button></td>
                                               </tr>
                                           </table>
@@ -586,7 +589,7 @@
                                 </div>
                             </uib-tab>
                             
-                            <uib-tab heading="Resource Limits" index="9">
+                            <uib-tab heading="Resource Limits" index="9" id="resourceLimitsTab">
                                 <div class="row">
                                     <div class="col-sm-12">
                                          <fieldset class="border-nds">
@@ -659,12 +662,12 @@
                             </uib-tab>
                             
                             <!-- Development Tab -->
-                            <uib-tab heading="Development" index="3">
+                            <uib-tab heading="Development" index="3" id="developmentEnvironmentTab">
                                 <div class="row">
                                     <div class="col-sm-12">
                                         <fieldset class="border-nds">
                                             <legend class="legend-fix">Developer Environment <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="bottom-right" uib-tooltip="Choose an application that can be used to develop {{ spec.label }} (if applicable)"></i></sup></legend>
-                                            <select class="form-control" ng-model="spec.developerEnvironment">
+                                            <select id="developerEnvironmentSelect" class="form-control" ng-model="spec.developerEnvironment">
                                                 <option ng-repeat="devEnv in specs | hasTag:'Development environment'" value="{{ devEnv.key }}">
                                                     {{ devEnv.label }} <span class="pull-right"><{{ devEnv.key }}></span>
                                                 </option>
@@ -688,14 +691,14 @@
                                                     </thead>
                                                     <tbody>
                                                         <tr ng-repeat="repo in spec.repositories">
-                                                            <td>
+                                                            <td id="repoTypeText">
                                                                 <span ng-if="repo.type === 'git'">Git / Bitbucket</span>
                                                                 <span ng-if="repo.type === 'hg'">Mercurial</span>
                                                                 <span ng-if="repo.type === 'svn'">SVN</span>
                                                                 <span ng-if="repo.type === 'cvs'">CVS</span>
                                                             </td>
-                                                            <td>{{ repo.url }}</td>
-                                                            <td class="text-center"><button class="btn btn-xs btn-default" ng-click="spec.repositories.splice(spec.repositories.indexOf(repo))"><i class="fa fa-fw fa-trash"></i></button></td>
+                                                            <td id="repoUrlText">{{ repo.url }}</td>
+                                                            <td class="text-center"><button id="removeRepoBtn" class="btn btn-xs btn-default" ng-click="spec.repositories.splice(spec.repositories.indexOf(repo))"><i class="fa fa-fw fa-trash"></i></button></td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
@@ -703,7 +706,7 @@
                                             
                                             <div class="row">
                                                 <div class="col-xs-5">
-                                                    <select class="form-control" ng-model="newRepoType">
+                                                    <select id="repoTypeSelect" class="form-control" ng-model="newRepoType">
                                                         <option value="git">Git / Bitbucket</option>
                                                         <option value="hg">Mercurial</option>
                                                         <option value="svn">Subversion</option>
@@ -717,7 +720,7 @@
                                                     </ng-messages>
                                                 </div>
                                                 <div class="col-xs-2">
-                                                    <button class="btn btn-primary" ng-disabled="!newRepoType || !newRepoUrl" ng-click="addItem('repositories', { type: newRepoType, url: newRepoUrl });newRepoUrl=''">
+                                                    <button id="addRepoBtn" class="btn btn-primary" ng-disabled="!newRepoType || !newRepoUrl" ng-click="addItem('repositories', { type: newRepoType, url: newRepoUrl });newRepoUrl=''">
                                                         <i class="fa fa-fw fa-plus"></i>
                                                     </button>
                                                 </div>
@@ -737,8 +740,8 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="pull-right">
-                <button class="btn btn-success" ng-click="save()" ng-disabled="(spec.key | stackExistsFromSpec) || !keyUnique || modifySpec.$invalid"><i class="fa fa-fw fa-save"></i> Save</button>
-                <button class="btn btn-danger" ng-click="cancel()"><i class="fa fa-fw fa-times"></i> Cancel</button>
+                <button id="saveBtn" class="btn btn-success" ng-click="save()" ng-disabled="(spec.key | stackExistsFromSpec) || !keyUnique || modifySpec.$invalid"><i class="fa fa-fw fa-save"></i> Save</button>
+                <button id="cancelBtn" class="btn btn-danger" ng-click="cancel()"><i class="fa fa-fw fa-times"></i> Cancel</button>
             </div>    
         </div>
     </div>

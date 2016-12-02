@@ -24,7 +24,7 @@
     
       <div class="col-sm-{{ 12 / links.length }} text-center" ng-repeat="link in links track by link.id">
         <h4>{{ link.label }}</h4>
-        <a type="button" class="btn btn-lg btn-default support-link" target="_blank" ng-href="{{ link.url }}">
+        <a id="{{ link.id }}Btn" type="button" class="btn btn-lg btn-default support-link" target="_blank" ng-href="{{ link.url }}">
             <i class="fa fa-fw fa-3x {{ link.icon }}"></i>
         </a>
         
@@ -75,7 +75,7 @@
               </ng-messages>
             </div>
             
-            <button class="btn btn-primary pull-right" ng-class="{ 'btn-primary': status !== 'sent', 'btn-success': status === 'sent' }" 
+            <button id="feedbackBtn" class="btn btn-primary pull-right" ng-class="{ 'btn-primary': status !== 'sent', 'btn-success': status === 'sent' }" 
                   type="submit" ng-disabled="!forms['supportForm'].$valid || status !== 'unsent'" ng-click="submitFeedback()">
               <i class="fa fa-fw" ng-class="{ 'fa-send': status === 'unsent', 'fa-spinner fa-spin': status === 'sending', 'fa-check': status === 'sent' }" ></i>
             </button>

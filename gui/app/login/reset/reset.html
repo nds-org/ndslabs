@@ -33,12 +33,12 @@
             </div>
           </div>
         
-          <button type="submit" class="btn btn-primary" ng-disabled="!password.accountId" ng-click="sendResetLink()">Reset Password</button>
+          <button id="submitUsernameBtn" type="submit" class="btn btn-primary" ng-disabled="!password.accountId" ng-click="sendResetLink()">Reset Password</button>
         </form>
       </div>
     </div>
       
-    <div class="row" ng-if="!token && resetSendSuccessful">
+    <div class="row" ng-show="!token && resetSendSuccessful" id="emailSentHelperText">
       <div class="col-sm-12">
         <div class="helper-text">
           <h2><i class="fa fa-fw fa-square-o text-warning"></i>An e-mail has been sent to the owner of this account</h2>
@@ -85,12 +85,12 @@
             </div>
           </div>
           
-          <button type="submit" class="btn btn-primary" ng-disabled="!password.password || !password.confirmation" ng-click="resetPassword()">Change Password</button>
+          <button id="submitPasswordBtn" type="submit" class="btn btn-primary" ng-disabled="!password.password || !password.confirmation" ng-click="resetPassword()">Change Password</button>
         </form>
       </div>
     </div>
     
-    <div class="row" ng-if="token && resetSuccessful">
+    <div class="row" ng-show="token && resetSuccessful" id="passwordChangedHelperText">
       <div class="col-sm-12">
         <div class="helper-text">
           <h2><i class="fa fa-fw fa-check-square-o text-success"></i>Your password has been successfully changed!</h2>

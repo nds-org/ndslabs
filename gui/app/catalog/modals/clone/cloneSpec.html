@@ -1,7 +1,7 @@
 <!-- The "Clone Spec" Modal -->
-<section>
+<section id="cloneSpecModal">
   <div class="modal-header">
-    <button type="button" class="btn btn-default pull-right btn-xs" data-dismiss="modal" aria-label="Close" ng-click="cancel()"><i class="fa fa-fw fa-times"></i></button>
+    <button id="closeBtn" type="button" class="btn btn-default pull-right btn-xs" data-dismiss="modal" aria-label="Close" ng-click="cancel()"><i class="fa fa-fw fa-times"></i></button>
     <h4 class="modal-title">Clone Application</h4>
   </div>
   
@@ -9,16 +9,16 @@
     <p>Cloning an application allows you to make changes to it without affecting the existing catalog entry.</p>
     <p>Enter a new unique name for the cloned application (for example "mongo" or "clowder").</p>
     <form name="cloneKey" ng-submit="clone()">
-      <input class="form-control" type="text" name="keyField" ng-model="spec.key" required ng-pattern="/^[a-z0-9]+$/" />
+      <input id="cloneKeyInput" class="form-control" type="text" name="keyField" ng-model="spec.key" required ng-pattern="/^[a-z0-9]+$/" />
     </form>
   </div>
   
   <div class="modal-footer">
     <div class="col-sm-2">
-      <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="cancel()"><i class="fa fa-fw fa-times"></i> Cancel</button>
+      <button id="cancelBtn" type="button" class="btn btn-default" data-dismiss="modal" ng-click="cancel()"><i class="fa fa-fw fa-times"></i> Cancel</button>
     </div>
     
-    <div class="col-sm-8 text-center">
+    <div class="col-sm-8 text-center" id="validationText">
       <p class="text-success" ng-if="nameIsValid && cloneKey.keyField.$valid">Chosen name is unique.</p>
       <p class="text-danger" ng-if="!nameIsValid">Chosen name is in use.</p>
       
@@ -29,7 +29,7 @@
     </div>
     
     <div class="col-sm-2">
-      <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="clone()" ng-disabled="!nameIsValid"><i class="fa fa-fw fa-clone"></i> Clone</button>
+      <button id="confirmBtn" type="button" class="btn btn-primary" data-dismiss="modal" ng-click="clone()" ng-disabled="!nameIsValid"><i class="fa fa-fw fa-clone"></i> Clone</button>
     </div>
   </div>
 </section>

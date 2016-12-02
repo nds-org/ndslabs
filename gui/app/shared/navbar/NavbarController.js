@@ -35,26 +35,10 @@ angular
   });
   
   $scope.helpLinks = HelpLinks;
-
-  // TODO: This is probably horrible, performance-wise
-  $scope.isArray = angular.isArray;
   
-  $scope.home = 
+  $scope.brand = 
   {
     name: ProductName,
     url: ProductUrl
   };
-  
-  $scope.navs = [
-    {
-      name: 'Applications',
-      url: '#' + HomeRoute,
-      icon: 'fa-dashboard'
-    },
-    {
-      name:'Catalog',
-      url: '#' + AppStoreRoute,
-      icon: 'fa-list-alt'
-    }
-  ];
 }]);

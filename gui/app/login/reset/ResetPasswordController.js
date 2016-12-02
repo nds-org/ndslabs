@@ -8,7 +8,7 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('ResetPasswordController', [ '$scope', '$location', '$cookies', '$routeParams', '$log', 'HomeRoute', 'NdsLabsApi', 'ProductName', function($scope, $location, $cookies, $routeParams, $log, HomeRoute, NdsLabsApi, ProductName) {
+.controller('ResetPasswordController', [ '$scope', '$location', '$cookies', '$routeParams', '$log', 'HomeRoute', 'LandingRoute', 'NdsLabsApi', 'ProductName', 'AuthInfo', function($scope, $location, $cookies, $routeParams, $log, HomeRoute, LandingRoute, NdsLabsApi, ProductName, AuthInfo) {
   $scope.token = $routeParams.t;
   
   if ($scope.token) {
@@ -25,6 +25,7 @@ angular
     password: '',
     confirmation: ''
   };
+  
   
   /**
    * Send a reset link to the e-mail associated with the given accountId (username / namespace)
