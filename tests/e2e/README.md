@@ -27,22 +27,22 @@ cd ndslabs/gui/
 Create `e2e.auth.json` alongside `e2e.conf.js`:
 ```javascript
 {
-  "hostname": "",
-  "username": "",
-  "password": "",
-  "email": "",
+  "alt_hostname": "https://www.workbench.nationaldataservice.org/#",
+  "username": "username",
+  "password": "password",
+  "email": "email@email.com",
   "name": "John Doe",
   "organization": "NDS",
   "description": "Automated E2E testing of Labs Workbench",
-  "email-alternative": "",
-  "username-alternative": "",
+  "email-alternative": "email2@email.com",
+  "username-alternative": "username2",
   "support-email": ""
 }
 ```
 
 ### Server Info
-* **hostname**: The Labs Workbench instance to run the tests against
-* **support-email**: The SUPPORT_EMAIL asociated with this instance of the Labs Workbench API/UI
+* **hostname**: The Labs Workbench instance to run the tests against (NOTE: this must end with '/#')
+* **support-email**: The SUPPORT_EMAIL associated with this instance of the Labs Workbench API/UI
 
 ### Approved User Info
 * **username**: The username of an approved account to use to log in for the tests
