@@ -330,3 +330,13 @@ html,body {
     stroke: #ffa700;
   }
 }
+
+/* Helper class to disable animations for testing (protractor) */
+/* See http://stackoverflow.com/questions/26584451/how-to-disable-animations-in-protractor-for-angular-js-application/32264842#32264842 */
+.notransition * {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  -ms-transition: none !important;
+  transition: none !important;
+}

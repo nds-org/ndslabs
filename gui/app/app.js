@@ -6,7 +6,7 @@
  * use the single-argument notation for angular.module()
  */
 angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-filters', 'ndslabs-directives',  'ndslabs-api', 'ngWizard', 'ngGrid', 'ngAlert', 'ngTagsInput', 'cgBusy', 'ngSanitize',
-    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ngMessages', 'ui.bootstrap', 'ngPasswordStrength', 'angular-clipboard', 'ui.pwgen', 'frapontillo.gage', 'chart.js', 'ui.gravatar', 'swaggerUi', 'angular-google-analytics' ])
+    'ngRoute', 'ngResource', 'ngCookies', 'ngAnimate', 'ngMessages', 'ui.bootstrap', 'ngPasswordStrength', 'angular-clipboard', 'ui.pwgen', 'ui.gravatar', 'swaggerUi', 'angular-google-analytics' ])
 
 /**
  * If true, display verbose debug data as JSON
@@ -152,24 +152,24 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   
   // Start with the protocol
   if (ApiSecure) {
-    ApiUri.api = 'https://' + ApiHost
-    ApiUri.ws = 'wss://' + ApiHost
+    ApiUri.api = 'https://' + ApiHost;
+    ApiUri.ws = 'wss://' + ApiHost;
   } else {
-    ApiUri.api = 'http://' + ApiHost
-    ApiUri.ws = 'ws://' + ApiHost
+    ApiUri.api = 'http://' + ApiHost;
+    ApiUri.ws = 'ws://' + ApiHost;
   }
   
   // Add on the port suffix, if applicable
   if (ApiPort) {
-    var portSuffix = ':' + ApiPort  
+    var portSuffix = ':' + ApiPort; 
     
-    ApiUri.api += portSuffix
-    ApiUri.ws += portSuffix
+    ApiUri.api += portSuffix;
+    ApiUri.ws += portSuffix;
   }
   
   // Add on the path suffix, if applicable
-   ApiUri.api += ApiPath
-   ApiUri.ws += ApiPath + WebsocketPath
+   ApiUri.api += ApiPath;
+   ApiUri.ws += ApiPath + WebsocketPath;
   
   // Instantiate a new client for the ApiServer using our newly built uri
   return new ApiServer(ApiUri.api);
@@ -382,8 +382,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$window', '$location', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData', 'Loading', 'LandingRoute', 'VerifyAccountRoute', 'Analytics',
-    function($rootScope, $window, $location, $log, $interval, $cookies, $uibModalStack, Stacks, _, authInfo, LoginRoute, AppStoreRoute, HomeRoute, NdsLabsApi, AutoRefresh, ServerData, Loading, LandingRoute, VerifyAccountRoute, Analytics) {
+.run([ '$rootScope', '$window', '$location', '$routeParams', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData', 'Loading', 'LandingRoute', 'VerifyAccountRoute', 'Analytics',
+    function($rootScope, $window, $location, $routeParams, $log, $interval, $cookies, $uibModalStack, Stacks, _, authInfo, LoginRoute, AppStoreRoute, HomeRoute, NdsLabsApi, AutoRefresh, ServerData, Loading, LandingRoute, VerifyAccountRoute, Analytics) {
   
   // Make _ bindable in partial views
   // TODO: Investigate performance concerns here...
@@ -417,6 +417,11 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       ServerData.purgeAll();
       
       $log.debug("Terminating session... routing to Landing");
+      
+      if ($routeParams.t) {
+        // Remove any token from query string
+        $location.search('t', null);
+      }
       
       // redirect user to landing page
       $location.path(LandingRoute);

@@ -1,6 +1,6 @@
 // Import swagger-js-codegen
 var fs = require('fs');
-var YAML = require('yamljs')
+var YAML = require('yamljs');
 var CodeGen = require('swagger-js-codegen').CodeGen;
 
 // Parse YAML spec
