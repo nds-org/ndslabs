@@ -5,8 +5,8 @@ import (
 	"crypto/rand"
 	"crypto/sha1"
 	"encoding/base64"
-	"github.com/kless/osutil/user/crypt"
-	"github.com/kless/osutil/user/crypt/apr1_crypt"
+	"github.com/tredoe/osutil/user/crypt"
+	"github.com/tredoe/osutil/user/crypt/apr1_crypt"
 )
 
 type CryptoHelper struct {
