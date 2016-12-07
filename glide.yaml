@@ -22,6 +22,7 @@ import:
 - package: github.com/spf13/cobra
   version: f62e98d28ab7ad31d707ba837a966378465c7b57
 - package: github.com/spf13/viper
+  version: ed0a9674c6ef3646e218d8bb70708d250e94354b
 - package: github.com/xeipuuv/gojsonschema
 - package: golang.org/x/crypto
   subpackages:
@@ -49,6 +50,6 @@ import:
 - package: golang.org/x/crypto
   subpackages:
   - bcrypt
-- package: github.com/kless/osutil
+- package: github.com/tredoe/osutil
   subpackages:
   - user/crypt/apr1_crypt
