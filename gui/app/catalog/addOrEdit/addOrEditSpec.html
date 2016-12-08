@@ -173,7 +173,7 @@
                                             <div class="form-group">
                                                 <label for="imageNameField">Image Name <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="The main Docker image for this application"></i></sup></label>
                                                 <input type="text" class="form-control" id="imageNameField" name="imageNameField" placeholder="Enter a Docker image name..." 
-                                                    ng-model="spec.image.name" required ng-pattern="/^([a-z0-9]+\/)?[0-9a-z]+(-?[0-9a-z]+)*$/">
+                                                    ng-model="spec.image.name" required ng-pattern="/^([a-z0-9]+\/)?[0-9a-z]+(([-_\.]?[0-9a-z]+)*$/">
                                                 <ng-messages class="text-danger" for="modifySpec.imageNameField.$error" role="alert">
                                                   <ng-message when="required">This field is required</ng-message>
                                                   <ng-message when="pattern">This field must be formatted as "image-name" or "user/image-name"</ng-message>
