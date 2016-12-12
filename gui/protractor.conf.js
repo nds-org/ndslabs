@@ -1,4 +1,4 @@
-var config = require("./e2e.auth.json");
+var config = require("./protractor.auth.json");
 
 // e2e.conf.js
 exports.config = {
