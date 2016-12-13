@@ -46,12 +46,12 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 }])
 
 .constant('FileManagerKey', 'cloudcmd')
-.value('FileManagerBusy', false)
-.factory('FileManager', [ '$window', '$log', '$filter', '_', 'AutoRefresh', 'Loading', 'FileManagerKey', 'FileManagerBusy', 'RandomPassword', 'NdsLabsApi', 'Stacks', 'Specs', 'Stack', 
-    function($window, $log, $filter, _, AutoRefresh, Loading, FileManagerKey, FileManagerBusy, RandomPassword, NdsLabsApi, Stacks, Specs, Stack) {
+.factory('FileManager', [ '$window', '$log', '$filter', '_', 'AutoRefresh', 'Loading', 'FileManagerKey', 'RandomPassword', 'NdsLabsApi', 'Stacks', 'Specs', 'Stack', 
+    function($window, $log, $filter, _, AutoRefresh, Loading, FileManagerKey, RandomPassword, NdsLabsApi, Stacks, Specs, Stack) {
       
   // TODO: Allow user to set their own file manager?
-  return {
+  var fileManager = {
+    busy: false,
     launch: function() {
       var fileMgrKey = FileManagerKey;
       var navigate = function(stack) {
@@ -63,15 +63,22 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       };
       
       var startAndNavigate = function(stack) {
-        if (stack.status === 'stopping' || FileManagerBusy) {
-          alert('You must wait for the File Manager to shut down.');
-          return;
+        debugger;
+        if (fileManager.busy) {
+          if (stack.status === 'stopping') {
+            alert('You must wait for the File Manager to shut down.');
+            return;
+          } else if (stack.status === 'starting') {
+            alert('The file manager is starting. It will open in a new tab once startup is complete.');
+            return;
+          } else {
+            $log.warning('A mismatch was detected in the file manager busy signal state.');
+          }
         }
         
         if (stack.status !== 'started') {
           //$scope.launchingFileManager /*= $scope.stopping[stack.id]*/ = true;
-          FileManagerBusy = true;
-          AutoRefresh.start();
+          fileManager.busy = true;
           return NdsLabsApi.getStartByStackId({
               'stackId': stack.id
             }).then(function(started, xhr) {
@@ -81,11 +88,9 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
               $log.error('failed to start file manager: ' + stack.id);
             }).finally(function() {
               //$scope.launchingFileManager /*= $scope.starting[stack.id]*/ = false;
-              FileManagerBusy = false;
+              fileManager.busy = false;
             });
         } else {
-          //$scope.launchingFileManager /*= $scope.starting[stack.id]*/ = false;
-          FileManagerBusy = false;
           navigate(stack);
         }
       };
@@ -138,6 +143,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       }));
     }
   };
+  
+  return fileManager;
 }])
 
 .factory('RandomPassword', [ function() {

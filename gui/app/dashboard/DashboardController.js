@@ -10,9 +10,9 @@ angular
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
 .controller('DashboardController', [ '$scope', 'Loading', '$log', '$routeParams', '$location', '$interval', '$q', '$window', '$filter', '$uibModal', '_', 'Project', 'RandomPassword', 'Stack', 'Stacks', 'Specs', 'AlertService', 'AutoRefresh', 'AuthInfo', 'LandingRoute',
-      'StackService', 'NdsLabsApi', 'ProductName', 'FileManagerBusy', 'FileManager',
+      'StackService', 'NdsLabsApi', 'ProductName', 'FileManager',
     function($scope, Loading, $log, $routeParams, $location, $interval, $q, $window, $filter, $uibModal, _, Project, RandomPassword, Stack, Stacks, Specs, AlertService,AutoRefresh, AuthInfo, LandingRoute,
-      StackService, NdsLabsApi, ProductName, FileManagerBusy, FileManager) {
+      StackService, NdsLabsApi, ProductName, FileManager) {
       
   if (!AuthInfo.get().token) {
     $location.path(LandingRoute);
@@ -56,15 +56,9 @@ angular
       return _.includes(stk.status, 'ing');
     });
     
-    if (!transient && AutoRefresh.interval) {
+    if (!transient && AutoRefresh.interval && !FileManager.busy) {
       AutoRefresh.stop();
-      //$scope.launchingFileManager = false;
-      FileManagerBusy = false;
     } else if (transient && !AutoRefresh.interval) {
-      if (transient.key === 'cloudcmd') {
-        //$scope.launchingFileManager = true;
-        FileManagerBusy = true;
-      }
       AutoRefresh.start();
     }
   });
