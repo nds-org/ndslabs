@@ -36,9 +36,9 @@ var importCmd = &cobra.Command{
 		}
 		err := client.Import(&expPkg)
 		if err != nil {
-			fmt.Printf("Unable to import account %s: %s \n", expPkg.Account.Id, err)
+			fmt.Printf("Unable to import account %s: %s \n", expPkg.Account.Namespace, err)
 		} else {
-			fmt.Println("Imported account " + expPkg.Account.Id)
+			fmt.Println("Imported account " + expPkg.Account.Namespace)
 		}
 	},
 }
