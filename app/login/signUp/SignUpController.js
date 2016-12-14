@@ -25,7 +25,7 @@ angular
   $scope.progressMessage = '';
   $scope.showVerify = false;
   
-  $scope.ok = function(account) {
+  $scope.signUp = function(account) {
     if (account.password !== account.passwordConfirmation) {
       return false;
     }
