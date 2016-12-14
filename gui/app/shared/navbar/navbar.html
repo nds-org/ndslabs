@@ -21,14 +21,13 @@
       <div class="navbar-collapse collapse">
         <!-- Draw once for the left half of the navbar, and once again for the right -->
         <ul class="nav navbar-nav" ng-controller="LoginController" ng-show="settings.token">
-          <li ng-class="{ 'active': path === '/home' }">
-            <a id="applicationsNav" ng-href="#/home"><i class="fa fa-fw fa-dashboard"></i> Applications</a>
-          </li>
-          
           <li ng-class="{ 'active': path === '/store' }">
             <a id="catalogNav" ng-href="#/store"><i class="fa fa-fw fa-list-alt"></i> Catalog</a>
           </li>
           
+          <li ng-class="{ 'active': path === '/home' }">
+            <a id="applicationsNav" ng-href="#/home"><i class="fa fa-fw fa-dashboard"></i> Applications</a>
+          </li>
           
 	        <!-- Then draw our Manage Files button -->
           <li ng-controller="DashboardController">

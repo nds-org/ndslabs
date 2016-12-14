@@ -24,7 +24,7 @@
           <div class="form-group" ng-class="{ 
               'has-error has-feedback': !forms['registerForm'].fullName.$pristine && forms['registerForm'].fullName.$invalid, 
               'has-success has-feedback': !forms['registerForm'].fullName.$pristine && forms['registerForm'].fullName.$valid }">
-            <label for="fullName">Full Name</label>
+            <label for="fullName">Full Name *</label>
             <input type="text" class="form-control" name="fullName" id="fullName" 
                 ng-model="newProject.name" placeholder="Full Name" required />
             <span class="form-control-feedback glyphicon" ng-if="!forms['registerForm'].fullName.$pristine"
@@ -43,7 +43,7 @@
           <div class="form-group" ng-class="{ 
               'has-error has-feedback': !forms['registerForm'].email.$pristine && forms['registerForm'].email.$invalid, 
               'has-success has-feedback': !forms['registerForm'].email.$pristine && forms['registerForm'].email.$valid }">
-            <label for="email">E-mail Address</label>
+            <label for="email">E-mail Address *</label>
                 
             <div class="input-group">
               <input type="email" class="form-control" name="email" id="email" ng-model-options="{ 'debounce': 400, }"
@@ -72,7 +72,7 @@
           <div class="form-group" ng-class="{
               'has-error has-feedback': !forms['registerForm'].organization.$pristine && forms['registerForm'].organization.$invalid, 
               'has-success has-feedback': !forms['registerForm'].organization.$pristine && forms['registerForm'].organization.$valid }">
-            <label for="organization">Organization</label>
+            <label for="organization">Organization *</label>
             <input type="text" class="form-control" name="organization" id="organization" 
                 ng-model="newProject.organization" placeholder="Organization" required>
             <span class="form-control-feedback glyphicon" ng-if="!forms['registerForm'].organization.$pristine"
@@ -91,7 +91,7 @@
               'has-error has-feedback': !forms['registerForm'].description.$pristine && forms['registerForm'].description.$invalid, 
               'has-success has-feedback': !forms['registerForm'].description.$pristine && forms['registerForm'].description.$valid }">
             <!-- Enter Description -->
-            <label for="organization">Description</label>
+            <label for="organization">Description *</label>
             <textarea class="form-control" rows="4" name="description" id="description"
                 ng-model="newProject.description" placeholder="Describe how you plan to use {{ productName }}..." required></textarea>
             <span class="form-control-feedback glyphicon" ng-if="!forms['registerForm'].description.$pristine"
@@ -111,7 +111,7 @@
           <div class="form-group" ng-class="{ 
               'has-error has-feedback': !forms['registerForm'].namespace.$pristine && forms['registerForm'].namespace.$invalid, 
               'has-success has-feedback': !forms['registerForm'].namespace.$pristine && forms['registerForm'].namespace.$valid }">
-            <label for="namespace">Choose a Username</label>
+            <label for="namespace">Choose a Username *</label>
             <input type="text" class="form-control" name="namespace" id="namespace"
                 ng-model="newProject.namespace" placeholder="Username" required minlength="3" maxlength="20" pattern="[a-zA-Z0-9]+">
             <span class="form-control-feedback glyphicon" ng-if="!forms['registerForm'].namespace.$pristine"
@@ -134,7 +134,7 @@
           <div class="form-group" ng-class="{ 
               'has-error has-feedback': !forms['registerForm'].password.$pristine && forms['registerForm'].password.$invalid, 
               'has-success has-feedback': !forms['registerForm'].password.$pristine && forms['registerForm'].password.$valid }">
-            <label for="password">Choose a Password</label>
+            <label for="password">Choose a Password *</label>
             <input type="password" class="form-control" name="password" id="password"
                 ng-model="newProject.password" placeholder="Password" required minlength="6">
             <span class="form-control-feedback glyphicon" ng-if="!forms['registerForm'].password.$pristine"
@@ -152,7 +152,7 @@
           <div class="form-group" ng-class="{ 
               'has-error has-feedback': !forms['registerForm'].passwordConf.$pristine && forms['registerForm'].passwordConf.$invalid, 
               'has-success has-feedback': !forms['registerForm'].passwordConf.$pristine && forms['registerForm'].passwordConf.$valid }">
-            <label for="password">Confirm Your Password</label>
+            <label for="password">Confirm Your Password *</label>
             <input type="password" class="form-control" name="passwordConf" id="passwordConf"
                 ng-model="newProject.passwordConfirmation" placeholder="Confirm Password" required minlength="6" pattern="{{ newProject.password }}">
             <span class="form-control-feedback glyphicon" ng-if="!forms['registerForm'].passwordConf.$pristine"
@@ -178,6 +178,13 @@
         <p class="text-primary" ng-if="progressMessage">
           <i class="fa fa-fw fa-spinner fa-spin"></i>{{ progressMessage }}
         </p>
+      </div>
+    </div>
+    
+    <!-- Link to Acceptable Use Policy -->
+    <div class="row">
+      <div class="text-center col-sm-offset-3 col-sm-6" style="margin-bottom:10px;">
+        <strong>*</strong> denotes a required field.
       </div>
     </div>
     

@@ -122,7 +122,7 @@
                     </a>
                   </small>
                   <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu aria-labelledby="simple-dropdown">
-                    <li><a id="cloneBtn" href ng-click="cloneSpec(spec)"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
+                    <li><a id="cloneBtn" href ng-click="cloneSpec(spec)" ng-if="!spec.privileged"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
                     <li><a id="copyToClipboardBtn" href ng-click="copyToClipboard(spec)"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</a></li>
                     <li><a id="viewJsonBtn" href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> View JSON</a></li>
                     <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}" target="_blank"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
@@ -213,7 +213,7 @@
                       </a>
                     </small>
                     <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu aria-labelledby="simple-dropdown">
-                      <li><a id="cloneBtn" href ng-click="cloneSpec(spec)"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
+                      <li><a id="cloneBtn" href ng-click="cloneSpec(spec)" ng-if="!spec.privileged"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
                       <li><a id="copyToClipboardBtn" href ng-click="copyToClipboard(spec)"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</a></li>
                       <li><a id="viewJsonBtn" href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> View JSON</a></li>
                       <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}" target="_blank"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
