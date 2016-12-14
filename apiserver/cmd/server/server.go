@@ -290,6 +290,9 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 				strings.HasPrefix(request.URL.Path, s.prefix+"check_token") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"refresh_token") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"support") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"import") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"export") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"shutdown") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"check_console")
 		},
 		IfTrue: jwt,
@@ -336,6 +339,9 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Post(s.prefix+"support", s.PostSupport),
 		rest.Get(s.prefix+"contact", s.GetContact),
 		rest.Get(s.prefix+"healthz", s.GetHealthz),
+		rest.Post(s.prefix+"import/:userId", s.ImportAccount),
+		rest.Get(s.prefix+"export/:userId", s.ExportAccount),
+		rest.Get(s.prefix+"stop_all", s.StopAllStacks),
 	)
 
 	router, err := rest.MakeRouter(routes...)
@@ -2150,6 +2156,15 @@ func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, erro
 
 func (s *Server) StopStack(w rest.ResponseWriter, r *rest.Request) {
 	userId := s.getUser(r)
+
+	if s.IsAdmin(r) {
+		userId = r.Request.FormValue("userId")
+		_, err := s.etcd.GetAccount(userId)
+		if err != nil {
+			rest.NotFound(w, r)
+			return
+		}
+	}
 	sid := r.PathParam("sid")
 
 	stack, err := s.etcd.GetStack(userId, sid)
@@ -2171,7 +2186,6 @@ func (s *Server) StopStack(w rest.ResponseWriter, r *rest.Request) {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-
 }
 
 func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
@@ -2792,5 +2806,105 @@ func (s *Server) GetHealthz(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
+}
+
+// Import an account. Admin only. Assumes account does not exist.
+func (s *Server) ImportAccount(w rest.ResponseWriter, r *rest.Request) {
+
+	if !s.IsAdmin(r) {
+		rest.Error(w, "", http.StatusUnauthorized)
+		return
+	}
+
+	exportPkg := api.ExportPackage{}
+	err := r.DecodeJsonPayload(&exportPkg)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	account := exportPkg.Account
+
+	if s.accountExists(account.Namespace) {
+		w.WriteHeader(http.StatusConflict)
+		return
+	}
+
+	err = s.etcd.PutAccount(account.Namespace, &account, false)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = s.setupAccount(&account)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = s.createBasicAuthSecret(account.Namespace)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteJson(&account)
+}
+
+// Export account. Admin only.
+func (s *Server) ExportAccount(w rest.ResponseWriter, r *rest.Request) {
+	userId := r.PathParam("userId")
+	if !s.IsAdmin(r) {
+		rest.Error(w, "", http.StatusUnauthorized)
+		return
+	}
+
+	account, err := s.etcd.GetAccount(userId)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		w.WriteJson(&err)
+		return
+	}
+	account.ResourceUsage = api.ResourceUsage{}
+	account.Token = ""
+
+	w.WriteJson(api.ExportPackage{
+		Account: *account,
+	})
+}
+
+// Shutdown all running stacks for all users. Admin only.
+func (s *Server) StopAllStacks(w rest.ResponseWriter, r *rest.Request) {
+
+	if !s.IsAdmin(r) {
+		rest.Error(w, "", http.StatusUnauthorized)
+		return
+	}
+
+	accounts, err := s.etcd.GetAccounts()
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		w.WriteJson(&err)
+	} else {
+		for _, account := range *accounts {
+			stacks, err := s.etcd.GetStacks(account.Namespace)
+			for _, stack := range *stacks {
+				glog.V(4).Infof("Stopping stack %s for account \n", stack.Id, account.Namespace)
+				_, err = s.stopStack(account.Namespace, stack.Id)
+				if err == nil {
+					glog.V(4).Infof("Stack %s stopped \n", stack.Id)
+				} else {
+					glog.Error(err)
+				}
+			}
+		}
+	}
 	w.WriteHeader(http.StatusOK)
 }

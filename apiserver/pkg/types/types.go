@@ -247,3 +247,7 @@ type ContactInfo struct {
 	GitterURL    string `json:"gitterURL"`
 	GroupsURL    string `json:"groupsURL"`
 }
+
+type ExportPackage struct {
+	Account Account `json:"account"`
+}
