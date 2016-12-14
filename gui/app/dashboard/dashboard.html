@@ -54,7 +54,7 @@
                 <div class="col-xs-3 col-md-1 pull-left">
                   <i class="fa fa-fw fa-2x"
                     ng-class="{ 'fa-check-circle-o text-success': stack.status === 'started', 
-                        'fa-times-circle-o text-danger': stack.status === 'stopped',
+                        'fa-power-off text-danger': stack.status === 'stopped',
                         'fa-warning text-danger animated faa-flash faa-fast': stack.status === 'error',
                         'fa-spinner fa-spin fa-pulse text-primary': stack.status !== 'error' && stack.status !== 'started' && stack.status !== 'stopped' }"></i>
                 </div>
