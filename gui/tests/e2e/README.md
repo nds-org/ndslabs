@@ -27,16 +27,18 @@ cd ndslabs/gui/
 Create `protractor.auth.json` alongside `protractor.conf.js`:
 ```javascript
 {
-  "alt_hostname": "https://www.workbench.nationaldataservice.org/#",
+  "hostname": "https://www.workbench.nationaldataservice.org/#",
+  "support-email": "",
+  
   "username": "username",
   "password": "password",
   "email": "email@email.com",
+  
   "name": "John Doe",
   "organization": "NDS",
   "description": "Automated E2E testing of Labs Workbench",
   "email-alternative": "email2@email.com",
-  "username-alternative": "username2",
-  "support-email": ""
+  "username-alternative": "username2"
 }
 ```
 
