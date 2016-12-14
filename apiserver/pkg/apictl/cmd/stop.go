@@ -40,6 +40,6 @@ var stopCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(stopCmd)
-	stopCmd.Flags().StringVar(&opts, "user", "", "User ID (admin only)")
+	stopCmd.Flags().StringVar(&user, "user", "", "User ID (admin only)")
 	stopCmd.Flags().BoolVarP(&all, "all", "", false, "Stop all stacks for all users (admin only) ")
 }
