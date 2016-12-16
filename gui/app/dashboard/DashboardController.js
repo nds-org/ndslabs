@@ -10,14 +10,16 @@ angular
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
 .controller('DashboardController', [ '$scope', 'Loading', '$log', '$routeParams', '$location', '$interval', '$q', '$window', '$filter', '$uibModal', '_', 'Project', 'RandomPassword', 'Stack', 'Stacks', 'Specs', 'AlertService', 'AutoRefresh', 'AuthInfo', 'LandingRoute',
-      'StackService', 'NdsLabsApi', 'ProductName',
+      'StackService', 'NdsLabsApi', 'ProductName', 'FileManager',
     function($scope, Loading, $log, $routeParams, $location, $interval, $q, $window, $filter, $uibModal, _, Project, RandomPassword, Stack, Stacks, Specs, AlertService,AutoRefresh, AuthInfo, LandingRoute,
-      StackService, NdsLabsApi, ProductName) {
+      StackService, NdsLabsApi, ProductName, FileManager) {
       
   if (!AuthInfo.get().token) {
     $location.path(LandingRoute);
     return;
   }
+  
+  $scope.fileManager = FileManager;
   
   $scope.productName = ProductName;
   
@@ -54,13 +56,9 @@ angular
       return _.includes(stk.status, 'ing');
     });
     
-    if (!transient && AutoRefresh.interval) {
+    if (!transient && AutoRefresh.interval && !FileManager.busy) {
       AutoRefresh.stop();
-      $scope.launchingFileManager = false;
     } else if (transient && !AutoRefresh.interval) {
-      if (transient.key === 'cloudcmd') {
-        $scope.launchingFileManager = true;
-      }
       AutoRefresh.start();
     }
   });
@@ -255,90 +253,5 @@ angular
         $log.error('failed to delete stack: ' + stack.name);
       });
     });
-  };
-  
-  $scope.launchFileManager = function() {
-    var fileMgrKey = 'cloudcmd';
-    
-    var navigate = function(stack) {
-      var cc = _.find(stack.services, [ 'service', fileMgrKey ]);
-      var ep = _.head(cc.endpoints);
-      if (ep) {
-        $window.open($filter('externalHostPort')(ep), '_blank');
-      }
-    };
-    
-    var startAndNavigate = function(stack) {
-      if (stack.status === 'stopping' || $scope.launchingFileManager) {
-        alert('You must wait for the File Manager to shut down.');
-        return;
-      }
-      
-      if (stack.status !== 'started') {
-        $scope.launchingFileManager = $scope.stopping[stack.id] = true;
-        AutoRefresh.start();
-        return NdsLabsApi.getStartByStackId({
-            'stackId': stack.id
-          }).then(function(started, xhr) {
-            $log.debug('successfully started file manager: ' + stack.id);
-            navigate(started);
-          }, function(headers) {
-            $log.error('failed to start file manager: ' + stack.id);
-          }).finally(function() {
-            $scope.launchingFileManager = $scope.starting[stack.id] = false;
-          });
-      } else {
-        $scope.launchingFileManager = $scope.starting[stack.id] = false;
-        navigate(stack);
-      }
-    };
-    
-    // Make sure we have ALL of our stacks first
-    return Loading.set(Stacks.populate().then(function(stacks) {
-      // Search for CloudCmd stack
-      var stack = _.find(stacks, [ 'key', fileMgrKey ]);
-      if (stack) {
-        // If found, start it up
-        startAndNavigate(stack);
-      } else {
-        // No Cloud Commander found.. install one
-        var spec = _.find(Specs.all, [ 'key', fileMgrKey ]);
-        
-        if (!spec) {
-          $log.error("No file manager found... aborting...");
-          return;
-        }
-        
-        var app = new Stack(spec);
-        
-        // Randomly generate any required passwords
-        angular.forEach(app.services, function(svc) {
-          var configMap = {};
-          angular.forEach(svc.config, function(cfg) {
-            if (cfg.isPassword) {
-              // TODO: Generate random secure passwords here!
-              cfg.value = RandomPassword.generate();
-            }
-            
-            configMap[cfg.name] = cfg.value;
-          });
-          
-          svc.config = configMap;
-        });
-        
-        // Install this app to etcd
-        return NdsLabsApi.postStacks({ 'stack': app }).then(function(stack, xhr) {
-          $log.debug("successfully posted to /stacks!");
-          
-          startAndNavigate(stack);
-          
-          // Add /the new stack to the UI
-          //Stacks.all.push(stack);
-        }, function(headers) {
-          $log.error("error posting to /stacks!");
-        });
-      }
-    }));
-    
   };
 }]);

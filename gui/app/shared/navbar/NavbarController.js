@@ -26,8 +26,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ProductName', 'ProductUrl', 'HelpLinks',
-    function($scope, $location, LoginRoute, AppStoreRoute, HomeRoute, ProductName, ProductUrl, HelpLinks) {
+.controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ProductName', 'ProductUrl', 'HelpLinks', 'FileManager', 'AutoRefresh',
+    function($scope, $location, LoginRoute, AppStoreRoute, HomeRoute, ProductName, ProductUrl, HelpLinks, FileManager, AutoRefresh) {
   $scope.$on('$routeChangeSuccess', function(event, current, previous){
     if (current.$$route) {
       $scope.path = current.$$route.originalPath;
@@ -35,6 +35,13 @@ angular
   });
   
   $scope.helpLinks = HelpLinks;
+  
+  $scope.fileManager = FileManager;
+  $scope.launchingFileManager = FileManager.busy;
+  $scope.$watch('fileManager.busy', function(newValue, oldValue) {
+    $scope.launchingFileManager = newValue;
+    AutoRefresh.start();
+  });
   
   $scope.brand = 
   {
