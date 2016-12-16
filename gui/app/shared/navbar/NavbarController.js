@@ -40,7 +40,9 @@ angular
   $scope.launchingFileManager = FileManager.busy;
   $scope.$watch('fileManager.busy', function(newValue, oldValue) {
     $scope.launchingFileManager = newValue;
-    AutoRefresh.start();
+    if (newValue) {
+      AutoRefresh.start();
+    }
   });
   
   $scope.brand = 
