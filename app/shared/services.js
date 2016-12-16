@@ -45,6 +45,108 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
   return ret;
 }])
 
+.constant('FileManagerKey', 'cloudcmd')
+.factory('FileManager', [ '$window', '$log', '$filter', '_', 'AutoRefresh', 'Loading', 'FileManagerKey', 'RandomPassword', 'NdsLabsApi', 'Stacks', 'Specs', 'Stack', 
+    function($window, $log, $filter, _, AutoRefresh, Loading, FileManagerKey, RandomPassword, NdsLabsApi, Stacks, Specs, Stack) {
+      
+  // TODO: Allow user to set their own file manager?
+  var fileManager = {
+    busy: false,
+    launch: function() {
+      var fileMgrKey = FileManagerKey;
+      var navigate = function(stack) {
+        var cc = _.find(stack.services, [ 'service', fileMgrKey ]);
+        var ep = _.head(cc.endpoints);
+        if (ep) {
+          $window.open($filter('externalHostPort')(ep), '_blank');
+        }
+      };
+      
+      var startAndNavigate = function(stack) {
+        debugger;
+        if (fileManager.busy) {
+          if (stack.status === 'stopping') {
+            alert('You must wait for the File Manager to shut down.');
+            return;
+          } else if (stack.status === 'starting') {
+            alert('The file manager is starting. It will open in a new tab once startup is complete.');
+            return;
+          } else {
+            $log.warning('A mismatch was detected in the file manager busy signal state.');
+          }
+        }
+        
+        if (stack.status !== 'started') {
+          //$scope.launchingFileManager /*= $scope.stopping[stack.id]*/ = true;
+          fileManager.busy = true;
+          return NdsLabsApi.getStartByStackId({
+              'stackId': stack.id
+            }).then(function(started, xhr) {
+              $log.debug('successfully started file manager: ' + stack.id);
+              navigate(started);
+            }, function(headers) {
+              $log.error('failed to start file manager: ' + stack.id);
+            }).finally(function() {
+              //$scope.launchingFileManager /*= $scope.starting[stack.id]*/ = false;
+              fileManager.busy = false;
+            });
+        } else {
+          navigate(stack);
+        }
+      };
+      
+      // Make sure we have ALL of our stacks first
+      return Loading.set(Stacks.populate().then(function(stacks) {
+        // Search for CloudCmd stack
+        var stack = _.find(stacks, [ 'key', fileMgrKey ]);
+        if (stack) {
+          // If found, start it up
+          startAndNavigate(stack);
+        } else {
+          // No Cloud Commander found.. install one
+          var spec = _.find(Specs.all, [ 'key', fileMgrKey ]);
+          
+          if (!spec) {
+            $log.error("No file manager found... aborting...");
+            return;
+          }
+          
+          var app = new Stack(spec);
+          
+          // Randomly generate any required passwords
+          angular.forEach(app.services, function(svc) {
+            var configMap = {};
+            angular.forEach(svc.config, function(cfg) {
+              if (cfg.isPassword) {
+                // TODO: Generate random secure passwords here!
+                cfg.value = RandomPassword.generate();
+              }
+              
+              configMap[cfg.name] = cfg.value;
+            });
+            
+            svc.config = configMap;
+          });
+          
+          // Install this app to etcd
+          return NdsLabsApi.postStacks({ 'stack': app }).then(function(stack, xhr) {
+            $log.debug("successfully posted to /stacks!");
+            
+            startAndNavigate(stack);
+            
+            // Add /the new stack to the UI
+            //Stacks.all.push(stack);
+          }, function(headers) {
+            $log.error("error posting to /stacks!");
+          });
+        }
+      }));
+    }
+  };
+  
+  return fileManager;
+}])
+
 .factory('RandomPassword', [ function() {
   return {
     generate: function(len) {
