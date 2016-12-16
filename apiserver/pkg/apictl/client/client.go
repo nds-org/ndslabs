@@ -972,7 +972,7 @@ func (c *Client) Export(userId string) (*api.ExportPackage, error) {
 
 func (c *Client) Import(expPkg *api.ExportPackage) error {
 
-	url := c.BasePath + "import/" + expPkg.Account.Id
+	url := c.BasePath + "import/" + expPkg.Account.Namespace
 
 	data, err := json.Marshal(expPkg)
 	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))

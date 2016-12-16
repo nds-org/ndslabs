@@ -340,7 +340,7 @@ func addAccount(account api.Account) {
 
 	err := client.AddAccount(&account)
 	if err != nil {
-		fmt.Printf("Unable to add account %s: %s \n", account.Id, err)
+		fmt.Printf("Unable to add account %s: %s \n", account.Namespace, err)
 	} else {
 		fmt.Println("Added account " + account.Id)
 	}
