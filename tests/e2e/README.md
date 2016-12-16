@@ -23,20 +23,22 @@ git clone https://github.com/nds-org/ndslabs
 cd ndslabs/gui/
 ```
 
-## Create an e2e.auth.json file
-Create `e2e.auth.json` alongside `e2e.conf.js`:
+## Create a protractor.auth.json file
+Create `protractor.auth.json` alongside `protractor.conf.js`:
 ```javascript
 {
-  "alt_hostname": "https://www.workbench.nationaldataservice.org/#",
+  "hostname": "https://www.workbench.nationaldataservice.org/#",
+  "support-email": "",
+  
   "username": "username",
   "password": "password",
   "email": "email@email.com",
+  
   "name": "John Doe",
   "organization": "NDS",
   "description": "Automated E2E testing of Labs Workbench",
   "email-alternative": "email2@email.com",
-  "username-alternative": "username2",
-  "support-email": ""
+  "username-alternative": "username2"
 }
 ```
 
@@ -101,7 +103,7 @@ Selenium Server will start, and should be kept running -- protractor will use it
 ## Run Protractor CLI
 Open a new terminal and run the following command to run protractor:
 ```bash
-protractor e2e.conf.js
+protractor
 ```
 
 This will pop open a web browser (or multiple browsers) to run your tests.
@@ -115,7 +117,7 @@ All suites are run by default.
 
 To run only particular suites, you can pass in the `--suite` flag:
 ```bash
-protractor e2e.conf.js --suite=dashboard,catalog,addSpec
+protractor --suite=dashboard,catalog,addSpec
 ```
 
 # TODO
