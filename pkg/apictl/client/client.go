@@ -540,8 +540,12 @@ func (c *Client) StartStack(stack string) (*api.Stack, error) {
 	}
 }
 
-func (c *Client) StopStack(stack string) (*api.Stack, error) {
+func (c *Client) StopStack(stack string, userId string) (*api.Stack, error) {
 	url := c.BasePath + "stop/" + stack
+
+	if len(userId) > 0 {
+		url += "?userId=" + userId
+	}
 
 	request, err := http.NewRequest("GET", url, nil)
 	request.Header.Set("Content-Type", "application/json")
@@ -934,5 +938,77 @@ func (c *Client) SupportRequest(req *api.SupportRequest) error {
 		} else {
 			return errors.New(resp.Status)
 		}
+	}
+}
+
+func (c *Client) Export(userId string) (*api.ExportPackage, error) {
+
+	url := c.BasePath + "export/" + userId
+
+	request, err := http.NewRequest("GET", url, nil)
+
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode == http.StatusOK {
+
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		expPkg := api.ExportPackage{}
+		json.Unmarshal([]byte(body), &expPkg)
+		return &expPkg, nil
+	} else {
+		err := errors.New(resp.Status)
+		return nil, err
+	}
+}
+
+func (c *Client) Import(expPkg *api.ExportPackage) error {
+
+	url := c.BasePath + "import/" + expPkg.Account.Namespace
+
+	data, err := json.Marshal(expPkg)
+	request, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			defer resp.Body.Close()
+			_, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return err
+			}
+			return nil
+		} else {
+			return errors.New(resp.Status)
+		}
+	}
+}
+
+func (c *Client) StopAll() error {
+
+	url := c.BasePath + "stop_all"
+
+	request, err := http.NewRequest("GET", url, nil)
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		return nil
+	} else {
+		return errors.New(resp.Status)
 	}
 }
