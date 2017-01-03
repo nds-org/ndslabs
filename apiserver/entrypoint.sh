@@ -43,6 +43,11 @@ if [ "$1" = 'apiserver' ]; then
 	if [ -z "$SMTP_PORT" ]; then 
 		SMTP_PORT=25
 	fi
+
+	if [ -z "$SMTP_TLS" ]; then 
+		SMTP_TLS=true
+	fi
+
 	if [ -z "$SUPPORT_EMAIL" ]; then 
 		SUPPORT_EMAIL=support@ndslabs.org
 	fi
@@ -82,6 +87,7 @@ Password=admin
 Host=$SMTP_HOST
 Port=$SMTP_PORT
 SupportEmail=$SUPPORT_EMAIL
+TLS=$SMTP_TLS
 
 EOF
 

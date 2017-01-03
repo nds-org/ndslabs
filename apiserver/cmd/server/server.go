@@ -88,6 +88,7 @@ type Config struct {
 	Email struct {
 		Host         string
 		Port         int
+		TLS          bool
 		SupportEmail string
 	}
 }
@@ -161,7 +162,7 @@ func main() {
 		glog.Fatal(err)
 	}
 
-	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.SupportEmail, cfg.Server.Origin)
+	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.TLS, cfg.Email.SupportEmail, cfg.Server.Origin)
 	if err != nil {
 		glog.Errorf("Error in email server configuration\n")
 		glog.Fatal(err)

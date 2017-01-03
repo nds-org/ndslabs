@@ -17,15 +17,17 @@ type EmailHelper struct {
 	port         int
 	origin       string
 	SupportEmail string
+	tls          bool
 }
 
-func NewEmailHelper(server string, port int, supportEmail string, origin string) (*EmailHelper, error) {
+func NewEmailHelper(server string, port int, tls bool, supportEmail string, origin string) (*EmailHelper, error) {
 
 	return &EmailHelper{
 		server:       server,
 		origin:       origin,
 		port:         port,
 		SupportEmail: supportEmail,
+		tls:          tls,
 	}, nil
 }
 
@@ -221,16 +223,18 @@ func (s *EmailHelper) sendEmail(to string, subject string, body string) (bool, e
 		return false, err
 	}
 
-	cfg := &tls.Config{
-		InsecureSkipVerify: true,
-		ServerName:         s.server,
+	defer c.Close()
+	if s.tls {
+		cfg := &tls.Config{
+			InsecureSkipVerify: true,
+			ServerName:         s.server,
+		}
+		err = c.StartTLS(cfg)
+		if err != nil {
+			return false, err
+		}
 	}
 
-	defer c.Close()
-	err = c.StartTLS(cfg)
-	if err != nil {
-		return false, err
-	}
 	c.Mail(s.SupportEmail)
 	c.Rcpt(to)
 	wc, err := c.Data()
