@@ -811,6 +811,13 @@ func (s *Server) VerifyAccount(w rest.ResponseWriter, r *rest.Request) {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		err = s.email.SendStatusEmail(account.Name, account.EmailAddress, s.origin, true)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
