@@ -2439,8 +2439,10 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 				// This is a Pod event
 				ready := false
 				if len(pod.Status.Conditions) > 0 {
-					if pod.Status.Conditions[0].Type == "Ready" {
-						ready = (pod.Status.Conditions[0].Status == "True")
+					for _, condition := range pod.Status.Conditions {
+						if condition.Type == "Ready" {
+							ready = (condition.Status == "True")
+						}
 					}
 
 					if len(pod.Status.ContainerStatuses) > 0 {
