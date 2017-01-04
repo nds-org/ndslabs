@@ -1146,7 +1146,7 @@ func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHe
 	return &wsHandler
 }
 
-func (k *KubeHelper) CreateIngress(pid string, host string, service string, port int, tlsSecretName string, basicAuth bool) (*extensions.Ingress, error) {
+func (k *KubeHelper) CreateIngress(pid string, host string, service string, port int, basicAuth bool) (*extensions.Ingress, error) {
 
 	name := service + "-ingress"
 	update := true
@@ -1161,12 +1161,6 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 				Namespace: pid,
 			},
 			Spec: extensions.IngressSpec{
-				TLS: []extensions.IngressTLS{
-					extensions.IngressTLS{
-						Hosts:      []string{host},
-						SecretName: tlsSecretName,
-					},
-				},
 				Rules: []extensions.IngressRule{
 					extensions.IngressRule{
 						Host: host,
@@ -1199,6 +1193,17 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 		annotations["ingress.kubernetes.io/auth-realm"] = "NDS Labs"
 	}
 	ingress.Annotations = annotations
+
+	tlsSecretName := fmt.Sprintf("%s-tls-secret", pid)
+	secret, _ := k.GetSecret(pid, tlsSecretName)
+	if secret != nil {
+		ingress.Spec.TLS = []extensions.IngressTLS{
+			extensions.IngressTLS{
+				Hosts:      []string{host},
+				SecretName: tlsSecretName,
+			},
+		}
+	}
 
 	return k.CreateUpdateIngress(pid, ingress, update)
 }
