@@ -90,6 +90,7 @@ type Config struct {
 	Email struct {
 		Host         string
 		Port         int
+		TLS          bool
 		SupportEmail string
 	}
 }
@@ -163,7 +164,7 @@ func main() {
 		glog.Fatal(err)
 	}
 
-	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.SupportEmail, cfg.Server.Origin)
+	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.TLS, cfg.Email.SupportEmail, cfg.Server.Origin)
 	if err != nil {
 		glog.Errorf("Error in email server configuration\n")
 		glog.Fatal(err)
@@ -2464,8 +2465,10 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 				// This is a Pod event
 				ready := false
 				if len(pod.Status.Conditions) > 0 {
-					if pod.Status.Conditions[0].Type == "Ready" {
-						ready = (pod.Status.Conditions[0].Status == "True")
+					for _, condition := range pod.Status.Conditions {
+						if condition.Type == "Ready" {
+							ready = (condition.Status == "True")
+						}
 					}
 
 					if len(pod.Status.ContainerStatuses) > 0 {
