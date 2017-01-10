@@ -35,39 +35,41 @@ var systemNamespace = "kube-system"
 var glusterPodName = "glfs-server-global"
 
 type Server struct {
-	etcd           *etcd.EtcdHelper
-	kube           *kube.KubeHelper
-	validator      *validate.Validator
-	email          *email.EmailHelper
-	Namespace      string
-	local          bool
-	volDir         string
-	volName        string
-	hostname       string
-	jwt            *jwt.JWTMiddleware
-	prefix         string
-	ingress        IngressType
-	domain         string
-	cpuMax         int
-	cpuDefault     int
-	memMax         int
-	memDefault     int
-	storageDefault int
-	origin         string
+	etcd            *etcd.EtcdHelper
+	kube            *kube.KubeHelper
+	validator       *validate.Validator
+	email           *email.EmailHelper
+	Namespace       string
+	local           bool
+	volDir          string
+	volName         string
+	hostname        string
+	jwt             *jwt.JWTMiddleware
+	prefix          string
+	ingress         IngressType
+	domain          string
+	cpuMax          int
+	cpuDefault      int
+	memMax          int
+	memDefault      int
+	storageDefault  int
+	requireApproval bool
+	origin          string
 }
 
 type Config struct {
 	Server struct {
-		Port         string
-		Origin       string
-		VolDir       string
-		VolName      string
-		SpecsDir     string
-		VolumeSource string
-		Timeout      int
-		Prefix       string
-		Domain       string
-		Ingress      IngressType
+		Port            string
+		Origin          string
+		VolDir          string
+		VolName         string
+		SpecsDir        string
+		VolumeSource    string
+		Timeout         int
+		Prefix          string
+		Domain          string
+		RequireApproval bool
+		Ingress         IngressType
 	}
 	DefaultLimits struct {
 		CpuMax         int
@@ -187,6 +189,7 @@ func main() {
 	server.memMax = cfg.DefaultLimits.MemMax
 	server.memDefault = cfg.DefaultLimits.MemDefault
 	server.storageDefault = cfg.DefaultLimits.StorageDefault
+	server.requireApproval = cfg.Server.RequireApproval
 
 	server.ingress = IngressTypeNodePort
 	if cfg.Server.Ingress != "" {
@@ -771,34 +774,57 @@ func (s *Server) VerifyAccount(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if account.Status == api.AccountStatusUnverified &&
-		account.Token == token {
-		account.Status = api.AccountStatusUnapproved
-		err = s.etcd.PutAccount(userId, account, false)
-		if err != nil {
-			glog.Error(err)
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	if s.requireApproval {
+		if account.Status == api.AccountStatusUnverified &&
+			account.Token == token {
+			account.Status = api.AccountStatusUnapproved
+			err = s.etcd.PutAccount(userId, account, false)
+			if err != nil {
+				glog.Error(err)
+				rest.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 
-		err = s.email.SendVerifiedEmail(account.Name, account.EmailAddress)
-		if err != nil {
-			glog.Error(err)
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+			err = s.email.SendVerifiedEmail(account.Name, account.EmailAddress)
+			if err != nil {
+				glog.Error(err)
+				rest.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 
-		approveUrl := r.BaseUrl().String() + "/api/register/approve?t=" + account.Token + "&u=" + account.Namespace
-		denyUrl := r.BaseUrl().String() + "/api/register/deny?t=" + account.Token + "&u=" + account.Namespace
-		err = s.email.SendNewAccountEmail(account, approveUrl, denyUrl)
-		if err != nil {
-			glog.Error(err)
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+			approveUrl := r.BaseUrl().String() + "/api/register/approve?t=" + account.Token + "&u=" + account.Namespace
+			denyUrl := r.BaseUrl().String() + "/api/register/deny?t=" + account.Token + "&u=" + account.Namespace
+			err = s.email.SendNewAccountEmail(account, approveUrl, denyUrl)
+			if err != nil {
+				glog.Error(err)
+				rest.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
 		}
-		w.WriteHeader(http.StatusOK)
 	} else {
-		w.WriteHeader(http.StatusNotFound)
+		account.Status = api.AccountStatusApproved
+		err := s.etcd.PutAccount(userId, account, false)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		err = s.setupAccount(account)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		err = s.email.SendStatusEmail(account.Name, account.EmailAddress, s.origin, true)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -1573,11 +1599,10 @@ func (s *Server) createKubernetesService(userId string, stack *api.Stack, spec *
 }
 
 func (s *Server) createIngressRule(userId string, svc *k8api.Service, stack *api.Stack) error {
-	secretName := fmt.Sprintf("%s-tls-secret", userId)
 
 	host := fmt.Sprintf("%s.%s", svc.Name, s.domain)
 	_, err := s.kube.CreateIngress(userId, host, svc.Name,
-		int(svc.Spec.Ports[0].Port), secretName, stack.Secure)
+		int(svc.Spec.Ports[0].Port), stack.Secure)
 	if err != nil {
 		glog.Errorf("Error creating ingress for %s\n", svc.Name)
 		glog.Error(err)

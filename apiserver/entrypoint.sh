@@ -56,6 +56,10 @@ if [ "$1" = 'apiserver' ]; then
 		ADMIN_PASSWORD=`strings /dev/urandom | grep -o '[[:alnum:]]' | head -n 30 | tr -d '\n'`
 	fi
 
+	if [ -z "$REQUIRE_APPROVAL" ]; then 
+		REQUIRE_APPROVAL="true"
+	fi
+
 cat << EOF > /apiserver.conf
 [Server]
 Port=30001
@@ -67,6 +71,7 @@ Timeout=$TIMEOUT
 Prefix=$PREFIX
 Ingress=$INGRESS
 Domain=$DOMAIN
+RequireApproval=$REQUIRE_APPROVAL
 
 [DefaultLimits]
 CpuMax=4000
