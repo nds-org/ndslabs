@@ -86,7 +86,7 @@ StorageDefault=20
 
 [Etcd]
 Address=$ETCD_ADDR
-MaxMessage=$MAX_MESSAGES
+MaxMessages=$MAX_MESSAGES
 
 [Kubernetes]
 Address=$KUBERNETES_ADDR
