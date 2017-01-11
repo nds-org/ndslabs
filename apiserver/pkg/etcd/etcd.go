@@ -329,8 +329,8 @@ func (s *EtcdHelper) PutStack(uid string, sid string, stack *api.Stack) error {
 	for i := range stack.Services {
 		stackService := &stack.Services[i]
 		numMessages := len(stackService.StatusMessages)
-		if numMessages > maxMessages {
-			stackService.StatusMessages = stackService.StatusMessages[numMessages-maxMessages : numMessages]
+		if numMessages > s.maxMessages {
+			stackService.StatusMessages = stackService.StatusMessages[numMessages-s.maxMessages : numMessages]
 		}
 	}
 
