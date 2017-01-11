@@ -326,9 +326,12 @@ func (s *EtcdHelper) PutStack(uid string, sid string, stack *api.Stack) error {
 	s.etcd.Set(context.Background(), etcdBasePath+"/accounts/"+uid, "/stacks", &opts)
 
 	// Truncate status messages if necessary
-	numMessages := len(stack.StatusMessages)
-	if numMessages > maxMessages {
-		stack.StatusMessages = stack.StatusMessages[numMessages-maxMessages : numMessages]
+	for i := range stack.Services {
+		stackService := &stack.Services[i]
+		numMessages := len(stackService.StatusMessages)
+		if numMessages > maxMessages {
+			stackService.StatusMessages = stackService.StatusMessages[numMessages-maxMessages : numMessages]
+		}
 	}
 
 	data, _ := json.Marshal(stack)
