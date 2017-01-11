@@ -60,6 +60,10 @@ if [ "$1" = 'apiserver' ]; then
 		REQUIRE_APPROVAL="true"
 	fi
 
+	if [ -z "$MAX_MESSAGES" ]; then 
+		MAX_MESSAGES=100
+	fi
+
 cat << EOF > /apiserver.conf
 [Server]
 Port=30001
@@ -82,6 +86,7 @@ StorageDefault=20
 
 [Etcd]
 Address=$ETCD_ADDR
+MaxMessage=$MAX_MESSAGES
 
 [Kubernetes]
 Address=$KUBERNETES_ADDR
