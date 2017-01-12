@@ -1190,7 +1190,7 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 	if basicAuth {
 		annotations["ingress.kubernetes.io/auth-type"] = "basic"
 		annotations["ingress.kubernetes.io/auth-secret"] = "basic-auth"
-		annotations["ingress.kubernetes.io/auth-realm"] = "NDS Labs"
+		annotations["ingress.kubernetes.io/auth-realm"] = "Workbench Credentials Required"
 	}
 	ingress.Annotations = annotations
 
