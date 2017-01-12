@@ -48,7 +48,7 @@ app.post('/logs', function (req, res) {
   var stack = logBody.stack || '';
     
   // TODO: Is there a more compelling transformation for the POST body?
-  console.log(timestamp + " [" + type + "] " + username + " - " + message);
+  console.log(timestamp + " [" + type + "] " + username + " -", message);
   if (stack) {
     console.log(stack);
   }
