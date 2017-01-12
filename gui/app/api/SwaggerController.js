@@ -3,7 +3,7 @@
 angular
 .module('ndslabs-api')
 /**
- * The controller for our "Sign-Up" Modal Window
+ * The controller for our "Swagger API" View
  * 
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
@@ -16,9 +16,9 @@ angular
   $scope.swaggerSpec = '';
   
   $http.get(url).then(function(data) {
-    console.debug(data.data);
+    $log.debug("Successfully pulled swagger spec");
     $scope.swaggerSpec = data.data;
   }, function(response) {
-    console.debug(response);
+    $log.error("Failed to retrieve swagger spec");
   });
 }]);

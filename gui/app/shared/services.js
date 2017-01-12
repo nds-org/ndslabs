@@ -161,6 +161,81 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
   };
 }])
 
+.service('Logging', [ '$filter', '$injector', 'AuthInfo', function($filter, $injector, AuthInfo) {
+  var self = this;
+
+  var service = {
+    // Unused, very noisy
+    /*debug: function() {
+      self.type = 'debug';
+      log.apply(self, arguments);
+    },*/
+    error: function() {
+      self.type = 'error';
+      log.apply(self, arguments);
+    },
+    warn: function() {
+      self.type = 'warn';
+      log.apply(self, arguments);
+    },
+    info: function() {
+      self.type = 'info';
+      log.apply(self, arguments);
+    },
+    log: function() {
+      self.type = 'log';
+      log.apply(self, arguments);
+    },
+    enabled: false,
+    logs: []
+  };
+
+  var log = function() {
+    var token = angular.copy(AuthInfo.get());
+    var $http = $injector.get('$http');
+    
+    delete token.password;
+    delete token.saveCookie;
+  
+    var args = [];
+    if (typeof arguments === 'object') {
+      for(let i = 0; i < arguments.length; i++ ) {
+        let arg = arguments[i];
+        let exception = {};
+        exception.message = arg.message;
+        exception.stack = arg.stack;
+        args.push(JSON.stringify(exception));
+      }
+    }
+    
+    var eventLogDateTime = $filter('date')(new Date(), 'yyyy-MM-dd HH:mm:ss');
+    var logItem = {
+      token: token,
+      time: eventLogDateTime,
+      message: args.join('\n'),
+      type: $filter('uppercase')(self.type)
+    };
+    
+    console.log('Custom logger [' + logItem.time + '] ' + logItem.message.toString());
+    
+    $http({
+     method: 'POST',
+     url: '/logs',
+     headers: {
+       'Content-Type': 'application/json'
+     },
+     data: logItem
+    }).then(function(data) {
+      service.logs.push(logItem);
+    }, function(response) {
+      console.log('Error sending logItem back to server: ', logItem);
+    });
+  };
+
+  return service;
+
+}])
+
 .factory('SoftRefresh', [ 'Stacks', 'Project', 'Specs', function(Stacks, Project, Specs) {
  var refresh = {
     /**
@@ -498,7 +573,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       return Vocabulary.populate("tags").then(function() {
         Specs.populate().then(function() {
           Project.populate(projectId).then(function() {
-            Stacks.populate();
+            Stacks.populate(projectId);
           })
         })
       });

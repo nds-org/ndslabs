@@ -14,6 +14,7 @@ RUN apt-get -qq update && \
       curl \
       git \
       sudo \
+      vim \
       npm && \
     curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - && \
     apt-get -qq install nodejs && \
