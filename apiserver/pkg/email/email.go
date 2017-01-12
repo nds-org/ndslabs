@@ -84,6 +84,7 @@ func (s *EmailHelper) SendNewAccountEmail(account *api.Account, approveUrl strin
 
 	data := struct {
 		Name         string
+		Namespace    string
 		Email        string
 		Description  string
 		Organization string
@@ -93,6 +94,7 @@ func (s *EmailHelper) SendNewAccountEmail(account *api.Account, approveUrl strin
 		Origin       string
 	}{
 		Name:         account.Name,
+		Namespace:    account.Namespace,
 		Email:        account.EmailAddress,
 		Description:  account.Description,
 		Organization: account.Organization,
