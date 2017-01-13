@@ -291,14 +291,14 @@ func (s *EtcdHelper) GetAccounts() (*[]api.Account, error) {
 			glog.V(4).Infof("node.Key %s\n", node.Key)
 			resp, err = s.etcd.Get(context.Background(), node.Key+"/account", nil)
 			if err != nil {
-				glog.Error(err)
-				return nil, err
+				glog.Warning(err)
+				continue
 			}
 			account := api.Account{}
 			err := json.Unmarshal([]byte(resp.Node.Value), &account)
 			if err != nil {
-				glog.Error(err)
-				return nil, err
+				glog.Warning(err)
+				continue
 			}
 			account.Password = ""
 			accounts = append(accounts, account)
