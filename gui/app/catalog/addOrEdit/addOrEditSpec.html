@@ -48,14 +48,16 @@
                                             </div>
                                             
                                             <!-- Logo URL (optional) -->
-                                            <div class="form-group">
+                                            <!-- Commented out, due to logos now beinbg locally-sourced -->
+                                            <!-- All user specs in the catalog will use the default NDS badge -->
+                                            <!-- <div class="form-group">
                                                 <label for="logoField">Logo <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="A URL to a small logo for this service"></i></sup></label>
                                                 <input type="url" class="form-control" id="logoField" name="logoField" placeholder="Enter Logo URL..." ng-model="spec.logo">
                                                 
                                                 <ng-messages class="text-danger" for="modifySpec.logoField.$error" role="alert">
                                                   <ng-message when="url">Please enter a valid URL</ng-message>
                                                 </ng-messages>
-                                            </div>
+                                            </div> -->
                                             
                                             <!-- Info URL (optional) -->
                                             <div class="form-group">
@@ -173,7 +175,7 @@
                                             <div class="form-group">
                                                 <label for="imageNameField">Image Name <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="The main Docker image for this application"></i></sup></label>
                                                 <input type="text" class="form-control" id="imageNameField" name="imageNameField" placeholder="Enter a Docker image name..." 
-                                                    ng-model="spec.image.name" required ng-pattern="/^([a-z0-9]+\/)?[0-9a-z]+(([-_\.]?[0-9a-z]+)*$/">
+                                                    ng-model="spec.image.name" required ng-pattern="/^([a-z0-9]+\/)?[0-9a-z]+(([-_\.]?[0-9a-z]+))*$/">
                                                 <ng-messages class="text-danger" for="modifySpec.imageNameField.$error" role="alert">
                                                   <ng-message when="required">This field is required</ng-message>
                                                   <ng-message when="pattern">This field must be formatted as "image-name" or "user/image-name"</ng-message>

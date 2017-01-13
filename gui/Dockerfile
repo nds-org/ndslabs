@@ -1,15 +1,12 @@
 #
-# Build: docker build -t ndslabs-gui .
-#
-# Single-node Usage: docker run -it -d -p 30000:8080 -e APISERVER_HOST=<ExternalIp> -e APISERVER_PORT=30000 ndslabs-gui
-# Multi-node Usage: docker run -it -d -p 8080:8080 -e APISERVER_HOST=<ClusterIP> -e APISERVER_PATH="/api" ndslabs-gui
+# Build: docker build -t ndslabs/angular-ui .
 #
 
 # This image will be based on the official nodejs docker image
 FROM debian:jessie
 
 # Tell Docker we plan to use this port (http-server's default)
-EXPOSE 8080
+EXPOSE 3000
 
 RUN apt-get -qq update && \
     apt-get -qq install \
@@ -17,6 +14,7 @@ RUN apt-get -qq update && \
       curl \
       git \
       sudo \
+      vim \
       npm && \
     curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - && \
     apt-get -qq install nodejs && \
@@ -27,25 +25,26 @@ RUN apt-get -qq update && \
     rm -rf /var/cache/apk/* /tmp/*
     
 # Set directory for npm/bower
-WORKDIR /home/
+ENV BASEDIR=/home
+WORKDIR $BASEDIR
 
 # Copy in the source
-COPY package.json bower.json Gruntfile.js /home/
+COPY package.json bower.json Gruntfile.js $BASEDIR/
 
 # Install dependencies
-RUN npm install -g bower grunt http-server && \
+RUN npm install -g bower grunt express && \
     npm install && \
     bower install --config.interactive=false --allow-root
 
 # Copy in the source
-COPY . /home/
+COPY . $BASEDIR/
     
 # Set build information here before building
 ARG version="1.0.7"
 
 # Set build number/date inside the container, as well as our default API server/port
-RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${version}')#" "/home/app/app.js" && \
-    /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('$(date)'))#" "/home/app/app.js"
+RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${version}')#" "$BASEDIR/app/app.js" && \
+    /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('$(date)'))#" "$BASEDIR/app/app.js"
 
 # The command to run our app when the container is run
 CMD [ "./entrypoint.sh" ]

@@ -203,8 +203,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ConsoleRoute', 'AddServiceRoute', 'EditServiceRoute', 'AddSpecRoute', 'EditSpecRoute', 'VerifyAccountRoute', 'ResetPasswordRoute', 'SignUpRoute', 'ContactUsRoute', 'ProductName', 'LandingRoute', 'GaAccount', 'AnalyticsProvider', 
-    function($routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, HomeRoute, ConsoleRoute, AddServiceRoute, EditServiceRoute, AddSpecRoute, EditSpecRoute, VerifyAccountRoute, ResetPasswordRoute, SignUpRoute, ContactUsRoute, ProductName, LandingRoute, GaAccount, AnalyticsProvider) {
+.config([ '$provide', '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ConsoleRoute', 'AddServiceRoute', 'EditServiceRoute', 'AddSpecRoute', 'EditSpecRoute', 'VerifyAccountRoute', 'ResetPasswordRoute', 'SignUpRoute', 'ContactUsRoute', 'ProductName', 'LandingRoute', 'GaAccount', 'AnalyticsProvider', 
+    function($provide, $routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, HomeRoute, ConsoleRoute, AddServiceRoute, EditServiceRoute, AddSpecRoute, EditSpecRoute, VerifyAccountRoute, ResetPasswordRoute, SignUpRoute, ContactUsRoute, ProductName, LandingRoute, GaAccount, AnalyticsProvider) {
   // Squelch debug-level log messages
   $logProvider.debugEnabled(DEBUG);
   
@@ -219,6 +219,45 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   //                 .setHybridMobileSupport(true)
                    .useDisplayFeatures(true)
                    .useEnhancedLinkAttribution(true);
+  
+  // Set up log decorator (log forwarding)
+  $provide.decorator('$log', ['$delegate', 'Logging', function($delegate, Logging) {
+    Logging.enabled = true;
+    var methods = {
+      debug: function() {
+        if (Logging.enabled) {
+          // Only logging debug messages to the console
+          $delegate.debug.apply($delegate, arguments);
+          //Logging.debug.apply(null, arguments);
+        }
+      },
+      error: function() {
+        if (Logging.enabled) {
+          $delegate.error.apply($delegate, arguments);
+          Logging.error.apply(null, arguments);
+        }
+      },
+      log: function() {
+        if (Logging.enabled) {
+          $delegate.log.apply($delegate, arguments);
+          Logging.log.apply(null, arguments);
+        }
+      },
+      info: function() {
+        if (Logging.enabled) {
+          $delegate.info.apply($delegate, arguments);
+          Logging.info.apply(null, arguments);
+        }
+      },
+      warn: function() {
+        if (Logging.enabled) {
+          $delegate.warn.apply($delegate, arguments);
+          Logging.warn.apply(null, arguments);
+        }
+      }
+    };
+    return methods;
+  }]);
       
   // Setup default behaviors for encountering HTTP errors
   $httpProvider.interceptors.push(['$rootScope', '$cookies', '$q', '$location', '$log', '_', 'DEBUG', 'ApiUri', 'AuthInfo',

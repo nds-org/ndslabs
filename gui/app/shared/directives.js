@@ -53,7 +53,7 @@ angular.module('ndslabs-directives', [])
                 
                 // Debounce the token check ~300ms
                 timeout = $timeout(function() {
-                    NdsLabsApi.getRefresh_token().then(function() { 
+                    NdsLabsApi.getRefreshToken().then(function() { 
                         $log.debug('Token refreshed!'); 
                     }, function() {
                         ws.close();
