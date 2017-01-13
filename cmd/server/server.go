@@ -79,7 +79,8 @@ type Config struct {
 		StorageDefault int
 	}
 	Etcd struct {
-		Address string
+		Address     string
+		MaxMessages int
 	}
 	Kubernetes struct {
 		Address   string
@@ -123,6 +124,9 @@ func main() {
 	if cfg.Etcd.Address == "" {
 		cfg.Etcd.Address = "localhost:4001"
 	}
+	if cfg.Etcd.MaxMessages <= 0 {
+		cfg.Etcd.MaxMessages = 100
+	}
 	if cfg.Kubernetes.Address == "" {
 		cfg.Kubernetes.Address = "localhost:6443"
 	}
@@ -151,7 +155,7 @@ func main() {
 		glog.Fatal(err)
 	}
 
-	etcd, err := etcd.NewEtcdHelper(cfg.Etcd.Address)
+	etcd, err := etcd.NewEtcdHelper(cfg.Etcd.Address, cfg.Etcd.MaxMessages)
 	if err != nil {
 		glog.Errorf("Etcd not available: %s\n", err)
 		glog.Fatal(err)
