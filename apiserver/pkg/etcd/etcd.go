@@ -16,17 +16,19 @@ import (
 var etcdBasePath = "/ndslabs/"
 
 type EtcdHelper struct {
-	etcd   client.KeysAPI
-	crypto *crypto.CryptoHelper
+	etcd        client.KeysAPI
+	crypto      *crypto.CryptoHelper
+	maxMessages int
 }
 
-func NewEtcdHelper(address string) (*EtcdHelper, error) {
+func NewEtcdHelper(address string, maxMessages int) (*EtcdHelper, error) {
 
 	etcd, err := GetEtcdClient(address)
 
 	return &EtcdHelper{
-		etcd:   etcd,
-		crypto: crypto.NewCryptoHelper(),
+		etcd:        etcd,
+		crypto:      crypto.NewCryptoHelper(),
+		maxMessages: maxMessages,
 	}, err
 }
 
@@ -322,6 +324,15 @@ func (s *EtcdHelper) GetStack(uid string, sid string) (*api.Stack, error) {
 func (s *EtcdHelper) PutStack(uid string, sid string, stack *api.Stack) error {
 	opts := client.SetOptions{Dir: true}
 	s.etcd.Set(context.Background(), etcdBasePath+"/accounts/"+uid, "/stacks", &opts)
+
+	// Truncate status messages if necessary
+	for i := range stack.Services {
+		stackService := &stack.Services[i]
+		numMessages := len(stackService.StatusMessages)
+		if numMessages > s.maxMessages {
+			stackService.StatusMessages = stackService.StatusMessages[numMessages-s.maxMessages : numMessages]
+		}
+	}
 
 	data, _ := json.Marshal(stack)
 	path := etcdBasePath + "/accounts/" + uid + "/stacks/" + sid
