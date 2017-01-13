@@ -15,6 +15,9 @@ var EC = protractor.ExpectedConditions;
 
 var TEST_HELP_LINK_TARGET = /https\:\/\/nationaldataservice\.atlassian\.net\/wiki\/display\/NDSC\/.+/;
 
+var specKey = 'cloud9cpp';
+var cloneKey = 'clonedspec';
+
 // catalog.e2e.js
 describe('Labs Workbench Catalog View', function() {  
   var navbar = new Navbar();
@@ -64,6 +67,7 @@ describe('Labs Workbench Catalog View', function() {
   
   it('should offer main services that we expect to see', function() {
     expectSpec('toolmanager');
+    expectSpec('cloud9cpp');
     expectSpec('clowder');
     expectSpec('dataverse');
     
@@ -79,15 +83,15 @@ describe('Labs Workbench Catalog View', function() {
   });
   
   it('should allow the user to import a custom spec', function() {
-    var specKey = 'importedspec';
+    var importKey = 'importedspec';
     
-    var specJson = generateTestSpecJson(specKey);
+    var specJson = generateTestSpecJson(importKey);
     catalogPage.importSpec(specJson);
     
-    expectSpec(specKey);
+    expectSpec(importKey);
     
     // Delete imported spec to reset test state
-    catalogPage.deleteSpec(specKey);
+    catalogPage.deleteSpec(importKey);
   });
   
   it('should allow the user to create a custom spec', function() {
@@ -121,9 +125,6 @@ describe('Labs Workbench Catalog View', function() {
     
     // TODO: Clone error (duplicate key)
     it('should allow the user to clone a spec', function() {
-      var specKey = 'toolmanager';
-      var cloneKey = 'clonedspec';
-      
       catalogPage.cloneSpec(specKey, cloneKey).then(function() {
         expectSpec(cloneKey);
         catalogPage.deleteSpec(cloneKey);
@@ -131,7 +132,6 @@ describe('Labs Workbench Catalog View', function() {
     });
     
     it('should allow the user to view the JSON format of the spec', function() {
-      var specKey = 'toolmanager';
       catalogPage.viewJsonModal(specKey).then(function(match) {    
         browser.wait(EC.visibilityOf(catalogPage.exportSpecModal), 5000);
         catalogPage.cancelBtn.click();
@@ -140,23 +140,18 @@ describe('Labs Workbench Catalog View', function() {
     });
     
     it('should offer the user a help link', function() {
-      var specKey = 'toolmanager';
       catalogPage.clickHelpLink(specKey).then(function() {
         helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET);
       });
     });
     
     it('should offer the user a link to view documentation', function() {
-      var specKey = 'toolmanager';
       catalogPage.clickViewDocumentation(specKey).then(function() {
         helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET);
       });
     });
     
     describe('With Custom Spec', function() {
-      var specKey = 'toolmanager';
-      var cloneKey = 'clonedspec';
-      
       beforeAll(function(done) {
         catalogPage.get(true);
         catalogPage.cloneSpec(specKey, cloneKey).then(function() {
@@ -202,16 +197,12 @@ describe('Labs Workbench Catalog View', function() {
     
     // TODO: Clone error (duplicate key)
     it('should allow the user to clone a spec', function() {
-      var specKey = 'toolmanager';
-      var cloneKey = 'clonedspec';
-      
       catalogPage.cloneSpec(specKey, cloneKey, true).then(function() {
         catalogPage.deleteSpec(cloneKey, true);
       });
     });
     
     it('should allow the user to view the JSON format of the spec', function() {
-      var specKey = 'toolmanager';
       catalogPage.viewJsonModal(specKey, true).then(function(match) {    
         browser.wait(EC.visibilityOf(catalogPage.exportSpecModal), 5000);
         catalogPage.cancelBtn.click();
@@ -220,22 +211,18 @@ describe('Labs Workbench Catalog View', function() {
     });
     
     it('should offer the user a help link', function() {
-      var specKey = 'toolmanager';
       catalogPage.clickHelpLink(specKey, true).then(function() {
         helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET);
       });
     });
     
     it('should offer the user a link to view documentation', function() {
-      var specKey = 'toolmanager';
       catalogPage.clickViewDocumentation(specKey, true).then(function() {
         helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET);
       });
     });
     
     describe('With Custom Spec', function() {
-      var specKey = 'toolmanager';
-      var cloneKey = 'clonedspec';
       
       beforeAll(function(done) {
         catalogPage.get(true);
