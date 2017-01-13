@@ -194,29 +194,31 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
     var token = angular.copy(AuthInfo.get());
     var $http = $injector.get('$http');
     
+    // Don't send these over the wire
     delete token.password;
     delete token.saveCookie;
+    delete token.project;
   
     var args = [];
     if (typeof arguments === 'object') {
       for(let i = 0; i < arguments.length; i++ ) {
         let arg = arguments[i];
         let exception = {};
-        exception.message = arg.message;
+        exception.message = arg.message || arg;
         exception.stack = arg.stack;
         args.push(JSON.stringify(exception));
       }
     }
     
-    var eventLogDateTime = $filter('date')(new Date(), 'yyyy-MM-dd HH:mm:ss');
     var logItem = {
       token: token,
-      time: eventLogDateTime,
+      time: $filter('date')(new Date(), 'yyyy-MM-dd HH:mm:ss'),
       message: args.join('\n'),
       type: $filter('uppercase')(self.type)
     };
     
-    console.log('Custom logger [' + logItem.time + '] ' + logItem.message.toString());
+    console.log(logItem.time + ' [' + logItem.type + '] ' + logItem.message.toString());
+    console.debug(logItem);
     
     $http({
      method: 'POST',
