@@ -40,15 +40,20 @@ app.post('/logs', function (req, res) {
     // FIXME: Check token validity
   }
   
+  var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   var timestamp = req.body.time;
   var type = req.body.type;
-  var username = req.body.token.namespace;
+  var username = req.body.token.namespace || "No Session";
+  
   var logBody = JSON.parse(req.body.message);
   var message = logBody.message || logBody;
   var stack = logBody.stack || '';
+  if (!message) {
+    console.log('Received messageless logBody: ', req.body);
+  }
     
   // TODO: Is there a more compelling transformation for the POST body?
-  console.log(timestamp + " [" + type + "] " + username + " -", message);
+  console.log(timestamp + " [" + type + "] " + ip + " (" + username + ") -", message);
   if (stack) {
     console.log(stack);
   }
