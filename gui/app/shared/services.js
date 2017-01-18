@@ -454,7 +454,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       "key": "",
       "label": "",
       "description": "",
-      "logo": "",
+      "logo": "/asset/png/logos/ndslabs-badge.png",
       "maintainer": "",
       "image": {
         "registry": "",
