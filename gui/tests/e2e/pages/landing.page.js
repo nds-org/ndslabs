@@ -38,45 +38,45 @@ LandingPage.prototype.verify = function() {
 };
 
 LandingPage.prototype.clickLearnMore = function() {
-  this.learnMoreBtn.click();
+  return this.learnMoreBtn.click();
 };
 
 LandingPage.prototype.clickSignIn = function() {
-  this.signInBtn.click();
+  return this.signInBtn.click();
 };
 
 LandingPage.prototype.clickSignUp = function() {
-  this.signUpBtn.click();
+  return this.signUpBtn.click();
 };
 
 LandingPage.prototype.clickDashboardLink = function() {
-  this.dashboardLink.click();
+  return this.dashboardLink.click();
 };
 
 LandingPage.prototype.clickCatalogLink = function() {
-  this.catalogLink.click();
+  return this.catalogLink.click();
 };
 
 LandingPage.prototype.clickCatalogAddLink = function() {
-  this.catalogAddLink.click();
+  return this.catalogAddLink.click();
 };
 
 LandingPage.prototype.clickApiLink = function(predicate) {
   var context = this;
-  helpers.scrollToAndThen(0,10000, function () {
+  return helpers.scrollToAndThen(0,10000, function () {
     context.apiLink.click();
   }).then(predicate);
 };
 
 LandingPage.prototype.clickContactUsLink = function(predicate) {
   var context = this;
-  helpers.scrollToAndThen(0,10000, function () {
+  return helpers.scrollToAndThen(0,10000, function () {
     context.contactUsLink.click();
   }).then(predicate);
 };
 
 LandingPage.prototype.clickHelpLink = function(index) {
-  this.helpLink(index).click();
+  return this.helpLink(index).click();
 };
 
 module.exports = LandingPage;
