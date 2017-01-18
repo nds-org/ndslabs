@@ -30,6 +30,10 @@ var WAIT_TIME_APPLICATION_SHUTDOWN = 120000;
 
 var WAIT_TIME_APPLICATION_INSTALL = 30000;
 var WAIT_TIME_APPLICATION_REMOVE = 30000;
+
+var TIMEOUT_EXPECT_NEW_TAB = 30000;
+  
+var TEST_SPEC_KEY = 'latis';
     
 // dashboard.e2e.js
 describe('Labs Workbench Dashboard View', function() {
@@ -40,15 +44,14 @@ describe('Labs Workbench Dashboard View', function() {
   var consolePage = new ConsolePage();
   var addServicePage = new AddOrEditServicePage();
   var editServicePage = new AddOrEditServicePage();
-  
-  beforeAll(function(done) {
+
+  beforeAll(function() { 
     helpers.beforeAll();
-    dashboardPage.get();
     
-    // Shutdown and remove all applications
+    // Login and shutdown / remove any existing applications
+    dashboardPage.get();
     dashboardPage.shutdownAndRemoveAllApplications();
-    done();
-  }, WAIT_TIME_ALL_APPLICATIONS_SHUTDOWN);
+  });
   
   beforeEach(function() {
     helpers.beforeEach(); 
@@ -61,6 +64,7 @@ describe('Labs Workbench Dashboard View', function() {
   
   afterAll(function() { 
     helpers.afterAll();
+    
     navbar.expandAccountDropdown();
     navbar.clickSignOut();
     landingPage.verify();
@@ -73,24 +77,27 @@ describe('Labs Workbench Dashboard View', function() {
   });
 
   describe('With Applications', function() {
-    beforeAll(function() {  
-      // Install an application
+    beforeAll(function() {
+      // Install and start a test application
       catalogPage.get(true);
-      catalogPage.installApplication('toolmanager').then(function() {
-        dashboardPage.get(true);
+      catalogPage.installApplication(TEST_SPEC_KEY).then(function() {
+        // Click over to the dashboard
+        catalogPage.viewApplicationOnDashboard(TEST_SPEC_KEY);
+        dashboardPage.verify();
       });
     }, WAIT_TIME_APPLICATION_INSTALL);
     
     beforeEach(function() {
-      expect(dashboardPage.applications.count()).toBe(1);
+      
     });
     
-    afterAll(function(done) { 
-      // Remove the application
-      dashboardPage.applications.each(function(application) {
-        dashboardPage.removeApplication(application);
-        done();
-      })
+    afterAll(function(done) {
+      // Save the application's ID 
+      // CAUTION: Value is volatile - it can change mid-test
+      dashboardPage.applications.then(function(applications) {
+          dashboardPage.removeApplication(applications[0]);
+          done();
+      });
     }, WAIT_TIME_APPLICATION_REMOVE);
     
     it('should allow the user to change the label of an application', function() {
@@ -178,7 +185,7 @@ describe('Labs Workbench Dashboard View', function() {
       });
     });
     
-   /*it('should allow the user to add optional services to their application', function() {
+    /*it('should allow the user to add optional services to their application', function() {
       // TODO
     });
     
@@ -198,7 +205,7 @@ describe('Labs Workbench Dashboard View', function() {
       
       // Reinstall the application to reset test state
       catalogPage.get(true);
-      catalogPage.installApplication('toolmanager').then(function() {
+      catalogPage.installApplication(TEST_SPEC_KEY).then(function() {
         dashboardPage.get(true);
       });
     }, WAIT_TIME_APPLICATION_REMOVE);
@@ -221,7 +228,7 @@ describe('Labs Workbench Dashboard View', function() {
         });
       }, WAIT_TIME_APPLICATION_SHUTDOWN);
       
-      it('should link to available endpoints on the service', function() {
+      it('should link to available endpoints on the service', function(done) {
         dashboardPage.applications.each(function(application) {
           application.click();
           
@@ -230,14 +237,16 @@ describe('Labs Workbench Dashboard View', function() {
             
             dashboardPage.serviceIdText(service).getText().then(function(serviceId) {
               dashboardPage.endpointLinks(service).first().click();
-              helpers.expectNewTabOpen(new RegExp("https\:\/\/" + serviceId + "\..*"));
+              helpers.expectNewTabOpen(new RegExp("https\:\/\/" + serviceId + "\..*")).then(function() {
+                done();
+              });
           
               // TODO: How to handle basic auth?
               // For now, auth manually when prompted.. later test runs should then pass
             });
           });
         });
-      });
+      }, TIMEOUT_EXPECT_NEW_TAB);
     
       it('should allow the user to change the label of an application', function() {
         dashboardPage.applications.each(function(application) {
@@ -276,19 +285,21 @@ describe('Labs Workbench Dashboard View', function() {
         });
       });
       
-      it('should allow the user to view the console of a running application', function() {
+      it('should allow the user to view the console of a running application', function(done) {
         dashboardPage.applications.each(function(application) {
           application.click();
           dashboardPage.services(application).each(function(service) {
             browser.wait(EC.elementToBeClickable(dashboardPage.consoleBtn(service)), WAIT_TIME_APPLICATION_STARTUP);
             dashboardPage.consoleBtn(service).click();
             //consolePage.verify();
-            helpers.expectNewTabOpen(/.*console.*/);
+            helpers.expectNewTabOpen(/.*console.*/).then(function() {
+              done();
+            });
             
             // TODO: Verify basic console functionality
           });
         });
-      });
+      }, TIMEOUT_EXPECT_NEW_TAB);
       
       it('should allow the user to view the config of a running application', function() {
         dashboardPage.applications.each(function(application) {
