@@ -18,6 +18,8 @@ var TEST_HELP_LINK_TARGET = /https\:\/\/nationaldataservice\.atlassian\.net\/wik
 var specKey = 'cloud9cpp';
 var cloneKey = 'clonedspec';
 
+var TIMEOUT_EXPECT_NEW_TAB = 30000;
+
 // catalog.e2e.js
 describe('Labs Workbench Catalog View', function() {  
   var navbar = new Navbar();
@@ -139,17 +141,21 @@ describe('Labs Workbench Catalog View', function() {
       });
     });
     
-    it('should offer the user a help link', function() {
+    it('should offer the user a help link', function(done) {
       catalogPage.clickHelpLink(specKey).then(function() {
-        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET);
+        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET).then(function() {
+          done();
+        });
       });
-    });
+    }, TIMEOUT_EXPECT_NEW_TAB);
     
-    it('should offer the user a link to view documentation', function() {
+    it('should offer the user a link to view documentation', function(done) {
       catalogPage.clickViewDocumentation(specKey).then(function() {
-        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET);
+        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET).then(function() {
+          done();
+        });
       });
-    });
+    }, TIMEOUT_EXPECT_NEW_TAB);
     
     describe('With Custom Spec', function() {
       beforeAll(function(done) {
@@ -170,7 +176,6 @@ describe('Labs Workbench Catalog View', function() {
       // TODO: Delete (error due to existing instance)
       
       it('should allow the user to edit a custom spec', function(done) {
-        
         catalogPage.editSpec(cloneKey).then(function() {
           editSpecPage.verify();
           done();
@@ -210,17 +215,21 @@ describe('Labs Workbench Catalog View', function() {
       });
     });
     
-    it('should offer the user a help link', function() {
+    it('should offer the user a help link', function(done) {
       catalogPage.clickHelpLink(specKey, true).then(function() {
-        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET);
+        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET).then(function() {
+          done();
+        });
       });
-    });
+    }, TIMEOUT_EXPECT_NEW_TAB);
     
-    it('should offer the user a link to view documentation', function() {
+    it('should offer the user a link to view documentation', function(done) {
       catalogPage.clickViewDocumentation(specKey, true).then(function() {
-        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET);
+        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET).then(function() {
+          done();
+        });
       });
-    });
+    }, TIMEOUT_EXPECT_NEW_TAB);
     
     describe('With Custom Spec', function() {
       
