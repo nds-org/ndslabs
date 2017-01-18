@@ -6,6 +6,8 @@ var fs = require('fs');
 
 var EC = protractor.ExpectedConditions;
 
+var TIMEOUT_EXPECT_NEW_TAB = 30000;
+
 // This module exports shared generic helper functions that do not reference particular page element
 module.exports = {};
 
@@ -102,49 +104,45 @@ module.exports.expectElement = function(selector) {
 // Check that a new tab is open and close the tab
 // If second param is false, the tab is left open
 module.exports.expectNewTabOpen = function(expectedUrl, leaveOpen) {
-  var NEW_TAB_OPEN_TIMEOUT = 11000;
+  // Let AngularJS finish working first
+  browser.waitForAngular();
   
   // This is required if our new page is not an AngularJS page
   browser.ignoreSynchronization = true;
   
   // Retrieve all open window handles
-  browser.getAllWindowHandles().then(function (handles) {
+  return browser.getAllWindowHandles().then(function (handles) {
     if (handles.length === 1) {
       // NOOP
       return;
     }
     
     // Save original handle
-    var originalHandle = handles[0];
-    
-    var newestIndex = handles.length - 1;
-    var newestTab = handles[newestIndex];
+    var newestHandle = handles[handles.length - 1];
     
     // Switch to newest tab and verify that its URL is correct
-    return browser.driver.switchTo().window(newestTab).then(function() {
+    return browser.driver.switchTo().window(newestHandle).then(function() {
       if (expectedUrl instanceof RegExp) {
+        //browser.wait(EC.urlIs(expectedUrl), TIMEOUT_EXPECT_NEW_TAB);
         expect(browser.getCurrentUrl()).toMatch(expectedUrl);
-        //browser.wait(EC.urlIs(expectedUrl), NEW_TAB_OPEN_TIMEOUT);
       } else if (typeof expectedUrl === 'string') {
+        browser.wait(EC.urlIs(expectedUrl), TIMEOUT_EXPECT_NEW_TAB);
         expect(browser.getCurrentUrl()).toBe(expectedUrl);
-        //browser.wait(EC.urlIs(expectedUrl), NEW_TAB_OPEN_TIMEOUT);
-      }
-      
-      if (!leaveOpen) {
-        // Close current tab and switch back to original
-        module.exports.closeTab();
       }
       
       browser.ignoreSynchronization = false;
+    }).then(function() {
+      if (!leaveOpen) {
+        // Close current tab and switch back to original
+        return module.exports.closeTab(handles[0]);
+      }
     });
   });
 };
 
-module.exports.closeTab = function() {
+module.exports.closeTab = function(originalHandle) {
   browser.driver.close();
-  browser.getAllWindowHandles().then(function (handles) {
-    browser.driver.switchTo().window(handles[0]);
-  });
+  browser.driver.switchTo().window(originalHandle);
 };
 
 module.exports.selectDropdownbyNum = function (ele, index) {
@@ -162,10 +160,12 @@ module.exports.beforeAll = function() {
   // TODO: I haven't had any fail for this reason, but it seems like an edge case we should watch for
   // browser.driver.manage().deleteAllCookies();
   
+  // XXX: Maximizing the window does not resolve the "Element is not clickable at point (x,y)" issue for OSX
+  //browser.driver.manage().window().maximize();
+  
   // Resize window (fixes "Element is not clickable at point (x,y)" in OSX)
   // See https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/2766
   browser.driver.manage().window().setSize(1280, 1024);
-  //browser.driver.manage().window().maximize();
   
   // Disable CSS Animations
   // See http://stackoverflow.com/questions/26584451/how-to-disable-animations-in-protractor-for-angular-js-application/32264842#32264842

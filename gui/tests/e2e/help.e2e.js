@@ -11,6 +11,8 @@ var ContactUsPage = require('./pages/help.page.js');
 var DashboardPage = require('./pages/dashboard.page.js');
 var LandingPage = require('./pages/landing.page.js');
 
+var TIMEOUT_EXPECT_NEW_TAB = 30000;
+
 var OPTION_REQUEST_HELP = 0;
 var OPTION_MAKE_A_WISH = 1;
 var OPTION_REPORT_A_BUG = 2;
@@ -45,15 +47,19 @@ describe('Labs Workbench Contact Us View', function() {
     helpers.afterAll();
   });
   
-  it('should link to the support forum', function() {
+  it('should link to the support forum', function(done) {
     contactUsPage.forumBtn.click();
-    helpers.expectNewTabOpen(shared.config.FORUM_LINK);
-  });
+    helpers.expectNewTabOpen(shared.config.FORUM_LINK).then(function() {
+      done();
+    });
+  }, TIMEOUT_EXPECT_NEW_TAB);
   
-  it('should link to the support chat', function() {
+  it('should link to the support chat', function(done) {
     contactUsPage.chatBtn.click();
-    helpers.expectNewTabOpen(shared.config.CHAT_LINK);
-  });
+    helpers.expectNewTabOpen(shared.config.CHAT_LINK).then(function() {
+      done();
+    });
+  }, TIMEOUT_EXPECT_NEW_TAB);
   
   it('should link to the support e-mail', function() {
     //help.emailBtn.click();
@@ -73,15 +79,19 @@ describe('Labs Workbench Contact Us View', function() {
       landingPage.verify();
     });
     
-    it('should link to the support forum', function() {
+    it('should link to the support forum', function(done) {
       contactUsPage.forumBtn.click();
-      helpers.expectNewTabOpen(shared.config.FORUM_LINK);
-    });
+      helpers.expectNewTabOpen(shared.config.FORUM_LINK).then(function() {
+        done();
+      });
+    }, TIMEOUT_EXPECT_NEW_TAB);
     
-    it('should link to the support chat', function() {
+    it('should link to the support chat', function(done) {
       contactUsPage.chatBtn.click();
-      helpers.expectNewTabOpen(shared.config.CHAT_LINK);
-    });
+      helpers.expectNewTabOpen(shared.config.CHAT_LINK).then(function() {
+        done();
+      });
+    }, TIMEOUT_EXPECT_NEW_TAB);
     
     it('should link to the support e-mail', function() {
       //help.emailBtn.click();
