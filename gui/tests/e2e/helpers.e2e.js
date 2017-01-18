@@ -132,7 +132,7 @@ module.exports.expectNewTabOpen = function(expectedUrl, leaveOpen) {
       
       if (!leaveOpen) {
         // Close current tab and switch back to original
-        module.exports.closeTab(originalHandle);
+        module.exports.closeTab();
       }
       
       browser.ignoreSynchronization = false;
@@ -140,9 +140,11 @@ module.exports.expectNewTabOpen = function(expectedUrl, leaveOpen) {
   });
 };
 
-module.exports.closeTab = function(nextHandle) {
+module.exports.closeTab = function() {
   browser.driver.close();
-  browser.driver.switchTo().window(nextHandle);
+  browser.getAllWindowHandles().then(function (handles) {
+    browser.driver.switchTo().window(handles[0]);
+  });
 };
 
 module.exports.selectDropdownbyNum = function (ele, index) {

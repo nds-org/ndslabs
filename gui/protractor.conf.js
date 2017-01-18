@@ -7,7 +7,7 @@ exports.config = {
   chromeOnly: true,
   params: config,
   jasmineNodeOpts: { 
-    // defaultTimeoutInterval: 120000,
+    defaultTimeoutInterval: 30000,
     realtimeFailure: true
   },
   

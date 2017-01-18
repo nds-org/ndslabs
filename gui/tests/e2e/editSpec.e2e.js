@@ -19,7 +19,7 @@ describe('Labs Workbench Edit Application Spec View', function() {
   var dashboardPage = new DashboardPage();
   var editSpecPage = new AddEditSpecPage();
   
-  var specKey = 'toolmanager';
+  var specKey = 'cloud9cpp';
   var cloneKey = 'clonedspec';
   
   // FIXME: Test browser should scroll to card (how?)
