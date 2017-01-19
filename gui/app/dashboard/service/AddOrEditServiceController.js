@@ -10,7 +10,8 @@ angular
  */
 .controller('AddOrEditServiceController', [ '$scope', '$routeParams', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stacks', 'StackService', 'Specs', 'RandomPassword', 'ProductName', 'AuthInfo', 'LandingRoute',
     function($scope, $routeParams, $location, $log, _, NdsLabsApi, Project, Stacks, StackService, Specs, RandomPassword, ProductName, AuthInfo, LandingRoute) {
-      
+  "use strict";
+
   
   if (!AuthInfo.get().token) {
     $location.path(LandingRoute);
@@ -77,7 +78,7 @@ angular
         if (!cfg) {
           $scope.configs.push({ 'name': key, 'value': value, 'def': '', 'spec': cfg, 'isPassword':false, canEdit: true });
         } else {
-          $scope.configs.push({ 'name': key, 'label': cfg.label, 'value': value, 'spec': cfg, 'def': cfg.value, 'spec': cfg, 'isPassword':cfg.isPassword });
+          $scope.configs.push({ 'name': key, 'label': cfg.label, 'value': value, 'spec': cfg, 'def': cfg.value, 'isPassword':cfg.isPassword });
         }
       }
     });
@@ -128,7 +129,7 @@ angular
     
     if (!$scope.editingService && $scope.stack.services.indexOf($scope.service) === -1) {
       angular.forEach($scope.spec.depends, function(dep) {
-        var exists = _.find($scope.stack.services, function(svc) { return svc.service === dep.key });
+        var exists = _.find($scope.stack.services, function(svc) { return svc.service === dep.key; });
         if (dep.required && !exists) {
           var spec = _.find(Specs.all, [ 'key', dep.key ]);
           var dependency = new StackService($scope.stack, spec);

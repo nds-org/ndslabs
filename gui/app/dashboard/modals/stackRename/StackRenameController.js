@@ -10,6 +10,8 @@ angular
  */
 .controller('StackRenameCtrl', [ '$scope', '$log', '$uibModalInstance', '_', 'NdsLabsApi', 'Stacks', 'stack',
     function($scope, $log, $uibModalInstance, _, NdsLabsApi, Stacks, stack) {
+  "use strict";
+
   $scope.stack = angular.copy(stack);
 
   $scope.confirm = function() {

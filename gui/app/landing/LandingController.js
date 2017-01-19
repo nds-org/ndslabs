@@ -10,7 +10,9 @@ angular
  */
 .controller('LandingController', [ '$scope', '$location', '$routeParams', '$log', '_', 'AuthInfo', 'OrgName', 'ProductName', 'ProductUrl', 'NdsLabsApi', 'HelpLinks', 'ResetPasswordRoute',
     function($scope, $location, $routeParams, $log, _, AuthInfo, OrgName, ProductName, ProductUrl, NdsLabsApi, HelpLinks, ResetPasswordRoute) {
-  if ($routeParams['t'] && !$routeParams['u']) {
+  "use strict";
+
+  if ($routeParams.t && !$routeParams.u) {
     $location.path(ResetPasswordRoute);
     return;
   }    

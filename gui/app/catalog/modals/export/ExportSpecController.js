@@ -10,6 +10,8 @@ angular
  */
 .controller('ExportSpecCtrl', [ '$scope', '$log', '$uibModalInstance', '_', 'clipboard', 'Stacks', 'spec',
     function($scope, $log, $uibModalInstance, _, clipboard, Stacks, spec) {
+  "use strict";
+  
   $scope.spec = angular.copy(spec);
   $scope.showAlert = _.find(Stacks.all, [ 'key', $scope.spec.key ]);
   
@@ -36,7 +38,7 @@ angular
         }
       });
     }
-  })($scope.spec);
+  })($scope.spec); // jshint ignore:line
   
   angular.forEach(Stacks.all, function(stack) {
     if (_.find(stack.services, [ 'service', $scope.spec.key ])) {

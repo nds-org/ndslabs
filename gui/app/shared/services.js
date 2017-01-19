@@ -14,11 +14,14 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 .constant('_', window._)
 
 .factory('Loading', [ '$rootScope', function($rootScope) {
+  "use strict";
+
   var minDuration = 700,
       delay = 250,
       message = 'Please Wait...';
   
   var ret = {};
+  
   ret.setNavbarLoading = function(promise, backdrop) {
     $rootScope.loadingSmall = {
       promise: promise,
@@ -28,7 +31,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       minDuration: minDuration,
     };
     return promise;
-  }
+  };
+  
   ret.set = function(promise, backdrop) {
     $rootScope.loadPromise = promise;
     $rootScope.loading = {
@@ -48,7 +52,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 .constant('FileManagerKey', 'cloudcmd')
 .factory('FileManager', [ '$window', '$log', '$filter', '_', 'AutoRefresh', 'Loading', 'FileManagerKey', 'RandomPassword', 'NdsLabsApi', 'Stacks', 'Specs', 'Stack', 
     function($window, $log, $filter, _, AutoRefresh, Loading, FileManagerKey, RandomPassword, NdsLabsApi, Stacks, Specs, Stack) {
-      
+  "use strict";
+
   // TODO: Allow user to set their own file manager?
   var fileManager = {
     busy: false,
@@ -63,7 +68,6 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       };
       
       var startAndNavigate = function(stack) {
-        debugger;
         if (fileManager.busy) {
           if (stack.status === 'stopping') {
             alert('You must wait for the File Manager to shut down.');
@@ -148,6 +152,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 }])
 
 .factory('RandomPassword', [ function() {
+  "use strict";
+
   return {
     generate: function(len) {
       var length = len || 10,
@@ -162,6 +168,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 }])
 
 .service('Logging', [ '$filter', '$injector', 'AuthInfo', function($filter, $injector, AuthInfo) {
+  "use strict";
+
   var self = this;
 
   var service = {
@@ -240,7 +248,9 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 }])
 
 .factory('SoftRefresh', [ 'Stacks', 'Project', 'Specs', function(Stacks, Project, Specs) {
- var refresh = {
+  "use strict";
+
+  var refresh = {
     /**
      * Perform a partial "soft-refresh" - refresh the stack data without fully re-rendering the page
      */ 
@@ -257,12 +267,14 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       return refresh.stacks();
     });
    }
- }
+ };
  
  return refresh;
 }])
 
 .factory('AutoRefresh', [ '$interval', '$log', 'SoftRefresh', 'Loading', function($interval, $log, SoftRefresh, Loading) {
+  "use strict";
+
   var autoRefresh = {
     interval: null,
     onInterval: SoftRefresh.stacks,
@@ -298,6 +310,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  * A shared store for our project metadata pulled from /projects/{namespace}
  */
 .factory('Project', [ '$log', 'NdsLabsApi', 'Loading', function($log, NdsLabsApi, Loading) {
+  "use strict";
+
   var project = {
     purge: function() {
       project.project = {};
@@ -322,7 +336,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
         email: '',
         password: '',
         passwordConfirmation: ''
-      }
+      };
     },
     // An empty place-holder for our project data
     project: {}
@@ -335,6 +349,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  * A shared store for service specs pulled from /services
  */
 .factory('Specs', [ '$log', '_', 'Vocabulary', 'NdsLabsApi', function($log, _, Vocabulary, NdsLabsApi) {
+  "use strict";
+
   // An empty place-holder for our service/stack specs
   var specs = {
     purge: function() {
@@ -394,6 +410,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  * A shared store for stacks pulled from /projects/{namespace}/stacks
  */
 .factory('Stacks', [ '$log', 'NdsLabsApi', function($log, NdsLabsApi) {
+  "use strict";
+
   // An empty place-holder for our deployed stacks
   var stacks = {
     purge: function() {
@@ -421,6 +439,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  * A shared store for stacks pulled from /projects/{namespace}/stacks
  */
 .factory('Vocabulary', [ '$log', 'NdsLabsApi', function($log, NdsLabsApi) {
+  "use strict";
+
   // An empty place-holder for our deployed stacks
   var vocab = {
     purge: function() {
@@ -448,6 +468,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  * @constructor
  */
 .service('Spec', [ '$log', 'Specs', '_', function($log, Specs, _) {
+  "use strict";
+
   return function() {
     
       return {
@@ -487,7 +509,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       "developerEnvironment": "",
       "tags": []
     };
-  }
+  };
 }])
 
 /**
@@ -496,6 +518,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  * @param {} spec - The service spec from which to create the stack
  */
 .service('Stack', [ '$log', 'Specs', 'StackService', '_', function($log, Specs, StackService, _) {
+  "use strict";
+
   return function(spec) {
     var key = spec.key;
             
@@ -531,6 +555,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  * @param {} spec - The service spec off of which to base this service
  */
 .service('StackService', [ 'RandomPassword', function(RandomPassword) {
+  "use strict";
+
   return function(stack, spec) {
     var svc = {
       id: "",
@@ -558,6 +584,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  * 
  */
 .factory('ServerData', [ '$log', '$q', 'Specs', 'Stacks', 'Project', 'Vocabulary', function($log, $q, Specs, Stacks,  Project, Vocabulary) {
+  "use strict";
+
   var data = {
     /**
      * Purges all shared data from the server
@@ -577,8 +605,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
         Specs.populate().then(function() {
           Project.populate(projectId).then(function() {
             Stacks.populate(projectId);
-          })
-        })
+          });
+        });
       });
     },
     specs: Specs,

@@ -13,7 +13,8 @@ angular
       'StackService', 'NdsLabsApi', 'ProductName', 'FileManager',
     function($scope, Loading, $log, $routeParams, $location, $interval, $q, $window, $filter, $uibModal, _, Project, RandomPassword, Stack, Stacks, Specs, AlertService,AutoRefresh, AuthInfo, LandingRoute,
       StackService, NdsLabsApi, ProductName, FileManager) {
-      
+  "use strict";
+
   if (!AuthInfo.get().token) {
     $location.path(LandingRoute);
     return;
@@ -43,9 +44,9 @@ angular
     }
   };
    
-  $scope.$watch(function () { return Project.project }, sync.project);
-  $scope.$watch(function () { return Specs.all }, sync.specs);
-  $scope.$watch(function () { return Stacks.all }, sync.stacks);
+  $scope.$watch(function () { return Project.project; }, sync.project);
+  $scope.$watch(function () { return Specs.all; }, sync.specs);
+  $scope.$watch(function () { return Stacks.all; }, sync.stacks);
 
   // Accounting stuff
   $scope.autoRefresh = AutoRefresh;

@@ -10,6 +10,8 @@ angular
  */
 .controller('FooterController', [ '$scope', '$log', 'NdsLabsApi', 'BuildDate', 'BuildVersion', 'ProductName', 'SupportEmail',
     function($scope, $log, NdsLabsApi, BuildDate, BuildVersion, ProductName, SupportEmail) {
+  "use strict";
+
   $scope.productName = ProductName;
   $scope.supportEmail = SupportEmail;
       

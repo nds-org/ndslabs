@@ -1,7 +1,5 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
 
-'use strict';
-
 // Import shared PageObjects
 var helpers = require("./helpers.e2e.js");
 
@@ -22,6 +20,8 @@ var TIMEOUT_EXPECT_NEW_TAB = 30000;
 
 // catalog.e2e.js
 describe('Labs Workbench Catalog View', function() {  
+  "use strict";
+
   var navbar = new Navbar();
   var catalogPage = new CatalogPage();
   var dashboardPage = new DashboardPage();
@@ -30,7 +30,7 @@ describe('Labs Workbench Catalog View', function() {
   var editSpecPage = new AddEditSpecPage();
   
   var generateTestSpecJson = function(specKey) {
-    return '{"key":"' + specKey + '","label":"An imported spec","description":"An imported spec","logo":"https://nationaldataservice.atlassian.net/wiki/download/attachments/16613382/cloudcmd.png","image":{"registry":"","name":"coderaiser/cloudcmd","tags":["5.5.1-alpine","5.5.1","latest"]},"display":"stack","access":"external","args":["--root","/home/$(NAMESPACE)"],"ports":[{"port":8000,"protocol":"http"}],"readinessProbe":{"type":"http","path":"/favicon.ico","port":8000,"initialDelay":5,"timeout":45},"resourceLimits":{"cpuMax":200,"cpuDefault":100,"memMax":1000,"memDefault":50},"tags":["21","6"],"info":"https://nationaldataservice.atlassian.net/wiki/display/NDSC/Cloud+Commander","authRequired":true}'
+    return '{"key":"' + specKey + '","label":"An imported spec","description":"An imported spec","logo":"https://nationaldataservice.atlassian.net/wiki/download/attachments/16613382/cloudcmd.png","image":{"registry":"","name":"coderaiser/cloudcmd","tags":["5.5.1-alpine","5.5.1","latest"]},"display":"stack","access":"external","args":["--root","/home/$(NAMESPACE)"],"ports":[{"port":8000,"protocol":"http"}],"readinessProbe":{"type":"http","path":"/favicon.ico","port":8000,"initialDelay":5,"timeout":45},"resourceLimits":{"cpuMax":200,"cpuDefault":100,"memMax":1000,"memDefault":50},"tags":["21","6"],"info":"https://nationaldataservice.atlassian.net/wiki/display/NDSC/Cloud+Commander","authRequired":true}';
   };
   
   // FIXME: Test browser should scroll to card (how?)

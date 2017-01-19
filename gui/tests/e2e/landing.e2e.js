@@ -1,7 +1,5 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
 
-'use strict';
-
 // Import shared PageObjects
 var helpers = require("./helpers.e2e.js");
 var shared = require("./pages/shared.page.js");
@@ -19,6 +17,8 @@ var TIMEOUT_EXPECT_NEW_TAB = 30000;
 
 // landing.e2e.js
 describe('Labs Workbench Landing Page View', function() {
+  "use strict";
+
   var navbar = new Navbar();
   var landingPage = new LandingPage();
   var loginPage = new LoginPage();

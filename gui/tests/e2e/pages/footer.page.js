@@ -1,9 +1,9 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
-"use strict"
-
 // Footer links
 var Footer = function() {
+  "use strict";
+
   this.apiVersion = element(by.id('apiVersion'));
   this.guiVersion = element(by.id('guiVersion'));
   this.supportEmailLink = element(by.id('supportEmailLink'));

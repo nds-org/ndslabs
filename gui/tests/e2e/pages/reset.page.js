@@ -1,7 +1,5 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
-'use strict';
-
 module.exports = {};
 
 // Load other modules
@@ -17,6 +15,8 @@ var PAGE_TITLE = 'Reset Password';
 var PAGE_ROUTE = /^https\:\/\/.*\/\#\/recover(\?t=.+)?$/;
 
 var ResetPasswordPage = function() {
+  "use strict";
+
   this.usernameInput = element(by.id('accountId'));
   this.submitUsernameBtn = element(by.id('submitUsernameBtn'));
   
@@ -31,6 +31,8 @@ var ResetPasswordPage = function() {
 
 // Navigate to the Reset Password view
 ResetPasswordPage.prototype.get = function(loggedIn) {
+  "use strict";
+
   var navbar = new Navbar();
   var loginPage = new LoginPage();
   
@@ -47,6 +49,8 @@ ResetPasswordPage.prototype.get = function(loggedIn) {
 
 // Ensure that everything looks correct on the page, provided the given state parameters
 ResetPasswordPage.prototype.verify = function(showHelperText, loggedIn) { 
+  "use strict";
+
   expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
   

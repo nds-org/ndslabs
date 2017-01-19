@@ -1,10 +1,10 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
-"use strict"
-
 module.exports = {};
 
 var Navbar = function() {
+  "use strict";
+
   // Always visible
   this.brandNav = element(by.id('navbarBrand'));
   
@@ -29,21 +29,85 @@ var Navbar = function() {
   this.logoutBtn = element(by.id('logoutBtn'));
 };
 
-Navbar.prototype.clickBrandNav = function() {  this.brandNav.click(); };
-Navbar.prototype.expandHelpDropdown = function() {  this.helpDropdown.click(); };
-Navbar.prototype.clickHelpLink = function(index) {  this.helpLink(index).click(); };
-Navbar.prototype.clickApiReferenceNav = function() {  this.apiReferenceNav.click(); };
-Navbar.prototype.clickContactUsNav = function() {  this.contactUsNav.click(); };
+Navbar.prototype.clickBrandNav = function() {  
+  "use strict";
+
+  this.brandNav.click();
+};
+
+Navbar.prototype.expandHelpDropdown = function() {  
+  "use strict";
+
+  this.helpDropdown.click();
+};
+
+Navbar.prototype.clickHelpLink = function(index) {  
+  "use strict";
+
+  this.helpLink(index).click();
+};
+
+Navbar.prototype.clickApiReferenceNav = function() {  
+  "use strict";
+
+  this.apiReferenceNav.click();
+};
+
+Navbar.prototype.clickContactUsNav = function() {  
+  "use strict";
+
+  this.contactUsNav.click();
+};
+
   
-Navbar.prototype.clickSignIn = function() {  this.signinNav.click(); };
-Navbar.prototype.clickSignUp = function() {  this.signupNav.click(); };
+Navbar.prototype.clickSignIn = function() {  
+  "use strict";
+
+  this.signinNav.click();
+};
+
+Navbar.prototype.clickSignUp = function() {  
+  "use strict";
+
+  this.signupNav.click();
+};
+
   
-Navbar.prototype.clickApplicationsNav = function() {  this.applicationsNav.click(); };
-Navbar.prototype.clickCatalogNav = function() {  this.catalogNav.click(); };
-Navbar.prototype.clickFilesNav = function() {  this.filesNav.click(); };
-Navbar.prototype.expandAccountDropdown = function() {  this.accountDropdown.click(); };
-Navbar.prototype.clickChangePasswordNav = function() {  this.changePasswordNav.click(); };
-Navbar.prototype.clickSignOut = function() {  this.logoutBtn.click(); };
+Navbar.prototype.clickApplicationsNav = function() {  
+  "use strict";
+
+  this.applicationsNav.click();
+};
+
+Navbar.prototype.clickCatalogNav = function() {  
+  "use strict";
+
+  this.catalogNav.click();
+};
+
+Navbar.prototype.clickFilesNav = function() {  
+  "use strict";
+
+  this.filesNav.click();
+};
+
+Navbar.prototype.expandAccountDropdown = function() {  
+  "use strict";
+
+  this.accountDropdown.click();
+};
+
+Navbar.prototype.clickChangePasswordNav = function() {  
+  "use strict";
+
+  this.changePasswordNav.click();
+};
+
+Navbar.prototype.clickSignOut = function() {  
+  "use strict";
+
+  this.logoutBtn.click();
+};
 
 /**
  * Insert public Getter functions here for user interactions

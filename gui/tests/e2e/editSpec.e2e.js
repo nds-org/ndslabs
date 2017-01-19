@@ -1,7 +1,5 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
 
-'use strict';
-
 // Import shared PageObjects
 var helpers = require("./helpers.e2e.js");
 
@@ -13,6 +11,8 @@ var AddEditSpecPage = require('./pages/addEditSpec.page.js');
 
 // addSpec.e2e.js
 describe('Labs Workbench Edit Application Spec View', function() {
+  "use strict";
+
   var navbar = new Navbar();
   var landingPage = new LandingPage();
   var catalogPage = new CatalogPage();

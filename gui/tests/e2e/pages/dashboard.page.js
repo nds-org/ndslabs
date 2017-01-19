@@ -1,7 +1,5 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
-'use strict';
-
 var helpers = require('../helpers.e2e.js');
 var shared = require('./shared.page.js');
 
@@ -13,11 +11,13 @@ var TEST_USERNAME = shared.config.TEST_USERNAME;
 var TEST_PASSWORD = shared.config.TEST_PASSWORD;
 
 var PAGE_TITLE = 'Labs Workbench Dashboard';
-var PAGE_ROUTE = /https\:\/\/.+\/\#\/home(\?t=.+|expand=.)?/
+var PAGE_ROUTE = /https\:\/\/.+\/\#\/home(\?t=.+|expand=.)?/;
 
 var EC = protractor.ExpectedConditions;
 
 var DashboardPage = function() {
+  "use strict";
+
   this.helperText = element(by.id('dashHelperText'));
   this.catalogLink = element(by.id('catalogLink'));
   
@@ -71,6 +71,8 @@ var DashboardPage = function() {
 
 // Navigate to the Dashboard view
 DashboardPage.prototype.get = function(loggedIn) {
+  "use strict";
+
   var navbar = new Navbar();
   var landingPage = new LandingPage();
   var loginPage = new LoginPage();
@@ -90,6 +92,8 @@ DashboardPage.prototype.get = function(loggedIn) {
 
 // Ensure we are on the dashboard page
 DashboardPage.prototype.verify = function() {
+  "use strict";
+
   expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
@@ -97,6 +101,8 @@ DashboardPage.prototype.verify = function() {
 // Make a selection in the Add Service dropdown
 // TODO: Can this be done without using the index?
 DashboardPage.prototype.selectServiceToAdd = function(application, index) {
+  "use strict";
+
   var addServiceDropdown = this.addServiceDropdown(application);
   
   // Expand the dropdown menu
@@ -112,6 +118,8 @@ DashboardPage.prototype.selectServiceToAdd = function(application, index) {
 };
 
 DashboardPage.prototype.launchApplication = function(application) {
+  "use strict";
+
   var launchBtn = this.launchBtn(application);
   launchBtn.isDisplayed().then(function(isDisplayed) {
     if (!isDisplayed) {
@@ -130,6 +138,8 @@ DashboardPage.prototype.launchApplication = function(application) {
 };
 
 DashboardPage.prototype.shutdownApplication = function(application) {
+  "use strict";
+
   var shutdownBtn = this.shutdownBtn(application);
   shutdownBtn.isDisplayed().then(function(isDisplayed) {
     if (!isDisplayed) {
@@ -152,6 +162,8 @@ DashboardPage.prototype.shutdownApplication = function(application) {
 };
 
 DashboardPage.prototype.removeApplication = function(application) {
+  "use strict";
+
   var deleteBtn = this.deleteBtn(application);
   deleteBtn.isDisplayed().then(function(isDisplayed) {
     if (!isDisplayed) {
@@ -165,6 +177,8 @@ DashboardPage.prototype.removeApplication = function(application) {
 };
 
 DashboardPage.prototype.shutdownAndRemoveAllApplications = function() {
+  "use strict";
+
   var self = this;
   
   // Shutdown and remove all applications

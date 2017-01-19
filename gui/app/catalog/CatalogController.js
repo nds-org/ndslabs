@@ -3,6 +3,8 @@
 angular
 .module('ndslabs')
 .filter('stackExistsFromSpec', [ '_', 'Stacks', function(_, Stacks) {
+  "use strict";
+  
   return function(input) {
     var exists = false;
     angular.forEach(Stacks.all, function(stack) {
@@ -12,7 +14,7 @@ angular
       }
     });
     return exists;
-  }
+  };
 }])
 /**
  * The Controller for our "AppStore" / "Catalog" View
@@ -23,6 +25,7 @@ angular
 .controller('CatalogController', [ '$scope', '$filter', '$interval', '$uibModal', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stack', 'Stacks', 
     'StackService', 'Specs', 'clipboard', 'Vocabulary', 'RandomPassword', 'AuthInfo', 'LandingRoute', 'ProductName',
     function($scope, $filter, $interval, $uibModal, $location, $log, _, NdsLabsApi, Project, Stack, Stacks, StackService, Specs, clipboard, Vocabulary, RandomPassword, AuthInfo, LandingRoute, ProductName) {
+  "use strict";
       
   
   if (!AuthInfo.get().token) {
@@ -129,7 +132,7 @@ angular
           }
         });
       }
-    })(specCopy);
+    })(specCopy); // jshint ignore:line
     
     clipboard.copyText(JSON.stringify(specCopy, null, 4));
   };
