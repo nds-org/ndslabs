@@ -53,7 +53,7 @@ exports.config = {
     var jasmineEnv = jasmine.getEnv();
      waitPlugin.setOnComplete(report);
      browser.driver.manage().window().maximize();
-     browser.get('${testPortalAddress}');
+     browser.get(config.hostname);
  
      jasmineEnv.addReporter(new function () {
        this.specDone = function (spec) {
