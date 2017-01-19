@@ -1,4 +1,17 @@
 var config = require("./protractor.auth.json");
+var istanbul = require('istanbul');
+var collector = new istanbul.Collector();
+var reporter;
+var waitPlugin = require('./waitPlugin');
+
+function report() {
+  if (reporter) {
+    reporter.add('json');
+    reporter.write(collector, true, function () {
+      console.log('Coverage report successfully written');
+    });
+  }
+}
 
 // e2e.conf.js
 exports.config = {
@@ -36,6 +49,28 @@ exports.config = {
   onPrepare: function() {
     /* global angular: false, browser: false, jasmine: false */
     'use strict';
+    
+    var jasmineEnv = jasmine.getEnv();
+     waitPlugin.setOnComplete(report);
+     browser.driver.manage().window().maximize();
+     browser.get('${testPortalAddress}');
+ 
+     jasmineEnv.addReporter(new function () {
+       this.specDone = function (spec) {
+         if (spec.status !== 'failed') {
+           var name = spec.fullName.replace(/ /g, '_');
+           var reportfile = 'coverage/integration/json/' + name;
+           reporter = new istanbul.Reporter(undefined, reportfile);
+           var promise = browser.driver.executeScript('return __coverage__;')
+                   .then(function (coverageResults) {
+                     collector.add(coverageResults);
+                   });
+           waitPlugin.waitList.push(promise);
+         }
+       };
+     });
+    
+    
     // Disable animations
     var disableNgAnimate = function() {
       angular.module('disableNgAnimate', []).run(['$animate', function($animate) {
@@ -68,6 +103,8 @@ exports.config = {
         });
     };
     
+    
+
     browser.addMockModule('disableNgAnimate', disableNgAnimate);
     browser.addMockModule('disableCssAnimate', disableCssAnimate);
   },

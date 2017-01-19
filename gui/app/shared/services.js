@@ -201,9 +201,10 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
   
     var args = [];
     if (typeof arguments === 'object') {
-      for(let i = 0; i < arguments.length; i++ ) {
-        let arg = arguments[i];
-        let exception = {};
+      // FIXME: these should probably all be a "let" instead of "var" (ES6)
+      for(var i = 0; i < arguments.length; i++) {
+        var arg = arguments[i];
+        var exception = {};
         exception.message = arg.message || arg;
         exception.stack = arg.stack;
         args.push(JSON.stringify(exception));
