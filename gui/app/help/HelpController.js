@@ -11,6 +11,8 @@ angular
  
 .controller('HelpController', [ '$scope', '$timeout', 'NdsLabsApi', 'ProductName', 'SupportEmail',
     function($scope, $timeout, NdsLabsApi, ProductName, SupportEmail) {
+  "use strict";
+
   $scope.types = [
     { label: "Request Help", value: "help", placeholder: "Describe a specific scenario that is causing problems or preventing you from working in " + ProductName + "..." },
     { label: "Make a Wish", value: "wish", placeholder: "Describe a change or new feature you would like to see in " + ProductName + "..." },
@@ -29,7 +31,7 @@ angular
         "type": $scope.types[0].value, 
         "message": ""
     };
-  })();
+  })(); // jshint ignore:line
   
   $scope.$watch('request.type', function(newValue, oldValue) {
     if (newValue === 'help') {
@@ -55,13 +57,13 @@ angular
     $scope.status = "sending";
     return NdsLabsApi.postSupport({ support: $scope.request }).then(function(data) {
       $scope.resetForm();
-      $scope.forms['supportForm'].messageField.$pristine = true;
+      $scope.forms.supportForm.messageField.$pristine = true;
       $scope.status = "sent";
       $timeout(function() {
         $scope.status = 'unsent';
-      }, 5000)
+      }, 5000);
     }, function() {
       $scope.status = "error";
     });
   };
-}])
+}]);

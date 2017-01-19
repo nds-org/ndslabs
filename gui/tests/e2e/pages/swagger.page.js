@@ -1,7 +1,5 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
-'use strict';
-
 module.exports = {};
 
 // Load other modules
@@ -19,6 +17,8 @@ var PAGE_TITLE = 'Swagger UI';
 var PAGE_ROUTE = TEST_HOSTNAME + '/swagger';
 
 var SwaggerUiPage = function() {
+  "use strict";
+
   /**
    * Insert public Getters here for page elements
    */
@@ -26,6 +26,8 @@ var SwaggerUiPage = function() {
 
 // Naviagte to Swagger UI view
 SwaggerUiPage.prototype.get = function() {
+  "use strict";
+
   var landingPage = new LandingPage();
   var navbar = new Navbar();
   landingPage.get();
@@ -38,6 +40,8 @@ SwaggerUiPage.prototype.get = function() {
 
 // Ensure that we are on the correct page
 SwaggerUiPage.prototype.verify = function() { 
+  "use strict";
+
   expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };

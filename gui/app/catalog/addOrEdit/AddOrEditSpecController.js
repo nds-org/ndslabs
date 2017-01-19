@@ -3,10 +3,12 @@
 angular
 .module('ndslabs')
 .filter('invertSpecList', [ 'Specs', '_', function(Specs, _) {
+  "use strict";   
+  
   return function(input, myKey) {
     return _.filter(Specs.all, function(spec) {
-      return !_.find(input, [ 'key', spec.key ])
-        && !_.find(input, [ 'key', myKey ]);
+      return !_.find(input, [ 'key', spec.key ]) &&
+             !_.find(input, [ 'key', myKey ]);
     });
   };
 }])
@@ -18,6 +20,7 @@ angular
  */
 .controller('AddOrEditSpecController', [ '$scope', '$log', '$location', '$routeParams', '_', 'NdsLabsApi', 'Specs', 'Spec', 'Vocabulary',  'Project', 'AuthInfo', 'LandingRoute', 'ProductName',
     function($scope, $log, $location, $routeParams, _, NdsLabsApi, Specs, Spec, Vocabulary, Project, AuthInfo, LandingRoute, ProductName) {
+  "use strict";   
   
   if (!AuthInfo.get().token) {
     $location.path(LandingRoute);
@@ -32,7 +35,7 @@ angular
   $scope.newRepoType = '';
   $scope.showInUi = false;
   
-  $scope.develEnv = ''
+  $scope.develEnv = '';
   $scope.newCfgType = 'Explicit';
   
   // Update view when our spec list reloads

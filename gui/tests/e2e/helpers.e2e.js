@@ -1,7 +1,5 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
-'use strict';
-
 var fs = require('fs');
 
 var EC = protractor.ExpectedConditions;
@@ -14,6 +12,8 @@ module.exports = {};
 // Debug Only: Sleep for the given number of milliseconds.
 // WARNING: This should not be used in production
 module.exports.sleep = function(ms) {
+  "use strict";
+
   var startTime = new Date().getTime();
   while(new Date().getTime() < startTime + ms) { /* noop */ }
 };
@@ -36,6 +36,8 @@ catalogPage.cards.filter(function (card) {
 
 */
 module.exports.selectByModel = function(src, binding, matcher, predicate) {
+  "use strict";
+
   //console.log("Searching for " + binding.toString() + " with matcher " + matcher.toString() +  " in " + src.toString());
   return src.filter(function (card) {
     return card.evaluate(binding).then(matcher);
@@ -62,6 +64,8 @@ module.exports.selectByModel = function(src, binding, matcher, predicate) {
 
 // Save a screenshot of the browser's current state to the given file (helpful for failing tests)
 module.exports.saveScreenshotToFile = function(filename) {
+  "use strict";
+
   browser.takeScreenshot().then(function (png) {
     var stream = fs.createWriteStream(filename);
     stream.write(new Buffer(png, 'base64'));
@@ -70,23 +74,31 @@ module.exports.saveScreenshotToFile = function(filename) {
 };
 
 module.exports.waitForThenClick = function(ele, timeout) {
+  "use strict";
+
   browser.wait(EC.elementToBeClickable(ele), timeout || 5000);
   ele.click();
 };
 
 // Scroll to the given x,y coordinates, then execute the predicate function
 module.exports.scrollToAndThen = function(x, y, predicate) {
+  "use strict";
+
   return browser.executeScript('window.scrollTo(' + x.toString() + ',' + y.toString() + ');').then(predicate);
 };
 
 // Scroll to the given WebElement, then execute the predicate function
 module.exports.scrollIntoView = function(ele) {
+  "use strict";
+
   //return browser.actions().mouseMove(ele).perform();
   //return browser.executeScript('arguments[0].scrollIntoView()', ele.getWebElement());
   return browser.executeScript("arguments[0].scrollIntoView(false);", ele.getWebElement());
 };
 
 module.exports.hasClass = function (ele, clazz) {
+  "use strict";
+
   return ele.getAttribute('class').then(function (classes) {
       return classes.split(' ').indexOf(clazz) !== -1;
   });
@@ -94,6 +106,8 @@ module.exports.hasClass = function (ele, clazz) {
 
 // Ensure that the desired element exists and is visible, then return it
 module.exports.expectElement = function(selector) {
+  "use strict";
+
   var ele = element(selector);
   if (ele.isPresent) { expect(ele.isPresent()).toBe(true); }
   if (ele.isDisplayed) { expect(ele.isDisplayed()).toBe(true); }
@@ -104,6 +118,8 @@ module.exports.expectElement = function(selector) {
 // Check that a new tab is open and close the tab
 // If second param is false, the tab is left open
 module.exports.expectNewTabOpen = function(expectedUrl, leaveOpen) {
+  "use strict";
+
   // Let AngularJS finish working first
   browser.waitForAngular();
   
@@ -141,11 +157,15 @@ module.exports.expectNewTabOpen = function(expectedUrl, leaveOpen) {
 };
 
 module.exports.closeTab = function(originalHandle) {
+  "use strict";
+
   browser.driver.close();
   browser.driver.switchTo().window(originalHandle);
 };
 
 module.exports.selectDropdownbyNum = function (ele, index) {
+  "use strict";
+
   if (index || index === 0) {
     var options = ele.all(by.tagName('option'))   
       .then(function(options){
@@ -156,6 +176,8 @@ module.exports.selectDropdownbyNum = function (ele, index) {
 
 // Misc shared setup to run before ALL test cases
 module.exports.beforeAll = function() {  
+  "use strict";
+
   // Clear all cookies - this will ensure we are logged out at the start of our tests
   // TODO: I haven't had any fail for this reason, but it seems like an edge case we should watch for
   // browser.driver.manage().deleteAllCookies();
@@ -173,12 +195,18 @@ module.exports.beforeAll = function() {
 };
 
 // Misc shared setup to run before EACH test case
-module.exports.beforeEach = function() {  };
+module.exports.beforeEach = function() {
+  "use strict";
+};
 
 // Misc shared setup to run after EACH test case
 module.exports.afterEach = function() {
+  "use strict";
+
   browser.ignoreSynchronization = false;
 };
 
 // Misc shared setup to run after ALL test cases
-module.exports.afterAll = function() {  };
+module.exports.afterAll = function() { 
+  "use strict";
+};

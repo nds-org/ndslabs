@@ -152,6 +152,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-protractor-runner');
 
   // Adjust task execution order here
-  grunt.registerTask('default', [ 'jshint', 'uglify', 'karma', 'protractor' ]);
+  grunt.registerTask('default', [ 'jshint', 'cssmin', 'uglify', 'karma', 'protractor' ]);
 
 };

@@ -1,7 +1,5 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
-'use strict';
-
 // Load other modules
 var helpers = require('../helpers.e2e.js');
 var shared = require('./shared.page.js');
@@ -19,6 +17,8 @@ var PAGE_ROUTE = /https\:\/\/.+\/\#\/home\/.+\/(add|edit)\/?.*/;
 var EC = protractor.ExpectedConditions;
 
 var AddServicePage = function() {
+  "use strict";
+
   this.environmentTab = element(by.id('environmentTab'));
   this.configs = element.all(by.repeater("cfg in configs | orderBy:['spec.canOverride', 'spec.isPassword'] track by cfg.name"));
   this.cfgBadge = element(by.id('cfgBadge'));
@@ -58,6 +58,8 @@ var AddServicePage = function() {
 
 // FIXME: Feature envy
 AddServicePage.prototype.getAsEdit = function(application, serviceId) {
+  "use strict";
+
   var dashboardPage = new DashboardPage();
   var self = this;
   
@@ -76,6 +78,8 @@ AddServicePage.prototype.getAsEdit = function(application, serviceId) {
 
 // FIXME: Feature envy
 AddServicePage.prototype.getAsAdd = function(application, serviceToAdd) {
+  "use strict";
+
   var dashboardPage = new DashboardPage();
   var self = this;
   
@@ -94,6 +98,8 @@ AddServicePage.prototype.getAsAdd = function(application, serviceToAdd) {
 
 // Navigate to the Add Service view
 AddServicePage.prototype.get = function(stackId, serviceId, loggedIn) {
+  "use strict";
+
   var dashboardPage = new DashboardPage();
   var self = this;
   
@@ -114,11 +120,15 @@ AddServicePage.prototype.get = function(stackId, serviceId, loggedIn) {
 
 // Ensure that we are on the correct page
 AddServicePage.prototype.verify = function() {
+  "use strict";
+
   expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toMatch(PAGE_TITLE);
 };
 
 AddServicePage.prototype.addConfig = function(name, value) {
+  "use strict";
+
   // Enter a variable name
   this.newCfgNameInput.sendKeys(name);
   
@@ -130,6 +140,8 @@ AddServicePage.prototype.addConfig = function(name, value) {
 };
 
 AddServicePage.prototype.addVolume = function(from, to) {
+  "use strict";
+
   // Enter a mount source
   this.newVolumeFrom.sendKeys(from);
   

@@ -1,5 +1,4 @@
 /* global angular:false */
-'use strict';
 
 /**
  * Define our ndslabs module here. All other files will 
@@ -147,6 +146,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  */ 
 .factory('NdsLabsApi', [ 'ApiHost', 'ApiPort', 'ApiPath', 'ApiSecure', 'WebsocketPath', 'ApiUri', 'ApiServer', 
     function(ApiHost, ApiPort, ApiPath, ApiSecure, WebsocketPath, ApiUri, ApiServer) {
+  "use strict";
+
   // TODO: Investigate options / caching
   // XXX: Caching may not be possible due to the unique token sent with every request
   
@@ -180,6 +181,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  * can easily inject it into the .config() block below
  */ 
 .provider('AuthInfo', function() {
+  "use strict";
+
   this.authInfo = {
     namespace: '',
     password: '',
@@ -196,7 +199,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
         // We overwrite this stub function with "terminateSession" inside of the ".run()" handler below
         return true;
       }
-    }
+    };
   };
 })
 
@@ -205,6 +208,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  */
 .config([ '$provide', '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ConsoleRoute', 'AddServiceRoute', 'EditServiceRoute', 'AddSpecRoute', 'EditSpecRoute', 'VerifyAccountRoute', 'ResetPasswordRoute', 'SignUpRoute', 'ContactUsRoute', 'ProductName', 'LandingRoute', 'GaAccount', 'AnalyticsProvider', 
     function($provide, $routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, LoginRoute, AppStoreRoute, HomeRoute, ConsoleRoute, AddServiceRoute, EditServiceRoute, AddSpecRoute, EditSpecRoute, VerifyAccountRoute, ResetPasswordRoute, SignUpRoute, ContactUsRoute, ProductName, LandingRoute, GaAccount, AnalyticsProvider) {
+  "use strict";
+
   // Squelch debug-level log messages
   $logProvider.debugEnabled(DEBUG);
   
@@ -270,7 +275,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
           // If this was *not* an attempt to authenticate
           if (!_.includes(config.url, '/authenticate')) {
             // We need to attach our token to this request
-            config.headers['Authorization'] = 'Bearer ' + $cookies.get('token');
+            config.headers.Authorization = 'Bearer ' + $cookies.get('token');
           }
         }
         return config;
@@ -285,8 +290,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
         // If this is a response from our API server
         if (_.includes(response.config.url, ApiUri.api)) {
           // If this was in response to an /authenticate or /refresh_token request
-          if ((_.includes(response.config.url, '/authenticate') && response.config.method === 'POST')
-              || (_.includes(response.config.url, '/refresh_token') && response.config.method === 'GET')) {
+          if ((_.includes(response.config.url, '/authenticate') && response.config.method === 'POST') ||
+              (_.includes(response.config.url, '/refresh_token') && response.config.method === 'GET')) {
             // This response should contain a new token, so save it as a cookie
             $cookies.put('token', response.data.token);
           }
@@ -423,7 +428,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  */
 .run([ '$rootScope', '$window', '$location', '$routeParams', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData', 'Loading', 'LandingRoute', 'VerifyAccountRoute', 'Analytics',
     function($rootScope, $window, $location, $routeParams, $log, $interval, $cookies, $uibModalStack, Stacks, _, authInfo, LoginRoute, AppStoreRoute, HomeRoute, NdsLabsApi, AutoRefresh, ServerData, Loading, LandingRoute, VerifyAccountRoute, Analytics) {
-  
+  "use strict";
+
   // Make _ bindable in partial views
   // TODO: Investigate performance concerns here...
   $rootScope._ = window._;
@@ -500,11 +506,11 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   // When user changes routes, check that they are still authed
   $rootScope.$on( "$routeChangeStart", function(event, next, current) {
     // Skip token checking for the "Verify Account" View
-    if (next.$$route.templateUrl === 'app/login/verify/verify.html'
-        || next.$$route.templateUrl === 'app/landing/landing.html' 
-        || next.$$route.templateUrl === 'app/help/help.html' 
-        || next.$$route.templateUrl === 'app/login/reset/reset.html'
-        || next.$$route.templateUrl === 'app/login/login.html') {
+    if (next.$$route.templateUrl === 'app/login/verify/verify.html' ||
+        next.$$route.templateUrl === 'app/landing/landing.html' ||
+        next.$$route.templateUrl === 'app/help/help.html' ||
+        next.$$route.templateUrl === 'app/login/reset/reset.html' ||
+        next.$$route.templateUrl === 'app/login/login.html') {
       return;
     }
   

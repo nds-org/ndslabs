@@ -10,7 +10,8 @@ angular
  */
 .controller('SignUpController', [ '$scope', '$log', '$location', '_', 'NdsLabsApi', 'Project', 'ProductName', 'AuthInfo', 'HomeRoute', 'HelpLinks',
     function($scope, $log, $location, _, NdsLabsApi, Project, ProductName, AuthInfo, HomeRoute, HelpLinks) {
-      
+  "use strict";
+
   if (AuthInfo.get().token) {
     $location.path(HomeRoute);
   }   

@@ -1,7 +1,5 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
 
-'use strict';
-
 // Import shared PageObjects
 var helpers = require("./helpers.e2e.js");
 var shared = require("./pages/shared.page.js");
@@ -19,12 +17,14 @@ var OPTION_REPORT_A_BUG = 2;
 var OPTION_GENERAL_COMMENT = 3;
 
 var generateTestMessage = function(type) { 
-  return 'This is a test of the "' + (type || 'Request Help') + '" feedback submission system.'
-      + ' No help is being requested. Please go about your normal business. I repeat, this is only a test.'; 
+  return 'This is a test of the "' + (type || 'Request Help') + '" feedback submission system.' +
+         ' No help is being requested. Please go about your normal business. I repeat, this is only a test.'; 
 };
 
 // help.e2e.js
 describe('Labs Workbench Contact Us View', function() {
+  "use strict";
+
   var navbar = new Navbar();
   var contactUsPage = new ContactUsPage();
   var dashboardPage = new DashboardPage();
