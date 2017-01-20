@@ -14,6 +14,7 @@ module.exports = function(grunt) {
         ignores: ['node_modules/**/*', 'bower_components/**/*', 'tests/reports/**/*'],
         reporterOutput: "",
         force: true,
+        esversion: 6,
         globals: {
           //jQuery: true,     // jQuery
           window: true,     // JavaScript
@@ -78,34 +79,17 @@ module.exports = function(grunt) {
       }
     },
     
-
-    // instrument source code to allow us to measure coverage
-    //instrument: {
-    //    files: 'src/**/*.js',
-    /*    options: {
-            lazy: true,
-            basePath: "instrumented"
-        }
-    },*/
-    
-    // configure grunt to run a proxy server to serve the instrumented code
-    /*connect: {
+    // configure grunt to start the ExpressJS server
+    express: {
+      options: {
+        script: 'server.js'
+      },
+      dev: {
         options: {
-            port: 3000,
-            hostname: 'https://www.mldev.ndslabs.org'
-        },
-        runtime: {
-            options: {
-                middleware: function (connect) {
-                    return [
-                        lrSnippet,
-                        mountFolder(connect, 'instrumented'),
-                        //mountFolder(connect, '.......')
-                    ];
-                }
-            }
+          script: 'server.js'
         }
-    },*/
+      }
+    },
     
     // configure grunt to run karma unit tests + coverage
 	  karma: {
@@ -148,10 +132,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-express-server');
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-protractor-runner');
 
   // Adjust task execution order here
-  grunt.registerTask('default', [ 'jshint', 'cssmin', 'uglify', 'karma', 'protractor' ]);
+  grunt.registerTask('default', [ 'jshint', 'cssmin', 'uglify', 'express', /*'karma', 'protractor'*/ ]);
 
 };
