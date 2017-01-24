@@ -28,6 +28,7 @@ app.use('/bower_components', express.static('bower_components'));
 // Our AngularJS app
 app.use('/app', express.static('app'));
 app.use('/asset', express.static('asset'));
+app.use('/dist', express.static('dist'));
 
 // POST /logs => Echo logs to server console
 app.post('/logs', function (req, res) {
@@ -65,7 +66,7 @@ app.post('/logs', function (req, res) {
 // Configure catch-all route to serve up our AngularJS app
 // NOTE: Wildcard needs to be done last, after all other endpoints
 app.get('*',function(req,res){
-  res.sendFile('/index.html', { root: basedir || __dirname });
+  res.sendFile('index.html', { root: basedir || __dirname });
 });
 
 // Start server on port 3000

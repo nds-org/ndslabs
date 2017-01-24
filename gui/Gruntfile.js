@@ -82,7 +82,8 @@ module.exports = function(grunt) {
     // configure grunt to start the ExpressJS server
     express: {
       options: {
-        script: 'server.js'
+        script: 'server.js',
+        background: false
       },
       dev: {
         options: {
@@ -128,7 +129,7 @@ module.exports = function(grunt) {
     },*/
   });
 
-  //grunt.loadNpmTasks('grunt-auto-install');
+  grunt.loadNpmTasks('grunt-auto-install');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
   grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -137,6 +138,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-protractor-runner');
 
   // Adjust task execution order here
-  grunt.registerTask('default', [ 'jshint', 'cssmin', 'uglify', 'express', /*'karma', 'protractor'*/ ]);
+  grunt.registerTask('start', [ 'express' ]);
+  grunt.registerTask('lint', [ 'jshint' ]);
+  grunt.registerTask('optimize', [ 'cssmin', 'uglify' ]);
+  grunt.registerTask('default', [ 'lint', 'optimize', 'start' ]);
 
+  // Add an additional task for running unit / e2e tests
+  grunt.registerTask('test', [ 'karma', 'protractor' ]);
 };
