@@ -26,11 +26,12 @@ angular
   $scope.status = "unsent";
   
   ($scope.resetForm = function() {
-    return $scope.request = {
+    var request = $scope.request = {
         "anonymous": false, 
         "type": $scope.types[0].value, 
         "message": ""
     };
+    return request;
   })(); // jshint ignore:line
   
   $scope.$watch('request.type', function(newValue, oldValue) {

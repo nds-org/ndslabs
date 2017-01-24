@@ -92,7 +92,8 @@ describe('Labs Workbench Add Optional Application Service View', function() {
     // Retrieve added service key from the URL
     browser.getCurrentUrl().then(function(url) {
       var fragments = url.split('/');
-      return serviceKey = fragments[fragments.length - 1];
+      serviceKey = fragments[fragments.length - 1];
+      return serviceKey;
     });
   });
   

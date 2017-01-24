@@ -322,7 +322,9 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
         "accountId": projectId 
       })).then(function(data, xhr) {
         $log.debug("successfully grabbed from /projects/" + projectId + "!");
-        return project.project = data;
+        project.project = data;
+        
+        return data;
       }, function(headers) {
         $log.debug("Error pulling account information: " + projectId);
       });
@@ -424,7 +426,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       return NdsLabsApi.getStacks().then(function(data, xhr) {
         $log.debug("successfully grabbed from /projects/" + projectId + "/stacks!");
         
-        return stacks.all = data || [];
+        stacks.all = data || [];
+        return stacks.all;
       }, function(headers) {
         $log.error("error grabbing from /projects/" + projectId + "/stacks!");
       });
@@ -452,7 +455,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
     populate: function(name) {
       return NdsLabsApi.getVocabularyByVocabName({ vocabName: name }).then(function(data, xhr) {
         $log.debug("successfully grabbed vocab list for " + name + "!");
-        return vocab.all = data || [];
+        vocab.all = data || [];
+        return vocab.all;
       }, function(response) {
         $log.error("error grabbing vocab list!");
       });

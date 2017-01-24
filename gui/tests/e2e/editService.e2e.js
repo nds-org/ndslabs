@@ -39,6 +39,24 @@ describe('Labs Workbench Edit Application Service View', function() {
   
   var serviceKey;
   
+  // FIXME: Make this less awful.. 
+  // XXX: is this even necessary? I feel like the click handler does these things for us
+  var clickBtn = function(btn) {
+    btn.isPresent().then(function(isPresent) {
+    if (isPresent) {
+      btn.isDisplayed().then(function(isDisplayed) {
+        if (isDisplayed) {
+          btn.isEnabled().then(function(isEnabled) {
+            if (isEnabled) {
+              btn.click();
+            }
+          });
+        }
+      });
+    }
+  });
+  };
+  
   // FIXME: Test browser should scroll to card
   // FIXME: Move this to helpers
   var expectService = function(stackId, serviceKey) {
@@ -96,7 +114,8 @@ describe('Labs Workbench Edit Application Service View', function() {
     // Retrieve added service key from the URL
     browser.getCurrentUrl().then(function(url) {
       var fragments = url.split('/');
-      return serviceKey = fragments[fragments.length - 1];
+      serviceKey = fragments[fragments.length - 1];
+      return serviceKey;
     });
   });
   
@@ -204,19 +223,7 @@ describe('Labs Workbench Edit Application Service View', function() {
             //expect(editServicePage.cfgRemoveBtn(cfg).isPresent()).toBe(true);
             //expect(editServicePage.cfgRemoveBtn(cfg).isDisplayed()).toBe(true);
             //expect(editServicePage.cfgRemoveBtn(cfg).isEnabled()).toBe(true);
-            removeBtn.isPresent().then(function(isPresent) {
-              if (isPresent) {
-                removeBtn.isDisplayed().then(function(isDisplayed) {
-                  if (isDisplayed) {
-                    removeBtn.isEnabled().then(function(isEnabled) {
-                      if (isEnabled) {
-                        removeBtn.click();
-                      }
-                    });
-                  }
-                });
-              }
-            });
+            clickBtn(removeBtn);
           }
         });
       });
@@ -270,19 +277,7 @@ describe('Labs Workbench Edit Application Service View', function() {
             //expect(editServicePage.volumeRemoveBtn(vol).isDisplayed()).toBe(true);
             //expect(editServicePage.volumeRemoveBtn(vol).isEnabled()).toBe(true);
             var removeBtn = editServicePage.volumeRemoveBtn(vol);
-            removeBtn.isPresent().then(function(isPresent) {
-              if (isPresent) {
-                removeBtn.isDisplayed().then(function(isDisplayed) {
-                  if (isDisplayed) {
-                    removeBtn.isEnabled().then(function(isEnabled) {
-                      if (isEnabled) {
-                        removeBtn.click();
-                      }
-                    });
-                  }
-                });
-              }
-            });
+            clickBtn(removeBtn);
           }
         });
       });
