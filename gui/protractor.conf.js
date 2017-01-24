@@ -1,8 +1,14 @@
 var config = require("./protractor.auth.json");
+
+/*
+TODO: Report coverage after test runs
+
 var istanbul = require('istanbul');
 var collector = new istanbul.Collector();
 var reporter;
 var waitPlugin = require('./waitPlugin');
+
+*/
 
 function report() {
   if (reporter) {
@@ -17,6 +23,8 @@ function report() {
 exports.config = {
   framework: 'jasmine',
   seleniumAddress: 'http://localhost:4444/wd/hub',
+//  seleniumServerJar: '/usr/local/lib/node_modules/protractor/node_modules/webdriver-manager/selenium/selenium-server-standalone-2.53.1.jar',
+//  chromeDriver: '/usr/local/lib/node_modules/protractor/node_modules/webdriver-manager/selenium/chromedriver_2.24',
   chromeOnly: true,
   params: config,
   jasmineNodeOpts: { 
@@ -50,7 +58,7 @@ exports.config = {
     /* global angular: false, browser: false, jasmine: false */
     'use strict';
     
-    var jasmineEnv = jasmine.getEnv();
+    /*var jasmineEnv = jasmine.getEnv();
      waitPlugin.setOnComplete(report);
      browser.driver.manage().window().maximize();
      browser.get(config.hostname);
@@ -68,7 +76,7 @@ exports.config = {
            waitPlugin.waitList.push(promise);
          }
        };
-     });
+     });*/
     
     
     // Disable animations

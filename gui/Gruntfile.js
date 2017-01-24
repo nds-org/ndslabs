@@ -65,15 +65,12 @@ module.exports = function(grunt) {
       },
       target: {
           src: [
+            'app/shared/services.js',
+            'app/shared/directives.js',
+            'app/shared/filters.js',
+            'app/shared/api.js',
             'app/app.js',
-            'app/api/SwaggerController.js',
-            'app/catalog/**/*.js',
-            'app/dashboard/**/*.js',
-            'app/help/**/*.js',
-            'app/landing/**/*.js',
-            'app/login/*.js',
-            'app/shared/*.js',
-            'app/shared/**/*.js'
+            'app/**/*Controller.js',
           ],
           dest: 'dist/main.min.js'
       }
@@ -83,28 +80,34 @@ module.exports = function(grunt) {
     express: {
       options: {
         script: 'server.js',
-        background: false
       },
-      dev: {
+      prod: {
         options: {
+          background: false,
           script: 'server.js'
         }
-      }
+      },
+      test: {
+        options: {
+          background: true,
+          script: 'server.js'
+       }
+     }
     },
     
     // configure grunt to run karma unit tests + coverage
-	  karma: {
+    karma: {
       unit: {
         configFile: 'karma.conf.js',
         singleRun: true,        // Stop after running once?
         autoWatch: false,       // Auto-run tests when files change on disk?
         background: false,      // Prevent this task from blocking subsequent tasks?
       }
-	  },
+    },
 	  
-	  // configure grunt to run protractor e2e tests + coverage
-	  // protractor_coverage: {
-	  protractor: {
+    // configure grunt to run protractor e2e tests (TODO: coverage)
+    // protractor_coverage: {
+    protractor: {
       options: {
         configFile: "node_modules/protractor/example/conf.js", // Default config file 
         keepAlive: false, // If false, the grunt process stops when the test fails. 
@@ -112,14 +115,14 @@ module.exports = function(grunt) {
       },
       ndslabs: {   // Grunt requires at least one target to run so you can simply put 'all: {}' here too. 
         options: {
-          configFile: "e2e.conf.js", // Target-specific config file 
+          configFile: "protractor.conf.js", // Target-specific config file 
           args: {} // Target-specific arguments 
         }
       },
-	  },
+    },
 	  
-	  // configure grunt to generate a coverage report from istanbul
-	  /*makeReport: {
+    // configure grunt to generate a coverage report from istanbul
+    /*makeReport: {
       src: 'path/to/coverage/dir/*.json',
       options: {
           type: 'lcov',
@@ -138,11 +141,14 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-protractor-runner');
 
   // Adjust task execution order here
-  grunt.registerTask('start', [ 'express' ]);
+  grunt.registerTask('start', [ 'express:prod' ]);
   grunt.registerTask('lint', [ 'jshint' ]);
   grunt.registerTask('optimize', [ 'cssmin', 'uglify' ]);
-  grunt.registerTask('default', [ 'lint', 'optimize', 'start' ]);
+
+  grunt.registerTask('ship', [ 'lint', 'optimize' ]);
+
+  grunt.registerTask('default', [ 'express:prod' ]);
 
   // Add an additional task for running unit / e2e tests
-  grunt.registerTask('test', [ 'karma', 'protractor' ]);
+  grunt.registerTask('test', [ 'express:test', /*'karma',*/ 'protractor' ]);
 };
