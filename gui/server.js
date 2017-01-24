@@ -65,7 +65,7 @@ app.post('/logs', function (req, res) {
 // Configure catch-all route to serve up our AngularJS app
 // NOTE: Wildcard needs to be done last, after all other endpoints
 app.get('*',function(req,res){
-  res.sendFile(basedir + '/index.html');
+  res.sendFile('/index.html', { root: basedir || __dirname });
 });
 
 // Start server on port 3000
