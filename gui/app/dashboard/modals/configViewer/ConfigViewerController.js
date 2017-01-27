@@ -10,6 +10,8 @@ angular
  */
 .controller('ConfigViewerCtrl', [ '$scope', '$log', '$uibModalInstance', '_', 'ApiHost', 'NdsLabsApi', 'Specs', 'service',
     function($scope, $log, $uibModalInstance, _, ApiHost, NdsLabsApi, Specs, service) {
+  "use strict";
+
   $scope.service = service;
   $scope.spec = _.find(Specs.all, [ 'key', service.service ]);
   $scope.apiHost = ApiHost;

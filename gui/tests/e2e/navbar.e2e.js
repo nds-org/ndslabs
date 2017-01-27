@@ -1,7 +1,5 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
 
-'use strict';
-
 // Import shared PageObjects
 var helpers = require("./helpers.e2e.js");
 var shared = require("./pages/shared.page.js");
@@ -17,8 +15,12 @@ var SwaggerUiPage = require("./pages/swagger.page.js");
 var DashboardPage = require("./pages/dashboard.page.js");
 var CatalogPage = require("./pages/catalog.page.js");
 
+var TIMEOUT_EXPECT_NEW_TAB = 30000;
+
 // landing.e2e.js
 describe('Labs Workbench Navbar', function() {
+  "use strict";
+
   var navbar = new Navbar();
   var landingPage = new LandingPage();
   var loginPage = new LoginPage();
@@ -44,35 +46,45 @@ describe('Labs Workbench Navbar', function() {
     landingPage.verify();
   });
   
-  it('should link to the Feature Overview wiki page', function() {
+  it('should link to the Feature Overview wiki page', function(done) {
     navbar.expandHelpDropdown();
     navbar.clickHelpLink(0);
-    helpers.expectNewTabOpen(shared.config.FEATURE_OVERVIEW_LINK);
-  });
+    helpers.expectNewTabOpen(shared.config.FEATURE_OVERVIEW_LINK).then(function() {
+      done();
+    });
+  }, TIMEOUT_EXPECT_NEW_TAB);
   
-  it('should link to the F.A.Q. wiki page', function() {
+  it('should link to the F.A.Q. wiki page', function(done) {
     navbar.expandHelpDropdown();
     navbar.clickHelpLink(1);
-    helpers.expectNewTabOpen(shared.config.FAQ_LINK);
-  });
+    helpers.expectNewTabOpen(shared.config.FAQ_LINK).then(function() {
+      done();
+    });
+  }, TIMEOUT_EXPECT_NEW_TAB);
   
-  it('should link to the User\'s Guide wiki page', function() {
+  it('should link to the User\'s Guide wiki page', function(done) {
     navbar.expandHelpDropdown();
     navbar.clickHelpLink(2);
-    helpers.expectNewTabOpen(shared.config.USER_GUIDE_LINK);
-  });
+    helpers.expectNewTabOpen(shared.config.USER_GUIDE_LINK).then(function() {
+      done();
+    });
+  }, TIMEOUT_EXPECT_NEW_TAB);
   
-  it('should link to the Developer\'s Guide wiki page', function() {
+  it('should link to the Developer\'s Guide wiki page', function(done) {
     navbar.expandHelpDropdown();
     navbar.clickHelpLink(3);
-    helpers.expectNewTabOpen(shared.config.DEV_GUIDE_LINK);
-  });
+    helpers.expectNewTabOpen(shared.config.DEV_GUIDE_LINK).then(function() {
+      done();
+    });
+  }, TIMEOUT_EXPECT_NEW_TAB);
   
-  it('should link to the Acceptable Use Policy wiki page', function() {
+  it('should link to the Acceptable Use Policy wiki page', function(done) {
     navbar.expandHelpDropdown();
     navbar.clickHelpLink(4);
-    helpers.expectNewTabOpen(shared.config.USE_POLICY_LINK);
-  });
+    helpers.expectNewTabOpen(shared.config.USE_POLICY_LINK).then(function() {
+      done();
+    });
+  }, TIMEOUT_EXPECT_NEW_TAB);
   
   it('should link to the api reference view', function() {
     navbar.expandHelpDropdown();
@@ -113,35 +125,45 @@ describe('Labs Workbench Navbar', function() {
       landingPage.verify();
     });
   
-    it('should link to the Feature Overview wiki page', function() {
+    it('should link to the Feature Overview wiki page', function(done) {
       navbar.expandHelpDropdown();
       navbar.clickHelpLink(0);
-      helpers.expectNewTabOpen(shared.config.FEATURE_OVERVIEW_LINK);
-    });
+      helpers.expectNewTabOpen(shared.config.FEATURE_OVERVIEW_LINK).then(function() {
+        done();
+      });
+    }, TIMEOUT_EXPECT_NEW_TAB);
     
-    it('should link to the F.A.Q. wiki page', function() {
+    it('should link to the F.A.Q. wiki page', function(done) {
       navbar.expandHelpDropdown();
       navbar.clickHelpLink(1);
-      helpers.expectNewTabOpen(shared.config.FAQ_LINK);
-    });
+      helpers.expectNewTabOpen(shared.config.FAQ_LINK).then(function() {
+        done();
+      });
+    }, TIMEOUT_EXPECT_NEW_TAB);
     
-    it('should link to the User\'s Guide wiki page', function() {
+    it('should link to the User\'s Guide wiki page', function(done) {
       navbar.expandHelpDropdown();
       navbar.clickHelpLink(2);
-      helpers.expectNewTabOpen(shared.config.USER_GUIDE_LINK);
-    });
+      helpers.expectNewTabOpen(shared.config.USER_GUIDE_LINK).then(function() {
+        done();
+      });
+    }, TIMEOUT_EXPECT_NEW_TAB);
     
-    it('should link to the Developer\'s Guide wiki page', function() {
+    it('should link to the Developer\'s Guide wiki page', function(done) {
       navbar.expandHelpDropdown();
       navbar.clickHelpLink(3);
-      helpers.expectNewTabOpen(shared.config.DEV_GUIDE_LINK);
-    });
+      helpers.expectNewTabOpen(shared.config.DEV_GUIDE_LINK).then(function() {
+        done();
+      });
+    }, TIMEOUT_EXPECT_NEW_TAB);
     
-    it('should link to the Acceptable Use Policy wiki page', function() {
+    it('should link to the Acceptable Use Policy wiki page', function(done) {
       navbar.expandHelpDropdown();
       navbar.clickHelpLink(4);
-      helpers.expectNewTabOpen(shared.config.USE_POLICY_LINK);
-    });
+      helpers.expectNewTabOpen(shared.config.USE_POLICY_LINK).then(function() {
+        done();
+      });
+    }, TIMEOUT_EXPECT_NEW_TAB);
     
     it('should link to the api reference view', function() {
       navbar.expandHelpDropdown();
@@ -166,10 +188,12 @@ describe('Labs Workbench Navbar', function() {
     });
     
     // FIXME: Figure out how to handle basic auth via protractor
-    /*it('should allow the user to launch the file manager and take them to it', function() {
+    /*it('should allow the user to launch the file manager and take them to it', function(done) {
       //navbar.clickFilesNav();
-      //helpers.expectNewTabOpen(/^https\:\/\/.*\-cloudcmd\.$/);
-    });*/
+      //helpers.expectNewTabOpen(/^https\:\/\/.*\-cloudcmd\.$/).then(function(done) {
+        done();
+      });
+    }, TIMEOUT_EXPECT_NEW_TAB);*/
     
     it('should link to the change password view', function() {
       navbar.expandAccountDropdown();

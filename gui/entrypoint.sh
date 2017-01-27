@@ -13,4 +13,4 @@
 /bin/sed -i -e "s#^\.constant('GaAccount', .*)#.constant('GaAccount', '${ANALYTICS_ACCOUNT}')#" "$BASEDIR/app/app.js"
 
 # Start our HTTP Server
-node server.js
+grunt

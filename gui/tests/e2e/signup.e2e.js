@@ -1,7 +1,5 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
 
-'use strict';
-
 // Import shared PageObjects
 var helpers = require("./helpers.e2e.js");
 var shared = require("./pages/shared.page.js");
@@ -25,6 +23,8 @@ var TEST_INVALID_PASSWORD_MISMATCH = shared.config.TEST_INVALID_PASSWORD_MISMATC
 
 // signUpPage.e2e.js
 describe('Labs Workbench Sign Up View', function() {
+  "use strict";
+
   var landingPage = new LandingPage();
   var signUpPage = new SignUpPage();
   

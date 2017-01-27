@@ -1,7 +1,5 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
-'use strict';
-
 module.exports = {};
 
 // Load other pages
@@ -12,6 +10,8 @@ var PAGE_TITLE = 'Sign In to Labs Workbench';
 var PAGE_ROUTE = /\/\#\/login/;
 
 var LoginPage = function() {
+  "use strict";
+
   this.loginBtn = element(by.id('loginBtn'));
   this.usernameInput = element(by.id('inputNamespace'));
   this.passwordInput = element(by.id('inputPassword'));
@@ -21,6 +21,8 @@ var LoginPage = function() {
 
 // Navigate to the Login view
 LoginPage.prototype.get = function() {
+  "use strict";
+
   var landingPage = new LandingPage();
   var navbar = new Navbar();
   
@@ -31,27 +33,39 @@ LoginPage.prototype.get = function() {
 
 // Ensure that we are on the login page
 LoginPage.prototype.verify = function() {
+  "use strict";
+
   expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 
 LoginPage.prototype.enterUsername = function(text) {
+  "use strict";
+
   this.usernameInput.sendKeys(text);
 };
   
 LoginPage.prototype.enterPassword = function(text) {
+  "use strict";
+
   this.passwordInput.sendKeys(text);
 };
 
 LoginPage.prototype.clickLogin = function() {
+  "use strict";
+
   this.loginBtn.click();
 };
   
 LoginPage.prototype.clickRequestAccessLink = function() {
+  "use strict";
+
   this.requestAccessLink.click();
 };
   
 LoginPage.prototype.clickForgotPasswordLink = function() {
+  "use strict";
+
   this.forgotPasswordLink.click();
 };
 

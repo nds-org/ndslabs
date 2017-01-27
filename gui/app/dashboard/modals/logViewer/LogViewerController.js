@@ -10,6 +10,8 @@ angular
  */
 .controller('LogViewerCtrl', [ '$scope', '$log', '$uibModalInstance', '$interval', '$location', '$anchorScroll', 'NdsLabsApi', 'service',
     function($scope, $log, $uibModalInstance, $interval, $location, $anchorScroll,  NdsLabsApi, service) {
+  "use strict";
+
   $scope.service = service;
   $scope.serviceLog = '';
   
@@ -36,7 +38,7 @@ angular
     }, function(headers) {
       $log.error('error grabbing logs for service ' + service.id);
     });
-  })();
+  })(); // jshint ignore:line
   
   var interval = $interval($scope.refreshLog, 2000);
 

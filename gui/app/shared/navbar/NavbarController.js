@@ -6,6 +6,8 @@ angular
  * A simple filter to select only left-aligned or right-aligned navbar links
  */
 .filter('navbar', function() {
+  "use strict";
+
   return function(input, pull) {
     var filtered = [];
     
@@ -28,6 +30,8 @@ angular
  */
 .controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ProductName', 'ProductUrl', 'HelpLinks', 'FileManager', 'AutoRefresh',
     function($scope, $location, LoginRoute, AppStoreRoute, HomeRoute, ProductName, ProductUrl, HelpLinks, FileManager, AutoRefresh) {
+  "use strict";
+
   $scope.$on('$routeChangeSuccess', function(event, current, previous){
     if (current.$$route) {
       $scope.path = current.$$route.originalPath;

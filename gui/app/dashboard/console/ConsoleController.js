@@ -10,7 +10,8 @@ angular
  */
  
 .controller('ConsoleController', [ '$scope', '$routeParams', '$location', '$window', '_', 'Stacks', 'AuthInfo', 'LandingRoute', 'ProductName', function($scope, $routeParams, $location, $window, _, Stacks, AuthInfo, LandingRoute, ProductName) {
-
+  "use strict";
+  
   if (!AuthInfo.get().token) {
     $location.path(LandingRoute);
     return;
@@ -18,7 +19,7 @@ angular
   
   $scope.productName = ProductName;
   
-  $scope.$watch(function () { return Stacks.all }, function() {
+  $scope.$watch(function () { return Stacks.all; }, function() {
   
     $scope.stacks = Stacks.all;
     var stk = _.find($scope.stacks, [ 'id', $routeParams.stackId ]);
@@ -37,4 +38,4 @@ angular
   $window.document.title = 'Console: ' + $scope.svcId;
   
   $scope.stacks = Stacks.all;
-}])
+}]);

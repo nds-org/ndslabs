@@ -5,5 +5,7 @@
 **/bower_components/
 **/build/
 **/*.log
+**/coverage/
+**/dist/
 gui/tests/reports/*
 gui/protractor.auth.json

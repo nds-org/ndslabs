@@ -10,7 +10,8 @@ angular
  */
 .controller('StackDeleteCtrl', [ '$scope', '$log', '$uibModalInstance',
     function($scope, $log, $uibModalInstance) {
-      
+  "use strict";
+
   $scope.ok = function() { $uibModalInstance.close(); };
   $scope.close = function() { $uibModalInstance.dismiss('cancel'); };
 }]);
