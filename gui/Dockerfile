@@ -55,17 +55,14 @@ WORKDIR $BASEDIR
 COPY package.json bower.json Gruntfile.js $BASEDIR/
 
 # Install dependencies
-RUN npm install -g bower grunt express protractor && \
+RUN npm install -g bower grunt protractor && \
     npm install && \
     bower install --config.interactive=false --allow-root
-
-# Update WebDrivers
-RUN webdriver-manager update
 
 # Copy in the source
 COPY . $BASEDIR/
 
-# Set build number/date inside the container, as well as our default API server/port
+# Set build version/date for this image
 RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${version}')#" "$BASEDIR/app/app.js" && \
     /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('$(date)'))#" "$BASEDIR/app/app.js"
 

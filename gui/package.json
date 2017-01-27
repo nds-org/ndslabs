@@ -35,8 +35,7 @@
     "body-parser": "^1.15.2",
     "bower": "^1.7.7",
     "express": "^4.14.0",
-    "morgan": "^1.7.0",
-    "protractor": "^5.0.0"
+    "morgan": "^1.7.0"
   },
   "scripts": {
     "postinstall": "bower install",

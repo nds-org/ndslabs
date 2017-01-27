@@ -163,14 +163,14 @@ module.exports = function(grunt) {
             }
         },
         selenium: {
-            command: './node_modules/protractor/node_modules/webdriver-manager/bin/webdriver-manager start >/dev/null 2>&1',
+            command: 'webdriver-manager start >/dev/null 2>&1',
             options: {
                 async: true,
                 stdout: function(data) { return ''; },
             }
         },
         driverupdate: {
-            command: './node_modules/protractor/node_modules/webdriver-manager/bin/webdriver-manager update',
+            command: 'webdriver-manager update',
             options: {
                 async: false
             }
