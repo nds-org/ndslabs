@@ -39,8 +39,9 @@
   },
   "scripts": {
     "postinstall": "bower install",
-    "test": "npm run unit && npm run integration",
-    "unit": "istanbul cover --include-all-sources karma start karma.conf.js",
-    "e2e": "istanbul cover --include-all-sources protractor e2e.conf.js"
+    "test": "npm run unit && npm run e2e",
+    "unit": "grunt karma",
+    "e2e": "grunt protractor-xvfb",
+    "ship": "grunt ship"
   }
 }

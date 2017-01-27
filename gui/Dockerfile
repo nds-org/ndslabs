@@ -3,7 +3,7 @@
 #
 
 # This image will be based on the official nodejs docker image
-FROM debian:testing
+FROM debian:jessie
 
 # Serve AngularJS app on port 3000
 EXPOSE 3000
@@ -11,31 +11,30 @@ EXPOSE 3000
 # Set build information here before building
 ARG version="1.0.7"
 
-# Required? for xvfb    
-ENV DEBIAN_FRONTEND noninteractive
+# Set up environment variable defaults
+ENV DEBIAN_FRONTEND="noninteractive" \
+    TERM="xterm" \
+    BASEDIR="/home" \
+    APISERVER_HOST="localhost" \
+    APISERVER_PORT="" \
+    APISERVER_PATH="/api" \
+    APISERVER_SECURE="false" \
+    ANALYTICS_ACCOUNT="" \
+    SUPPORT_EMAIL="ndslabs-support@nationaldataservice.org"
 
 # Install main dependencies
-RUN apt-get -qq update && \
-    apt-get -qq install curl && \
-    curl http://www.deb-multimedia.org/pool/main/d/deb-multimedia-keyring/deb-multimedia-keyring_2016.8.1_all.deb \
-      -o /tmp/deb-multimedia-keyring_2015.6.1_all.deb && \
-    dpkg -i /tmp/deb-multimedia-keyring_2015.6.1_all.deb && \
-    rm /tmp/deb-multimedia-keyring_2015.6.1_all.deb && \
-    echo "deb http://www.deb-multimedia.org stretch main non-free" >> /etc/apt/sources.list && \
+RUN echo "deb http://http.debian.net/debian jessie-backports main" >> /etc/apt/sources.list && \
     apt-get -qq update && \
     apt-get -qq install \
       build-essential \
       git \
       sudo \
       vim \
-      openjdk-8-jre \
+      curl \
+      openjdk-8-jre-headless \
+      openjdk-8-jdk \
       xvfb \
-      libgconf-2-4 \
-      libexif12 \
       chromium \
-      ffmpeg \
-      netcat-traditional \
-      gnupg \
       npm && \
     curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - && \
     apt-get -qq update && \
@@ -46,21 +45,15 @@ RUN apt-get -qq update && \
     apt-get -qq clean all && \
     rm -rf /var/cache/apk/* /tmp/*
 
-
-# Set directory for npm/bower
-ENV BASEDIR=/home
+# Copy in the manifests and the app source
 WORKDIR $BASEDIR
-
-# Copy in the source
-COPY package.json bower.json Gruntfile.js $BASEDIR/
+COPY . $BASEDIR/
 
 # Install dependencies
-RUN npm install -g bower grunt protractor && \
+RUN npm install -g bower grunt protractor@5.0.x && \
     npm install && \
-    bower install --config.interactive=false --allow-root
-
-# Copy in the source
-COPY . $BASEDIR/
+    bower install && \
+    grunt ship
 
 # Set build version/date for this image
 RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${version}')#" "$BASEDIR/app/app.js" && \
