@@ -52,7 +52,7 @@ COPY . $BASEDIR/
 # Install dependencies
 RUN npm install -g bower grunt protractor@5.0.x && \
     npm install && \
-    bower install && \
+    bower install --config.interactive=false --allow-root && \
     grunt ship
 
 # Set build version/date for this image
