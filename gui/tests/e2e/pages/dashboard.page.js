@@ -181,14 +181,16 @@ DashboardPage.prototype.shutdownAndRemoveAllApplications = function() {
 
   var self = this;
   
-  var shutdownAndRemove = function(hasClass) {
-    if (!hasClass) {
-      //console.log("Shutting down: " + i);
-      self.shutdownApplication(application);
-    }
+  var shutdownAndRemove = function(application) {
+    return function(hasClass) {
+      if (!hasClass) {
+        //console.log("Shutting down: " + i);
+        self.shutdownApplication(application);
+      }
     
-    //console.log("Removing: " + i);
-    return self.removeApplication(application);
+      //console.log("Removing: " + i);
+      return self.removeApplication(application);
+    };
   };
   
   // Shutdown and remove all applications
@@ -201,7 +203,7 @@ DashboardPage.prototype.shutdownAndRemoveAllApplications = function() {
       application.click();
       
       // Success == running => we need to shut it down
-      helpers.hasClass(application, 'panel-danger').then(shutdownAndRemove);
+      helpers.hasClass(application, 'panel-danger').then(shutdownAndRemove(application));
     }
     
     return true;
