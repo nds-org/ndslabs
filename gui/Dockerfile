@@ -14,7 +14,7 @@ ARG version="1.0.7"
 # Set up environment variable defaults
 ENV DEBIAN_FRONTEND="noninteractive" \
     TERM="xterm" \
-    BASEDIR="/home/node" \
+    BASEDIR="/home" \
     APISERVER_HOST="localhost" \
     APISERVER_PORT="" \
     APISERVER_PATH="/api" \
@@ -50,14 +50,10 @@ WORKDIR $BASEDIR
 COPY . $BASEDIR/
 
 # Install dependencies
-RUN sh -c 'npm install -g bower grunt protractor@5.0.x' && \
-    sh -c 'npm install' && \
+RUN npm install -g bower grunt protractor@5.0.x && \
+    npm install && \
     bower install --config.interactive=false --allow-root && \
     grunt ship
-
-# Create a node user, so we don't need to run as root
-RUN adduser --system node
-USER node
 
 # Set build version/date for this image
 RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${version}')#" "$BASEDIR/app/app.js" && \
