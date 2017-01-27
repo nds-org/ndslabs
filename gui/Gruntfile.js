@@ -138,7 +138,6 @@ module.exports = function(grunt) {
     },
 	  
     // configure grunt to run protractor e2e tests (TODO: coverage)
-    // protractor_coverage: {
     protractor: {
       options: {
         configFile: "node_modules/protractor/example/conf.js", // Default config file 
@@ -148,23 +147,68 @@ module.exports = function(grunt) {
       ndslabs: {   // Grunt requires at least one target to run so you can simply put 'all: {}' here too. 
         options: {
           configFile: "protractor.conf.js", // Target-specific config file 
-          args: {} // Target-specific arguments 
+          args: {
+            
+          }, // Target-specific arguments 
         }
       },
     },
-	  
-    // configure grunt to generate a coverage report from istanbul
-    /*makeReport: {
-      src: 'path/to/coverage/dir/*.json',
-      options: {
-          type: 'lcov',
-          dir: 'path/to/coverage/dir',
-          print: 'detail'
-      }
-    },*/
+
+    // configure grunt to start / stop xvfb
+    shell: {
+        xvfb: {
+            command: 'Xvfb :99 -ac -screen 0 1600x1200x24',
+            options: {
+                async: true
+            }
+        },
+        selenium: {
+            command: './node_modules/protractor/node_modules/webdriver-manager/bin/webdriver-manager start >/dev/null 2>&1',
+            options: {
+                async: true,
+                stdout: function(data) { return ''; },
+            }
+        },
+        driverupdate: {
+            command: './node_modules/protractor/node_modules/webdriver-manager/bin/webdriver-manager update',
+            options: {
+                async: false
+            }
+        },
+        options: {
+            stdout: true,
+            stderr: true,
+            failOnError: true
+        }
+    },
+
+    // configure grunt to set env vars
+    env: {
+        xvfb: {
+            DISPLAY: ':99'
+        }
+    },	 
+
+    wait: {
+        options: {
+            delay: 3000
+        },
+        selenium: {      
+            options: {
+                before : function(options) {
+                    console.log('pausing %dms to wait for selenium server to start...', options.delay);
+                },
+                after : function() {
+                    console.log('pause end');
+                }
+            }
+        },
+    } 
   });
 
-  grunt.loadNpmTasks('grunt-auto-install');
+  grunt.loadNpmTasks('grunt-shell-spawn');
+  grunt.loadNpmTasks('grunt-env');
+  grunt.loadNpmTasks('grunt-wait');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-csslint');
   grunt.loadNpmTasks('grunt-contrib-imagemin');
@@ -183,6 +227,17 @@ module.exports = function(grunt) {
 
   grunt.registerTask('default', [ 'ship', 'start' ]);
 
+  grunt.registerTask('protractor-xvfb', [
+    'shell:xvfb',
+    'env:xvfb',
+    'shell:driverupdate',
+    'shell:selenium',
+    'wait:selenium',
+    'protractor:ndslabs',
+    'shell:selenium:kill',
+    'shell:xvfb:kill'
+  ]);
+
   // Add an additional task for running unit / e2e tests
-  grunt.registerTask('test', [ 'express:test', /*'karma',*/ 'protractor' ]);
+  grunt.registerTask('test', [ 'express:test', /*'karma',*/ 'protractor-xvfb' ]);
 };

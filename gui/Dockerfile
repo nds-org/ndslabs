@@ -3,27 +3,50 @@
 #
 
 # This image will be based on the official nodejs docker image
-FROM debian:jessie
+FROM debian:testing
 
-# Tell Docker we plan to use this port (http-server's default)
+# Serve AngularJS app on port 3000
 EXPOSE 3000
 
+# Set build information here before building
+ARG version="1.0.7"
+
+# Required? for xvfb    
+ENV DEBIAN_FRONTEND noninteractive
+
+# Install main dependencies
 RUN apt-get -qq update && \
+    apt-get -qq install curl && \
+    curl http://www.deb-multimedia.org/pool/main/d/deb-multimedia-keyring/deb-multimedia-keyring_2016.8.1_all.deb \
+      -o /tmp/deb-multimedia-keyring_2015.6.1_all.deb && \
+    dpkg -i /tmp/deb-multimedia-keyring_2015.6.1_all.deb && \
+    rm /tmp/deb-multimedia-keyring_2015.6.1_all.deb && \
+    echo "deb http://www.deb-multimedia.org stretch main non-free" >> /etc/apt/sources.list && \
+    apt-get -qq update && \
     apt-get -qq install \
       build-essential \
-      curl \
       git \
       sudo \
       vim \
+      openjdk-8-jre \
+      xvfb \
+      libgconf-2-4 \
+      libexif12 \
+      chromium \
+      ffmpeg \
+      netcat-traditional \
+      gnupg \
       npm && \
     curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - && \
+    apt-get -qq update && \
     apt-get -qq install nodejs && \
     ln -s /usr/local/bin/node /usr/local/bin/nodejs && \
     apt-get -qq autoremove && \
     apt-get -qq autoclean && \
     apt-get -qq clean all && \
     rm -rf /var/cache/apk/* /tmp/*
-    
+
+
 # Set directory for npm/bower
 ENV BASEDIR=/home
 WORKDIR $BASEDIR
@@ -32,15 +55,15 @@ WORKDIR $BASEDIR
 COPY package.json bower.json Gruntfile.js $BASEDIR/
 
 # Install dependencies
-RUN npm install -g bower grunt express && \
+RUN npm install -g bower grunt express protractor && \
     npm install && \
     bower install --config.interactive=false --allow-root
 
+# Update WebDrivers
+RUN webdriver-manager update
+
 # Copy in the source
 COPY . $BASEDIR/
-    
-# Set build information here before building
-ARG version="1.0.7"
 
 # Set build number/date inside the container, as well as our default API server/port
 RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${version}')#" "$BASEDIR/app/app.js" && \

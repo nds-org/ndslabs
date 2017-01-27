@@ -1,24 +1,5 @@
 var config = require("./protractor.auth.json");
 
-/*
-TODO: Report coverage after test runs
-
-var istanbul = require('istanbul');
-var collector = new istanbul.Collector();
-var reporter;
-var waitPlugin = require('./waitPlugin');
-
-*/
-
-function report() {
-  if (reporter) {
-    reporter.add('json');
-    reporter.write(collector, true, function () {
-      console.log('Coverage report successfully written');
-    });
-  }
-}
-
 // e2e.conf.js
 exports.config = {
   framework: 'jasmine',
