@@ -16,9 +16,9 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     TERM="xterm" \
     BASEDIR="/home" \
     APISERVER_HOST="localhost" \
-    APISERVER_PORT="" \
+    APISERVER_PORT="443" \
     APISERVER_PATH="/api" \
-    APISERVER_SECURE="false" \
+    APISERVER_SECURE="true" \
     ANALYTICS_ACCOUNT="" \
     SUPPORT_EMAIL="ndslabs-support@nationaldataservice.org"
 
