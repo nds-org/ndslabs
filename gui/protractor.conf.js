@@ -7,7 +7,7 @@ exports.config = {
   chromeOnly: true,
   params: config,
   jasmineNodeOpts: { 
-    // defaultTimeoutInterval: 120000,
+    defaultTimeoutInterval: 30000,
     realtimeFailure: true
   },
   
@@ -36,6 +36,28 @@ exports.config = {
   onPrepare: function() {
     /* global angular: false, browser: false, jasmine: false */
     'use strict';
+    
+    /*var jasmineEnv = jasmine.getEnv();
+     waitPlugin.setOnComplete(report);
+     browser.driver.manage().window().maximize();
+     browser.get(config.hostname);
+ 
+     jasmineEnv.addReporter(new function () {
+       this.specDone = function (spec) {
+         if (spec.status !== 'failed') {
+           var name = spec.fullName.replace(/ /g, '_');
+           var reportfile = 'coverage/integration/json/' + name;
+           reporter = new istanbul.Reporter(undefined, reportfile);
+           var promise = browser.driver.executeScript('return __coverage__;')
+                   .then(function (coverageResults) {
+                     collector.add(coverageResults);
+                   });
+           waitPlugin.waitList.push(promise);
+         }
+       };
+     });*/
+    
+    
     // Disable animations
     var disableNgAnimate = function() {
       angular.module('disableNgAnimate', []).run(['$animate', function($animate) {
@@ -68,6 +90,8 @@ exports.config = {
         });
     };
     
+    
+
     browser.addMockModule('disableNgAnimate', disableNgAnimate);
     browser.addMockModule('disableCssAnimate', disableCssAnimate);
   },

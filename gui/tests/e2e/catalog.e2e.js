@@ -1,7 +1,5 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
 
-'use strict';
-
 // Import shared PageObjects
 var helpers = require("./helpers.e2e.js");
 
@@ -15,8 +13,15 @@ var EC = protractor.ExpectedConditions;
 
 var TEST_HELP_LINK_TARGET = /https\:\/\/nationaldataservice\.atlassian\.net\/wiki\/display\/NDSC\/.+/;
 
+var specKey = 'cloud9cpp';
+var cloneKey = 'clonedspec';
+
+var TIMEOUT_EXPECT_NEW_TAB = 30000;
+
 // catalog.e2e.js
 describe('Labs Workbench Catalog View', function() {  
+  "use strict";
+
   var navbar = new Navbar();
   var catalogPage = new CatalogPage();
   var dashboardPage = new DashboardPage();
@@ -25,7 +30,7 @@ describe('Labs Workbench Catalog View', function() {
   var editSpecPage = new AddEditSpecPage();
   
   var generateTestSpecJson = function(specKey) {
-    return '{"key":"' + specKey + '","label":"An imported spec","description":"An imported spec","logo":"https://nationaldataservice.atlassian.net/wiki/download/attachments/16613382/cloudcmd.png","image":{"registry":"","name":"coderaiser/cloudcmd","tags":["5.5.1-alpine","5.5.1","latest"]},"display":"stack","access":"external","args":["--root","/home/$(NAMESPACE)"],"ports":[{"port":8000,"protocol":"http"}],"readinessProbe":{"type":"http","path":"/favicon.ico","port":8000,"initialDelay":5,"timeout":45},"resourceLimits":{"cpuMax":200,"cpuDefault":100,"memMax":1000,"memDefault":50},"tags":["21","6"],"info":"https://nationaldataservice.atlassian.net/wiki/display/NDSC/Cloud+Commander","authRequired":true}'
+    return '{"key":"' + specKey + '","label":"An imported spec","description":"An imported spec","logo":"https://nationaldataservice.atlassian.net/wiki/download/attachments/16613382/cloudcmd.png","image":{"registry":"","name":"coderaiser/cloudcmd","tags":["5.5.1-alpine","5.5.1","latest"]},"display":"stack","access":"external","args":["--root","/home/$(NAMESPACE)"],"ports":[{"port":8000,"protocol":"http"}],"readinessProbe":{"type":"http","path":"/favicon.ico","port":8000,"initialDelay":5,"timeout":45},"resourceLimits":{"cpuMax":200,"cpuDefault":100,"memMax":1000,"memDefault":50},"tags":["21","6"],"info":"https://nationaldataservice.atlassian.net/wiki/display/NDSC/Cloud+Commander","authRequired":true}';
   };
   
   // FIXME: Test browser should scroll to card (how?)
@@ -64,6 +69,7 @@ describe('Labs Workbench Catalog View', function() {
   
   it('should offer main services that we expect to see', function() {
     expectSpec('toolmanager');
+    expectSpec('cloud9cpp');
     expectSpec('clowder');
     expectSpec('dataverse');
     
@@ -79,15 +85,15 @@ describe('Labs Workbench Catalog View', function() {
   });
   
   it('should allow the user to import a custom spec', function() {
-    var specKey = 'importedspec';
+    var importKey = 'importedspec';
     
-    var specJson = generateTestSpecJson(specKey);
+    var specJson = generateTestSpecJson(importKey);
     catalogPage.importSpec(specJson);
     
-    expectSpec(specKey);
+    expectSpec(importKey);
     
     // Delete imported spec to reset test state
-    catalogPage.deleteSpec(specKey);
+    catalogPage.deleteSpec(importKey);
   });
   
   it('should allow the user to create a custom spec', function() {
@@ -121,9 +127,6 @@ describe('Labs Workbench Catalog View', function() {
     
     // TODO: Clone error (duplicate key)
     it('should allow the user to clone a spec', function() {
-      var specKey = 'toolmanager';
-      var cloneKey = 'clonedspec';
-      
       catalogPage.cloneSpec(specKey, cloneKey).then(function() {
         expectSpec(cloneKey);
         catalogPage.deleteSpec(cloneKey);
@@ -131,7 +134,6 @@ describe('Labs Workbench Catalog View', function() {
     });
     
     it('should allow the user to view the JSON format of the spec', function() {
-      var specKey = 'toolmanager';
       catalogPage.viewJsonModal(specKey).then(function(match) {    
         browser.wait(EC.visibilityOf(catalogPage.exportSpecModal), 5000);
         catalogPage.cancelBtn.click();
@@ -139,24 +141,23 @@ describe('Labs Workbench Catalog View', function() {
       });
     });
     
-    it('should offer the user a help link', function() {
-      var specKey = 'toolmanager';
+    it('should offer the user a help link', function(done) {
       catalogPage.clickHelpLink(specKey).then(function() {
-        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET);
+        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET).then(function() {
+          done();
+        });
       });
-    });
+    }, TIMEOUT_EXPECT_NEW_TAB);
     
-    it('should offer the user a link to view documentation', function() {
-      var specKey = 'toolmanager';
+    it('should offer the user a link to view documentation', function(done) {
       catalogPage.clickViewDocumentation(specKey).then(function() {
-        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET);
+        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET).then(function() {
+          done();
+        });
       });
-    });
+    }, TIMEOUT_EXPECT_NEW_TAB);
     
     describe('With Custom Spec', function() {
-      var specKey = 'toolmanager';
-      var cloneKey = 'clonedspec';
-      
       beforeAll(function(done) {
         catalogPage.get(true);
         catalogPage.cloneSpec(specKey, cloneKey).then(function() {
@@ -175,7 +176,6 @@ describe('Labs Workbench Catalog View', function() {
       // TODO: Delete (error due to existing instance)
       
       it('should allow the user to edit a custom spec', function(done) {
-        
         catalogPage.editSpec(cloneKey).then(function() {
           editSpecPage.verify();
           done();
@@ -202,16 +202,12 @@ describe('Labs Workbench Catalog View', function() {
     
     // TODO: Clone error (duplicate key)
     it('should allow the user to clone a spec', function() {
-      var specKey = 'toolmanager';
-      var cloneKey = 'clonedspec';
-      
       catalogPage.cloneSpec(specKey, cloneKey, true).then(function() {
         catalogPage.deleteSpec(cloneKey, true);
       });
     });
     
     it('should allow the user to view the JSON format of the spec', function() {
-      var specKey = 'toolmanager';
       catalogPage.viewJsonModal(specKey, true).then(function(match) {    
         browser.wait(EC.visibilityOf(catalogPage.exportSpecModal), 5000);
         catalogPage.cancelBtn.click();
@@ -219,23 +215,23 @@ describe('Labs Workbench Catalog View', function() {
       });
     });
     
-    it('should offer the user a help link', function() {
-      var specKey = 'toolmanager';
+    it('should offer the user a help link', function(done) {
       catalogPage.clickHelpLink(specKey, true).then(function() {
-        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET);
+        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET).then(function() {
+          done();
+        });
       });
-    });
+    }, TIMEOUT_EXPECT_NEW_TAB);
     
-    it('should offer the user a link to view documentation', function() {
-      var specKey = 'toolmanager';
+    it('should offer the user a link to view documentation', function(done) {
       catalogPage.clickViewDocumentation(specKey, true).then(function() {
-        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET);
+        helpers.expectNewTabOpen(TEST_HELP_LINK_TARGET).then(function() {
+          done();
+        });
       });
-    });
+    }, TIMEOUT_EXPECT_NEW_TAB);
     
     describe('With Custom Spec', function() {
-      var specKey = 'toolmanager';
-      var cloneKey = 'clonedspec';
       
       beforeAll(function(done) {
         catalogPage.get(true);

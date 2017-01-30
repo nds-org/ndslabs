@@ -1,7 +1,5 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false beforeAll:false afterAll:false */
 
-'use strict';
-
 // Import shared PageObjects
 var helpers = require("./helpers.e2e.js");
 var shared = require("./pages/shared.page.js");
@@ -11,18 +9,22 @@ var ContactUsPage = require('./pages/help.page.js');
 var DashboardPage = require('./pages/dashboard.page.js');
 var LandingPage = require('./pages/landing.page.js');
 
+var TIMEOUT_EXPECT_NEW_TAB = 30000;
+
 var OPTION_REQUEST_HELP = 0;
 var OPTION_MAKE_A_WISH = 1;
 var OPTION_REPORT_A_BUG = 2;
 var OPTION_GENERAL_COMMENT = 3;
 
 var generateTestMessage = function(type) { 
-  return 'This is a test of the "' + (type || 'Request Help') + '" feedback submission system.'
-      + ' No help is being requested. Please go about your normal business. I repeat, this is only a test.'; 
+  return 'This is a test of the "' + (type || 'Request Help') + '" feedback submission system.' +
+         ' No help is being requested. Please go about your normal business. I repeat, this is only a test.'; 
 };
 
 // help.e2e.js
 describe('Labs Workbench Contact Us View', function() {
+  "use strict";
+
   var navbar = new Navbar();
   var contactUsPage = new ContactUsPage();
   var dashboardPage = new DashboardPage();
@@ -45,15 +47,19 @@ describe('Labs Workbench Contact Us View', function() {
     helpers.afterAll();
   });
   
-  it('should link to the support forum', function() {
+  it('should link to the support forum', function(done) {
     contactUsPage.forumBtn.click();
-    helpers.expectNewTabOpen(shared.config.FORUM_LINK);
-  });
+    helpers.expectNewTabOpen(shared.config.FORUM_LINK).then(function() {
+      done();
+    });
+  }, TIMEOUT_EXPECT_NEW_TAB);
   
-  it('should link to the support chat', function() {
+  it('should link to the support chat', function(done) {
     contactUsPage.chatBtn.click();
-    helpers.expectNewTabOpen(shared.config.CHAT_LINK);
-  });
+    helpers.expectNewTabOpen(shared.config.CHAT_LINK).then(function() {
+      done();
+    });
+  }, TIMEOUT_EXPECT_NEW_TAB);
   
   it('should link to the support e-mail', function() {
     //help.emailBtn.click();
@@ -73,15 +79,19 @@ describe('Labs Workbench Contact Us View', function() {
       landingPage.verify();
     });
     
-    it('should link to the support forum', function() {
+    it('should link to the support forum', function(done) {
       contactUsPage.forumBtn.click();
-      helpers.expectNewTabOpen(shared.config.FORUM_LINK);
-    });
+      helpers.expectNewTabOpen(shared.config.FORUM_LINK).then(function() {
+        done();
+      });
+    }, TIMEOUT_EXPECT_NEW_TAB);
     
-    it('should link to the support chat', function() {
+    it('should link to the support chat', function(done) {
       contactUsPage.chatBtn.click();
-      helpers.expectNewTabOpen(shared.config.CHAT_LINK);
-    });
+      helpers.expectNewTabOpen(shared.config.CHAT_LINK).then(function() {
+        done();
+      });
+    }, TIMEOUT_EXPECT_NEW_TAB);
     
     it('should link to the support e-mail', function() {
       //help.emailBtn.click();

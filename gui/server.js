@@ -22,17 +22,22 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // AngularJS app dependencies
-app.use('/node_modules', express.static('node_modules'));
 app.use('/bower_components', express.static('bower_components'));
 
 // Our AngularJS app
 app.use('/app', express.static('app'));
-app.use('/asset', express.static('asset'));
+app.use('/dist', express.static('dist'));
+
+// Use optimized versions of the images (drop-in)
+app.use('/asset/png', express.static('dist/png'));
+app.use('/asset/png/logos', express.static('dist/png/logos'));
 
 // POST /logs => Echo logs to server console
 app.post('/logs', function (req, res) {
   // TODO: Do we want to show ALL requests? or just authorized ones?
   
+  // Return 401 unless a token is given
+  // XXX: Are requests that don't require auth ignored?
   if (!req.body.token) {
     res.status(401).send('Unauthorized');
     return;
@@ -40,11 +45,13 @@ app.post('/logs', function (req, res) {
     // FIXME: Check token validity
   }
   
+  // Retrieve log metadata
   var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   var timestamp = req.body.time;
   var type = req.body.type;
   var username = req.body.token.namespace || "No Session";
-  
+
+  // Retrieve log message body / stacktrace
   var logBody = JSON.parse(req.body.message);
   var message = logBody.message || logBody;
   var stack = logBody.stack || '';
@@ -64,8 +71,8 @@ app.post('/logs', function (req, res) {
 
 // Configure catch-all route to serve up our AngularJS app
 // NOTE: Wildcard needs to be done last, after all other endpoints
-app.get('*',function(req,res){
-  res.sendFile(basedir + '/index.html');
+app.get('*', function(req, res){
+  res.sendFile('index.html', { root: basedir || __dirname });
 });
 
 // Start server on port 3000

@@ -1,7 +1,5 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
-'use strict';
-
 // Load other modules
 var helpers = require('../helpers.e2e.js');
 var shared = require('./shared.page.js');
@@ -19,6 +17,8 @@ var PAGE_ROUTE = /https\:\/\/.+\/\#\/store\/(add|edit)\/?.*/;
 var EC = protractor.ExpectedConditions;
 
 var AddSpecPage = function() {
+  "use strict";
+
   // Details Tab (Left side - General)
   this.detailsTab = element(by.id('detailsTab'));
   this.keyField = element(by.id('keyField'));
@@ -128,6 +128,8 @@ var AddSpecPage = function() {
 
 // Navigate to the Add/Edit Spec view
 AddSpecPage.prototype.get = function(options) {
+  "use strict";
+
   var catalogPage = new CatalogPage();
   var self = this;
   catalogPage.get(options.loggedIn);
@@ -146,11 +148,15 @@ AddSpecPage.prototype.get = function(options) {
 
 // Ensure that we are on the correct page
 AddSpecPage.prototype.verify = function() { 
+  "use strict";
+
   expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toMatch(PAGE_TITLE);
 };
 
 AddSpecPage.prototype.addConfig = function(type, fields) {
+  "use strict";
+
   /*
     Populate inputs and click the button:
     
@@ -176,6 +182,8 @@ AddSpecPage.prototype.addConfig = function(type, fields) {
 };
 
 AddSpecPage.prototype.addVolume = function(path) {
+  "use strict";
+
   // Clear initial value from the field
   this.newVolumePathField.clear();
   
@@ -187,6 +195,8 @@ AddSpecPage.prototype.addVolume = function(path) {
 };
 
 AddSpecPage.prototype.addDependency = function(specKey, required) {
+  "use strict";
+
   /*
     Populate inputs and click the button:
     
@@ -204,6 +214,8 @@ AddSpecPage.prototype.addDependency = function(specKey, required) {
 };
 
 AddSpecPage.prototype.addPort = function(number, path) {
+  "use strict";
+
   // Clear initial value from the field
   this.newPortNumberField.clear();
   
@@ -224,6 +236,8 @@ AddSpecPage.prototype.addPort = function(number, path) {
 };
 
 AddSpecPage.prototype.addDockerTag = function(tagName) {
+  "use strict";
+
   // Enter the port number
   this.newDockerTagNameField.sendKeys(tagName);
   
@@ -232,6 +246,8 @@ AddSpecPage.prototype.addDockerTag = function(tagName) {
 };
 
 AddSpecPage.prototype.addSrcRepo = function(url, type) {
+  "use strict";
+
   /*
     Populate inputs and click the button:
   
@@ -253,6 +269,8 @@ AddSpecPage.prototype.addSrcRepo = function(url, type) {
 };
 
 AddSpecPage.prototype.addSearchTag = function(tagName) {
+  "use strict";
+
   /*
     Populate inputs and click the button:
   
