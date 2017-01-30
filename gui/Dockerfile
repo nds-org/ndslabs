@@ -5,23 +5,6 @@
 # This image will be based on the official nodejs docker image
 FROM debian:jessie
 
-# Serve AngularJS app on port 3000
-EXPOSE 3000
-
-# Set build information here before building
-ARG version="1.0.7"
-
-# Set up environment variable defaults
-ENV DEBIAN_FRONTEND="noninteractive" \
-    TERM="xterm" \
-    BASEDIR="/home" \
-    APISERVER_HOST="localhost" \
-    APISERVER_PORT="443" \
-    APISERVER_PATH="/api" \
-    APISERVER_SECURE="true" \
-    ANALYTICS_ACCOUNT="" \
-    SUPPORT_EMAIL="ndslabs-support@nationaldataservice.org"
-
 # Install main dependencies
 RUN echo "deb http://http.debian.net/debian jessie-backports main" >> /etc/apt/sources.list && \
     apt-get -qq update && \
@@ -46,6 +29,7 @@ RUN echo "deb http://http.debian.net/debian jessie-backports main" >> /etc/apt/s
     rm -rf /var/cache/apk/* /tmp/*
 
 # Copy in the manifests and the app source
+ENV BASEDIR="/home"
 WORKDIR $BASEDIR
 COPY . $BASEDIR/
 
@@ -55,9 +39,25 @@ RUN npm install -g bower grunt protractor@5.0.x && \
     bower install --config.interactive=false --allow-root && \
     grunt ship
 
+# Set build information here before building
+ARG version="1.0.7"
+
 # Set build version/date for this image
 RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${version}')#" "$BASEDIR/app/app.js" && \
     /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('$(date)'))#" "$BASEDIR/app/app.js"
+
+# Serve AngularJS app on port 3000
+EXPOSE 3000
+
+# Set up environment variable defaults
+ENV DEBIAN_FRONTEND="noninteractive" \
+    TERM="xterm" \
+    APISERVER_HOST="localhost" \
+    APISERVER_PORT="443" \
+    APISERVER_PATH="/api" \
+    APISERVER_SECURE="true" \
+    ANALYTICS_ACCOUNT="" \
+    SUPPORT_EMAIL="ndslabs-support@nationaldataservice.org"
 
 # The command to run our app when the container is run
 CMD [ "./entrypoint.sh" ]
