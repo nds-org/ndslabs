@@ -1,53 +1,10 @@
 #
 # Build: docker build -t ndslabs/angular-ui .
 #
-
-# This image will be based on the official nodejs docker image
-FROM debian:jessie
-
-# Install main dependencies
-RUN echo "deb http://http.debian.net/debian jessie-backports main" >> /etc/apt/sources.list && \
-    apt-get -qq update && \
-    apt-get -qq install \
-      build-essential \
-      git \
-      sudo \
-      vim \
-      curl \
-      openjdk-8-jre-headless \
-      openjdk-8-jdk \
-      xvfb \
-      chromium \
-      npm && \
-    curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - && \
-    apt-get -qq update && \
-    apt-get -qq install nodejs && \
-    ln -s /usr/local/bin/node /usr/local/bin/nodejs && \
-    apt-get -qq autoremove && \
-    apt-get -qq autoclean && \
-    apt-get -qq clean all && \
-    rm -rf /var/cache/apk/* /tmp/*
-
-# Copy in the manifests and the app source
-ENV BASEDIR="/home"
-WORKDIR $BASEDIR
-COPY . $BASEDIR/
-
-# Install dependencies
-RUN npm install -g bower grunt protractor@5.0.x && \
-    npm install && \
-    bower install --config.interactive=false --allow-root && \
-    grunt ship
+FROM ndslabs/ng-base:latest
 
 # Set build information here before building
 ARG version="1.0.7"
-
-# Set build version/date for this image
-RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${version}')#" "$BASEDIR/app/app.js" && \
-    /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('$(date)'))#" "$BASEDIR/app/app.js"
-
-# Serve AngularJS app on port 3000
-EXPOSE 3000
 
 # Set up environment variable defaults
 ENV DEBIAN_FRONTEND="noninteractive" \
@@ -57,7 +14,23 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     APISERVER_PATH="/api" \
     APISERVER_SECURE="true" \
     ANALYTICS_ACCOUNT="" \
-    SUPPORT_EMAIL="ndslabs-support@nationaldataservice.org"
+    SUPPORT_EMAIL="ndslabs-support@nationaldataservice.org" \
+    BASEDIR="/home"
+
+# Copy in the manifests and the app source
+WORKDIR $BASEDIR
+COPY . $BASEDIR/
+
+# Install build dependencies
+RUN npm install 
+
+# Build / minify our app
+RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${version}')#" "$BASEDIR/app/app.js" && \
+    /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('$(date)'))#" "$BASEDIR/app/app.js" && \
+    grunt ship
 
 # The command to run our app when the container is run
 CMD [ "./entrypoint.sh" ]
+
+# Install runtime dependencies
+#RUN bower install --config.interactive=false --allow-root
