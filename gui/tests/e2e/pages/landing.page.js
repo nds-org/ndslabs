@@ -6,7 +6,7 @@ var helpers = require('../helpers.e2e.js');
 var shared = require('./shared.page.js');
 
 var PAGE_TITLE = 'Labs Workbench Landing Page';
-var PAGE_ROUTE = /https\:\/\/.+\/\#\/(\?t=.+|expand=.+)?/;
+var PAGE_ROUTE = /https?\:\/\/.+\/\#\/(\?t=.+|expand=.+)?/;
 var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 
 var LandingPage = function() {
