@@ -9,7 +9,7 @@ FROM debian:jessie
 EXPOSE 3000
 
 # Set build information here before building
-ARG version="1.0.7"
+ARG version="1.0.8"
 
 # Set up environment variable defaults
 ENV DEBIAN_FRONTEND="noninteractive" \
