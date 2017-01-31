@@ -31,6 +31,3 @@ RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion'
 
 # The command to run our app when the container is run
 CMD [ "./entrypoint.sh" ]
-
-# Install runtime dependencies
-#RUN bower install --config.interactive=false --allow-root

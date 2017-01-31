@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Install runtime dependencies
+bower install --config.interactive=false --allow-root
+
 # Substitute the APISERVER_HOST and PORT passed in by "docker run -e" or kubernetes
 /bin/sed -i -e "s#^\.constant('ApiHost', '.*')#.constant('ApiHost', '${APISERVER_HOST}')#" "$BASEDIR/app/app.js"
 /bin/sed -i -e "s#^\.constant('ApiPort', '.*')#.constant('ApiPort', '${APISERVER_PORT}')#" "$BASEDIR/app/app.js"
