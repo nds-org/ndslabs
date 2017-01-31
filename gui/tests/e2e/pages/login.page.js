@@ -7,7 +7,7 @@ var Navbar = require('./navbar.page.js');
 var LandingPage = require('./landing.page.js');
 
 var PAGE_TITLE = 'Sign In to Labs Workbench';
-var PAGE_ROUTE = /\/\#\/login/;
+var PAGE_ROUTE = TEST_HOSTNAME + /\/login/;
 
 var LoginPage = function() {
   "use strict";
