@@ -1,7 +1,5 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
-'use strict';
-
 // Load other modules
 var helpers = require('../helpers.e2e.js');
 var shared = require('./shared.page.js');
@@ -17,6 +15,8 @@ var PAGE_ROUTE = /https\:\/\/.+\/\#\/store/;
 var EC = protractor.ExpectedConditions;
 
 var CatalogPage = function() {
+  "use strict";
+
   // Search Header
   this.searchFilter = element(by.id('filterTagsInput'));
   this.removeTagBtn = element(by.css('[ng-click="$removeTag()"]'));
@@ -66,6 +66,8 @@ var CatalogPage = function() {
 
 // Navigate to the Catalog view
 CatalogPage.prototype.get = function(loggedIn) {
+  "use strict";
+
   var navbar = new Navbar();
   var dashboardPage = new DashboardPage();
 
@@ -77,11 +79,15 @@ CatalogPage.prototype.get = function(loggedIn) {
 
 // Ensure that we are on the correct page
 CatalogPage.prototype.verify = function() { 
+  "use strict";
+
   expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 
 CatalogPage.prototype.applyTag = function(tagName) {
+  "use strict";
+
   // Type into the search filter, but do not press enter
   this.searchFilter.sendKeys(tagName);
   
@@ -93,6 +99,8 @@ CatalogPage.prototype.applyTag = function(tagName) {
 };
 
 CatalogPage.prototype.applyFilter = function(text) {
+  "use strict";
+
   // Type into the search filter
   this.searchFilter.sendKeys(text);
   
@@ -104,6 +112,8 @@ CatalogPage.prototype.applyFilter = function(text) {
 // setTo === false => enable table view
 // setTo === null => toggle
 CatalogPage.prototype.toggleCardsView = function(setTo) {
+  "use strict";
+
   var self = this;
   return helpers.hasClass(this.viewAsIcon, 'fa-table').then(function(showCards) {
     if ((showCards && setTo !== true) || (!showCards && setTo !== false)) {
@@ -115,6 +125,8 @@ CatalogPage.prototype.toggleCardsView = function(setTo) {
 };
 
 CatalogPage.prototype.installApplication = function(specKey, viewAsTable) {
+  "use strict";
+
   var self = this;
   return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
@@ -132,6 +144,8 @@ CatalogPage.prototype.installApplication = function(specKey, viewAsTable) {
 };
 
 CatalogPage.prototype.viewApplicationOnDashboard = function(specKey, viewAsTable) {
+  "use strict";
+
   var self = this;
   return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
@@ -147,6 +161,8 @@ CatalogPage.prototype.viewApplicationOnDashboard = function(specKey, viewAsTable
 };
 
 CatalogPage.prototype.importSpec = function(specJson) {
+  "use strict";
+
   // Click the import button
   var importBtn = this.importBtn;
   browser.wait(EC.elementToBeClickable(importBtn), 5000);
@@ -167,6 +183,8 @@ CatalogPage.prototype.importSpec = function(specJson) {
 };
 
 CatalogPage.prototype.viewJsonModal = function(specKey, viewAsTable) {
+  "use strict";
+
   var self = this;
   return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
@@ -184,6 +202,8 @@ CatalogPage.prototype.viewJsonModal = function(specKey, viewAsTable) {
 };
 
 CatalogPage.prototype.copySpecToClipboard = function(specKey, viewAsTable) {
+  "use strict";
+
   var self = this;
   return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
@@ -202,6 +222,8 @@ CatalogPage.prototype.copySpecToClipboard = function(specKey, viewAsTable) {
 };
 
 CatalogPage.prototype.cloneSpec = function(oldKey, newKey, viewAsTable) {
+  "use strict";
+
   var self = this;
   return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === oldKey; // How to know we've found our match
@@ -236,6 +258,8 @@ CatalogPage.prototype.cloneSpec = function(oldKey, newKey, viewAsTable) {
 };
 
 CatalogPage.prototype.editSpec = function(specKey, viewAsTable) {
+  "use strict";
+
   var self = this;
   return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
@@ -254,6 +278,8 @@ CatalogPage.prototype.editSpec = function(specKey, viewAsTable) {
 };
 
 CatalogPage.prototype.deleteSpec = function(specKey, viewAsTable) {
+  "use strict";
+
   var self = this;
   return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
@@ -278,6 +304,8 @@ CatalogPage.prototype.deleteSpec = function(specKey, viewAsTable) {
 };
 
 CatalogPage.prototype.clickViewDocumentation = function(specKey, viewAsTable) {
+  "use strict";
+
   var self = this;
   return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
@@ -296,6 +324,8 @@ CatalogPage.prototype.clickViewDocumentation = function(specKey, viewAsTable) {
 };
 
 CatalogPage.prototype.clickHelpLink = function(specKey, viewAsTable) {
+  "use strict";
+
   var self = this;
   return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match

@@ -10,6 +10,8 @@ angular
  */
 .controller('CloneSpecCtrl', [ '$scope', '$log', '$uibModalInstance', '_', 'NdsLabsApi', 'Specs', 'spec',
     function($scope, $log, $uibModalInstance, _, NdsLabsApi, Specs, spec) {
+  "use strict";
+  
   $scope.$watch('spec.key', function(newValue, oldValue) {
     if (!newValue) {
       $scope.nameIsValid = false;

@@ -10,7 +10,8 @@ angular
  */
 .controller('LoginController', [ '$scope', '$cookies', '$location', '$log', '$uibModal', 'AuthInfo', 'Project', 'NdsLabsApi', 'LoginRoute', 'HomeRoute', 'VerifyAccountRoute', 'ResetPasswordRoute', '$uibModalStack', 'ServerData', 'SignUpRoute', 'ContactUsRoute', 'LandingRoute', 'ProductName',
     function($scope, $cookies, $location, $log, $uibModal, authInfo, Project, NdsLabsApi, LoginRoute, HomeRoute, VerifyAccountRoute, ResetPasswordRoute, $uibModalStack, ServerData, SignUpRoute, ContactUsRoute, LandingRoute, ProductName) {
-  
+  "use strict";
+
   $scope.productName = ProductName;
   
   // Grab our injected AuthInfo from the provider

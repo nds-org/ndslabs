@@ -10,6 +10,8 @@ angular
  */
 .controller('DeleteSpecCtrl', [ '$scope', '$log', '$uibModalInstance', '_', 'NdsLabsApi', 'Specs', 'Stacks', 'spec',
     function($scope, $log, $uibModalInstance, _, NdsLabsApi, Specs, Stacks, spec) {
+  "use strict";
+  
   $scope.spec = spec;
   $scope.showAlert = _.find(Stacks.all, [ 'key', $scope.spec.key ]);
   angular.forEach(Stacks.all, function(stack) {

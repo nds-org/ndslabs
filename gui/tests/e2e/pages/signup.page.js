@@ -1,7 +1,5 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
-'use strict';
-
 module.exports = {};
 
 // Load other modules
@@ -17,6 +15,8 @@ var PAGE_ROUTE = TEST_HOSTNAME + '/register';
 
 
 var SignUpPage = function() {
+  "use strict";
+
   this.fullNameInput = element(by.id('fullName'));
   this.emailInput = element(by.id('email'));
   this.organizationInput = element(by.id('organization'));
@@ -32,6 +32,8 @@ var SignUpPage = function() {
  
 // Navigate to the Sign Up view
 SignUpPage.prototype.get = function() {
+  "use strict";
+
   var loginPage = new LoginPage();
   
   loginPage.get();
@@ -42,43 +44,63 @@ SignUpPage.prototype.get = function() {
 
 // Ensure that we are on the correct page
 SignUpPage.prototype.verify = function() {
+  "use strict";
+
   expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 
 SignUpPage.prototype.enterFullName = function(text) {
+  "use strict";
+
   this.fullNameInput.sendKeys(text);
 };
 
 SignUpPage.prototype.enterEmail = function(text) {
+  "use strict";
+
   this.emailInput.sendKeys(text);
 };
 
 SignUpPage.prototype.enterOrganization = function(text) {
+  "use strict";
+
   this.organizationInput.sendKeys(text);
 };
 
 SignUpPage.prototype.enterDescription = function(text) {
+  "use strict";
+
   this.descriptionInput.sendKeys(text);
 };
 
 SignUpPage.prototype.enterUsername = function(text) {
+  "use strict";
+
   this.usernameInput.sendKeys(text);
 };
 
 SignUpPage.prototype.enterPassword = function(text) {
+  "use strict";
+
   this.passwordInput.sendKeys(text);
 };
 
 SignUpPage.prototype.enterPasswordConfirmation = function(text) {
+  "use strict";
+
   this.passwordConfirmInput.sendKeys(text);
 };
 
 SignUpPage.prototype.clickSubmit = function() {
+  "use strict";
+
   this.submitBtn.click();
 };
 
 SignUpPage.prototype.clickUsePolicyLink = function() {
+  "use strict";
+
   this.usePolicyLink.click();
 };
 
