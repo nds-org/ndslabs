@@ -4,7 +4,7 @@ module.exports = {};
 
 // Load other modules
 var helpers = require('../helpers.e2e.js');
-var shared = required('../pages/shard.page.js');
+var shared = require('./shared.page.js');
 
 var LandingPage = require('./landing.page.js');
 
