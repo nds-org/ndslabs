@@ -2,12 +2,16 @@
 
 module.exports = {};
 
+var shared = require('./shared.page.js');
+
 // Load other pages
 var Navbar = require('./navbar.page.js');
 var LandingPage = require('./landing.page.js');
 
+var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
+
 var PAGE_TITLE = 'Sign In to Labs Workbench';
-var PAGE_ROUTE = TEST_HOSTNAME + /\/login/;
+var PAGE_ROUTE = TEST_HOSTNAME + '/login';
 
 var LoginPage = function() {
   "use strict";
