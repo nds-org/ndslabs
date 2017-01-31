@@ -10,6 +10,8 @@ angular
  */
 .controller('ImportSpecCtrl', [ '$scope', '$log', '$uibModalInstance', '_', 'NdsLabsApi', 'Specs',
     function($scope, $log, $uibModalInstance, _, NdsLabsApi, Specs) {
+  "use strict";
+  
   $scope.json = '';
   
   $scope.$watch('json', function(newValue, oldValue) {

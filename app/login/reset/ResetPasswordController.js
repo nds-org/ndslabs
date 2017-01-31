@@ -9,6 +9,8 @@ angular
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
 .controller('ResetPasswordController', [ '$scope', '$location', '$cookies', '$routeParams', '$log', 'HomeRoute', 'LandingRoute', 'NdsLabsApi', 'ProductName', 'AuthInfo', function($scope, $location, $cookies, $routeParams, $log, HomeRoute, LandingRoute, NdsLabsApi, ProductName, AuthInfo) {
+  "use strict";
+
   $scope.token = $routeParams.t;
   
   if ($scope.token) {
@@ -41,7 +43,7 @@ angular
     }, function(response) {
       $log.error("Failed to send password reset link");
       console.debug(response);
-    })
+    });
   };
   
   /**
@@ -61,6 +63,6 @@ angular
     }, function(response) {
       $log.error("Failed to reset password");
       console.debug(response);
-    })
+    });
   };
 }]);

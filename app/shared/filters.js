@@ -16,6 +16,8 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
 .constant('_', window._)
 
 .filter('countReqConfigs', [ '_', function(_) {
+  "use strict";
+
   return function(input) {
     var ret = [];
     
@@ -26,11 +28,13 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
     }); 
     
     return ret.length;
-  }
+  };
 }])
 
 
 .filter('countReqVolumes', [ '_', function(_) {
+  "use strict";
+
   return function(input) {
     var ret = [];
     
@@ -41,13 +45,15 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
     }); 
     
     return ret.length;
-  }
+  };
 }])
 
 /**
  * Given a list of specs, return only those associated with the given tag name
  */ 
 .filter('hasTag', [ '_', 'Vocabulary', function(_, Vocabulary) {
+  "use strict";
+
   return function(input, tagName) {
     var tag = _.find(Vocabulary.all.terms, ['name', tagName]);
     
@@ -56,7 +62,7 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
     }
     
     return _.filter(input, function(spec) {
-      return spec.tags && spec.tags.indexOf(tag.id) !== -1
+      return spec.tags && spec.tags.indexOf(tag.id) !== -1;
     });
   };
 }])
@@ -65,6 +71,8 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  * Given a list of option and a stack, return only option which have not yet been added to the stack
  */ 
 .filter('notPresent', [ '_', function(_) {
+  "use strict";
+
   return function(input, stack) {
     if (!stack || !stack.key) {
       return [];
@@ -88,6 +96,8 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  * Given a string, capitalize each term (separated by whitespace)
  */ 
 .filter('capitalize', [ '_', function(_) {
+  "use strict";
+
   return function(input) {
     var ret = [];
     angular.forEach(_.split(input, /\s/), function(term) {
@@ -102,6 +112,8 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  * the services with one or more of those tags
  */
 .filter('showTags', [ '_', function(_) {
+  "use strict";
+
   return function(input, tags) {
     if (!tags || tags.length === 0) {
       return input;
@@ -130,6 +142,8 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  * TODO: Replace this with i18n / i10n??
  */
 .filter('passwordStrength', function() {
+  "use strict";
+
   return function(strength) {
     if (strength < 15) { 
       return 'Weak...'; 
@@ -138,9 +152,9 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
     } else if (strength <= 84) {
       return 'Good!';
     } else {
-      return 'Strong!!!'
+      return 'Strong!!!';
     }
-  }
+  };
 })
 
 /**
@@ -148,6 +162,8 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  * appended with the port if one is provided.
  */ 
 .filter('externalHostPort', [ 'ApiSecure', 'ApiHost', 'ApiPort', '_', function(ApiSecure, ApiHost, ApiPort, _) {
+  "use strict";
+
   return function(endpt) {
     // TODO: How do we know if this can be navigated to?
     var protocol = 'http' + (ApiSecure ? 's' : '');
@@ -165,17 +181,21 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  * Given an array of specs, return only those which can be added to your namespace.
  */
 .filter('display', [ '_', function(_) {
+  "use strict";
+
   return function(input) {
     // Return stacks and standalones
     return _.filter(input, function(o) {
       return o.display && o.display !== 'none';
     }); 
-  }
+  };
 }])
 /**
  * Given a stack, return a list of ALL of its services' endpoints
  */
 .filter('allEndpoints', ['_', function(_) {
+  "use strict";
+
   return function(stack) {
     var endpoints = [];
     angular.forEach(stack.services, function(svc) {
@@ -189,6 +209,8 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  * Given a tag id, retrieve the given property
  */
 .filter('tagProperty', ['$log', 'Vocabulary', '_', function($log, Vocabulary, _) {
+  "use strict";
+
   return function(tagId, propertyName) {
     if (!tagId) {
       return '';
@@ -208,6 +230,8 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  * Given a service spec key, retrieve its label
  */
 .filter('specProperty', ['$log', 'Specs', '_', function($log, Specs, _) {
+  "use strict";
+
   return function(key, propertyName) {
     if (!key || !propertyName) {
       return '';
@@ -231,6 +255,8 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  * Given a stack id, retrieve the given property of the stack
  */
 .filter('stackProperty', ['Stacks', '_', function(Stacks, _) {
+  "use strict";
+
   return function(key, propertyName, serviceProperty) {
     // Generic "find" that utilizes our hierarchical id scheme
     var stack = _.find(Stacks.all, function(stk) {
@@ -257,6 +283,8 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  * Given a list of stacks, count how many are running
  */
 .filter('runningStacksCount', [ function() {
+  "use strict";
+
   return function(stacks) {
     var running = 0;
     angular.forEach(stacks, function(stack) {
@@ -274,6 +302,8 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  * of any of the others
  */ 
 .filter('isRecursivelyRequired', [ 'Specs', '_', function(Specs, _) {
+  "use strict";
+
   return function(services, service) {
     var result = false;
     angular.forEach(services, function(svc) {
@@ -294,6 +324,8 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  */ 
 .filter('options', [ '$log', 'Specs', '_', function($log, Specs, _) {
   // Returns a list of options for a spec
+  "use strict";
+
   return function(key) {
     if (!Specs.all || !Specs.all.length) {
       return [];
@@ -315,6 +347,8 @@ angular.module('ndslabs-filters', [ 'ndslabs-services' ])
  */ 
 .filter('requirements', [ '$log', '_', 'Specs', function($log, _, Specs) {
   // Return a list of requirements for a spec
+  "use strict";
+
   return function(key) {
     if (!Specs.all || !Specs.all.length) {
       return [];

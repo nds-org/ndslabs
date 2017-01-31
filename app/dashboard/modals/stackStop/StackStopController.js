@@ -10,6 +10,8 @@ angular
  */
 .controller('StackStopCtrl', [ '$scope', '$log', '$uibModalInstance', '_', 'stack',
     function($scope, $log, $uibModalInstance, _, stack) {
+  "use strict";
+
   $scope.stack = stack;
 
   $scope.ok = function() { $uibModalInstance.close(stack); };

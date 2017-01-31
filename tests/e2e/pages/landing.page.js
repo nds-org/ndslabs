@@ -1,17 +1,17 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
-'use strict';
-
-module.exports = {}
+module.exports = {};
 
 var helpers = require('../helpers.e2e.js');
 var shared = require('./shared.page.js');
 
 var PAGE_TITLE = 'Labs Workbench Landing Page';
-var PAGE_ROUTE = /https\:\/\/.+\/\#\/(\?t=.+|expand=.+)?/
+var PAGE_ROUTE = /https\:\/\/.+\/\#\/(\?t=.+|expand=.+)?/;
 var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 
 var LandingPage = function() {
+  "use strict";
+
   this.learnMoreBtn = element(by.id('learnMoreBtn'));
   this.signInBtn = element(by.id('signInBtn'));
   this.signUpBtn = element(by.id('signUpBtn'));
@@ -27,56 +27,78 @@ var LandingPage = function() {
 };
 
 LandingPage.prototype.get = function() {
+  "use strict";
+
   browser.get(TEST_HOSTNAME);
   this.verify();
 };
 
 // Ensure that we are on the landing page
 LandingPage.prototype.verify = function() {
+  "use strict";
+
   expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 
 LandingPage.prototype.clickLearnMore = function() {
-  this.learnMoreBtn.click();
+  "use strict";
+
+  return this.learnMoreBtn.click();
 };
 
 LandingPage.prototype.clickSignIn = function() {
-  this.signInBtn.click();
+  "use strict";
+
+  return this.signInBtn.click();
 };
 
 LandingPage.prototype.clickSignUp = function() {
-  this.signUpBtn.click();
+  "use strict";
+
+  return this.signUpBtn.click();
 };
 
 LandingPage.prototype.clickDashboardLink = function() {
-  this.dashboardLink.click();
+  "use strict";
+
+  return this.dashboardLink.click();
 };
 
 LandingPage.prototype.clickCatalogLink = function() {
-  this.catalogLink.click();
+  "use strict";
+
+  return this.catalogLink.click();
 };
 
 LandingPage.prototype.clickCatalogAddLink = function() {
-  this.catalogAddLink.click();
+  "use strict";
+
+  return this.catalogAddLink.click();
 };
 
 LandingPage.prototype.clickApiLink = function(predicate) {
+  "use strict";
+
   var context = this;
-  helpers.scrollToAndThen(0,10000, function () {
+  return helpers.scrollToAndThen(0,10000, function () {
     context.apiLink.click();
   }).then(predicate);
 };
 
 LandingPage.prototype.clickContactUsLink = function(predicate) {
+  "use strict";
+
   var context = this;
-  helpers.scrollToAndThen(0,10000, function () {
+  return helpers.scrollToAndThen(0,10000, function () {
     context.contactUsLink.click();
   }).then(predicate);
 };
 
 LandingPage.prototype.clickHelpLink = function(index) {
-  this.helpLink(index).click();
+  "use strict";
+
+  return this.helpLink(index).click();
 };
 
 module.exports = LandingPage;

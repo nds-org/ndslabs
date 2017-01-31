@@ -1,8 +1,5 @@
 /* global protractor:false expect:false inject:false module:false element:false browser:false by:false */
 
-'use strict';
-
-
 var helpers = require('../helpers.e2e.js');
 var shared = require('./shared.page.js');
 
@@ -14,12 +11,16 @@ var PAGE_ROUTE = /https\:\/\/.*\/\#\/home\/.*\/console/;
 var EC = protractor.ExpectedConditions;
 
 var ConsolePage = function() {
+  "use strict";
+
   this.console = element(by.id('console'));
 };
 
 // Navigate to the Console view
 // TODO: How to handle parameters here?
 ConsolePage.prototype.get = function(applicationId, serviceId, loggedIn) {
+  "use strict";
+
   var dashboardPage = new DashboardPage();
   var self = this;
   
@@ -41,6 +42,8 @@ ConsolePage.prototype.get = function(applicationId, serviceId, loggedIn) {
 
 // FIXME: Feature envy
 ConsolePage.prototype.getServiceConsole = function(application, serviceId) {
+  "use strict";
+
   var dashboardPage = new DashboardPage();
   var self = this;
   
@@ -60,6 +63,8 @@ ConsolePage.prototype.getServiceConsole = function(application, serviceId) {
 
 // Ensure that we are on the correct page
 ConsolePage.prototype.verify = function() { 
+  "use strict";
+
   expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toMatch(PAGE_TITLE);
 };

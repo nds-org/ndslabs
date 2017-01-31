@@ -1,9 +1,11 @@
-/* global angular:false */
+/* global angular:false Terminal:false */
 
 angular.module('ndslabs-directives', [])
 
 .directive('terminal', [ '$log', '$window', '$timeout', '$location', 'AuthInfo', 'ApiUri', 'HomeRoute', 'NdsLabsApi', 
         function($log, $window, $timeout, $location, AuthInfo, ApiUri, HomeRoute, NdsLabsApi) {
+  "use strict";
+
     return {
         restrict: 'E',
         scope: {
@@ -65,5 +67,5 @@ angular.module('ndslabs-directives', [])
             term.open(elem.find("div")[0]);
             $log.debug('Connected: ' + target);
         }
-    }
+    };
 }]);

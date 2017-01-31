@@ -1,8 +1,8 @@
 /* global angular:false expect:false inject:false module:false */
 
-'use strict';
-
 describe('SignUpController', function() {
+  "use strict";
+
   // Inject ndslabs module before each test
   beforeEach(module('ndslabs'));
   beforeEach(module('ndslabs-api'));
