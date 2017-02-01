@@ -1642,7 +1642,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 		newStackService := newStack.GetStackService(stackService.Id)
 		if newStackService == nil {
 			// User deleted a service
-			name := fmt.Sprintf("%s-%s", stack.Id, stackService.Service)
+			name := fmt.Sprintf("%s-%s", sid, stackService.Service)
 			glog.V(4).Infof("Stopping service %s\n", name)
 			spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
 			if len(spec.Ports) > 0 {
