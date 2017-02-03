@@ -1666,7 +1666,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 			// User added a new service
 			stackService.Id = fmt.Sprintf("%s-%s", sid, stackService.Service)
 			spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
-			if spec != nil {
+			if spec != nil && len(spec.Ports) > 0 {
 				_, err := s.createKubernetesService(userId, &newStack, spec)
 				if err != nil {
 					glog.Error(err)
