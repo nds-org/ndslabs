@@ -1635,6 +1635,28 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
+	// If the user deleted an optional service, need to stop the
+	// associated Kubernetes service
+	for i := range oldStack.Services {
+		stackService := &oldStack.Services[i]
+		newStackService := newStack.GetStackService(stackService.Id)
+		if newStackService == nil {
+			// User deleted a service
+			name := fmt.Sprintf("%s-%s", sid, stackService.Service)
+			glog.V(4).Infof("Stopping service %s\n", name)
+			spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
+			if len(spec.Ports) > 0 {
+				err := s.kube.StopService(userId, name)
+				// Log and continue
+				if err != nil {
+					glog.Error(err)
+				}
+			}
+		}
+	}
+
+	// If the user added an optional service, need to create the
+	// associated Kubernetes service
 	for i := range newStack.Services {
 		stackService := &newStack.Services[i]
 
@@ -1644,7 +1666,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 			// User added a new service
 			stackService.Id = fmt.Sprintf("%s-%s", sid, stackService.Service)
 			spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
-			if spec != nil {
+			if spec != nil && len(spec.Ports) > 0 {
 				_, err := s.createKubernetesService(userId, &newStack, spec)
 				if err != nil {
 					glog.Error(err)
