@@ -187,12 +187,15 @@ angular
   $scope.save = function(display) {
     var spec = angular.copy($scope.spec);
     spec.display = 'stack';
+    
+    // Explode command into array
     if (!$scope.spec.command || $scope.spec.command.replace(/ /g,'') === '') {
       spec.command = null;
     } else {
       spec.command = _.split($scope.spec.command, ' ');
     }
     
+    // Explode args into array
     if (!$scope.spec.args || $scope.spec.args.replace(/ /g,'') === '') {
       spec.args = null;
     } else {
@@ -205,6 +208,13 @@ angular
     } else {
       spec.readinessProbe = angular.copy($scope.probe);
     }
+    
+    // Replace a value of "" in contextPath with "/"
+    angular.forEach($scope.spec.ports, function(port) {
+      if (!port.contextPath || port.contextPath.replace(/ /g,'') === '') {
+        port.contextPath = '/';
+      }
+    });
     
     var method = $scope.editingSpec ? 'putServicesByServiceId' : 'postServices';
     return NdsLabsApi[method]({ service: spec, serviceId: spec.key }).then(function(data) {
