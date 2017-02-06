@@ -113,7 +113,7 @@
               'has-success has-feedback': !forms['registerForm'].namespace.$pristine && forms['registerForm'].namespace.$valid }">
             <label for="namespace">Choose a Username *</label>
             <input type="text" class="form-control" name="namespace" id="namespace"
-                ng-model="newProject.namespace" placeholder="Username" required minlength="3" maxlength="20" pattern="[a-zA-Z0-9]+">
+                ng-model="newProject.namespace" placeholder="Username" required minlength="3" maxlength="20" pattern="[a-z0-9]+">
             <span class="form-control-feedback glyphicon" ng-if="!forms['registerForm'].namespace.$pristine"
                 ng-class="{ 'glyphicon-remove': forms['registerForm'].namespace.$invalid, 'glyphicon-ok': forms['registerForm'].namespace.$valid }"></span>
                 
