@@ -93,8 +93,8 @@ module.exports = function(grunt) {
         mangle: true,
         
         // Uncomment these lines to generate a source map
-        //sourceMap: true,
-        //sourceMapIncludeSources: true,
+        sourceMap: true,
+        sourceMapIncludeSources: true,
         //sourceMapIn: 'dist/main.min.js.map',
       },
       target: {
