@@ -1,21 +1,21 @@
 <!-- The SignUp Modal -->
 <section>
-  <div class="row">
-    <div class="col-xs-offset-3 col-xs-6 text-center">
-      <!--<button type="button" class="btn btn-xs btn-default pull-right" data-dismiss="modal" aria-label="Close" ng-click="close()"><i class="fa fa-fw fa-times"></i></button>-->
-      <h3><i class="fa fa-fw fa-user-plus"></i> Request Access to {{ productName }}</h3>
-      
-      <ol class="breadcrumb">
-        <li><a href="#/">{{ productName }}</a></li>
-        <li><a href="#/login">Sign In</a></li>
-        <li class="active">Sign Up</li>
-      </ol>
+  <form name="forms['registerForm']" ng-submit="signUp(newProject)">
+    <div class="row">
+      <div class="col-xs-offset-3 col-xs-6 text-center">
+        <!--<button type="button" class="btn btn-xs btn-default pull-right" data-dismiss="modal" aria-label="Close" ng-click="close()"><i class="fa fa-fw fa-times"></i></button>-->
+        <h3><i class="fa fa-fw fa-user-plus"></i> Request Access to {{ productName }}</h3>
+        
+        <ol class="breadcrumb">
+          <li><a href="#/">{{ productName }}</a></li>
+          <li><a href="#/login">Sign In</a></li>
+          <li class="active">Sign Up</li>
+        </ol>
+      </div>
     </div>
-  </div>
-  
-  <!-- Registration Form -->
-  <div ng-if="!showVerify">
-    <form name="forms['registerForm']" ng-submit="ok(newProject)">
+    
+    <!-- Registration Form -->
+    <div ng-if="!showVerify">
       
       <!-- Contact Info -->
       <div class="row">
@@ -166,49 +166,49 @@
             </div>
           </div>
         </div>
-      </form>
-    </div>
-    
-    <!-- Progress / Error Message -->
-    <div class="row">
-      <div class="text-center col-sm-offset-3 col-sm-6">
-        <p class="text-danger" ng-if="errorMessage">
-          {{ errorMessage }}
-        </p>
-        <p class="text-primary" ng-if="progressMessage">
-          <i class="fa fa-fw fa-spinner fa-spin"></i>{{ progressMessage }}
-        </p>
+      </div>
+      
+      <!-- Progress / Error Message -->
+      <div class="row">
+        <div class="text-center col-sm-offset-3 col-sm-6">
+          <p class="text-danger" ng-if="errorMessage">
+            {{ errorMessage }}
+          </p>
+          <p class="text-primary" ng-if="progressMessage">
+            <i class="fa fa-fw fa-spinner fa-spin"></i>{{ progressMessage }}
+          </p>
+        </div>
+      </div>
+      
+      <!-- Link to Acceptable Use Policy -->
+      <div class="row">
+        <div class="text-center col-sm-offset-3 col-sm-6" style="margin-bottom:10px;">
+          <strong>*</strong> denotes a required field.
+        </div>
+      </div>
+      
+      <!-- Link to Acceptable Use Policy -->
+      <div class="row">
+        <div class="text-center col-sm-offset-3 col-sm-6" style="margin-bottom:10px;">
+          By submitting this form you agree to our <a ng-href="{{ eulaLink.url }}" target="_blank" id="usePolicyLink">{{ eulaLink.name | lowercase }}</a>.
+        </div>
+      </div>
+      
+      <!-- Submit Button -->
+      <div class="row">
+        <div class="col-sm-offset-3 col-sm-6">
+          <!--<button class="btn btn-default pull-left" data-dismiss="modal" ng-click="close()">Cancel</button>-->
+          <button id="submitBtn" type="submit" class="btn btn-success" data-dismiss="modal" ng-disabled="namespaceExists || !forms['registerForm'].$valid">Request Access</button>
+        </div>
       </div>
     </div>
     
-    <!-- Link to Acceptable Use Policy -->
     <div class="row">
-      <div class="text-center col-sm-offset-3 col-sm-6" style="margin-bottom:10px;">
-        <strong>*</strong> denotes a required field.
+      <div class="helper-text" ng-if="showVerify">
+        <h2 class="text-warning"><i class="fa fa-fw fa-square-o"></i>&nbsp;&nbsp;Almost there!</h2>
+        <!--<h4>&nbsp;&nbsp;Thank you for registering for {{ productName }}</h4>-->
+        <h4>Your request is not submitted until you confirm your e-mail address</h4>
       </div>
     </div>
-    
-    <!-- Link to Acceptable Use Policy -->
-    <div class="row">
-      <div class="text-center col-sm-offset-3 col-sm-6" style="margin-bottom:10px;">
-        By submitting this form you agree to our <a ng-href="{{ eulaLink.url }}" target="_blank" id="usePolicyLink">{{ eulaLink.name | lowercase }}</a>.
-      </div>
-    </div>
-    
-    <!-- Submit Button -->
-    <div class="row">
-      <div class="col-sm-offset-3 col-sm-6">
-        <!--<button class="btn btn-default pull-left" data-dismiss="modal" ng-click="close()">Cancel</button>-->
-        <button id="submitBtn" class="btn btn-success" data-dismiss="modal" ng-disabled="namespaceExists || !forms['registerForm'].$valid" ng-click="signUp(newProject)">Request Access</button>
-      </div>
-    </div>
-  </div>
-  
-  <div class="row">
-    <div class="helper-text" ng-if="showVerify">
-      <h2 class="text-warning"><i class="fa fa-fw fa-square-o"></i>&nbsp;&nbsp;Almost there!</h2>
-      <!--<h4>&nbsp;&nbsp;Thank you for registering for {{ productName }}</h4>-->
-      <h4>Your request is not submitted until you confirm your e-mail address</h4>
-    </div>
-  </div>
+  </form>
 </section>
