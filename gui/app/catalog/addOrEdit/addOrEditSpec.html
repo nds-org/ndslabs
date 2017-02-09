@@ -581,7 +581,7 @@
                                                     </ng-messages>
                                                   </div>
                                                 </td>
-                                                <td><button id="addPortBtn" class="btn btn-xs btn-primary" ng-click="spec.ports.push({ protocol: portProtocol, port: portNumber, contextPath: portPath });portNumber=1;portPath='/';" 
+                                                <td><button id="addPortBtn" class="btn btn-xs btn-primary" ng-click="spec.ports.push({ protocol: portProtocol, port: portNumber, contextPath: portPath || '/' });portNumber=1;portPath='/';" 
                                                     ng-disabled="!portNumber || (portProtocol === 'http' && modifySpec['portPathField'].$invalid) || _.find(spec.ports, { protocol:portProtocol, port:portNumber })" ><i class="fa fa-fw fa-plus"></i></button></td>
                                               </tr>
                                           </table>
