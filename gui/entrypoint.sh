@@ -1,7 +1,5 @@
 #!/bin/bash
 
-bower install --allow-root --config.interactive=false
-
 # Substitute the APISERVER_HOST and PORT passed in by "docker run -e" or kubernetes
 /bin/sed -i -e "s#^\.constant('ApiHost', '.*')#.constant('ApiHost', '${APISERVER_HOST}')#" "$BASEDIR/app/app.js"
 /bin/sed -i -e "s#^\.constant('ApiPort', '.*')#.constant('ApiPort', '${APISERVER_PORT}')#" "$BASEDIR/app/app.js"
@@ -15,4 +13,6 @@ bower install --allow-root --config.interactive=false
 /bin/sed -i -e "s#^\.constant('GaAccount', .*)#.constant('GaAccount', '${ANALYTICS_ACCOUNT}')#" "$BASEDIR/app/app.js"
 
 # Start our HTTP Server
+npm install && \
+bower install --allow-root --config.interactive=false && \
 grunt
