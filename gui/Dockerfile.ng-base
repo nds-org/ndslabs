@@ -2,7 +2,7 @@ FROM debian:jessie
 
 # Install NodeJS and friends
 RUN apt-get -qq update && \
-    apt-get -qq install \
+    apt-get -qq install --no-install-recommends \
       build-essential \
       git \
       sudo \
