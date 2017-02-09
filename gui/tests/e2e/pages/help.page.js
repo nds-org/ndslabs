@@ -4,11 +4,14 @@ module.exports = {};
 
 // Load other modules
 var helpers = require('../helpers.e2e.js');
+var shared = require('./shared.page.js');
 
 var LandingPage = require('./landing.page.js');
 
+var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
+
 var PAGE_TITLE = 'Contact Labs Workbench Support';
-var PAGE_ROUTE = /https\:\/\/.+\/\#\/contact/;
+var PAGE_ROUTE = TEST_HOSTNAME + /\/contact/;
 
 
 // 

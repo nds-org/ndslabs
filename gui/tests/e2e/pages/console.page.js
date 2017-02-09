@@ -5,8 +5,10 @@ var shared = require('./shared.page.js');
 
 var DashboardPage = require('./dashboard.page.js');
 
+var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
+
 var PAGE_TITLE = /Console: .*/;
-var PAGE_ROUTE = /https\:\/\/.*\/\#\/home\/.*\/console/;
+var PAGE_ROUTE = TEST_HOSTNAME + /\/home\/.*\/console/;
 
 var EC = protractor.ExpectedConditions;
 
