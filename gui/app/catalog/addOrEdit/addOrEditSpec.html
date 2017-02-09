@@ -1,19 +1,19 @@
 <!-- The Add / Edit Spec View -->
 <section>
-    <div class="row">
-        <div class="col-xs-12">
-            <h3>{{ editingSpec ? 'Edit' : 'Add' }} Application<span ng-if="spec.label">: {{ spec.label }}</span></h3>
-            
-            <ol class="breadcrumb">
-                <!-- <li><a ng-href="{{ productUrl }}">{{ productName }}</a></li> -->
-                <li><a href="#/">{{ productName }}</a></li>
-                <li><a ng-href="#/store">Catalog</a></li>
-                <li class="active">{{ editingSpec ? spec.label : 'Add Application' }}</li>
-            </ol>
-                            
-            <div ng-if="spec.key | stackExistsFromSpec" uib-alert class="text-center alert-danger">You must remove any <a ng-href="#/home?expand={{ spec.key }}">existing application instances</a> before you can edit the spec</div>
-    
-            <form name="modifySpec">
+    <form name="modifySpec" ng-submit="save()">
+        <div class="row">
+            <div class="col-xs-12">
+                <h3>{{ editingSpec ? 'Edit' : 'Add' }} Application<span ng-if="spec.label">: {{ spec.label }}</span></h3>
+                
+                <ol class="breadcrumb">
+                    <!-- <li><a ng-href="{{ productUrl }}">{{ productName }}</a></li> -->
+                    <li><a href="#/">{{ productName }}</a></li>
+                    <li><a ng-href="#/store">Catalog</a></li>
+                    <li class="active">{{ editingSpec ? spec.label : 'Add Application' }}</li>
+                </ol>
+                                
+                <div ng-if="spec.key | stackExistsFromSpec" uib-alert class="text-center alert-danger">You must remove any <a ng-href="#/home?expand={{ spec.key }}">existing application instances</a> before you can edit the spec</div>
+        
                 <div class="row">
                     <div class="col-sm-12">
                         <uib-tabset active="activeTab">
@@ -734,17 +734,17 @@
                         </uib-tabset>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
-    </div>
     
     
-    <div class="row">
-        <div class="col-sm-12">
-            <div class="pull-right">
-                <button id="saveBtn" class="btn btn-success" ng-click="save()" ng-disabled="(spec.key | stackExistsFromSpec) || !keyUnique || modifySpec.$invalid"><i class="fa fa-fw fa-save"></i> Save</button>
-                <button id="cancelBtn" class="btn btn-danger" ng-click="cancel()"><i class="fa fa-fw fa-times"></i> Cancel</button>
-            </div>    
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="pull-right">
+                    <button id="saveBtn" type="submit" class="btn btn-success" ng-disabled="(spec.key | stackExistsFromSpec) || !keyUnique || modifySpec.$invalid"><i class="fa fa-fw fa-save"></i> Save</button>
+                    <button id="cancelBtn" class="btn btn-danger" ng-click="cancel()"><i class="fa fa-fw fa-times"></i> Cancel</button>
+                </div>    
+            </div>
         </div>
-    </div>
+    </form>
 </section>
