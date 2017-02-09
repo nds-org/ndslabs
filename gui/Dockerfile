@@ -3,7 +3,7 @@
 #
 FROM ndslabs/ng-base:latest
 
-# Set build information here before building
+# Set build information here before building (or at build time with --build-args version=X.X.X)
 ARG version="1.0.8"
 
 # Set up necessary environment variables
@@ -15,13 +15,10 @@ ENV DEBIAN_FRONTEND="noninteractive" \
 WORKDIR $BASEDIR
 COPY . $BASEDIR/
 
-# Install build dependencies
-RUN npm install
-
-# Build / minify our app
+# Update build date / version number and enable backports
 RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${version}')#" "$BASEDIR/app/app.js" && \
-    /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('$(date)'))#" "$BASEDIR/app/app.js" && \
-    grunt ship
+    /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('$(date)'))#" "$BASEDIR/app/app.js" && \ 
+    echo 'deb http://http.debian.net/debian jessie-backports main' >> /etc/apt/sources.list
 
 # Set up some default environment variable
 ENV APISERVER_HOST="localhost" \
