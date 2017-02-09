@@ -162,6 +162,12 @@ module.exports = function(grunt) {
                 async: true
             }
         },
+        install: {
+            command: './install-headless-deps.sh',
+            options: {
+                async: false
+            }
+        },
         selenium: {
             command: 'webdriver-manager start >/dev/null 2>&1',
             options: {
@@ -228,6 +234,7 @@ module.exports = function(grunt) {
   grunt.registerTask('default', [ 'ship', 'start' ]);
 
   grunt.registerTask('protractor-xvfb', [
+    'shell:install',
     'shell:xvfb',
     'env:xvfb',
     'shell:driverupdate',
