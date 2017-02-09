@@ -93,8 +93,8 @@ module.exports = function(grunt) {
         mangle: true,
         
         // Uncomment these lines to generate a source map
-        //sourceMap: true,
-        //sourceMapIncludeSources: true,
+        sourceMap: true,
+        sourceMapIncludeSources: true,
         //sourceMapIn: 'dist/main.min.js.map',
       },
       target: {
@@ -141,7 +141,7 @@ module.exports = function(grunt) {
     protractor: {
       options: {
         configFile: "node_modules/protractor/example/conf.js", // Default config file 
-        keepAlive: false, // If false, the grunt process stops when the test fails. 
+        keepAlive: true, // If false, the grunt process stops when the test fails. 
         noColor: false, // If true, protractor will not use colors in its output. 
       },
       ndslabs: {   // Grunt requires at least one target to run so you can simply put 'all: {}' here too. 
@@ -156,20 +156,25 @@ module.exports = function(grunt) {
 
     // configure grunt to start / stop xvfb
     shell: {
-        xvfb: {
+        runxvfb: {
             command: 'Xvfb :99 -ac -screen 0 1600x1200x24',
             options: {
                 async: true
             }
         },
-        selenium: {
+        installxvfb: {
+            command: 'bash ./install-headless-deps.sh',
+            options: {
+                async: false
+            }
+        },
+        runselenium: {
             command: 'webdriver-manager start >/dev/null 2>&1',
             options: {
                 async: true,
-                stdout: function(data) { return ''; },
             }
         },
-        driverupdate: {
+        webdriverupdate: {
             command: 'webdriver-manager update',
             options: {
                 async: false
@@ -184,16 +189,17 @@ module.exports = function(grunt) {
 
     // configure grunt to set env vars
     env: {
-        xvfb: {
+        runxvfb: {
             DISPLAY: ':99'
         }
-    },	 
+    },
 
+    // configure Grunt to wait for Selenium to startup
     wait: {
         options: {
             delay: 3000
         },
-        selenium: {      
+        runselenium: {      
             options: {
                 before : function(options) {
                     console.log('pausing %dms to wait for selenium server to start...', options.delay);
@@ -228,14 +234,15 @@ module.exports = function(grunt) {
   grunt.registerTask('default', [ 'ship', 'start' ]);
 
   grunt.registerTask('protractor-xvfb', [
-    'shell:xvfb',
-    'env:xvfb',
-    'shell:driverupdate',
-    'shell:selenium',
-    'wait:selenium',
+    'shell:installxvfb',
+    'shell:runxvfb',
+    'env:runxvfb',
+    'shell:webdriverupdate',
+    'shell:runselenium',
+    'wait:runselenium',
     'protractor:ndslabs',
-    'shell:selenium:kill',
-    'shell:xvfb:kill'
+    'shell:runselenium:kill',
+    'shell:runxvfb:kill'
   ]);
 
   // Add an additional task for running unit / e2e tests

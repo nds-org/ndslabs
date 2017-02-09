@@ -39,7 +39,7 @@
           <h4>Feedback and Support</h4>
           <p>Please include as much detail as possible when submitting your request.</p>
   
-          <form name="forms['supportForm']">
+          <form name="forms['supportForm']" ng-submit="submitFeedback()">
             <div class="form-group">
               <label for="typeField">Type of Request</label>
               <div class="input-group">
@@ -76,7 +76,7 @@
             </div>
             
             <button id="feedbackBtn" class="btn btn-primary pull-right" ng-class="{ 'btn-primary': status !== 'sent', 'btn-success': status === 'sent' }" 
-                  type="submit" ng-disabled="!forms['supportForm'].$valid || status !== 'unsent'" ng-click="submitFeedback()">
+                  type="submit" ng-disabled="!forms['supportForm'].$valid || status !== 'unsent'">
               <i class="fa fa-fw" ng-class="{ 'fa-send': status === 'unsent', 'fa-spinner fa-spin': status === 'sending', 'fa-check': status === 'sent' }" ></i>
             </button>
           </form>

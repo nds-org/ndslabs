@@ -12,5 +12,7 @@
 # Substitute the ANALYTICS_ACCOUNT passed in by "docker run -e" or kubernetes
 /bin/sed -i -e "s#^\.constant('GaAccount', .*)#.constant('GaAccount', '${ANALYTICS_ACCOUNT}')#" "$BASEDIR/app/app.js"
 
-# Start our HTTP Server
+# Install dependencies and start ExpressJS
+npm install && \
+bower install --allow-root --config.interactive=false && \
 grunt

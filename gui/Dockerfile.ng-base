@@ -1,0 +1,25 @@
+FROM debian:jessie
+
+# Install NodeJS and friends
+RUN apt-get -qq update && \
+    apt-get -qq install --no-install-recommends \
+      build-essential \
+      git \
+      sudo \
+      vim \
+      curl \
+      npm && \
+    curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - && \
+    apt-get -qq update && \
+    apt-get -qq install nodejs && \
+    ln -s /usr/local/bin/node /usr/local/bin/nodejs && \
+    apt-get -qq autoremove && \
+    apt-get -qq autoclean && \
+    apt-get -qq clean all && \
+    rm -rf /var/cache/apk/* /tmp/* /var/lib/apt/lists/*
+
+WORKDIR /root
+
+# Install Grunt + Bower + Protractor
+RUN npm install -g bower grunt-cli && \
+    npm cache clean

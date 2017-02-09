@@ -4,7 +4,7 @@ var config = require("./protractor.auth.json");
 exports.config = {
   framework: 'jasmine',
   seleniumAddress: 'http://localhost:4444/wd/hub',
-  chromeOnly: true,
+  //chromeOnly: true,
   params: config,
   jasmineNodeOpts: { 
     defaultTimeoutInterval: 30000,
@@ -16,11 +16,11 @@ exports.config = {
    */
   multiCapabilities:[
     // Working on Windows and OSX
-    { 'browserName': 'chrome' },
+    //{ 'browserName': 'chrome' },
     
     // Firefox: 46.0.1 and below supposedly work, latest does not
     // See http://stackoverflow.com/questions/38644703/org-openqa-selenium-firefox-notconnectedexception-when-running-selenium-from-com
-    // { 'browserName': 'firefox' }, 
+    { 'browserName': 'firefox' }, 
     
     // Safari: has not been tested
     // NOTE: OSX Only
