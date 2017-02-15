@@ -118,10 +118,14 @@ module.exports = function(grunt) {
       prod: {
         options: {
           background: false,
+          node_env: 'production'
         }
       },
       test: {
         options: {
+          // Print a stack trace whenever a sync function is used
+          // NOTE: For debug use only, disable in production
+          opts: [ '--trace-sync-io' ],
           background: true,
        }
      }

@@ -3,6 +3,7 @@ const util = require('util');
 
 // Import express and middleware modules
 var express = require('express');
+var compression = require('compression')
 var bodyParser = require('body-parser');
 var morgan = require('morgan');
 
@@ -11,6 +12,9 @@ var app = express();
 
 var basedir = process.env.BASEDIR;
 var port = 3000;
+
+// Configure gzip compression
+app.use(compression())
 
 // Configure HTTP parser middleware (only log HTTP errors)
 app.use(morgan('combined', {

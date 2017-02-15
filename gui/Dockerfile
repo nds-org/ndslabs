@@ -9,10 +9,12 @@ ARG version="1.0.9"
 # Set up necessary environment variables
 ENV DEBIAN_FRONTEND="noninteractive" \
     TERM="xterm" \
+    NODE_ENV="production" \
     BASEDIR="/home"
 
 # Copy in the manifests and the app source
 WORKDIR $BASEDIR
+VOLUME $BASEDIR
 COPY . $BASEDIR/
 
 # Update build date / version number and enable backports
