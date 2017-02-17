@@ -541,4 +541,6 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       });
     }
   });
+  
+  checkToken();
 }]);
