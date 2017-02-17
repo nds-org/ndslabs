@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Install karma and friends
+npm install --only=dev
+
 # Add Firefox debian repo and key
 echo 'Installing E2E dependencies...'
 echo 'deb http://mozilla.debian.net/ jessie-backports firefox-release' > /etc/apt/sources.list.d/debian-mozilla.list && \
