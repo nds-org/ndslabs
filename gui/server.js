@@ -23,7 +23,9 @@ var logger = new (winston.Logger)({
       filename: 'webui.log',
       level: 'info'
     })
-  ]
+  ],
+  exitOnError: false,
+  emitErrs: false
 });
 
 // Configure gzip compression
