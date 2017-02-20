@@ -1,6 +1,9 @@
 // Import utilities
 const util = require('util');
 
+// Import winston for logging
+var winston = require('winston');
+
 // Import express and middleware modules
 var express = require('express');
 var compression = require('compression')
@@ -12,6 +15,16 @@ var app = express();
 
 var basedir = process.env.BASEDIR;
 var port = 3000;
+
+var logger = new (winston.Logger)({
+  transports: [
+    new (winston.transports.Console)({ level: 'warn' }),
+    new (winston.transports.File)({
+      filename: 'webui.log',
+      level: 'info'
+    })
+  ]
+});
 
 // Configure gzip compression
 app.use(compression())
@@ -52,21 +65,23 @@ app.post('/logs', function (req, res) {
   // Retrieve log metadata
   var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   var timestamp = req.body.time;
-  var type = req.body.type;
+  var level = req.body.type.toLowerCase();
   var username = req.body.token.namespace || "No Session";
 
   // Retrieve log message body / stacktrace
   var logBody = JSON.parse(req.body.message);
   var message = logBody.message || logBody;
   var stack = logBody.stack || '';
+  
+  // For debug purposes:
   if (!message) {
-    console.log('Received messageless logBody: ', req.body);
+    logger.log(level, 'Received messageless logBody: ', req.body);
   }
     
   // TODO: Is there a more compelling transformation for the POST body?
-  console.log(timestamp + " [" + type + "] " + ip + " (" + username + ") -", message);
+  logger.log(level, timestamp + " | " + ip + " (" + username + ") -", message);
   if (stack) {
-    console.log(stack);
+    logger.log(level, stack);
   }
 
   // Return success
