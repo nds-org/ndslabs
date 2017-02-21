@@ -279,6 +279,11 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 			}
 			payload["server"] = s.hostname
 			payload["user"] = userId
+			account, err := s.etcd.GetAccount(userId)
+			if err == nil {
+				account.LastLogin = time.Now().Unix()
+				s.etcd.PutAccount(account.Namespace, account, false)
+			}
 			return payload
 		},
 	}
@@ -286,6 +291,8 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 
 	api.Use(&rest.IfMiddleware{
 		Condition: func(request *rest.Request) bool {
+			glog.Infof("remoteAddr: %s", request.Request.RemoteAddr)
+
 			return strings.HasPrefix(request.URL.Path, s.prefix+"accounts") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"services") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"change_password") ||

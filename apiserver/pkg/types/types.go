@@ -122,6 +122,7 @@ type Account struct {
 	Status         AccountStatus         `json:"status"`
 	Token          string                `json:"token"`
 	Organization   string                `json:"organization"`
+	LastLogin      int64                 `json:"lastLogin"`
 }
 
 type ResourceLimits struct {
