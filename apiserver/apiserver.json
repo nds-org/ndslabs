@@ -1,0 +1,36 @@
+{
+    "port": "30001",
+    "timeout": 600,
+    "requireApproval": false,
+    "domain" : "",
+    "ingress": "LoadBalancer",
+    "supportEmail": "",
+    "homeVolume": "global",
+    "defaultLimits": {
+        "cpuMax": 2000,
+        "cpuDefault": 1000,
+        "memMax": 8196,
+        "memDefault": 100,
+        "storageDefault": 10
+    },
+    "etcd": {
+        "address": "localhost:4001",
+        "maxMessages": 100
+    },
+    "kubernetes": {
+        "address": "http://localhost:8080"
+    },
+    "email": {
+        "host": "smtp.ncsa.uiuc.edu",
+        "port": 25,
+        "tls": true
+    },
+    "specs": {
+        "path": "/specs"
+    },
+    "volumes": [{
+        "name": "global",
+        "path": "/var/glfs/global",
+        "type": "gluster"
+    }]
+}
