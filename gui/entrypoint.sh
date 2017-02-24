@@ -3,7 +3,7 @@
 # Grab any drop-ins from envvars, if specified
 if [ "${GIT_DROPIN_REPO}" != "" ]; then
     # Copy source over existing
-    echo "Using drop-in: git clone -b ${GIT_DROPIN_BRANCH:-master} -o /tmp/dropin ${GIT_DROPIN_REPO}"
+    echo "Using drop-in: git clone --single-branch --depth=1 -b ${GIT_DROPIN_BRANCH:-master} ${GIT_DROPIN_REPO} /tmp/dropin"
     git clone --single-branch --depth=1 -b ${GIT_DROPIN_BRANCH:-master} ${GIT_DROPIN_REPO} /tmp/dropin && \
     cp -r /tmp/dropin/gui/* $BASEDIR/
 fi
