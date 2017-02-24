@@ -5,7 +5,7 @@ if [ "${GIT_DROPIN_REPO}" != "" ]; then
     # Copy source over existing
     echo "Using drop-in: git clone -b ${GIT_DROPIN_BRANCH:-master} -o /tmp/dropin ${GIT_DROPIN_REPO}"
     git clone --single-branch --depth=1 -b ${GIT_DROPIN_BRANCH:-master} ${GIT_DROPIN_REPO} /tmp/dropin && \
-    cp -r /tmp/dropin/ndslabs/gui/* $BASEDIR/
+    cp -r /tmp/dropin/gui/* $BASEDIR/
 fi
 
 echo "Sed-ing"
