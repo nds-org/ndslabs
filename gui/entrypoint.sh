@@ -1,14 +1,6 @@
 #!/bin/bash
 
-# Grab any drop-ins from envvars, if specified
-if [ "${GIT_DROPIN_REPO}" != "" ]; then
-    # Copy source over existing
-    echo "Using drop-in: git clone --single-branch --depth=1 -b ${GIT_DROPIN_BRANCH:-master} ${GIT_DROPIN_REPO} /tmp/dropin"
-    git clone --single-branch --depth=1 -b ${GIT_DROPIN_BRANCH:-master} ${GIT_DROPIN_REPO} /tmp/dropin && \
-    cp -r /tmp/dropin/gui/* $BASEDIR/
-fi
-
-echo "Sed-ing"
+echo "Sedding"
 
 # Substitute the APISERVER_HOST and PORT passed in by "docker run -e" or kubernetes
 /bin/sed -i -e "s#^\.constant('ApiHost', '.*')#.constant('ApiHost', '${APISERVER_HOST}')#" "$BASEDIR/app/app.js"
@@ -27,5 +19,18 @@ echo "Installing dependencies"
 # Install dependencies and start ExpressJS
 cd $BASEDIR && \
 npm install && \
-bower install --allow-root --config.interactive=false && \
+bower install --allow-root --config.interactive=false
+
+echo "Dropping in"
+
+# Grab any drop-ins from envvars, if specified
+if [ "${GIT_DROPIN_REPO}" != "" ]; then
+    # Copy source over existing
+    echo "Using drop-in: git clone --single-branch --depth=1 -b ${GIT_DROPIN_BRANCH:-master} ${GIT_DROPIN_REPO} /tmp/dropin"
+    git clone --single-branch --depth=1 -b ${GIT_DROPIN_BRANCH:-master} ${GIT_DROPIN_REPO} /tmp/dropin && \
+    cp -r /tmp/dropin/gui/* $BASEDIR/
+fi
+
+echo "Grunting"
+
 grunt
