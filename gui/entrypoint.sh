@@ -2,9 +2,10 @@
 
 # Grab any drop-ins from envvars, if specified
 if [ "${GIT_DROPIN_REPO}" != "" ]; then
-    # Copy source over existing
-    echo "cloning" && git clone --single-branch --depth=1 -b "${GIT_DROPIN_BRANCH:-master}" "${GIT_DROPIN_REPO}" /tmp/dropin && echo "post-clone"
-    echo "copying" && rm -f /tmp/dropin/gui/entrypoint.sh && cp -r /tmp/dropin/gui/* "$BASEDIR/" && echo "post-copy"
+    # Merge drop-in into existing $BASEDIR
+    git clone --single-branch --depth=1 -b "${GIT_DROPIN_BRANCH:-master}" "${GIT_DROPIN_REPO}" /tmp/dropin && \
+    rm -f /tmp/dropin/gui/entrypoint.sh && \
+    cp -r /tmp/dropin/gui/* "$BASEDIR/"
 fi
 
 # Substitute the APISERVER_HOST and PORT passed in by "docker run -e" or kubernetes
@@ -21,8 +22,5 @@ fi
 
 # Install dependencies and start ExpressJS
 npm install && \
-bower install --allow-root --config.interactive=false
-
-echo "Dropping in"
-
-echo "Grunting" && grunt
+bower install --allow-root --config.interactive=false && \
+grunt
