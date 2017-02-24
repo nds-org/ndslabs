@@ -12,6 +12,16 @@
 # Substitute the ANALYTICS_ACCOUNT passed in by "docker run -e" or kubernetes
 /bin/sed -i -e "s#^\.constant('GaAccount', .*)#.constant('GaAccount', '${ANALYTICS_ACCOUNT}')#" "$BASEDIR/app/app.js"
 
+# Grab any drop-ins from envvar, if specified
+if [ "${DROPIN_URL}" != "" ]; then
+    mkdir -p /tmp/dropin
+    cd /tmp/dropin
+    wget "${DROPIN_URL}"
+    
+    # Copy source over existing
+    cp -r * /home/
+fi
+
 # Install dependencies and start ExpressJS
 npm install && \
 bower install --allow-root --config.interactive=false && \
