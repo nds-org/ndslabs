@@ -4,7 +4,7 @@
 if [ "${GIT_DROPIN_REPO}" != "" ]; then
     # Copy source over existing
     echo "Using drop-in: git clone -b ${GIT_DROPIN_BRANCH:-master} ${GIT_DROPIN_REPO}"
-    git clone -b ${GIT_DROPIN_BRANCH:-master} ${GIT_DROPIN_REPO} && cp -r ndslabs/gui/* /home/
+    git clone -b ${GIT_DROPIN_BRANCH:-master} -o /tmp/dropin ${GIT_DROPIN_REPO} && cp -r /tmp/dropin/ndslabs/gui/* /home/
 fi
 
 # Substitute the APISERVER_HOST and PORT passed in by "docker run -e" or kubernetes
