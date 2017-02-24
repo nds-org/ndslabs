@@ -12,15 +12,14 @@
 # Substitute the ANALYTICS_ACCOUNT passed in by "docker run -e" or kubernetes
 /bin/sed -i -e "s#^\.constant('GaAccount', .*)#.constant('GaAccount', '${ANALYTICS_ACCOUNT}')#" "$BASEDIR/app/app.js"
 
-# Grab any drop-ins from envvar, if specified
-if [ "${DROPIN_URL}" != "" ]; then
-    mkdir -p /tmp/dropin
-    cd /tmp/dropin
-    wget "${DROPIN_URL}"
-    
+# Grab any drop-ins from envvars, if specified
+if [ "${GIT_DROPIN_REPO}" != "" ]; then
     # Copy source over existing
-    cp -r * /home/
+    echo "Using drop-in: git clone -b ${GIT_DROPIN_BRANCH:-master} ${GIT_DROPIN_REPO}"
+    mkdir -p /tmp/dropin && cd /tmp/dropin && git clone -b ${GIT_DROPIN_BRANCH:-master} ${GIT_DROPIN_REPO} && cp -r ndslabs/gui/* /home/
 fi
+
+cd $BASEDIR
 
 # Install dependencies and start ExpressJS
 npm install && \
