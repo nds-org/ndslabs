@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"mime"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -105,14 +107,14 @@ func main() {
 	etcd, err := etcd.NewEtcdHelper(cfg.Etcd.Address, cfg.Etcd.MaxMessages)
 	if err != nil {
 		glog.Errorf("Etcd not available: %s\n", err)
-		glog.Fatal(err)
+		glog.Error(err)
 	}
 
 	kube, err := kube.NewKubeHelper(cfg.Kubernetes.Address,
 		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath)
 	if err != nil {
 		glog.Errorf("Kubernetes API server not available\n")
-		glog.Fatal(err)
+		glog.Error(err)
 	}
 
 	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.TLS, cfg.SupportEmail, cfg.Origin)
@@ -127,7 +129,7 @@ func main() {
 		if len(cfg.Domain) > 0 {
 			server.domain = cfg.Domain
 		} else {
-			glog.Fatal("Domain must be specified for ingress type LoadBalancer")
+			glog.Error("Domain must be specified for ingress type LoadBalancer")
 		}
 	}
 	server.etcd = etcd
@@ -293,6 +295,7 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 		rest.Post(s.prefix+"import/:userId", s.ImportAccount),
 		rest.Get(s.prefix+"export/:userId", s.ExportAccount),
 		rest.Get(s.prefix+"stop_all", s.StopAllStacks),
+		rest.Put(s.prefix+"mount/:sid", s.PutDataset),
 	)
 
 	router, err := rest.MakeRouter(routes...)
@@ -2099,6 +2102,8 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 		time.Sleep(time.Second * 3)
 	}
 
+	// To overcome the 503 error on ingress, wait 5 seconds before returning the endpoint
+	time.Sleep(time.Second * 5)
 	stack, _ = s.getStackWithStatus(userId, sid)
 	stack.Status = "started"
 	for _, stackService := range stack.Services {
@@ -2951,4 +2956,125 @@ func readConfig(path string) (*config.Config, error) {
 		return nil, err
 	}
 	return &config, nil
+}
+
+func (s *Server) PutDataset(w rest.ResponseWriter, r *rest.Request) {
+	userId := s.getUser(r)
+	sid := r.PathParam("sid")
+
+	dataset := api.Dataset{}
+	err := r.DecodeJsonPayload(&dataset)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	stack, _ := s.etcd.GetStack(userId, sid)
+	if stack == nil {
+		rest.NotFound(w, r)
+		return
+	}
+
+	if dataset.Source == "clowder" {
+		if len(stack.Services) > 1 {
+			rest.Error(w, "Cannot mount data into multi-service stack", http.StatusConflict)
+			return
+		}
+
+		// There are two options in Clowder. If the Clowder instance uses byteStorage, then
+		// there's a file on disk for the object and we can get the file information from
+		// the Clowder API.  If not, we can download the dataset via API and extract into
+		// the container data volume.
+
+		// TODO:  Get the Clowder dataset path information
+
+		// https://s6vnik-clowder.workbench.nationaldataservice.org/api/datasets/58b06e73e4b008f0ce825189/listFiles
+		/*
+			[
+				{
+					"size":"31120",
+					"date-created":"Fri Feb 24 17:33:51 UTC 2017",
+					"id":"58b06e7fe4b008f0ce82518c",
+					"contentType":"image/jpeg",
+					"filename":"Hs-2009-25-e-full_jpg.jpg"},
+				{
+					"size":"31120",
+					"date-created":"Fri Feb 24 17:48:18 UTC 2017",
+					"id":"58b071e2e4b04f6dc15da646",
+					"filepath":"/clowder_data/uploads/49/a6/5d/58b071e2e4b04f6dc1",
+					"contentType":"image/jpeg",
+					"filename":"Hs-2009-25-e-full_jpg.jpg"
+				}
+			]
+			Looks like we'll need a way to map into docker, if not a valid path
+		*/
+
+		// Get sole stack service
+		stackService := stack.Services[0]
+
+		// Get the default mount path from spec
+		servicePath := ""
+		spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
+		if spec != nil {
+			for _, mount := range spec.VolumeMounts {
+				if mount.Default {
+					for vpath, value := range stackService.VolumeMounts {
+						if value == mount.MountPath {
+							servicePath = vpath
+						}
+					}
+				}
+			}
+		}
+
+		//https://s6vnik-clowder.workbench.nationaldataservice.org/api/datasets/58b06e73e4b008f0ce825189/download?r1ek3rs
+		_, params, err := mime.ParseMediaType(r.Request.Header.Get("Content-Disposition"))
+		filename := params["filename"]
+
+		dataPath := s.getHomeVolume().Path + "/" + userId + "/" + servicePath + "/data"
+		os.MkdirAll(dataPath, 0700)
+		glog.Infof("Downloading file %s from URL %s to path %s\n", dataset.Name, dataset.URL, dataPath)
+
+		zipPath := dataPath + "/" + filename
+		// Create the file in the default path for the service
+		out, err := os.Create(zipPath)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer out.Close()
+
+		// Download the file
+		resp, err := http.Get(dataset.URL)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer resp.Body.Close()
+
+		// Write the body to file
+		_, err = io.Copy(out, resp.Body)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		cmd := exec.Command("unzip", zipPath, "-d", dataPath)
+		if err != nil {
+			glog.Error(err)
+			return
+		}
+		err = cmd.Wait()
+		if err != nil {
+			glog.Error(err)
+			return
+		}
+		os.Remove(zipPath)
+
+		return
+	}
 }
