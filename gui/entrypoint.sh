@@ -2,8 +2,10 @@
 
 # Grab any drop-ins from envvars, if specified
 if [ "${GIT_DROPIN_REPO}" != "" ]; then
-    # Merge drop-in into existing $BASEDIR
-    git clone --single-branch --depth=1 -b "${GIT_DROPIN_BRANCH:-master}" "${GIT_DROPIN_REPO}" /tmp/dropin && \
+    echo "Using drop-in: git clone --single-branch --depth=1 -b ${GIT_DROPIN_BRANCH:-master} ${GIT_DROPIN_REPO} /tmp/dropin"
+
+    # Merge drop-in into existing $BASEDIR (exclude entrypoint.sh, so we don't mess up our current execution)
+    git clone --single-branch --depth=1 -b ${GIT_DROPIN_BRANCH:-master} ${GIT_DROPIN_REPO} /tmp/dropin && \
     rm -f /tmp/dropin/gui/entrypoint.sh && \
     cp -r /tmp/dropin/gui/* "$BASEDIR/"
 fi
