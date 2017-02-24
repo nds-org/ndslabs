@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Grab any drop-ins from envvars, if specified
+if [ "${GIT_DROPIN_REPO}" != "" ]; then
+    # Copy source over existing
+    echo "cloning" && git clone --single-branch --depth=1 -b "${GIT_DROPIN_BRANCH:-master}" "${GIT_DROPIN_REPO}" /tmp/dropin && echo "post-clone"
+    echo "copying" && rm -f /tmp/dropin/gui/entrypoint.sh && cp -r /tmp/dropin/gui/* "$BASEDIR/" && echo "post-copy"
+fi
+
 # Substitute the APISERVER_HOST and PORT passed in by "docker run -e" or kubernetes
 /bin/sed -i -e "s#^\.constant('ApiHost', '.*')#.constant('ApiHost', '${APISERVER_HOST}')#" "$BASEDIR/app/app.js"
 /bin/sed -i -e "s#^\.constant('ApiPort', '.*')#.constant('ApiPort', '${APISERVER_PORT}')#" "$BASEDIR/app/app.js"
@@ -17,13 +24,5 @@ npm install && \
 bower install --allow-root --config.interactive=false
 
 echo "Dropping in"
-
-# Grab any drop-ins from envvars, if specified
-if [ "${GIT_DROPIN_REPO}" != "" ]; then
-    # Copy source over existing
-    echo "cloning" && git clone --single-branch --depth=1 -b "${GIT_DROPIN_BRANCH:-master}" "${GIT_DROPIN_REPO}" /tmp/dropin && echo "post-clone"
-    echo "copying" && cp -r /tmp/dropin/gui/* "$BASEDIR/" && echo "post-copy"
-    echo "Grunting" && grunt
-fi
 
 echo "Grunting" && grunt
