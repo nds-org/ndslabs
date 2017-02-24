@@ -19,7 +19,7 @@ bower install --allow-root --config.interactive=false
 echo "Dropping in"
 
 # Grab any drop-ins from envvars, if specified
-if [ "${GIT_DROPIN_REPO}" == "" ]; then
+if [ "${GIT_DROPIN_REPO}" != "" ]; then
     # Copy source over existing
     echo "cloning" && git clone --single-branch --depth=1 -b ${GIT_DROPIN_BRANCH:-master} "${GIT_DROPIN_REPO}" /tmp/dropin && echo "post-clone"
     echo "copying" && cp -r /tmp/dropin/gui/* $BASEDIR && echo "post-copy"
