@@ -231,21 +231,22 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 	api.Use(&rest.IfMiddleware{
 		Condition: func(request *rest.Request) bool {
 			return strings.HasPrefix(request.URL.Path, s.prefix+"accounts") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"services") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"change_password") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"check_token") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"check_console") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"configs") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"export") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"import") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"logs") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"mount") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"refresh_token") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"services") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"shutdown") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"stacks") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"start") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"stop") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"logs") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"volumes") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"configs") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"check_token") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"refresh_token") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"support") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"import") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"export") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"shutdown") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"check_console")
+				strings.HasPrefix(request.URL.Path, s.prefix+"volumes")
 		},
 		IfTrue: jwt,
 	})
@@ -412,6 +413,7 @@ func (s *Server) GetPaths(w rest.ResponseWriter, r *rest.Request) {
 	paths = append(paths, s.prefix+"contact")
 	paths = append(paths, s.prefix+"healthz")
 	paths = append(paths, s.prefix+"logs")
+	paths = append(paths, s.prefix+"mount")
 	paths = append(paths, s.prefix+"register")
 	paths = append(paths, s.prefix+"reset")
 	paths = append(paths, s.prefix+"services")
@@ -454,12 +456,15 @@ func (s *Server) GetAllAccounts(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) getUser(r *rest.Request) string {
-	payload := r.Env["JWT_PAYLOAD"].(map[string]interface{})
-	if payload[adminUser] == true {
-		return ""
-	} else {
-		return payload["user"].(string)
+	if r.Env["JWT_PAYLOAD"] != nil {
+		payload := r.Env["JWT_PAYLOAD"].(map[string]interface{})
+		if payload[adminUser] == true {
+			return ""
+		} else {
+			return payload["user"].(string)
+		}
 	}
+	return ""
 }
 
 func (s *Server) IsAdmin(r *rest.Request) bool {
@@ -2959,8 +2964,7 @@ func readConfig(path string) (*config.Config, error) {
 
 // Mount data into the user's home directory. Delegate actual work to data-mounting service
 func (s *Server) PutDataset(w rest.ResponseWriter, r *rest.Request) {
-	//userId := s.getUser(r)
-	userId := "willis8"
+	userId := s.getUser(r)
 	sid := r.PathParam("sid")
 
 	dataset := api.Dataset{}
@@ -2971,8 +2975,9 @@ func (s *Server) PutDataset(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	stack, _ := s.etcd.GetStack(userId, sid)
+	stack, err := s.etcd.GetStack(userId, sid)
 	if stack == nil {
+		glog.Errorf("Stack %s not found for user %s", sid, userId)
 		rest.NotFound(w, r)
 		return
 	}
@@ -3003,36 +3008,48 @@ func (s *Server) PutDataset(w rest.ResponseWriter, r *rest.Request) {
 	// Get the path in the user's home directory where dataset will be
 	// mounted/copied
 	dataPath := s.getHomeVolume().Path + "/" + userId + "/" + servicePath + "/data"
-	os.MkdirAll(dataPath, 0700)
+	err = os.MkdirAll(dataPath, 0700)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
+	// Delegate the mount request
 	dataset.LocalPath = dataPath
-
 	err = s.mountData(&dataset)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		w.WriteHeader(http.StatusOK)
 	}
 }
 
+// Delegate mount/fetch request to data-provider service
 func (s *Server) mountData(dataset *api.Dataset) error {
 
-	client := http.Client{}
-	data, err := json.Marshal(dataset)
-	request, err := http.NewRequest("POST",
-		s.Config.DataProviderURL+"/mount", bytes.NewBuffer([]byte(data)))
-	if err != nil {
-		return err
-	}
-	request.Header.Set("Content-Type", "application/json")
-	resp, err := client.Do(request)
-	if err != nil {
-		return err
-	} else {
-		if resp.StatusCode == http.StatusOK {
-			return nil
-		} else {
-			return fmt.Errorf("Error from data provider: %d", resp.StatusCode)
+	if s.Config.DataProviderURL != "" {
+		client := http.Client{}
+		data, err := json.Marshal(dataset)
+		request, err := http.NewRequest("POST",
+			s.Config.DataProviderURL+"/mount", bytes.NewBuffer([]byte(data)))
+		if err != nil {
+			return err
 		}
+		request.Header.Set("Content-Type", "application/json")
+		resp, err := client.Do(request)
+		if err != nil {
+			return err
+		} else {
+			if resp.StatusCode == http.StatusOK {
+				return nil
+			} else {
+				return fmt.Errorf("Error from data provider: %d", resp.StatusCode)
+			}
+		}
+	} else {
+		glog.Error("MountData called with empty dataProviderURL")
 	}
 	return nil
 }
