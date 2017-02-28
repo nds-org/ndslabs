@@ -19,10 +19,12 @@ var port = 3000;
 var logger = new (winston.Logger)({
   transports: [
     new (winston.transports.Console)({ level: 'warn' }),
-    new (winston.transports.File)({
+    
+    // TODO: Log to file if we ever find a reason to do so
+    /*new (winston.transports.File)({
       filename: 'webui.log',
       level: 'info'
-    })
+    })*/
   ],
   exitOnError: false,
   emitErrs: false
