@@ -254,7 +254,9 @@ type ExportPackage struct {
 }
 
 type Dataset struct {
-	Source string `json:"source"`
-	Name   string `json:"name"`
-	URL    string `json:"URL"`
+	Provider  string `json:"provider"`
+	Type      string `json:"type"`
+	Key       string `json:"key"`
+	URL       string `json:"url"`
+	LocalPath string `json:"localPath"`
 }

@@ -17,6 +17,7 @@ type Config struct {
 	SupportEmail    string        `json:"supportEmail"`
 	HomeVolume      string        `json:"homeVolume"`
 	Volumes         []Volume      `json:"volumes"`
+	DataProviderURL string        `json:"dataProviderURL"`
 }
 
 type Specs struct {

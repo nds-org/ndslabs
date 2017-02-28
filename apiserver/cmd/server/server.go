@@ -2,15 +2,14 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"mime"
 	"net/http"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -2958,8 +2957,10 @@ func readConfig(path string) (*config.Config, error) {
 	return &config, nil
 }
 
+// Mount data into the user's home directory. Delegate actual work to data-mounting service
 func (s *Server) PutDataset(w rest.ResponseWriter, r *rest.Request) {
-	userId := s.getUser(r)
+	//userId := s.getUser(r)
+	userId := "willis8"
 	sid := r.PathParam("sid")
 
 	dataset := api.Dataset{}
@@ -2976,105 +2977,62 @@ func (s *Server) PutDataset(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	if dataset.Source == "clowder" {
-		if len(stack.Services) > 1 {
-			rest.Error(w, "Cannot mount data into multi-service stack", http.StatusConflict)
-			return
-		}
+	if len(stack.Services) > 1 {
+		rest.Error(w, "Cannot mount data into multi-service stack", http.StatusConflict)
+		return
+	}
 
-		// There are two options in Clowder. If the Clowder instance uses byteStorage, then
-		// there's a file on disk for the object and we can get the file information from
-		// the Clowder API.  If not, we can download the dataset via API and extract into
-		// the container data volume.
+	// Get sole stack service
+	stackService := stack.Services[0]
 
-		// TODO:  Get the Clowder dataset path information
-
-		// https://s6vnik-clowder.workbench.nationaldataservice.org/api/datasets/58b06e73e4b008f0ce825189/listFiles
-		/*
-			[
-				{
-					"size":"31120",
-					"date-created":"Fri Feb 24 17:33:51 UTC 2017",
-					"id":"58b06e7fe4b008f0ce82518c",
-					"contentType":"image/jpeg",
-					"filename":"Hs-2009-25-e-full_jpg.jpg"},
-				{
-					"size":"31120",
-					"date-created":"Fri Feb 24 17:48:18 UTC 2017",
-					"id":"58b071e2e4b04f6dc15da646",
-					"filepath":"/clowder_data/uploads/49/a6/5d/58b071e2e4b04f6dc1",
-					"contentType":"image/jpeg",
-					"filename":"Hs-2009-25-e-full_jpg.jpg"
-				}
-			]
-			Looks like we'll need a way to map into docker, if not a valid path
-		*/
-
-		// Get sole stack service
-		stackService := stack.Services[0]
-
-		// Get the default mount path from spec
-		servicePath := ""
-		spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
-		if spec != nil {
-			for _, mount := range spec.VolumeMounts {
-				if mount.Default {
-					for vpath, value := range stackService.VolumeMounts {
-						if value == mount.MountPath {
-							servicePath = vpath
-						}
+	// Get the default mount path from spec
+	servicePath := ""
+	spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
+	if spec != nil {
+		for _, mount := range spec.VolumeMounts {
+			if mount.Default {
+				for vpath, value := range stackService.VolumeMounts {
+					if value == mount.MountPath {
+						servicePath = vpath
 					}
 				}
 			}
 		}
-
-		//https://s6vnik-clowder.workbench.nationaldataservice.org/api/datasets/58b06e73e4b008f0ce825189/download?r1ek3rs
-		_, params, err := mime.ParseMediaType(r.Request.Header.Get("Content-Disposition"))
-		filename := params["filename"]
-
-		dataPath := s.getHomeVolume().Path + "/" + userId + "/" + servicePath + "/data"
-		os.MkdirAll(dataPath, 0700)
-		glog.Infof("Downloading file %s from URL %s to path %s\n", dataset.Name, dataset.URL, dataPath)
-
-		zipPath := dataPath + "/" + filename
-		// Create the file in the default path for the service
-		out, err := os.Create(zipPath)
-		if err != nil {
-			glog.Error(err)
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer out.Close()
-
-		// Download the file
-		resp, err := http.Get(dataset.URL)
-		if err != nil {
-			glog.Error(err)
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer resp.Body.Close()
-
-		// Write the body to file
-		_, err = io.Copy(out, resp.Body)
-		if err != nil {
-			glog.Error(err)
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		cmd := exec.Command("unzip", zipPath, "-d", dataPath)
-		if err != nil {
-			glog.Error(err)
-			return
-		}
-		err = cmd.Wait()
-		if err != nil {
-			glog.Error(err)
-			return
-		}
-		os.Remove(zipPath)
-
-		return
 	}
+
+	// Get the path in the user's home directory where dataset will be
+	// mounted/copied
+	dataPath := s.getHomeVolume().Path + "/" + userId + "/" + servicePath + "/data"
+	os.MkdirAll(dataPath, 0700)
+
+	dataset.LocalPath = dataPath
+
+	err = s.mountData(&dataset)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (s *Server) mountData(dataset *api.Dataset) error {
+
+	client := http.Client{}
+	data, err := json.Marshal(dataset)
+	request, err := http.NewRequest("POST",
+		s.Config.DataProviderURL+"/mount", bytes.NewBuffer([]byte(data)))
+	if err != nil {
+		return err
+	}
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := client.Do(request)
+	if err != nil {
+		return err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			return nil
+		} else {
+			return fmt.Errorf("Error from data provider: %d", resp.StatusCode)
+		}
+	}
+	return nil
 }

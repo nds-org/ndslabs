@@ -72,6 +72,7 @@ if [ "$1" = 'apiserver' ]; then
 		MAX_MESSAGES=100
 	fi
 
+
 cat << EOF > /apiserver.json
 {
     "port": "30001",
@@ -85,6 +86,7 @@ cat << EOF > /apiserver.json
     "username": "admin",
     "password": "admin",
     "homeVolume": "$VOLUME_NAME",
+    "dataProviderURL": "$DATA_PROVIDER_URL",
     "defaultLimits": {
         "cpuMax": 2000,
         "cpuDefault": 1000,
