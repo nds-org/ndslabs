@@ -160,7 +160,7 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 	glog.Infof("port %s", cfg.Port)
 
 	homeVol := s.getHomeVolume()
-	os.MkdirAll(homeVol.Path, 0700)
+	os.MkdirAll(homeVol.Path, 0777)
 
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
@@ -2995,9 +2995,9 @@ func (s *Server) PutDataset(w rest.ResponseWriter, r *rest.Request) {
 	spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
 	if spec != nil {
 		for _, mount := range spec.VolumeMounts {
-			if mount.Default {
-				for vpath, value := range stackService.VolumeMounts {
-					if value == mount.MountPath {
+			for vpath, value := range stackService.VolumeMounts {
+				if value == mount.MountPath {
+					if len(spec.VolumeMounts) == 1 || mount.Default {
 						servicePath = vpath
 					}
 				}
@@ -3008,7 +3008,7 @@ func (s *Server) PutDataset(w rest.ResponseWriter, r *rest.Request) {
 	// Get the path in the user's home directory where dataset will be
 	// mounted/copied
 	dataPath := s.getHomeVolume().Path + "/" + userId + "/" + servicePath + "/data"
-	err = os.MkdirAll(dataPath, 0700)
+	err = os.MkdirAll(dataPath, 0777|os.ModeSticky)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
