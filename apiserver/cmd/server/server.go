@@ -854,7 +854,7 @@ func (s *Server) DenyAccount(w rest.ResponseWriter, r *rest.Request) {
 func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
 
 	homeVol := s.getHomeVolume()
-	err := os.MkdirAll(homeVol.Path+"/"+account.Namespace, 0777|os.ModeSticky)
+	err := os.MkdirAll(homeVol.Path+"/"+account.Namespace, 0777)
 	if err != nil {
 		return false, err
 	}
@@ -2125,7 +2125,7 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 func (s *Server) makeDirectories(userId string, stackService *api.StackService) {
 	for path, _ := range stackService.VolumeMounts {
 		homeVol := s.getHomeVolume()
-		os.MkdirAll(homeVol.Path+"/"+userId+"/"+path, 0777|os.ModeSticky)
+		os.MkdirAll(homeVol.Path+"/"+userId+"/"+path, 0777)
 	}
 }
 
@@ -3008,7 +3008,7 @@ func (s *Server) PutDataset(w rest.ResponseWriter, r *rest.Request) {
 	// Get the path in the user's home directory where dataset will be
 	// mounted/copied
 	dataPath := s.getHomeVolume().Path + "/" + userId + "/" + servicePath + "/data"
-	err = os.MkdirAll(dataPath, 0777|os.ModeSticky)
+	err = os.MkdirAll(dataPath, 0777)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
