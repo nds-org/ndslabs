@@ -1638,7 +1638,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	// If the user deleted an optional service, need to stop the
-	// associated Kubernetes service
+	// associated Kubernetes service and ingress rule
 	for i := range oldStack.Services {
 		stackService := &oldStack.Services[i]
 		newStackService := newStack.GetStackService(stackService.Id)
@@ -1649,10 +1649,13 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 			spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
 			if len(spec.Ports) > 0 {
 				err := s.kube.StopService(userId, name)
-				// Log and continue
 				if err != nil {
 					glog.Error(err)
 				}
+			}
+			_, err := s.kube.DeleteIngress(userId, stackService.Id+"-ingress")
+			if err != nil {
+				glog.Error(err)
 			}
 		}
 	}
