@@ -19,6 +19,7 @@ RUN apt-get update -y -qq && \
     ./build.sh docker && \
     mv build/bin/apiserver-linux-amd64 /apiserver && \
     mkdir /ndslabsctl/ && mv build/bin/ndslabsctl* /ndslabsctl && \
+    ln -s /ndslabsctl/ndslabsctl-linux-amd64 /usr/local/bin/ndslabsctl && \
     apt-get remove --purge gcc -y -qq && \
     apt-get autoremove -y -qq && \
     apt-get -y clean all &&\
