@@ -337,7 +337,7 @@ func (k *KubeHelper) StartController(pid string, spec *api.ReplicationController
 		if httpresp.StatusCode == http.StatusCreated {
 			glog.V(4).Infof("Created controller " + name)
 		} else {
-			glog.V(4).Infof("Error starting controller (%d)\n", httpresp.StatusCode)
+			glog.Errorf("Error starting controller (%d)\n", httpresp.StatusCode)
 		}
 	}
 
