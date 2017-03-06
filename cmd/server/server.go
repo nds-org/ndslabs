@@ -2,6 +2,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	config "github.com/ndslabs/apiserver/pkg/config"
 	email "github.com/ndslabs/apiserver/pkg/email"
 	etcd "github.com/ndslabs/apiserver/pkg/etcd"
 	kube "github.com/ndslabs/apiserver/pkg/kube"
@@ -20,7 +22,6 @@ import (
 	api "github.com/ndslabs/apiserver/pkg/types"
 	validate "github.com/ndslabs/apiserver/pkg/validate"
 	version "github.com/ndslabs/apiserver/pkg/version"
-	gcfg "gopkg.in/gcfg.v1"
 	k8api "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/watch"
 
@@ -35,91 +36,39 @@ var systemNamespace = "kube-system"
 var glusterPodName = "glfs-server-global"
 
 type Server struct {
+	Config          *config.Config
 	etcd            *etcd.EtcdHelper
 	kube            *kube.KubeHelper
-	validator       *validate.Validator
+	Validator       *validate.Validator
 	email           *email.EmailHelper
 	Namespace       string
 	local           bool
-	volDir          string
-	volName         string
+	homeVolume      string
 	hostname        string
 	jwt             *jwt.JWTMiddleware
 	prefix          string
-	ingress         IngressType
+	ingress         config.IngressType
 	domain          string
-	cpuMax          int
-	cpuDefault      int
-	memMax          int
-	memDefault      int
-	storageDefault  int
 	requireApproval bool
 	origin          string
 }
-
-type Config struct {
-	Server struct {
-		Port            string
-		Origin          string
-		VolDir          string
-		VolName         string
-		SpecsDir        string
-		VolumeSource    string
-		Timeout         int
-		Prefix          string
-		Domain          string
-		RequireApproval bool
-		Ingress         IngressType
-	}
-	DefaultLimits struct {
-		CpuMax         int
-		CpuDefault     int
-		MemMax         int
-		MemDefault     int
-		StorageDefault int
-	}
-	Etcd struct {
-		Address     string
-		MaxMessages int
-	}
-	Kubernetes struct {
-		Address   string
-		TokenPath string
-		Username  string
-		Password  string
-	}
-	Email struct {
-		Host         string
-		Port         int
-		TLS          bool
-		SupportEmail string
-	}
-}
-
-type IngressType string
-
-const (
-	IngressTypeLoadBalancer IngressType = "LoadBalancer"
-	IngressTypeNodePort     IngressType = "NodePort"
-)
 
 var defaultTimeout = 600
 
 func main() {
 
 	var confPath, adminPasswd string
-	flag.StringVar(&confPath, "conf", "apiserver.conf", "Configuration path")
-	flag.StringVar(&adminPasswd, "passwd", "admin", "Admin usder password")
+	flag.StringVar(&confPath, "conf", "apiserver.json", "Configuration path")
+	flag.StringVar(&adminPasswd, "passwd", "admin", "Admin user password")
 	flag.Parse()
-	cfg := Config{}
-	err := gcfg.ReadFileInto(&cfg, confPath)
+	cfg, err := readConfig(confPath)
 	if err != nil {
 		glog.Error(err)
 		os.Exit(-1)
 	}
 
-	if cfg.Server.Port == "" {
-		cfg.Server.Port = "30001"
+	if cfg.Port == "" {
+		cfg.Port = "30001"
 	}
 	if cfg.Etcd.Address == "" {
 		cfg.Etcd.Address = "localhost:4001"
@@ -148,7 +97,6 @@ func main() {
 	if cfg.DefaultLimits.StorageDefault <= 0 {
 		cfg.DefaultLimits.StorageDefault = 10
 	}
-	glog.Infof("Using account defaults: max memory=%d M, max cpu=%d m, max storage = %d GB\n")
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -158,17 +106,17 @@ func main() {
 	etcd, err := etcd.NewEtcdHelper(cfg.Etcd.Address, cfg.Etcd.MaxMessages)
 	if err != nil {
 		glog.Errorf("Etcd not available: %s\n", err)
-		glog.Fatal(err)
+		glog.Error(err)
 	}
 
 	kube, err := kube.NewKubeHelper(cfg.Kubernetes.Address,
 		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath)
 	if err != nil {
 		glog.Errorf("Kubernetes API server not available\n")
-		glog.Fatal(err)
+		glog.Error(err)
 	}
 
-	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.TLS, cfg.Email.SupportEmail, cfg.Server.Origin)
+	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.TLS, cfg.SupportEmail, cfg.Origin)
 	if err != nil {
 		glog.Errorf("Error in email server configuration\n")
 		glog.Fatal(err)
@@ -176,47 +124,43 @@ func main() {
 
 	server := Server{}
 	server.hostname = hostname
-	if cfg.Server.Ingress == IngressTypeLoadBalancer {
-		if len(cfg.Server.Domain) > 0 {
-			server.domain = cfg.Server.Domain
+	if cfg.Ingress == config.IngressTypeLoadBalancer {
+		if len(cfg.Domain) > 0 {
+			server.domain = cfg.Domain
 		} else {
-			glog.Fatal("Domain must be specified for ingress type LoadBalancer")
+			glog.Error("Domain must be specified for ingress type LoadBalancer")
 		}
 	}
 	server.etcd = etcd
 	server.kube = kube
 	server.email = email
-	server.volDir = cfg.Server.VolDir
-	server.volName = cfg.Server.VolName
-	server.cpuMax = cfg.DefaultLimits.CpuMax
-	server.cpuDefault = cfg.DefaultLimits.CpuDefault
-	server.memMax = cfg.DefaultLimits.MemMax
-	server.memDefault = cfg.DefaultLimits.MemDefault
-	server.storageDefault = cfg.DefaultLimits.StorageDefault
-	server.requireApproval = cfg.Server.RequireApproval
+	server.Config = cfg
+	server.homeVolume = cfg.HomeVolume
 
-	server.ingress = IngressTypeNodePort
-	if cfg.Server.Ingress != "" {
-		server.ingress = cfg.Server.Ingress
+	server.ingress = config.IngressTypeNodePort
+	if cfg.Ingress != "" {
+		server.ingress = cfg.Ingress
 	}
 
 	server.prefix = "/api/"
-	if cfg.Server.Prefix != "" {
-		server.prefix = cfg.Server.Prefix
+	if cfg.Prefix != "" {
+		server.prefix = cfg.Prefix
 	}
 	server.start(cfg, adminPasswd)
 
 }
 
-func (s *Server) start(cfg Config, adminPasswd string) {
+func (s *Server) start(cfg *config.Config, adminPasswd string) {
 
 	glog.Infof("Starting NDS Labs API server (%s %s)", version.VERSION, version.BUILD_DATE)
 	glog.Infof("etcd %s ", cfg.Etcd.Address)
 	glog.Infof("kube-apiserver %s", cfg.Kubernetes.Address)
-	glog.Infof("volume dir %s", cfg.Server.VolDir)
-	glog.Infof("specs dir %s", cfg.Server.SpecsDir)
-	glog.Infof("port %s", cfg.Server.Port)
-	os.MkdirAll(cfg.Server.VolDir, 0700)
+	glog.Infof("home volume %s", cfg.HomeVolume)
+	glog.Infof("specs dir %s", cfg.Specs.Path)
+	glog.Infof("port %s", cfg.Port)
+
+	homeVol := s.getHomeVolume()
+	os.MkdirAll(homeVol.Path, 0777)
 
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
@@ -224,15 +168,15 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 
 	glog.Infof("prefix %s", s.prefix)
 
-	if len(cfg.Server.Origin) > 0 {
-		glog.Infof("CORS origin %s\n", cfg.Server.Origin)
-		s.origin = cfg.Server.Origin
+	if len(cfg.Origin) > 0 {
+		glog.Infof("CORS origin %s\n", cfg.Origin)
+		s.origin = cfg.Origin
 
 		api.Use(&rest.CorsMiddleware{
 			RejectNonCorsRequests: false,
 			OriginValidator: func(origin string, request *rest.Request) bool {
 				// NDS-552
-				return origin == cfg.Server.Origin || origin == cfg.Server.Origin+"."
+				return origin == cfg.Origin || origin == cfg.Origin+"."
 			},
 			AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
 			AllowedHeaders: []string{
@@ -243,13 +187,13 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 	}
 
 	timeout := time.Minute * 30
-	if cfg.Server.Timeout > 0 {
-		timeout = time.Minute * time.Duration(cfg.Server.Timeout)
+	if cfg.Timeout > 0 {
+		timeout = time.Minute * time.Duration(cfg.Timeout)
 	}
 	glog.Infof("session timeout %s", timeout)
 
-	glog.Infof("domain %s", cfg.Server.Domain)
-	glog.Infof("ingress %s", cfg.Server.Ingress)
+	glog.Infof("domain %s", cfg.Domain)
+	glog.Infof("ingress %s", cfg.Ingress)
 
 	jwt := &jwt.JWTMiddleware{
 		Key:        []byte(s.hostname),
@@ -287,21 +231,22 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 	api.Use(&rest.IfMiddleware{
 		Condition: func(request *rest.Request) bool {
 			return strings.HasPrefix(request.URL.Path, s.prefix+"accounts") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"services") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"change_password") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"check_token") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"check_console") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"configs") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"export") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"import") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"logs") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"mount") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"refresh_token") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"services") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"shutdown") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"stacks") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"start") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"stop") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"logs") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"volumes") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"configs") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"check_token") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"refresh_token") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"support") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"import") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"export") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"shutdown") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"check_console")
+				strings.HasPrefix(request.URL.Path, s.prefix+"volumes")
 		},
 		IfTrue: jwt,
 	})
@@ -350,6 +295,7 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 		rest.Post(s.prefix+"import/:userId", s.ImportAccount),
 		rest.Get(s.prefix+"export/:userId", s.ExportAccount),
 		rest.Get(s.prefix+"stop_all", s.StopAllStacks),
+		rest.Put(s.prefix+"mount/:sid", s.PutDataset),
 	)
 
 	router, err := rest.MakeRouter(routes...)
@@ -359,14 +305,14 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 	}
 	api.SetApp(router)
 
-	if len(cfg.Server.SpecsDir) > 0 {
-		glog.Infof("Loading service specs from %s\n", cfg.Server.SpecsDir)
-		err = s.loadSpecs(cfg.Server.SpecsDir)
+	if len(cfg.Specs.Path) > 0 {
+		glog.Infof("Loading service specs from %s\n", cfg.Specs.Path)
+		err = s.loadSpecs(cfg.Specs.Path)
 		if err != nil {
 			glog.Warningf("Error loading specs: %s\n", err)
 		}
-		s.addVocabulary(cfg.Server.SpecsDir + "/vocab/tags.json")
-		s.validator = validate.NewValidator(cfg.Server.SpecsDir + "/schemas/spec-schema.json")
+		s.addVocabulary(cfg.Specs.Path + "/vocab/tags.json")
+		s.Validator = validate.NewValidator(cfg.Specs.Path + "/schemas/spec-schema.json")
 	}
 
 	s.createAdminUser(adminPasswd)
@@ -378,8 +324,8 @@ func (s *Server) start(cfg Config, adminPasswd string) {
 	http.Handle(s.prefix, api.MakeHandler())
 	http.HandleFunc(s.prefix+"download", s.DownloadClient)
 
-	glog.Infof("Listening on %s", cfg.Server.Port)
-	glog.Fatal(http.ListenAndServe(":"+cfg.Server.Port, nil))
+	glog.Infof("Listening on %s", cfg.Port)
+	glog.Fatal(http.ListenAndServe(":"+cfg.Port, nil))
 }
 
 func (s *Server) CheckConsole(w rest.ResponseWriter, r *rest.Request) {
@@ -467,6 +413,7 @@ func (s *Server) GetPaths(w rest.ResponseWriter, r *rest.Request) {
 	paths = append(paths, s.prefix+"contact")
 	paths = append(paths, s.prefix+"healthz")
 	paths = append(paths, s.prefix+"logs")
+	paths = append(paths, s.prefix+"mount")
 	paths = append(paths, s.prefix+"register")
 	paths = append(paths, s.prefix+"reset")
 	paths = append(paths, s.prefix+"services")
@@ -509,12 +456,15 @@ func (s *Server) GetAllAccounts(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) getUser(r *rest.Request) string {
-	payload := r.Env["JWT_PAYLOAD"].(map[string]interface{})
-	if payload[adminUser] == true {
-		return ""
-	} else {
-		return payload["user"].(string)
+	if r.Env["JWT_PAYLOAD"] != nil {
+		payload := r.Env["JWT_PAYLOAD"].(map[string]interface{})
+		if payload[adminUser] == true {
+			return ""
+		} else {
+			return payload["user"].(string)
+		}
 	}
+	return ""
 }
 
 func (s *Server) IsAdmin(r *rest.Request) bool {
@@ -678,11 +628,11 @@ func (s *Server) setupAccount(account *api.Account) error {
 	if account.ResourceLimits == (api.AccountResourceLimits{}) {
 		glog.Warningf("No resource limits specified for account %s, using defaults\n", account.Name)
 		account.ResourceLimits = api.AccountResourceLimits{
-			CPUMax:        s.cpuMax,
-			CPUDefault:    s.cpuDefault,
-			MemoryMax:     s.memMax,
-			MemoryDefault: s.memDefault,
-			StorageQuota:  s.storageDefault,
+			CPUMax:        s.Config.DefaultLimits.CpuMax,
+			CPUDefault:    s.Config.DefaultLimits.CpuDefault,
+			MemoryMax:     s.Config.DefaultLimits.MemMax,
+			MemoryDefault: s.Config.DefaultLimits.MemDefault,
+			StorageQuota:  s.Config.DefaultLimits.StorageDefault,
 		}
 	}
 	_, err = s.kube.CreateResourceQuota(account.Namespace,
@@ -903,7 +853,8 @@ func (s *Server) DenyAccount(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
 
-	err := os.MkdirAll(s.volDir+"/"+account.Namespace, 0777|os.ModeSticky)
+	homeVol := s.getHomeVolume()
+	err := os.MkdirAll(homeVol.Path+"/"+account.Namespace, 0777)
 	if err != nil {
 		return false, err
 	}
@@ -914,7 +865,7 @@ func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
 		return false, err
 	}
 	if len(gfs) > 0 {
-		cmd := []string{"gluster", "volume", "quota", s.volName, "limit-usage", "/" + account.Namespace, fmt.Sprintf("%dGB", account.ResourceLimits.StorageQuota)}
+		cmd := []string{"gluster", "volume", "quota", homeVol.Name, "limit-usage", "/" + account.Namespace, fmt.Sprintf("%dGB", account.ResourceLimits.StorageQuota)}
 		_, err := s.kube.ExecCommand(systemNamespace, gfs[0].Name, cmd)
 		if err != nil {
 			return false, err
@@ -928,13 +879,14 @@ func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
 // For now, just call the status command and see if it returns an error
 func (s *Server) getGlusterStatus() (bool, error) {
 
+	homeVol := s.getHomeVolume()
 	// Get the GFS server pods
 	gfs, err := s.kube.GetPods(systemNamespace, "name", glusterPodName)
 	if err != nil {
 		return false, err
 	}
 	if len(gfs) > 0 {
-		cmd := []string{"gluster", "volume", "status", s.volName}
+		cmd := []string{"gluster", "volume", "status", homeVol.Name}
 		_, err := s.kube.ExecCommand(systemNamespace, gfs[0].Name, cmd)
 		if err != nil {
 			return false, err
@@ -1021,7 +973,8 @@ func (s *Server) DeleteAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	err = os.RemoveAll(s.volDir + "/" + userId)
+	homeVol := s.getHomeVolume()
+	err = os.RemoveAll(homeVol.Path + "/" + userId)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1108,7 +1061,7 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	ok, err := s.validator.ValidateSpec(&service)
+	ok, err := s.Validator.ValidateSpec(&service)
 	if !ok {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusBadRequest)
@@ -1178,7 +1131,7 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	ok, err := s.validator.ValidateSpec(&service)
+	ok, err := s.Validator.ValidateSpec(&service)
 	if !ok {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusBadRequest)
@@ -1884,21 +1837,36 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 
 	name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
 
-	account, _ := s.etcd.GetAccount(userId)
-	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, s.domain, account.EmailAddress, stackService, spec, addrPortMap)
-
 	s.makeDirectories(userId, stackService)
 
 	k8vols := make([]k8api.Volume, 0)
 
-	// Mount the home directory
-	k8homeVol := k8api.Volume{}
-	k8homeVol.Name = "home"
-	k8homeHostPath := k8api.HostPathVolumeSource{}
-	k8homeHostPath.Path = s.volDir + "/" + userId
-	k8homeVol.HostPath = &k8homeHostPath
-	k8vols = append(k8vols, k8homeVol)
+	volumeMap := map[string]string{}
+	for _, volume := range s.Config.Volumes {
+		if volume.Name == s.homeVolume {
+			// Mount the home directory
+			k8homeVol := k8api.Volume{}
+			k8homeVol.Name = "home"
+			k8homeVol.HostPath = &k8api.HostPathVolumeSource{
+				Path: volume.Path + "/" + userId,
+			}
+			k8vols = append(k8vols, k8homeVol)
+		} else {
+			volumeMap[volume.Name] = volume.Path
+			k8vol := k8api.Volume{}
+			k8vol.Name = volume.Name
+			k8vol.HostPath = &k8api.HostPathVolumeSource{
+				Path: volume.Path,
+			}
+			k8vols = append(k8vols, k8vol)
+		}
+	}
 
+	// Create the controller template
+	account, _ := s.etcd.GetAccount(userId)
+	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, s.domain, account.EmailAddress, stackService, spec, addrPortMap, &volumeMap)
+
+	homeVol := s.getHomeVolume()
 	if len(stackService.VolumeMounts) > 0 || len(spec.VolumeMounts) > 0 {
 
 		idx := 0
@@ -1910,7 +1878,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 			for i, mount := range spec.VolumeMounts {
 				if mount.MountPath == toPath {
 					k8vol.Name = fmt.Sprintf("vol%d", i)
-					k8hostPath.Path = s.volDir + "/" + userId + "/" + fromPath
+					k8hostPath.Path = homeVol.Path + "/" + userId + "/" + fromPath
 					found = true
 				}
 			}
@@ -1925,7 +1893,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 					template.Spec.Template.Spec.Containers[0].VolumeMounts = []k8api.VolumeMount{}
 				}
 				template.Spec.Template.Spec.Containers[0].VolumeMounts = append(template.Spec.Template.Spec.Containers[0].VolumeMounts, k8vm)
-				k8hostPath.Path = s.volDir + "/" + userId + "/" + fromPath
+				k8hostPath.Path = homeVol.Path + "/" + userId + "/" + fromPath
 				idx++
 			}
 			k8vol.HostPath = &k8hostPath
@@ -2138,6 +2106,8 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 		time.Sleep(time.Second * 3)
 	}
 
+	// To overcome the 503 error on ingress, wait 5 seconds before returning the endpoint
+	time.Sleep(time.Second * 5)
 	stack, _ = s.getStackWithStatus(userId, sid)
 	stack.Status = "started"
 	for _, stackService := range stack.Services {
@@ -2154,8 +2124,18 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 
 func (s *Server) makeDirectories(userId string, stackService *api.StackService) {
 	for path, _ := range stackService.VolumeMounts {
-		os.MkdirAll(s.volDir+"/"+userId+"/"+path, 0777|os.ModeSticky)
+		homeVol := s.getHomeVolume()
+		os.MkdirAll(homeVol.Path+"/"+userId+"/"+path, 0777)
 	}
+}
+
+func (s *Server) getHomeVolume() *config.Volume {
+	for _, vol := range s.Config.Volumes {
+		if vol.Name == s.homeVolume {
+			return &vol
+		}
+	}
+	return nil
 }
 
 func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, error) {
@@ -2613,11 +2593,11 @@ func (s *Server) GetVocabulary(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) useNodePort() bool {
-	return s.ingress == IngressTypeNodePort
+	return s.ingress == config.IngressTypeNodePort
 }
 
 func (s *Server) useLoadBalancer() bool {
-	return s.ingress == IngressTypeLoadBalancer
+	return s.ingress == config.IngressTypeLoadBalancer
 }
 
 func (s *Server) ChangePassword(w rest.ResponseWriter, r *rest.Request) {
@@ -2704,11 +2684,11 @@ func (s *Server) createAdminUser(password string) error {
 			Description: "NDS Labs administrator",
 			Password:    password,
 			ResourceLimits: api.AccountResourceLimits{
-				CPUMax:        s.cpuMax,
-				CPUDefault:    s.cpuDefault,
-				MemoryMax:     s.memMax,
-				MemoryDefault: s.memDefault,
-				StorageQuota:  s.storageDefault,
+				CPUMax:        s.Config.DefaultLimits.CpuMax,
+				CPUDefault:    s.Config.DefaultLimits.CpuDefault,
+				MemoryMax:     s.Config.DefaultLimits.MemMax,
+				MemoryDefault: s.Config.DefaultLimits.MemDefault,
+				StorageQuota:  s.Config.DefaultLimits.StorageDefault,
 			},
 		}
 		err := s.etcd.PutAccount(adminUser, account, true)
@@ -2961,4 +2941,115 @@ func (s *Server) StopAllStacks(w rest.ResponseWriter, r *rest.Request) {
 		}
 	}
 	w.WriteHeader(http.StatusOK)
+}
+
+func readConfig(path string) (*config.Config, error) {
+	if path[len(path)-4:len(path)] != "json" {
+		return nil, fmt.Errorf("Invalid config json")
+	}
+	glog.V(4).Infof("Using config %s", path)
+	config := config.Config{}
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	err = json.Unmarshal(data, &config)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	return &config, nil
+}
+
+// Mount data into the user's home directory. Delegate actual work to data-mounting service
+func (s *Server) PutDataset(w rest.ResponseWriter, r *rest.Request) {
+	userId := s.getUser(r)
+	sid := r.PathParam("sid")
+
+	dataset := api.Dataset{}
+	err := r.DecodeJsonPayload(&dataset)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	stack, err := s.etcd.GetStack(userId, sid)
+	if stack == nil {
+		glog.Errorf("Stack %s not found for user %s", sid, userId)
+		rest.NotFound(w, r)
+		return
+	}
+
+	if len(stack.Services) > 1 {
+		rest.Error(w, "Cannot mount data into multi-service stack", http.StatusConflict)
+		return
+	}
+
+	// Get sole stack service
+	stackService := stack.Services[0]
+
+	// Get the default mount path from spec
+	servicePath := ""
+	spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
+	if spec != nil {
+		for _, mount := range spec.VolumeMounts {
+			for vpath, value := range stackService.VolumeMounts {
+				if value == mount.MountPath {
+					if len(spec.VolumeMounts) == 1 || mount.Default {
+						servicePath = vpath
+					}
+				}
+			}
+		}
+	}
+
+	// Get the path in the user's home directory where dataset will be
+	// mounted/copied
+	dataPath := s.getHomeVolume().Path + "/" + userId + "/" + servicePath + "/data"
+	err = os.MkdirAll(dataPath, 0777)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Delegate the mount request
+	dataset.LocalPath = dataPath
+	err = s.mountData(&dataset)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+// Delegate mount/fetch request to data-provider service
+func (s *Server) mountData(dataset *api.Dataset) error {
+
+	if s.Config.DataProviderURL != "" {
+		client := http.Client{}
+		data, err := json.Marshal(dataset)
+		request, err := http.NewRequest("POST",
+			s.Config.DataProviderURL+"/mount", bytes.NewBuffer([]byte(data)))
+		if err != nil {
+			return err
+		}
+		request.Header.Set("Content-Type", "application/json")
+		resp, err := client.Do(request)
+		if err != nil {
+			return err
+		} else {
+			if resp.StatusCode == http.StatusOK {
+				return nil
+			} else {
+				return fmt.Errorf("Error from data provider: %d", resp.StatusCode)
+			}
+		}
+	} else {
+		glog.Error("MountData called with empty dataProviderURL")
+	}
+	return nil
 }

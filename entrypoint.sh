@@ -36,6 +36,14 @@ if [ "$1" = 'apiserver' ]; then
 		VOLUME_NAME="global"
 	fi
 
+	if [ -z "$SHARED_VOLUME_PATH" ]; then 
+		SHARED_VOLUME_PATH="/shared"
+	fi
+
+	if [ -z "$SHARED_VOLUME_NAME" ]; then 
+		SHARED_VOLUME_NAME="shared"
+	fi
+
 	if [ -z "$SMTP_HOST" ]; then 
 		SMTP_HOST="smtp.ncsa.illinois.edu"
 	fi
@@ -64,41 +72,58 @@ if [ "$1" = 'apiserver' ]; then
 		MAX_MESSAGES=100
 	fi
 
-cat << EOF > /apiserver.conf
-[Server]
-Port=30001
-Origin=$CORS_ORIGIN_ADDR
-VolDir=$VOLUME_PATH
-VolName=$VOLUME_NAME
-SpecsDir=/specs
-Timeout=$TIMEOUT
-Prefix=$PREFIX
-Ingress=$INGRESS
-Domain=$DOMAIN
-RequireApproval=$REQUIRE_APPROVAL
 
-[DefaultLimits]
-CpuMax=4000
-CpuDefault=1000
-MemMax=12288
-MemDefault=100
-StorageDefault=20
-
-[Etcd]
-Address=$ETCD_ADDR
-MaxMessages=$MAX_MESSAGES
-
-[Kubernetes]
-Address=$KUBERNETES_ADDR
-Username=admin
-Password=admin
-
-[Email]
-Host=$SMTP_HOST
-Port=$SMTP_PORT
-SupportEmail=$SUPPORT_EMAIL
-TLS=$SMTP_TLS
-
+cat << EOF > /apiserver.json
+{
+    "port": "30001",
+	"origin": "$CORS_ORIGIN_ADDR",
+    "timeout": $TIMEOUT,
+    "requireApproval": $REQUIRE_APPROVAL,
+    "domain" : "$DOMAIN",
+    "prefix" : "$PREFIX",
+    "ingress": "$INGRESS",
+    "supportEmail": "$SUPPORT_EMAIL",
+    "username": "admin",
+    "password": "admin",
+    "homeVolume": "$VOLUME_NAME",
+    "dataProviderURL": "$DATA_PROVIDER_URL",
+    "defaultLimits": {
+        "cpuMax": 2000,
+        "cpuDefault": 1000,
+        "memMax": 8196,
+        "memDefault": 100,
+        "storageDefault": 10
+    },
+    "etcd": {
+        "address": "$ETCD_ADDR",
+        "maxMessages": $MAX_MESSAGES
+    },
+    "kubernetes": {
+        "address": "$KUBERNETES_ADDR",
+        "username": "admin",
+        "password": "admin"
+    },
+    "email": {
+        "host": "$SMTP_HOST",
+        "port": $SMTP_PORT,
+        "tls": $SMTP_TLS
+    },
+    "specs": {
+        "path": "/specs"
+    },
+    "volumes": [
+	    {
+            "name": "$VOLUME_NAME",
+            "path": "$VOLUME_PATH",
+            "type": "local"
+        }, 
+		{
+			"name": "$SHARED_VOLUME_NAME",
+            "path": "$SHARED_VOLUME_PATH",
+            "type": "local"
+        }
+    ]
+}
 EOF
 
 	if [ -z "$SPEC_GIT_REPO" ]; then 
@@ -114,7 +139,7 @@ EOF
 	echo $ADMIN_PASSWORD > /password.txt
 	umask 0
 
-	/apiserver -conf /apiserver.conf -v 4 -passwd $ADMIN_PASSWORD
+	/apiserver -conf /apiserver.json -v 4 -passwd $ADMIN_PASSWORD
 
 else
     exec "$@"
