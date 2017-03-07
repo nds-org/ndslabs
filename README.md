@@ -17,7 +17,7 @@ On top of this foundation, NDS Labs provides a user interface, command line inte
 
 
 # Service catalog 
-The Labs Worthbench includes a catalog of service specifications managed via
+The Labs Workbench includes a catalog of service specifications managed via
 the [ndslabs-specs](https://github.com/nds-org/ndslabs-specs) repository. The catalog currenty contains over 50 services (and growing).
 
 # For developers

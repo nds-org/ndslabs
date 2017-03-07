@@ -81,6 +81,7 @@ type Port struct {
 type VolumeMount struct {
 	Type      MountType `json:"type"`
 	MountPath string    `json:"mountPath"`
+	Default   bool      `json:"default"`
 }
 
 type MountType string
@@ -251,4 +252,12 @@ type ContactInfo struct {
 
 type ExportPackage struct {
 	Account Account `json:"account"`
+}
+
+type Dataset struct {
+	Provider  string `json:"provider"`
+	Type      string `json:"type"`
+	Key       string `json:"key"`
+	URL       string `json:"url"`
+	LocalPath string `json:"localPath"`
 }
