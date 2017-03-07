@@ -104,8 +104,12 @@ cat << EOF > /apiserver.json
     "kubernetes": {
         "address": "$KUBERNETES_ADDR",
         "username": "admin",
+<<<<<<< HEAD
         "password": "admin",
     	"tokenPath": "$TOKEN_PATH"
+=======
+        "password": "admin"
+>>>>>>> e82031ffc0c38f9aed4222c2d15a1dff1dafb2c5
     },
     "email": {
         "host": "$SMTP_HOST",
