@@ -337,7 +337,7 @@ func (k *KubeHelper) StartController(pid string, spec *api.ReplicationController
 		if httpresp.StatusCode == http.StatusCreated {
 			glog.V(4).Infof("Created controller " + name)
 		} else {
-			glog.V(4).Infof("Error starting controller (%d)\n", httpresp.StatusCode)
+			glog.Errorf("Error starting controller (%d)\n", httpresp.StatusCode)
 		}
 	}
 
@@ -740,9 +740,10 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 	return &k8svc
 }
 
-func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, domain string, emailAddress string, smtpHost string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec, links *map[string]ServiceAddrPort) *api.ReplicationController {
+func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, domain string, emailAddress string, smtpHost string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec, links *map[string]ServiceAddrPort, volumes *map[string]string) *api.ReplicationController {
 
 	k8rc := api.ReplicationController{}
+
 	// Replication controller
 	k8rc.APIVersion = "v1"
 	k8rc.Kind = "ReplicationController"
@@ -802,6 +803,12 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	// Mount the home directory
 	k8homeVol := api.VolumeMount{Name: "home", MountPath: homeDir}
 	k8volMounts = append(k8volMounts, k8homeVol)
+
+	// Mount additional shared directories
+	for name, path := range *volumes {
+		k8vol := api.VolumeMount{Name: name, MountPath: path}
+		k8volMounts = append(k8volMounts, k8vol)
+	}
 
 	if len(spec.VolumeMounts) > 0 {
 		for i, vol := range spec.VolumeMounts {

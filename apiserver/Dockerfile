@@ -23,7 +23,7 @@ RUN apt-get update -y -qq && \
     apt-get remove --purge gcc -y -qq && \
     apt-get autoremove -y -qq && \
     apt-get -y clean all &&\
-    rm -rf /var/cache/apk/* /go /golang /tmp/*
+    rm -rf /var/cache/apk/* /go /golang /tmp/* /root/.glide
 
 VOLUME /volumes
 
