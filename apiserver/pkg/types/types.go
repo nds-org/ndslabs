@@ -112,18 +112,19 @@ type AccountList struct {
 }
 
 type Account struct {
-	Id             string                `json:"id"`
-	Name           string                `json:"name"`
-	Description    string                `json:"description"`
-	Namespace      string                `json:"namespace"`
-	EmailAddress   string                `json:"email"`
-	Password       string                `json:"password"`
-	ResourceLimits AccountResourceLimits `json:"resourceLimits"`
-	ResourceUsage  ResourceUsage         `json:"resourceUsage"`
-	Status         AccountStatus         `json:"status"`
-	Token          string                `json:"token"`
-	Organization   string                `json:"organization"`
-	LastLogin      int64                 `json:"lastLogin"`
+	Id              string                `json:"id"`
+	Name            string                `json:"name"`
+	Description     string                `json:"description"`
+	Namespace       string                `json:"namespace"`
+	EmailAddress    string                `json:"email"`
+	Password        string                `json:"password"`
+	ResourceLimits  AccountResourceLimits `json:"resourceLimits"`
+	ResourceUsage   ResourceUsage         `json:"resourceUsage"`
+	Status          AccountStatus         `json:"status"`
+	Token           string                `json:"token"`
+	Organization    string                `json:"organization"`
+	LastLogin       int64                 `json:"lastLogin"`
+	InactiveTimeout int                   `json:"inactiveTimeout"`
 }
 
 type ResourceLimits struct {

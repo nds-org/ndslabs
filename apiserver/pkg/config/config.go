@@ -30,11 +30,12 @@ type Volume struct {
 }
 
 type DefaultLimits struct {
-	CpuMax         int `json:"cpuMax"`
-	CpuDefault     int `json:"cpuDefault"`
-	MemMax         int `json:"memMax"`
-	MemDefault     int `json:"memDefault"`
-	StorageDefault int `json:"storageDefault"`
+	CpuMax          int `json:"cpuMax"`
+	CpuDefault      int `json:"cpuDefault"`
+	MemMax          int `json:"memMax"`
+	MemDefault      int `json:"memDefault"`
+	StorageDefault  int `json:"storageDefault"`
+	InactiveTimeout int `json:"inactiveTimeout"`
 }
 type Etcd struct {
 	Address     string `json:"address"`

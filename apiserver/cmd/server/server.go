@@ -97,6 +97,9 @@ func main() {
 	if cfg.DefaultLimits.StorageDefault <= 0 {
 		cfg.DefaultLimits.StorageDefault = 10
 	}
+	if cfg.DefaultLimits.InactiveTimeout <= 0 {
+		cfg.DefaultLimits.InactiveTimeout = 8 // hours
+	}
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -327,6 +330,7 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 
 	go s.kube.WatchEvents(s)
 	go s.kube.WatchPods(s)
+	go s.shutdownInactiveServices()
 
 	http.Handle(s.prefix, api.MakeHandler())
 	http.HandleFunc(s.prefix+"download", s.DownloadClient)
@@ -630,6 +634,10 @@ func (s *Server) setupAccount(account *api.Account) error {
 	_, err := s.kube.CreateNamespace(account.Namespace)
 	if err != nil {
 		return err
+	}
+
+	if account.InactiveTimeout == 0 {
+		account.InactiveTimeout = s.Config.DefaultLimits.InactiveTimeout
 	}
 
 	if account.ResourceLimits == (api.AccountResourceLimits{}) {
@@ -3059,4 +3067,39 @@ func (s *Server) mountData(dataset *api.Dataset) error {
 		glog.Error("MountData called with empty dataProviderURL")
 	}
 	return nil
+}
+
+func (s *Server) shutdownInactiveServices() {
+	for {
+		accounts, err := s.etcd.GetAccounts()
+		if err != nil {
+			glog.Error(err)
+		}
+
+		for _, account := range *accounts {
+			// InactiveTimeout in hours
+			timeout := time.Duration(account.InactiveTimeout) * time.Hour
+			diff := time.Duration(time.Now().Unix()-account.LastLogin) * time.Millisecond
+			glog.V(4).Infof("Inactivity check: %d %d", timeout, diff)
+			if account.InactiveTimeout > 0 &&
+				diff > timeout {
+
+				stacks, err := s.etcd.GetStacks(account.Namespace)
+				if err != nil {
+					glog.Error(err)
+				}
+				for _, stack := range *stacks {
+					glog.V(4).Infof("Stopping stack %s for account due to inactivity\n", stack.Id, account.Namespace)
+					_, err = s.stopStack(account.Namespace, stack.Id)
+					if err == nil {
+						glog.V(4).Infof("Stack %s stopped \n", stack.Id)
+					} else {
+						glog.Error(err)
+					}
+				}
+			}
+		}
+		time.Sleep(5 * time.Second)
+	}
+
 }
