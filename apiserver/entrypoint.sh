@@ -97,7 +97,7 @@ cat << EOF > /apiserver.json
         "memMax": 8196,
         "memDefault": 100,
         "storageDefault": 10,
-        "inactiveTimeout": "$INACTIVITY_TIMEOUT"
+        "inactiveTimeout": $INACTIVITY_TIMEOUT
     },
     "etcd": {
         "address": "$ETCD_ADDR",
