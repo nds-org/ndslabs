@@ -98,7 +98,7 @@ func main() {
 		cfg.DefaultLimits.StorageDefault = 10
 	}
 	if cfg.DefaultLimits.InactiveTimeout <= 0 {
-		cfg.DefaultLimits.InactiveTimeout = 8 // hours
+		cfg.DefaultLimits.InactiveTimeout = 8*60 // minutes
 	}
 
 	hostname, err := os.Hostname()
@@ -442,6 +442,12 @@ func Version(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) CheckToken(w rest.ResponseWriter, r *rest.Request) {
+	userId := s.getUser(r)
+	account, err := s.etcd.GetAccount(userId)
+	if err == nil {
+		account.LastLogin = time.Now().Unix()
+		s.etcd.PutAccount(account.Namespace, account, false)
+	}
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -534,6 +540,10 @@ func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	if account.InactiveTimeout == 0 {
+		account.InactiveTimeout = s.Config.DefaultLimits.InactiveTimeout
 	}
 
 	if s.accountExists(account.Namespace) {
@@ -636,9 +646,6 @@ func (s *Server) setupAccount(account *api.Account) error {
 		return err
 	}
 
-	if account.InactiveTimeout == 0 {
-		account.InactiveTimeout = s.Config.DefaultLimits.InactiveTimeout
-	}
 
 	if account.ResourceLimits == (api.AccountResourceLimits{}) {
 		glog.Warningf("No resource limits specified for account %s, using defaults\n", account.Name)
@@ -3078,23 +3085,25 @@ func (s *Server) shutdownInactiveServices() {
 
 		for _, account := range *accounts {
 			// InactiveTimeout in hours
-			timeout := time.Duration(account.InactiveTimeout) * time.Hour
-			diff := time.Duration(time.Now().Unix()-account.LastLogin) * time.Millisecond
-			glog.V(4).Infof("Inactivity check: %d %d", timeout, diff)
+			timeout := time.Duration(account.InactiveTimeout) * time.Minute
+			diff := time.Duration(time.Now().Unix()-account.LastLogin)*time.Second
 			if account.InactiveTimeout > 0 &&
-				diff > timeout {
+				diff.Seconds() > timeout.Seconds() {
 
+				glog.V(4).Infof("Inactivity timeout reached for %s. Shutting down services\n")
 				stacks, err := s.etcd.GetStacks(account.Namespace)
 				if err != nil {
 					glog.Error(err)
 				}
 				for _, stack := range *stacks {
-					glog.V(4).Infof("Stopping stack %s for account due to inactivity\n", stack.Id, account.Namespace)
-					_, err = s.stopStack(account.Namespace, stack.Id)
-					if err == nil {
-						glog.V(4).Infof("Stack %s stopped \n", stack.Id)
-					} else {
-						glog.Error(err)
+					if stack.Status != stackStatus[Stopped] {
+						glog.V(4).Infof("Stopping stack %s for account due to inactivity\n", stack.Id, account.Namespace)
+						_, err = s.stopStack(account.Namespace, stack.Id)
+						if err == nil {
+							glog.V(4).Infof("Stack %s stopped \n", stack.Id)
+						} else {
+							glog.Error(err)
+						}
 					}
 				}
 			}
