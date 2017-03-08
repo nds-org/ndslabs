@@ -72,11 +72,15 @@ if [ "$1" = 'apiserver' ]; then
 		MAX_MESSAGES=100
 	fi
 
+	if [ -z "$INACTIVITY_TIMEOUT" ]; then 
+		INACTIVITY_TIMEOUT=480
+	fi
+
 
 cat << EOF > /apiserver.json
 {
     "port": "30001",
-	"origin": "$CORS_ORIGIN_ADDR",
+    "origin": "$CORS_ORIGIN_ADDR",
     "timeout": $TIMEOUT,
     "requireApproval": $REQUIRE_APPROVAL,
     "domain" : "$DOMAIN",
@@ -92,7 +96,8 @@ cat << EOF > /apiserver.json
         "cpuDefault": 1000,
         "memMax": 8196,
         "memDefault": 100,
-        "storageDefault": 10
+        "storageDefault": 10,
+        "inactiveTimeout": "$INACTIVITY_TIMEOUT",
     },
     "etcd": {
         "address": "$ETCD_ADDR",
