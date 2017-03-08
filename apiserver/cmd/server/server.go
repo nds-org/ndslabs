@@ -545,6 +545,7 @@ func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 	if account.InactiveTimeout == 0 {
 		account.InactiveTimeout = s.Config.DefaultLimits.InactiveTimeout
 	}
+	glog.Infof("Inactive timeout for %s set to %v\n", account.Namespace, account.InactiveTimeout)
 
 	if s.accountExists(account.Namespace) {
 		w.WriteHeader(http.StatusConflict)
