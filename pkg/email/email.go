@@ -13,7 +13,7 @@ import (
 )
 
 type EmailHelper struct {
-	server       string
+	Server       string
 	port         int
 	origin       string
 	SupportEmail string
@@ -23,7 +23,7 @@ type EmailHelper struct {
 func NewEmailHelper(server string, port int, tls bool, supportEmail string, origin string) (*EmailHelper, error) {
 
 	return &EmailHelper{
-		server:       server,
+		Server:       server,
 		origin:       origin,
 		port:         port,
 		SupportEmail: supportEmail,
@@ -220,7 +220,7 @@ func (s *EmailHelper) sendEmail(to string, subject string, body string) (bool, e
 
 	glog.V(4).Infof("Sending email to %s %s", to, subject)
 
-	c, err := smtp.Dial(fmt.Sprintf("%s:%d", s.server, s.port))
+	c, err := smtp.Dial(fmt.Sprintf("%s:%d", s.Server, s.port))
 	if err != nil {
 		return false, err
 	}
@@ -229,7 +229,7 @@ func (s *EmailHelper) sendEmail(to string, subject string, body string) (bool, e
 	if s.tls {
 		cfg := &tls.Config{
 			InsecureSkipVerify: true,
-			ServerName:         s.server,
+			ServerName:         s.Server,
 		}
 		err = c.StartTLS(cfg)
 		if err != nil {
