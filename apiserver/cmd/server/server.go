@@ -441,7 +441,7 @@ func (s *Server) Logout(w rest.ResponseWriter, r *rest.Request) {
 func (s *Server) GetAllAccounts(w rest.ResponseWriter, r *rest.Request) {
 
 	if !s.IsAdmin(r) {
-		rest.Error(w, "", http.StatusUnauthorized)
+		rest.Error(w, "", http.StatusForbidden)
 		return
 	}
 
@@ -481,7 +481,7 @@ func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check IsAdmin or userId = current user
 	if !(s.IsAdmin(r) || s.getUser(r) == userId) {
-		rest.Error(w, "", http.StatusUnauthorized)
+		rest.Error(w, "", http.StatusForbidden)
 		return
 	}
 
@@ -513,7 +513,7 @@ func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 
 	if !s.IsAdmin(r) {
-		rest.Error(w, "", http.StatusUnauthorized)
+		rest.Error(w, "", http.StatusForbidden)
 		return
 	}
 
@@ -902,7 +902,7 @@ func (s *Server) PutAccount(w rest.ResponseWriter, r *rest.Request) {
 
 	// Check IsAdmin or userId = current user
 	if !(s.IsAdmin(r) || s.getUser(r) == userId) {
-		rest.Error(w, "", http.StatusUnauthorized)
+		rest.Error(w, "", http.StatusForbidden)
 		return
 	}
 
@@ -943,10 +943,12 @@ func (s *Server) DeleteAccount(w rest.ResponseWriter, r *rest.Request) {
 
 	glog.V(4).Infof("DeleteAccount %s", userId)
 
-	if !s.IsAdmin(r) {
-		rest.Error(w, "", http.StatusUnauthorized)
+	// Check IsAdmin or userId = current user
+	if !(s.IsAdmin(r) || s.getUser(r) == userId) {
+		rest.Error(w, "", http.StatusForbidden)
 		return
 	}
+
 	if userId == "admin" {
 		rest.Error(w, "", http.StatusForbidden)
 		return
@@ -1088,7 +1090,7 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 
 	if catalog == "system" {
 		if !s.IsAdmin(r) {
-			rest.Error(w, "", http.StatusUnauthorized)
+			rest.Error(w, "", http.StatusForbidden)
 			return
 		}
 
@@ -1152,7 +1154,7 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 
 	if catalog == "system" {
 		if !s.IsAdmin(r) {
-			rest.Error(w, "", http.StatusUnauthorized)
+			rest.Error(w, "", http.StatusForbidden)
 			return
 		}
 
@@ -1203,7 +1205,7 @@ func (s *Server) DeleteService(w rest.ResponseWriter, r *rest.Request) {
 
 	if catalog == "system" {
 		if !s.IsAdmin(r) {
-			rest.Error(w, "", http.StatusUnauthorized)
+			rest.Error(w, "", http.StatusForbidden)
 			return
 		}
 
@@ -1589,7 +1591,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	// If the user deleted an optional service, need to stop the
-	// associated Kubernetes service
+	// associated Kubernetes service and ingress rule
 	for i := range oldStack.Services {
 		stackService := &oldStack.Services[i]
 		newStackService := newStack.GetStackService(stackService.Id)
@@ -1600,10 +1602,13 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 			spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
 			if len(spec.Ports) > 0 {
 				err := s.kube.StopService(userId, name)
-				// Log and continue
 				if err != nil {
 					glog.Error(err)
 				}
+			}
+			_, err := s.kube.DeleteIngress(userId, stackService.Id+"-ingress")
+			if err != nil {
+				glog.Error(err)
 			}
 		}
 	}
@@ -1864,7 +1869,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 
 	// Create the controller template
 	account, _ := s.etcd.GetAccount(userId)
-	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, s.domain, account.EmailAddress, stackService, spec, addrPortMap, &volumeMap)
+	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, s.domain, account.EmailAddress, s.email.Server, stackService, spec, addrPortMap, &volumeMap)
 
 	homeVol := s.getHomeVolume()
 	if len(stackService.VolumeMounts) > 0 || len(spec.VolumeMounts) > 0 {
@@ -2847,7 +2852,7 @@ func (s *Server) GetHealthz(w rest.ResponseWriter, r *rest.Request) {
 func (s *Server) ImportAccount(w rest.ResponseWriter, r *rest.Request) {
 
 	if !s.IsAdmin(r) {
-		rest.Error(w, "", http.StatusUnauthorized)
+		rest.Error(w, "", http.StatusForbidden)
 		return
 	}
 
@@ -2894,7 +2899,7 @@ func (s *Server) ImportAccount(w rest.ResponseWriter, r *rest.Request) {
 func (s *Server) ExportAccount(w rest.ResponseWriter, r *rest.Request) {
 	userId := r.PathParam("userId")
 	if !s.IsAdmin(r) {
-		rest.Error(w, "", http.StatusUnauthorized)
+		rest.Error(w, "", http.StatusForbidden)
 		return
 	}
 
@@ -2917,7 +2922,7 @@ func (s *Server) ExportAccount(w rest.ResponseWriter, r *rest.Request) {
 func (s *Server) StopAllStacks(w rest.ResponseWriter, r *rest.Request) {
 
 	if !s.IsAdmin(r) {
-		rest.Error(w, "", http.StatusUnauthorized)
+		rest.Error(w, "", http.StatusForbidden)
 		return
 	}
 
