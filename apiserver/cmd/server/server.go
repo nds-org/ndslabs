@@ -3092,14 +3092,14 @@ func (s *Server) shutdownInactiveServices() {
 			if account.LastLogin > 0 && account.InactiveTimeout > 0 &&
 				diff.Seconds() > timeout.Seconds() {
 
-				glog.Infof("Inactivity timeout reached for %s. Shutting down services\n", timeout.Seconds(), diff.Seconds(), account.Namespace)
+				glog.Infof("Inactivity timeout reached for %s. Shutting down services\n", account.Namespace)
 				stacks, err := s.etcd.GetStacks(account.Namespace)
 				if err != nil {
 					glog.Error(err)
 				}
 				for _, stack := range *stacks {
 					if stack.Status != stackStatus[Stopped] {
-						glog.Infof("Stopping stack %s for account due to inactivity\n", stack.Id, account.Namespace)
+						glog.Infof("Stopping stack %s for %s due to inactivity\n", stack.Id, account.Namespace)
 						_, err = s.stopStack(account.Namespace, stack.Id)
 						if err == nil {
 							glog.V(4).Infof("Stack %s stopped \n", stack.Id)
