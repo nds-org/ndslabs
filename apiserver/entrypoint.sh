@@ -101,7 +101,7 @@ cat << EOF > /apiserver.json
         "address": "$ETCD_ADDR",
         "maxMessages": $MAX_MESSAGES
     },
-    "kubernetes": {t
+    "kubernetes": {
         "address": "$KUBERNETES_ADDR",
         "username": "admin",
         "password": "admin",
