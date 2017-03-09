@@ -97,6 +97,9 @@ func main() {
 	if cfg.DefaultLimits.StorageDefault <= 0 {
 		cfg.DefaultLimits.StorageDefault = 10
 	}
+	if cfg.DefaultLimits.InactiveTimeout <= 0 {
+		cfg.DefaultLimits.InactiveTimeout = 8 * 60 // minutes
+	}
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -223,6 +226,11 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 			}
 			payload["server"] = s.hostname
 			payload["user"] = userId
+			account, err := s.etcd.GetAccount(userId)
+			if err == nil {
+				account.LastLogin = time.Now().Unix()
+				s.etcd.PutAccount(account.Namespace, account, false)
+			}
 			return payload
 		},
 	}
@@ -230,6 +238,8 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 
 	api.Use(&rest.IfMiddleware{
 		Condition: func(request *rest.Request) bool {
+			glog.Infof("remoteAddr: %s", request.Request.RemoteAddr)
+
 			return strings.HasPrefix(request.URL.Path, s.prefix+"accounts") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"change_password") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"check_token") ||
@@ -320,6 +330,7 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 
 	go s.kube.WatchEvents(s)
 	go s.kube.WatchPods(s)
+	go s.shutdownInactiveServices()
 
 	http.Handle(s.prefix, api.MakeHandler())
 	http.HandleFunc(s.prefix+"download", s.DownloadClient)
@@ -431,6 +442,12 @@ func Version(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) CheckToken(w rest.ResponseWriter, r *rest.Request) {
+	userId := s.getUser(r)
+	account, err := s.etcd.GetAccount(userId)
+	if err == nil {
+		account.LastLogin = time.Now().Unix()
+		s.etcd.PutAccount(account.Namespace, account, false)
+	}
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -728,6 +745,12 @@ func (s *Server) VerifyAccount(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	if account.InactiveTimeout == 0 {
+		account.InactiveTimeout = s.Config.DefaultLimits.InactiveTimeout
+	}
+	glog.Infof("Inactive timeout for %s set to %v\n", account.Namespace, account.InactiveTimeout)
+
 	if s.requireApproval {
 		if account.Status == api.AccountStatusUnverified &&
 			account.Token == token {
@@ -3057,4 +3080,40 @@ func (s *Server) mountData(dataset *api.Dataset) error {
 		glog.Error("MountData called with empty dataProviderURL")
 	}
 	return nil
+}
+
+func (s *Server) shutdownInactiveServices() {
+	for {
+		accounts, err := s.etcd.GetAccounts()
+		if err != nil {
+			glog.Error(err)
+		}
+
+		for _, account := range *accounts {
+			// InactiveTimeout in hours
+			timeout := time.Duration(account.InactiveTimeout) * time.Minute
+			diff := time.Duration(time.Now().Unix()-account.LastLogin) * time.Second
+			if account.LastLogin > 0 && account.InactiveTimeout > 0 &&
+				diff.Seconds() > timeout.Seconds() {
+
+				stacks, err := s.etcd.GetStacks(account.Namespace)
+				if err != nil {
+					glog.Error(err)
+				}
+				for _, stack := range *stacks {
+					if stack.Status != stackStatus[Stopped] {
+						glog.Infof("Stopping stack %s for %s due to inactivity\n", stack.Id, account.Namespace)
+						_, err = s.stopStack(account.Namespace, stack.Id)
+						if err == nil {
+							glog.V(4).Infof("Stack %s stopped \n", stack.Id)
+						} else {
+							glog.Error(err)
+						}
+					}
+				}
+			}
+		}
+		time.Sleep(1 * time.Minute)
+	}
+
 }
