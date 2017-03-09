@@ -144,7 +144,7 @@ EOF
 	echo $ADMIN_PASSWORD > /password.txt
 	umask 0
 
-	/apiserver -conf /apiserver.json -v 4 -passwd $ADMIN_PASSWORD
+	/apiserver -conf /apiserver.json -v 3 -passwd $ADMIN_PASSWORD
 
 else
     exec "$@"

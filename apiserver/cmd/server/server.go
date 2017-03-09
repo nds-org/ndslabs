@@ -98,7 +98,7 @@ func main() {
 		cfg.DefaultLimits.StorageDefault = 10
 	}
 	if cfg.DefaultLimits.InactiveTimeout <= 0 {
-		cfg.DefaultLimits.InactiveTimeout = 8*60 // minutes
+		cfg.DefaultLimits.InactiveTimeout = 8 * 60 // minutes
 	}
 
 	hostname, err := os.Hostname()
@@ -641,7 +641,6 @@ func (s *Server) setupAccount(account *api.Account) error {
 	if err != nil {
 		return err
 	}
-
 
 	if account.ResourceLimits == (api.AccountResourceLimits{}) {
 		glog.Warningf("No resource limits specified for account %s, using defaults\n", account.Name)
@@ -3088,7 +3087,7 @@ func (s *Server) shutdownInactiveServices() {
 		for _, account := range *accounts {
 			// InactiveTimeout in hours
 			timeout := time.Duration(account.InactiveTimeout) * time.Minute
-			diff := time.Duration(time.Now().Unix()-account.LastLogin)*time.Second
+			diff := time.Duration(time.Now().Unix()-account.LastLogin) * time.Second
 			if account.LastLogin > 0 && account.InactiveTimeout > 0 &&
 				diff.Seconds() > timeout.Seconds() {
 
@@ -3109,7 +3108,7 @@ func (s *Server) shutdownInactiveServices() {
 				}
 			}
 		}
-		time.Sleep(5 * time.Second)
+		time.Sleep(1 * time.Minute)
 	}
 
 }
