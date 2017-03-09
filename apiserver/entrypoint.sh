@@ -76,6 +76,9 @@ if [ "$1" = 'apiserver' ]; then
 		INACTIVITY_TIMEOUT=480
 	fi
 
+	if [ -z "$TOKEN_PATH" ]; then 
+		TOKEN_PATH="/run/secrets/kubernetes.io/serviceaccount/token"
+	fi
 
 cat << EOF > /apiserver.json
 {
@@ -106,7 +109,8 @@ cat << EOF > /apiserver.json
     "kubernetes": {
         "address": "$KUBERNETES_ADDR",
         "username": "admin",
-        "password": "admin"
+        "password": "admin",
+    	"tokenPath": "$TOKEN_PATH"
     },
     "email": {
         "host": "$SMTP_HOST",
