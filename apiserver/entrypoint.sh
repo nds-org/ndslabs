@@ -72,6 +72,10 @@ if [ "$1" = 'apiserver' ]; then
 		MAX_MESSAGES=100
 	fi
 
+	if [ -z "$INACTIVITY_TIMEOUT" ]; then 
+		INACTIVITY_TIMEOUT=480
+	fi
+
 	if [ -z "$TOKEN_PATH" ]; then 
 		TOKEN_PATH="/run/secrets/kubernetes.io/serviceaccount/token"
 	fi
@@ -79,7 +83,7 @@ if [ "$1" = 'apiserver' ]; then
 cat << EOF > /apiserver.json
 {
     "port": "30001",
-	"origin": "$CORS_ORIGIN_ADDR",
+    "origin": "$CORS_ORIGIN_ADDR",
     "timeout": $TIMEOUT,
     "requireApproval": $REQUIRE_APPROVAL,
     "domain" : "$DOMAIN",
@@ -95,7 +99,8 @@ cat << EOF > /apiserver.json
         "cpuDefault": 1000,
         "memMax": 8196,
         "memDefault": 100,
-        "storageDefault": 10
+        "storageDefault": 10,
+        "inactiveTimeout": $INACTIVITY_TIMEOUT
     },
     "etcd": {
         "address": "$ETCD_ADDR",
@@ -143,7 +148,7 @@ EOF
 	echo $ADMIN_PASSWORD > /password.txt
 	umask 0
 
-	/apiserver -conf /apiserver.json -v 4 -passwd $ADMIN_PASSWORD
+	/apiserver -conf /apiserver.json -v 3 -passwd $ADMIN_PASSWORD
 
 else
     exec "$@"
