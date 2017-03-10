@@ -107,7 +107,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 .constant('ProductUrl', 'https://terraref.gitbooks.io/terraref-documentation/content/analysis-workbench.html')
 
 .value('HelpLinks', [
-  { name: "User's Guide",           icon: 'fa-book',               url: 'https://terraref.gitbooks.io/terraref-documentation/content/analysis-workbench.html' },
+ { name: "Feature Overview",       icon: 'fa-info-circle',        url: 'https://terraref.gitbooks.io/terraref-documentation/content/analysis-workbench.html' },
 ])
 
 /**
