@@ -80,7 +80,7 @@ module.exports = function(grunt) {
       },
       target: {
         files: {
-          'dist/main.min.css': [ 'asset/css/theme.min.css', 'asset/css/suppl.css', 'asset/css/font-roboto.css', 'asset/css/animations.css', 'asset/css/terra.css'  ],
+          'dist/main.min.css': [ 'asset/css/terra.css', 'asset/css/suppl.css', 'asset/css/font-roboto.css', 'asset/css/animations.css'  ],
         }
       }
     },
