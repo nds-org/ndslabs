@@ -104,10 +104,10 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  
 .constant('OrgName', 'TERRA-REF')
 .constant('ProductName', 'Analysis Workbench')
-.constant('ProductUrl', 'https://terraref.gitbooks.io/terraref-documentation/content/analysis-workbench.html')
+.constant('ProductUrl', 'https://terraref.gitbooks.io/terraref-documentation/content/user/using-analysis-workbench.html')
 
 .value('HelpLinks', [
- { name: "Feature Overview",       icon: 'fa-info-circle',        url: 'https://terraref.gitbooks.io/terraref-documentation/content/analysis-workbench.html' },
+ { name: "Feature Overview",       icon: 'fa-info-circle',        url: 'https://terraref.gitbooks.io/terraref-documentation/content/user/using-analysis-workbench.html' },
 ])
 
 /**
