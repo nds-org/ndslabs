@@ -139,6 +139,7 @@ func main() {
 	server.email = email
 	server.Config = cfg
 	server.homeVolume = cfg.HomeVolume
+	server.requireApproval = cfg.RequireApproval
 
 	server.ingress = config.IngressTypeNodePort
 	if cfg.Ingress != "" {
