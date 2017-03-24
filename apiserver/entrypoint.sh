@@ -106,10 +106,10 @@ cat << EOF > /apiserver.json
     "homeVolume": "$VOLUME_NAME",
     "name": "$WORKBENCH_NAME",
     "dataProviderURL": "$DATA_PROVIDER_URL",
-    "support: {
+    "support": {
         "email": "$SUPPORT_EMAIL",
         "forum": "$SUPPORT_FORUM",
-        "chat": "$SUPPORT_CHAT",
+        "chat": "$SUPPORT_CHAT"
 	},
     "defaultLimits": {
         "cpuMax": 2000,
