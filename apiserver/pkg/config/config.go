@@ -2,6 +2,7 @@
 package config
 
 type Config struct {
+	Name            string        `json:"name"`
 	Port            string        `json:"port"`
 	Origin          string        `json:"origin"`
 	Timeout         int           `json:"timeout"`
@@ -14,10 +15,16 @@ type Config struct {
 	Kubernetes      Kubernetes    `json:"kubernetes"`
 	Email           Email         `json:"email"`
 	Specs           Specs         `json:"specs"`
-	SupportEmail    string        `json:"supportEmail"`
 	HomeVolume      string        `json:"homeVolume"`
 	Volumes         []Volume      `json:"volumes"`
+	Support         SupportLinks  `json:"support"`
 	DataProviderURL string        `json:"dataProviderURL"`
+}
+
+type SupportLinks struct {
+	Email string `json:"email"`
+	Forum string `json:"forum"`
+	Chat  string `json:"chat"`
 }
 
 type Specs struct {

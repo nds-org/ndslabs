@@ -119,7 +119,7 @@ func main() {
 		glog.Error(err)
 	}
 
-	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.TLS, cfg.SupportEmail, cfg.Origin)
+	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.TLS, cfg.Support.Email, cfg.Origin, cfg.Name)
 	if err != nil {
 		glog.Errorf("Error in email server configuration\n")
 		glog.Fatal(err)
@@ -155,12 +155,12 @@ func main() {
 
 func (s *Server) start(cfg *config.Config, adminPasswd string) {
 
-	glog.Infof("Starting NDS Labs API server (%s %s)", version.VERSION, version.BUILD_DATE)
-	glog.Infof("etcd %s ", cfg.Etcd.Address)
-	glog.Infof("kube-apiserver %s", cfg.Kubernetes.Address)
-	glog.Infof("home volume %s", cfg.HomeVolume)
-	glog.Infof("specs dir %s", cfg.Specs.Path)
-	glog.Infof("port %s", cfg.Port)
+	glog.Infof("Starting Workbench API server (%s %s)", version.VERSION, version.BUILD_DATE)
+	glog.Infof("Using etcd %s ", cfg.Etcd.Address)
+	glog.Infof("Using kube-apiserver %s", cfg.Kubernetes.Address)
+	glog.Infof("Using ome volume %s", cfg.HomeVolume)
+	glog.Infof("Using specs dir %s", cfg.Specs.Path)
+	glog.Infof("Listening on port %s", cfg.Port)
 
 	homeVol := s.getHomeVolume()
 	os.MkdirAll(homeVol.Path, 0777)
@@ -2709,7 +2709,7 @@ func (s *Server) createAdminUser(password string) error {
 		account := &api.Account{
 			Name:        adminUser,
 			Namespace:   adminUser,
-			Description: "NDS Labs administrator",
+			Description: s.Config.Name + " administrator",
 			Password:    password,
 			ResourceLimits: api.AccountResourceLimits{
 				CPUMax:        s.Config.DefaultLimits.CpuMax,
@@ -2807,9 +2807,9 @@ func (s *Server) PostSupport(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) GetContact(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(map[string]string{
-		"email": s.email.SupportEmail,
-		"forum": "https://groups.google.com/forum/#!forum/ndslabs",
-		"chat":  "https://gitter.im/nds-org/ndslabs",
+		"email": s.Config.Support.Email,
+		"forum": s.Config.Support.Forum,
+		"chat":  s.Config.Support.Chat,
 	})
 }
 
