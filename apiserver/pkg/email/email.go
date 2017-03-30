@@ -13,21 +13,23 @@ import (
 )
 
 type EmailHelper struct {
-	Server       string
-	port         int
-	origin       string
-	SupportEmail string
-	tls          bool
+	Server        string
+	port          int
+	origin        string
+	SupportEmail  string
+	tls           bool
+	WorkbenchName string
 }
 
-func NewEmailHelper(server string, port int, tls bool, supportEmail string, origin string) (*EmailHelper, error) {
+func NewEmailHelper(server string, port int, tls bool, supportEmail string, origin string, name string) (*EmailHelper, error) {
 
 	return &EmailHelper{
-		Server:       server,
-		origin:       origin,
-		port:         port,
-		SupportEmail: supportEmail,
-		tls:          tls,
+		Server:        server,
+		origin:        origin,
+		port:          port,
+		SupportEmail:  supportEmail,
+		tls:           tls,
+		WorkbenchName: name,
 	}, nil
 }
 
@@ -35,13 +37,15 @@ func NewEmailHelper(server string, port int, tls bool, supportEmail string, orig
 func (s *EmailHelper) SendVerificationEmail(name string, address string, url string) error {
 
 	data := struct {
-		Name         string
-		Link         string
-		SupportEmail string
+		Name          string
+		Link          string
+		SupportEmail  string
+		WorkbenchName string
 	}{
-		Name:         name,
-		Link:         url,
-		SupportEmail: s.SupportEmail,
+		Name:          name,
+		Link:          url,
+		SupportEmail:  s.SupportEmail,
+		WorkbenchName: s.WorkbenchName,
 	}
 
 	subject := "Email address verification"
@@ -60,11 +64,13 @@ func (s *EmailHelper) SendVerificationEmail(name string, address string, url str
 func (s *EmailHelper) SendVerifiedEmail(name string, address string) error {
 
 	data := struct {
-		Name         string
-		SupportEmail string
+		Name          string
+		SupportEmail  string
+		WorkbenchName string
 	}{
-		Name:         name,
-		SupportEmail: s.SupportEmail,
+		Name:          name,
+		SupportEmail:  s.SupportEmail,
+		WorkbenchName: s.WorkbenchName,
 	}
 
 	subject := "Registration pending"
@@ -83,25 +89,27 @@ func (s *EmailHelper) SendVerifiedEmail(name string, address string) error {
 func (s *EmailHelper) SendNewAccountEmail(account *api.Account, approveUrl string, denyUrl string) error {
 
 	data := struct {
-		Name         string
-		Namespace    string
-		Email        string
-		Description  string
-		Organization string
-		ApproveLink  string
-		DenyLink     string
-		SupportEmail string
-		Origin       string
+		Name          string
+		Namespace     string
+		Email         string
+		Description   string
+		Organization  string
+		ApproveLink   string
+		DenyLink      string
+		SupportEmail  string
+		Origin        string
+		WorkbenchName string
 	}{
-		Name:         account.Name,
-		Namespace:    account.Namespace,
-		Email:        account.EmailAddress,
-		Description:  account.Description,
-		Organization: account.Organization,
-		ApproveLink:  approveUrl,
-		DenyLink:     denyUrl,
-		SupportEmail: s.SupportEmail,
-		Origin:       s.origin,
+		Name:          account.Name,
+		Namespace:     account.Namespace,
+		Email:         account.EmailAddress,
+		Description:   account.Description,
+		Organization:  account.Organization,
+		ApproveLink:   approveUrl,
+		DenyLink:      denyUrl,
+		SupportEmail:  s.SupportEmail,
+		Origin:        s.origin,
+		WorkbenchName: s.WorkbenchName,
 	}
 
 	subject := "New account request"
@@ -119,13 +127,15 @@ func (s *EmailHelper) SendNewAccountEmail(account *api.Account, approveUrl strin
 // Send approve/deny status email
 func (s *EmailHelper) SendStatusEmail(name string, address string, url string, approved bool) error {
 	data := struct {
-		Name         string
-		Link         string
-		SupportEmail string
+		Name          string
+		Link          string
+		SupportEmail  string
+		WorkbenchName string
 	}{
-		Name:         name,
-		Link:         url,
-		SupportEmail: s.SupportEmail,
+		Name:          name,
+		Link:          url,
+		SupportEmail:  s.SupportEmail,
+		WorkbenchName: s.WorkbenchName,
 	}
 
 	var subject string
@@ -153,20 +163,22 @@ func (s *EmailHelper) SendStatusEmail(name string, address string, url string, a
 func (s *EmailHelper) SendRecoveryEmail(name string, email string, recoveryUrl string, unapproved bool) error {
 
 	data := struct {
-		Name         string
-		Email        string
-		Link         string
-		SupportEmail string
-		Unapproved   bool
+		Name          string
+		Email         string
+		Link          string
+		SupportEmail  string
+		Unapproved    bool
+		WorkbenchName string
 	}{
-		Name:         name,
-		Email:        email,
-		Link:         recoveryUrl,
-		Unapproved:   unapproved,
-		SupportEmail: s.SupportEmail,
+		Name:          name,
+		Email:         email,
+		Link:          recoveryUrl,
+		Unapproved:    unapproved,
+		SupportEmail:  s.SupportEmail,
+		WorkbenchName: s.WorkbenchName,
 	}
 
-	subject := "NDS Labs password recovery request"
+	subject := s.WorkbenchName + " password recovery request"
 	msg, err := s.parseTemplate("templates/recovery-request.html", data)
 	if err != nil {
 		return err
@@ -186,20 +198,22 @@ func (s *EmailHelper) SendSupportEmail(name string, email string, messageType st
 		email = "anonymous"
 	}
 	data := struct {
-		Name         string
-		Email        string
-		Type         string
-		Message      string
-		SupportEmail string
+		Name          string
+		Email         string
+		Type          string
+		Message       string
+		SupportEmail  string
+		WorkbenchName string
 	}{
-		Name:         name,
-		Email:        email,
-		Type:         messageType,
-		Message:      message,
-		SupportEmail: s.SupportEmail,
+		Name:          name,
+		Email:         email,
+		Type:          messageType,
+		Message:       message,
+		SupportEmail:  s.SupportEmail,
+		WorkbenchName: s.WorkbenchName,
 	}
 
-	subject := "NDS Labs support request (" + messageType + ")"
+	subject := s.WorkbenchName + " support request (" + messageType + ")"
 	msg, err := s.parseTemplate("templates/support-request.html", data)
 	if err != nil {
 		return err
@@ -214,7 +228,7 @@ func (s *EmailHelper) SendSupportEmail(name string, email string, messageType st
 // HTML message helper
 func (s *EmailHelper) sendEmail(to string, subject string, body string) (bool, error) {
 	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
-	from := "From: NDS Labs <" + s.SupportEmail + ">\n"
+	from := "From: " + s.WorkbenchName + " Support <" + s.SupportEmail + ">\n"
 	subject = "Subject: " + subject + "\n"
 	msg := []byte(from + subject + mime + "\n" + body)
 

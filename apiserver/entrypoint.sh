@@ -4,6 +4,10 @@ set -e
 
 if [ "$1" = 'apiserver' ]; then
 
+	if [ -z "$WORKBENCH_NAME" ]; then 
+		WORKBENCH_NAME="Labs Workbench"
+	fi
+
 	if [ -z "$ETCD_ADDR" ]; then 
 		ETCD_ADDR="localhost:4001"
 	fi
@@ -57,7 +61,15 @@ if [ "$1" = 'apiserver' ]; then
 	fi
 
 	if [ -z "$SUPPORT_EMAIL" ]; then 
-		SUPPORT_EMAIL=support@ndslabs.org
+		SUPPORT_EMAIL="support@ndslabs.org"
+	fi
+
+	if [ -z "$SUPPORT_FORUM" ]; then 
+		SUPPORT_FORUM="https://groups.google.com/forum/#!forum/ndslabs"
+	fi
+
+	if [ -z "$SUPPORT_CHAT" ]; then 
+		SUPPORT_CHAT="https://gitter.im/nds-org/ndslabs"
 	fi
 
 	if [ -z "$ADMIN_PASSWORD" ]; then
@@ -89,11 +101,16 @@ cat << EOF > /apiserver.json
     "domain" : "$DOMAIN",
     "prefix" : "$PREFIX",
     "ingress": "$INGRESS",
-    "supportEmail": "$SUPPORT_EMAIL",
     "username": "admin",
     "password": "admin",
     "homeVolume": "$VOLUME_NAME",
+    "name": "$WORKBENCH_NAME",
     "dataProviderURL": "$DATA_PROVIDER_URL",
+    "support": {
+        "email": "$SUPPORT_EMAIL",
+        "forum": "$SUPPORT_FORUM",
+        "chat": "$SUPPORT_CHAT"
+	},
     "defaultLimits": {
         "cpuMax": 2000,
         "cpuDefault": 1000,
