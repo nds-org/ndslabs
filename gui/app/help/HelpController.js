@@ -44,9 +44,9 @@ angular
     $scope.support = contact;
       
     $scope.links = [
-      { id: "ggroup", label: "Google Group", url: contact.forum, icon: "fa-bullhorn", description: "Discuss with the support team and community" },
-      { id: "gitter", label: "Gitter", url: contact.chat, icon: "fa-comments", description: "Chat with the support team and community" },
-      { id: "email", label: "E-mail", url:  "mailto:" + SupportEmail, icon: "fa-envelope", description: "Ask for support via free-form e-mail" },
+      { id: "ggroup", label: "Help Forum", url: contact.forum, icon: "fa-bullhorn", description: "Discuss with the support team and community" },
+      { id: "gitter", label: "Live Chat", url: contact.chat, icon: "fa-comments", description: "Chat with the support team and community" },
+      { id: "email", label: "Support E-mail", url:  "mailto:" + SupportEmail, icon: "fa-envelope", description: "Ask for support via free-form e-mail" },
     ];
   });
   
