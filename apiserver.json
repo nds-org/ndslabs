@@ -32,5 +32,10 @@
         "name": "global",
         "path": "/var/glfs/global",
         "type": "gluster"
-    }]
+    }],
+	"support": {
+		"email": "",
+		"forum": "",
+		"chat": ""
+	}
 }
