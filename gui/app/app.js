@@ -108,6 +108,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 
 .value('HelpLinks', [
  { name: "Feature Overview",       icon: 'fa-info-circle',        url: 'https://terraref.gitbooks.io/terraref-documentation/content/user/using-analysis-workbench.html' },
+ { name: "Acceptable Use Policy",  icon: 'fa-gavel',              url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Acceptable+Use+Policy' },
 ])
 
 /**
