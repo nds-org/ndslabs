@@ -12,7 +12,7 @@ Your registration request is still under review and has not been approved. Pleas
 {{ else }}
 
 <br/><br/>
-Someone has requested to reset your NDS Labs password.  If this action was not triggered by you, then you can safely ignore this message. Please click on the link below to reset the password for your account:
+Someone has requested to reset your {{.WorkbenchName}} password.  If this action was not triggered by you, then you can safely ignore this message. Please click on the link below to reset the password for your account:
 <br/><br/>
 <a href="{{.Link}}">Reset password</a>
 <br/><br/>
@@ -23,7 +23,7 @@ This link is valid for 30 minutes.
 
 
 Thank you,<br>
-NDS Labs team<br>
+{{.WorkbenchName}} team<br>
 {{.SupportEmail}}<br>
 </p>
     
