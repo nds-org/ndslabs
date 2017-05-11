@@ -115,7 +115,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  * The version/revision of this GUI
  */
 .constant('BuildVersion', '1.0.10')
-.constant('BuildDate', '')
+.constant('BuildDate', '2017-05-11 15:15')
 
 /**
  * Hostname / Port for communicating with etcd
