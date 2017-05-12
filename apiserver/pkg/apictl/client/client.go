@@ -1012,3 +1012,21 @@ func (c *Client) StopAll() error {
 		return errors.New(resp.Status)
 	}
 }
+
+func (c *Client) SetLogLevel(level string) error {
+
+	url := c.BasePath + "log_level/" + level
+
+	request, err := http.NewRequest("PUT", url, nil)
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode == http.StatusOK {
+		return nil
+	} else {
+		return errors.New(resp.Status)
+	}
+}

@@ -109,14 +109,14 @@ func main() {
 	etcd, err := etcd.NewEtcdHelper(cfg.Etcd.Address, cfg.Etcd.MaxMessages)
 	if err != nil {
 		glog.Errorf("Etcd not available: %s\n", err)
-		glog.Error(err)
+		glog.Fatal(err)
 	}
 
 	kube, err := kube.NewKubeHelper(cfg.Kubernetes.Address,
 		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath)
 	if err != nil {
 		glog.Errorf("Kubernetes API server not available\n")
-		glog.Error(err)
+		glog.Fatal(err)
 	}
 
 	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.TLS, cfg.Support.Email, cfg.Origin, cfg.Name)
@@ -248,7 +248,7 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 				strings.HasPrefix(request.URL.Path, s.prefix+"configs") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"export") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"import") ||
-				strings.HasPrefix(request.URL.Path, s.prefix+"logs") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"log_level") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"mount") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"refresh_token") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"services") ||
@@ -307,6 +307,7 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 		rest.Get(s.prefix+"export/:userId", s.ExportAccount),
 		rest.Get(s.prefix+"stop_all", s.StopAllStacks),
 		rest.Put(s.prefix+"mount/:sid", s.PutDataset),
+		rest.Put(s.prefix+"log_level/:level", s.PutLogLevel),
 	)
 
 	router, err := rest.MakeRouter(routes...)
@@ -3117,4 +3118,20 @@ func (s *Server) shutdownInactiveServices() {
 		time.Sleep(1 * time.Minute)
 	}
 
+}
+
+func (s *Server) PutLogLevel(w rest.ResponseWriter, r *rest.Request) {
+	//if !s.IsAdmin(r) {
+	//		rest.Error(w, "", http.StatusForbidden)
+	//		return
+	//	}
+	level := r.PathParam("level")
+
+	_, err := strconv.Atoi(level)
+	if err == nil {
+		glog.Infof("Setting log level to %s\n", level)
+		flag.Lookup("v").Value.Set(level)
+	} else {
+		glog.Infof("Invalid log level %s\n", level)
+	}
 }
