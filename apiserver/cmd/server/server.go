@@ -425,6 +425,7 @@ func (s *Server) GetPaths(w rest.ResponseWriter, r *rest.Request) {
 	paths = append(paths, s.prefix+"console")
 	paths = append(paths, s.prefix+"contact")
 	paths = append(paths, s.prefix+"healthz")
+	paths = append(paths, s.prefix+"log_level")
 	paths = append(paths, s.prefix+"logs")
 	paths = append(paths, s.prefix+"mount")
 	paths = append(paths, s.prefix+"register")
@@ -3121,10 +3122,11 @@ func (s *Server) shutdownInactiveServices() {
 }
 
 func (s *Server) PutLogLevel(w rest.ResponseWriter, r *rest.Request) {
-	//if !s.IsAdmin(r) {
-	//		rest.Error(w, "", http.StatusForbidden)
-	//		return
-	//	}
+	if !s.IsAdmin(r) {
+		rest.Error(w, "", http.StatusForbidden)
+		return
+	}
+
 	level := r.PathParam("level")
 
 	_, err := strconv.Atoi(level)
