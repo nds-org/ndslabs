@@ -120,7 +120,7 @@
             
             <div class="text-danger" ng-if="!forms['registerForm'].namespace.$pristine" ng-messages="forms['registerForm'].namespace.$error">
               <div ng-message="required">You must enter a username.</div>
-              <div ng-message="pattern">Username may only contain alpha-numeric characters.</div>
+              <div ng-message="pattern">Username may only contain lowercase alpha-numeric characters.</div>
               <div ng-message="minlength,maxlength">Username must be between 3 and 20 characters.</div>
             </div>
           </div>
