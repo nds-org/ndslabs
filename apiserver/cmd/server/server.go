@@ -249,6 +249,7 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 				strings.HasPrefix(request.URL.Path, s.prefix+"export") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"import") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"log_level") ||
+				strings.HasPrefix(request.URL.Path, s.prefix+"logs") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"mount") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"refresh_token") ||
 				strings.HasPrefix(request.URL.Path, s.prefix+"services") ||
