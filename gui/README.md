@@ -47,7 +47,7 @@ GIT_DROPIN_REPO=https://github.com/nds-org/ndslabs
 GIT_DROPIN_BRANCH=terra
 ```
 
-An example of a typical set of UI customizations for http://www.terraref.ndslabs.org/#/ can be seen [here](https://github.com/nds-org/ndslabs/compare/terra) for .
+An example of a typical set of UI customizations for http://www.terraref.ndslabs.org/#/ can be seen [here](https://github.com/nds-org/ndslabs/compare/terra).
 
 ## Running the Development Environment
 For a cloud-based Node.js developer environment, you can run the following commands:
