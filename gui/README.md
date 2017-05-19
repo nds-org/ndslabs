@@ -43,11 +43,11 @@ NOTE: You may need to adjust the **CORS_ORIGIN_ADDR** of your API server in orde
 If you want to customize any part of the UI, feel free to fork this repo and set up the following parameters
 ```bash
 # Setting these variables will clone the target repo over the top of the current UI source
-GIT_DROPIN_REPO=https://github.com/craig-willis/ndslabs
+GIT_DROPIN_REPO=https://github.com/nds-org/ndslabs
 GIT_DROPIN_BRANCH=terra
 ```
 
-For an example, see the [source code](https://github.com/craig-willis/ndslabs/tree/terra) for http://www.terraref.ndslabs.org/#/ 
+A typical set of UI customizations can be seen [here](https://github.com/nds-org/ndslabs/compare/terra?expand=1) for http://www.terraref.ndslabs.org/#/ .
 
 ## Running the Development Environment
 For a cloud-based Node.js developer environment, you can run the following commands:
