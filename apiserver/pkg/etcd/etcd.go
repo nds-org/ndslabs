@@ -35,7 +35,7 @@ func NewEtcdHelper(address string, maxMessages int) (*EtcdHelper, error) {
 func (s *EtcdHelper) GetAccount(uid string) (*api.Account, error) {
 	path := etcdBasePath + "/accounts/" + uid + "/account"
 
-	glog.Infof("GetAccount %s\n", path)
+	glog.V(4).Infof("GetAccount %s\n", path)
 
 	resp, err := s.etcd.Get(context.Background(), path, nil)
 
