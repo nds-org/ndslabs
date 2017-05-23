@@ -102,7 +102,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  * The name of the product to display in the UI and the URL to link to when clicked
  */
  
-.constant('OrgName', 'NDS')
+.constant('OrgName', 'EarthCube')
 .constant('ProductName', 'Labs Workbench')
 .constant('ProductUrl', 'http://www.nationaldataservice.org/projects/labs.html')
 
@@ -117,7 +117,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * The version/revision of this GUI
  */
-.constant('BuildVersion', '1.0.11-devel')
+.constant('BuildVersion', '1.0.11')
 .constant('BuildDate', '')
 
 /**

@@ -481,7 +481,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       "key": "",
       "label": "",
       "description": "",
-      "logo": "/asset/png/logos/ndslabs-badge.png",
+      "logo": "/asset/png/logos/logo_earthcube_cube-only.png",
       "maintainer": "",
       "image": {
         "registry": "",
