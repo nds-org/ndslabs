@@ -102,7 +102,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  * The name of the product to display in the UI and the URL to link to when clicked
  */
  
-.constant('OrgName', 'TERRA-REF')
+.constant('OrgName', 'PI4')
 .constant('ProductName', 'Analysis Workbench')
 .constant('ProductUrl', 'https://terraref.gitbooks.io/terraref-documentation/content/user/using-analysis-workbench.html')
 
