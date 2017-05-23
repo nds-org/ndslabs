@@ -104,10 +104,10 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  
 .constant('OrgName', 'PI4')
 .constant('ProductName', 'Analysis Workbench')
-.constant('ProductUrl', 'https://terraref.gitbooks.io/terraref-documentation/content/user/using-analysis-workbench.html')
+.constant('ProductUrl', 'https://pi4.math.illinois.edu/')
 
 .value('HelpLinks', [
- { name: "Feature Overview",       icon: 'fa-info-circle',        url: 'https://terraref.gitbooks.io/terraref-documentation/content/user/using-analysis-workbench.html' },
+ { name: "Feature Overview",       icon: 'fa-info-circle',        url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/PI4' },
  { name: "Acceptable Use Policy",  icon: 'fa-gavel',              url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Acceptable+Use+Policy' },
 ])
 
