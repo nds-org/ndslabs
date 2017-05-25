@@ -96,7 +96,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  * The back-up (default) administrator e-mail to use for support, 
  * in case the /api/contact endpoint is unavailable
  */
-.constant('SupportEmail', 'ndslabs-support@nationaldataservice.org')
+.constant('SupportEmail', 'c1mckay@sdsc.edu')
 
 /**
  * The name of the product to display in the UI and the URL to link to when clicked
@@ -108,9 +108,9 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 
 .value('HelpLinks', [
   { name: "Feature Overview",       icon: 'fa-info-circle',        url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Feature+Overview' },
-  { name: "F.A.Q.",                 icon: 'fa-question-circle',    url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Frequently+Asked+Questions'},
+  //{ name: "F.A.Q.",                 icon: 'fa-question-circle',    url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Frequently+Asked+Questions'},
   { name: "User's Guide",           icon: 'fa-book',               url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/User%27s+Guide' },
-  { name: "Developer's Guide",      icon: 'fa-code-fork',          url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Developer%27s+Guide' },
+  //{ name: "Developer's Guide",      icon: 'fa-code-fork',          url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Developer%27s+Guide' },
   { name: "Acceptable Use Policy",  icon: 'fa-gavel',              url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Acceptable+Use+Policy' },
 ])
 
@@ -127,8 +127,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  * 
  * TODO: We assume this is running on the same machine as the apiserver.
  */ 
-.constant('ApiHost', 'localhost')
-.constant('ApiPort', '443')
+.constant('ApiHost', 'www.cmdev.ndslabs.org')
+.constant('ApiPort', '')
 .constant('ApiPath', '/api')
 .constant('ApiSecure', true) 
 
