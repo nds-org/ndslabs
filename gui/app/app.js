@@ -96,7 +96,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  * The back-up (default) administrator e-mail to use for support, 
  * in case the /api/contact endpoint is unavailable
  */
-.constant('SupportEmail', 'c1mckay@sdsc.edu')
+.constant('SupportEmail', 'ndslabs-support@nationaldataservice.org')
 
 /**
  * The name of the product to display in the UI and the URL to link to when clicked
@@ -127,8 +127,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  * 
  * TODO: We assume this is running on the same machine as the apiserver.
  */ 
-.constant('ApiHost', 'www.cmdev.ndslabs.org')
-.constant('ApiPort', '')
+.constant('ApiHost', 'localhost')
+.constant('ApiPort', '443')
 .constant('ApiPath', '/api')
 .constant('ApiSecure', true) 
 
