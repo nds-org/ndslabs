@@ -9,7 +9,7 @@
     <div class="modal-body">
       <p>Cloning an application allows you to make changes to it without affecting the existing catalog entry.</p>
       <p>Enter a new unique name for the cloned application (for example "mongo" or "clowder").</p>
-        <input id="cloneKeyInput" class="form-control" type="text" name="keyField" ng-model="spec.key" required ng-pattern="/^[a-z0-9]+$/" />
+        <input id="cloneKeyInput" class="form-control" type="text" name="keyField" ng-model="spec.key" required ng-pattern="/^[a-z][a-z0-9]+$/" />
     </div>
     
     <div class="modal-footer">
@@ -23,7 +23,7 @@
         
         <ng-messages class="text-danger" for="cloneKey.keyField.$error" role="alert">
           <ng-message when="required">This field is required</ng-message>
-          <ng-message when="pattern">This field may only contain lowercase alphanumeric characters</ng-message>
+          <ng-message when="pattern">This field must start with a lowercase letter, and may only contain lowercase alphanumeric characters</ng-message>
         </ng-messages>
       </div>
       
