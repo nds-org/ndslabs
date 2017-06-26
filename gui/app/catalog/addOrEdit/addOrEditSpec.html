@@ -27,7 +27,7 @@
                                             <div class="form-group" >
                                                 <label for="keyField">Short Name <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="The database key for this application (must be lowercase with no special characters)"></i></sup></label>
                                                 <input type="text" class="form-control" id="keyField" name="keyField" placeholder="Short Name"
-                                                    ng-model="spec.key" ng-disabled="editingSpec" required ng-pattern="/^[a-z0-9]+$/" />
+                                                    ng-model="spec.key" ng-disabled="editingSpec" required ng-pattern="/^[a-z][a-z0-9]+$/" />
                                                 
                                                 <p class="text-danger" ng-if="!keyUnique">This key is already in use</p>
                                                 <ng-messages class="text-danger" for="modifySpec.keyField.$error" role="alert">
