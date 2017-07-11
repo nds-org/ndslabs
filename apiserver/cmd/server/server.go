@@ -295,6 +295,7 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 		rest.Put(s.prefix+"accounts/:userId", s.PutAccount),
 		rest.Get(s.prefix+"accounts/:userId", s.GetAccount),
 		rest.Post(s.prefix+"reset/:userId", s.ResetPassword),
+		rest.Post(s.prefix+"reset", s.ResetPassword),
 		rest.Delete(s.prefix+"accounts/:userId", s.DeleteAccount),
 		rest.Get(s.prefix+"services", s.GetAllServices),
 		rest.Post(s.prefix+"services", s.PostService),
@@ -2676,6 +2677,9 @@ func (s *Server) ChangePassword(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) ResetPassword(w rest.ResponseWriter, r *rest.Request) {
 	userId := r.PathParam("userId")
+	if len(userId) == 0 {
+		userId = r.Request.FormValue("userId")
+	}
 
 	if strings.Contains(userId, "@") {
 		account := s.getAccountByEmail(userId)
