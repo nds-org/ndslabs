@@ -164,7 +164,7 @@ func (s *EmailHelper) SendStatusEmail(name string, username string, address stri
 	}
 
 	// Send copy to support
-	_, err = s.sendEmail(s.SupportEmail, subject, msg)
+	_, err = s.sendEmail(s.SupportEmail, "CC "+subject, msg)
 	if err != nil {
 		return err
 	}
