@@ -208,6 +208,12 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 			if userId == adminUser && password == adminPasswd {
 				return true
 			} else {
+				if strings.Contains(userId, "@") {
+					account := s.getAccountByEmail(userId)
+					if account != nil {
+						userId = account.Namespace
+					}
+				}
 				return s.etcd.CheckPassword(userId, password) && s.etcd.CheckAccess(userId)
 			}
 		},
@@ -225,6 +231,14 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 			if userId == adminUser {
 				payload[adminUser] = true
 			}
+
+			if strings.Contains(userId, "@") {
+				account := s.getAccountByEmail(userId)
+				if account != nil {
+					userId = account.Namespace
+				}
+			}
+
 			payload["server"] = s.hostname
 			payload["user"] = userId
 			account, err := s.etcd.GetAccount(userId)
@@ -499,6 +513,13 @@ func (s *Server) IsAdmin(r *rest.Request) bool {
 
 func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 	userId := r.PathParam("userId")
+
+	if strings.Contains(userId, "@") {
+		account := s.getAccountByEmail(userId)
+		if account != nil {
+			userId = account.Namespace
+		}
+	}
 
 	// Check IsAdmin or userId = current user
 	if !(s.IsAdmin(r) || s.getUser(r) == userId) {
@@ -800,7 +821,7 @@ func (s *Server) VerifyAccount(w rest.ResponseWriter, r *rest.Request) {
 			return
 		}
 
-		err = s.email.SendStatusEmail(account.Name, account.EmailAddress, s.origin, true)
+		err = s.email.SendStatusEmail(account.Name, account.Namespace, account.EmailAddress, s.origin, true)
 		if err != nil {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -834,7 +855,7 @@ func (s *Server) ApproveAccount(w rest.ResponseWriter, r *rest.Request) {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		err = s.email.SendStatusEmail(account.Name, account.EmailAddress, s.origin, true)
+		err = s.email.SendStatusEmail(account.Name, account.Namespace, account.EmailAddress, s.origin, true)
 		if err != nil {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -865,7 +886,7 @@ func (s *Server) DenyAccount(w rest.ResponseWriter, r *rest.Request) {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		err = s.email.SendStatusEmail(account.Name, account.EmailAddress, "", false)
+		err = s.email.SendStatusEmail(account.Name, account.Namespace, account.EmailAddress, "", false)
 		if err != nil {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -2656,6 +2677,13 @@ func (s *Server) ChangePassword(w rest.ResponseWriter, r *rest.Request) {
 func (s *Server) ResetPassword(w rest.ResponseWriter, r *rest.Request) {
 	userId := r.PathParam("userId")
 
+	if strings.Contains(userId, "@") {
+		account := s.getAccountByEmail(userId)
+		if account != nil {
+			userId = account.Namespace
+		}
+	}
+
 	token, err := s.getTemporaryToken(userId)
 	if err != nil {
 		glog.Error(err)
@@ -3137,4 +3165,18 @@ func (s *Server) PutLogLevel(w rest.ResponseWriter, r *rest.Request) {
 	} else {
 		glog.Infof("Invalid log level %s\n", level)
 	}
+}
+
+func (s *Server) getAccountByEmail(email string) *api.Account {
+	accounts, _ := s.etcd.GetAccounts()
+	if accounts == nil {
+		return nil
+	}
+
+	for _, account := range *accounts {
+		if account.EmailAddress == email {
+			return &account
+		}
+	}
+	return nil
 }
