@@ -71,6 +71,17 @@
     <script src="bower_components/angular-wizard/angular-wizard.js"></script>
     <script src="bower_components/angular-grid/angular-grid.js"></script>
     <script src="bower_components/angular-alert/angular-alert.js"></script>
+    
+    <!-- Detect and warn if Google Analytics is blocked by user's ad-blocker -->
+    <script src="app/google-analytics.js"></script>
+    <script>
+      if (window.gaCanRun === undefined) {
+        // adblocker detected, show fallback message
+        alert("Your ad-blocker is blocking Google Analytics. This service does not contain any ads, but we do use Google Analytics to ensure that we are supporting the platforms/browsers utilized by our users. Please disable your ad-blocker for this domain to use Labs Workbench.");
+      }
+    </script>
+    
+    <!-- Finally, load our minified app source -->
     <script src="dist/main.min.js"></script>
   </head>
 
