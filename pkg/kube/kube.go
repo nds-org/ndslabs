@@ -847,6 +847,8 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	tag := spec.Image.Tags[0]
 	if stackService.ImageTag != "" {
 		tag = stackService.ImageTag
+	} else {
+		tag = "latest"
 	}
 	k8template := api.PodTemplateSpec{
 		ObjectMeta: api.ObjectMeta{
