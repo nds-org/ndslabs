@@ -125,14 +125,18 @@ func (s *EmailHelper) SendNewAccountEmail(account *api.Account, approveUrl strin
 }
 
 // Send approve/deny status email
-func (s *EmailHelper) SendStatusEmail(name string, address string, url string, approved bool) error {
+func (s *EmailHelper) SendStatusEmail(name string, username string, address string, url string, approved bool) error {
 	data := struct {
 		Name          string
+		Username      string
+		Email         string
 		Link          string
 		SupportEmail  string
 		WorkbenchName string
 	}{
 		Name:          name,
+		Username:      username,
+		Email:         address,
 		Link:          url,
 		SupportEmail:  s.SupportEmail,
 		WorkbenchName: s.WorkbenchName,
@@ -152,10 +156,19 @@ func (s *EmailHelper) SendStatusEmail(name string, address string, url string, a
 	if err != nil {
 		return err
 	}
+
+	// Send notice to user
 	_, err = s.sendEmail(address, subject, msg)
 	if err != nil {
 		return err
 	}
+
+	// Send copy to support
+	_, err = s.sendEmail(s.SupportEmail, "CC "+subject, msg)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -253,6 +266,7 @@ func (s *EmailHelper) sendEmail(to string, subject string, body string) (bool, e
 
 	c.Mail(s.SupportEmail)
 	c.Rcpt(to)
+
 	wc, err := c.Data()
 	if err != nil {
 		return false, err
