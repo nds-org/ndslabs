@@ -72,14 +72,8 @@
     <script src="bower_components/angular-grid/angular-grid.js"></script>
     <script src="bower_components/angular-alert/angular-alert.js"></script>
     
-    <!-- Detect and warn if Google Analytics is blocked by user's ad-blocker -->
+    <!-- Detect if Google Analytics is blocked by user's ad-blocker -->
     <script src="app/google-analytics.js"></script>
-    <script>
-      if (window.gaCanRun === undefined) {
-        // adblocker detected, show fallback message
-        alert("Your ad-blocker is blocking Google Analytics. This service does not contain any ads, but we do use Google Analytics to ensure that we are supporting the platforms/browsers utilized by our users. Please disable your ad-blocker for this domain to use Labs Workbench.");
-      }
-    </script>
     
     <!-- Finally, load our minified app source -->
     <script src="dist/main.min.js"></script>
@@ -87,6 +81,7 @@
 
   <!-- Display the actual contents of the app down here -->
   <body cg-busy="loading">
+    
     <!-- This syntax can be used to isolate smaller page templates (such as our navbar and footer) -->
     <!-- NOTE: This method does not produce a navigatable route. For another full page/route, we need to add the route to app.js -->
     <div ng-include src="'app/shared/navbar/navbar.html'" ng-controller="NavbarController"></div> 
@@ -109,5 +104,24 @@
     <div class="container" id="appContent" ng-view ng-cloak="loadPromise"></div>
     
     <div ng-include src="'app/shared/footer/footer.html'" ng-controller="FooterController"></div>
+    
+    
+    <!-- Warn if users ad-blocker will affect their ability to use our site -->
+    <script>
+      if (window.gaCanRun === undefined) {
+        // adblocker detected, show fallback message
+        alert("Your ad-blocker appears to be blocking Google Analytics. Labs Workbench does not contain any ads, but we do use Google Analytics to ensure that we are supporting the platforms/browsers utilized by our users. Please disable your ad-blocker for this domain to use Labs Workbench.");
+        
+        // Several gross hacks to display programmatically display a bootstrap alert
+        var DOM_img = document.createElement("div");
+        DOM_img.classList.add("alert"); 
+        DOM_img.classList.add("alert-danger");
+        DOM_img.classList.add("text-center");
+        DOM_img.style = "height:130px;width:100%;text-align:center;margin-top:50px;border-radius:10px";
+        DOM_img.role = "alert";
+        DOM_img.innerHTML = "<i class='fa fa-2x fa-fw fa-hand-stop-o'></i><p>Your ad-blocker appears to be blocking Google Analytics.</p><p>Labs Workbench does not contain any ads, but we do use Google Analytics to ensure that we are supporting the platforms/browsers utilized by our users.</p><p>Please disable your ad-blocker for this domain to use Labs Workbench.</p>";
+        document.getElementsByTagName('body')[0].appendChild(DOM_img);
+      }
+    </script>
   </body>
 </html>
