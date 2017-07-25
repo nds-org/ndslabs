@@ -441,9 +441,13 @@ paths:
       responses:
         '200':
           description: Verified
-  '/reset/{account-id}':
+  '/reset':
     parameters:
-      - $ref: '#/parameters/account-id'
+      - name: userId
+        in: query
+        description: 'Username or email of the account to reset'
+        required: true
+        type: string
     post:
       description: |
         Request password reset email.

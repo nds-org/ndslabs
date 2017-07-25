@@ -22,22 +22,24 @@ angular
   $scope.resetSendSuccessful = false;
   $scope.resetSuccessful = false;
   
-  $scope.password = {
-    accountId: '',
-    password: '',
-    confirmation: ''
-  };
-  
+  ($scope.resetForms = function() {
+    $scope.password = {
+      accountId: '',
+      password: '',
+      confirmation: ''
+    };
+  })();
   
   /**
-   * Send a reset link to the e-mail associated with the given accountId (username / namespace)
+   * Send a reset link to the e-mail associated with the given accountId 
+   *    (where accountId is username/namespace or email address)
    */
   $scope.sendResetLink = function() {
     if (!$scope.password.accountId) {
       return;
     }
     
-    NdsLabsApi.postResetByAccountId({ accountId: $scope.password.accountId }).then(function(data) {
+    NdsLabsApi.postReset({ userId: $scope.password.accountId }).then(function(data) {
       console.debug(data);
       $scope.resetSendSuccessful = true;
     }, function(response) {
@@ -55,11 +57,12 @@ angular
     }
     
     // TODO: What is the correct API call here?
-    NdsLabsApi.putChangePassword({ password: { 
+    NdsLabsApi.putChange_password({ password: { 
       password: $scope.password.password,
     }}).then(function(data) {
       console.debug(data);
       $scope.resetSuccessful = true;
+      $scope.resetForms();
     }, function(response) {
       $log.error("Failed to reset password");
       console.debug(response);
