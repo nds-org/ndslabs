@@ -8,4 +8,5 @@
 **/coverage/
 **/dist/
 gui/tests/reports/*
+gui/app/shared/ndslabs-api.js
 gui/protractor.auth.json
