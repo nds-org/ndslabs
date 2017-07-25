@@ -11,7 +11,7 @@ module.exports = function(grunt) {
     jshint: {
       files: ['Gruntfile.js', 'app/**/*.js', 'tests/**/*.js'],
       options: {
-        ignores: ['app/shared/api.js', 'node_modules/**/*', 'bower_components/**/*', 'tests/reports/**/*'],
+        ignores: ['app/shared/ndslabs-api.js', 'node_modules/**/*', 'bower_components/**/*', 'tests/reports/**/*'],
         reporterOutput: "",
         force: true,
         esversion: 6,
@@ -99,7 +99,7 @@ module.exports = function(grunt) {
       },
       target: {
           src: [
-            'app/shared/api.js',
+            'app/shared/ndslabs-api.js',
             'app/shared/services.js',
             'app/shared/filters.js',
             'app/shared/directives.js',
@@ -129,6 +129,24 @@ module.exports = function(grunt) {
           background: true,
        }
      }
+    },
+    
+    'swagger-js-codegen': {
+        ndslabs: {
+            options: {
+                apis: [
+                    {
+                        swagger: 'swagger.yaml',
+                        className: 'ApiServer',
+                        moduleName: 'ndslabs-api', // This is the model and file name 
+                        angularjs: true
+                    }
+                ],
+                dest: 'app/shared/'
+            },
+            dist: {
+            }
+        }
     },
     
     // configure grunt to run karma unit tests + coverage
@@ -233,7 +251,8 @@ module.exports = function(grunt) {
   grunt.registerTask('lint', [ 'jshint', /*'csslint'*/ ]);
   grunt.registerTask('optimize', [ 'imagemin', 'cssmin', 'uglify' ]);
 
-  grunt.registerTask('ship', [ 'lint', 'optimize' ]);
+  grunt.registerTask('ship', [ 'swagger', 'lint', 'optimize' ]);
+  grunt.registerTask('swagger', [ 'swagger-js-codegen' ]);
 
   grunt.registerTask('default', [ 'ship', 'start' ]);
 

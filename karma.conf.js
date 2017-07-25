@@ -39,7 +39,7 @@ module.exports = function(config) {
   	  'bower_components/angular-wizard/angular-wizard.js',
   	  'bower_components/angular-grid/angular-grid.js',
   	  'bower_components/angular-alert/angular-alert.js',
-      'app/shared/api.js',
+      'app/shared/ndslabs-api.js',
       'app/shared/*.js',
       'app/shared/**/*.js',
       'app/*.js',          // Module definitions
