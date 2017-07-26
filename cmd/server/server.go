@@ -1558,8 +1558,8 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 					if stackService.VolumeMounts == nil {
 						stackService.VolumeMounts = map[string]string{}
 					}
-					volPath := fmt.Sprintf("AppData/%s", s.getAppDataDir(stackService.Id))
 
+					volPath := s.getVolPath(&mount, stackService.Id)
 					stackService.VolumeMounts[volPath] = mount.MountPath
 				}
 			}
@@ -1710,7 +1710,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 					}
 
 					if len(fromPath) == 0 {
-						volPath := fmt.Sprintf("AppData/%s", s.getAppDataDir(stackService.Id))
+						volPath := s.getVolPath(&mount, stackService.Id)
 						stackService.VolumeMounts[volPath] = mount.MountPath
 					}
 				}
@@ -1723,7 +1723,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 
 				if found == 0 {
 					// Create a new temporary folder
-					volPath := fmt.Sprintf("AppData/%s", s.getAppDataDir(stackService.Id))
+					volPath := s.getVolPath(&mount, stackService.Id)
 					stackService.VolumeMounts[volPath] = mount.MountPath
 				}
 			}
@@ -3183,4 +3183,13 @@ func (s *Server) getAccountByEmail(email string) *api.Account {
 		}
 	}
 	return nil
+}
+
+// NDS-970
+func (s *Server) getVolPath(mount *api.VolumeMount, ssid string) string {
+	if len(mount.DefaultPath) == 0 {
+		return fmt.Sprintf("AppData/%s", s.getAppDataDir(ssid))
+	} else {
+		return mount.DefaultPath
+	}
 }

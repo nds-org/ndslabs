@@ -79,9 +79,10 @@ type Port struct {
 }
 
 type VolumeMount struct {
-	Type      MountType `json:"type"`
-	MountPath string    `json:"mountPath"`
-	Default   bool      `json:"default"`
+	Type        MountType `json:"type"`
+	MountPath   string    `json:"mountPath"`
+	Default     bool      `json:"default"`
+	DefaultPath string    `json:"defaultPath"`
 }
 
 type MountType string
