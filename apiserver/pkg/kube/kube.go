@@ -1156,7 +1156,7 @@ func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHe
 	return &wsHandler
 }
 
-func (k *KubeHelper) CreateIngress(pid string, host string, service string, port int, basicAuth bool) (*extensions.Ingress, error) {
+func (k *KubeHelper) CreateIngress(pid string, domain string, service string, ports []api.ServicePort, basicAuth bool) (*extensions.Ingress, error) {
 
 	name := service + "-ingress"
 	update := true
@@ -1170,27 +1170,31 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 				Name:      name,
 				Namespace: pid,
 			},
-			Spec: extensions.IngressSpec{
-				Rules: []extensions.IngressRule{
-					extensions.IngressRule{
-						Host: host,
-						IngressRuleValue: extensions.IngressRuleValue{
-							HTTP: &extensions.HTTPIngressRuleValue{
-								Paths: []extensions.HTTPIngressPath{
-									extensions.HTTPIngressPath{
-										Path: "/",
-										Backend: extensions.IngressBackend{
-											ServiceName: service,
-											ServicePort: intstr.FromInt(port),
-										},
-									},
-								},
+		}
+	}
+
+	hosts := []string{}
+	for _, port := range ports {
+
+		host := fmt.Sprintf("%s-%d.%s", service, port.Port, domain)
+		rule := extensions.IngressRule{
+			Host: host,
+			IngressRuleValue: extensions.IngressRuleValue{
+				HTTP: &extensions.HTTPIngressRuleValue{
+					Paths: []extensions.HTTPIngressPath{
+						extensions.HTTPIngressPath{
+							Path: "/",
+							Backend: extensions.IngressBackend{
+								ServiceName: service,
+								ServicePort: intstr.FromInt(int(port.Port)),
 							},
 						},
 					},
 				},
 			},
 		}
+		ingress.Spec.Rules = append(ingress.Spec.Rules, rule)
+		hosts = append(hosts, host)
 	}
 
 	annotations := map[string]string{}
@@ -1209,7 +1213,7 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 	if secret != nil {
 		ingress.Spec.TLS = []extensions.IngressTLS{
 			extensions.IngressTLS{
-				Hosts:      []string{host},
+				Hosts:      hosts,
 				SecretName: tlsSecretName,
 			},
 		}

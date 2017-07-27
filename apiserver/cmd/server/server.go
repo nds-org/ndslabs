@@ -1608,15 +1608,14 @@ func (s *Server) createKubernetesService(userId string, stack *api.Stack, spec *
 
 func (s *Server) createIngressRule(userId string, svc *k8api.Service, stack *api.Stack) error {
 
-	host := fmt.Sprintf("%s.%s", svc.Name, s.domain)
-	_, err := s.kube.CreateIngress(userId, host, svc.Name,
-		int(svc.Spec.Ports[0].Port), stack.Secure)
+	_, err := s.kube.CreateIngress(userId, s.domain, svc.Name,
+		svc.Spec.Ports, stack.Secure)
 	if err != nil {
 		glog.Errorf("Error creating ingress for %s\n", svc.Name)
 		glog.Error(err)
 		return err
 	}
-	glog.V(4).Infof("Started ingress %s for service %s (secure=%t)\n", host, svc.Name, stack.Secure)
+	glog.V(4).Infof("Started ingress for service %s (secure=%t)\n", svc.Name, stack.Secure)
 	return nil
 }
 
@@ -2225,7 +2224,7 @@ func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, erro
 					endpoint.Protocol = specPort.Protocol
 					endpoint.NodePort = k8port.NodePort
 					if s.useLoadBalancer() && spec.Access == api.AccessExternal {
-						endpoint.Host = fmt.Sprintf("%s.%s", stackService.Id, s.domain)
+						endpoint.Host = fmt.Sprintf("%s-%d.%s", stackService.Id, specPort.Port, s.domain)
 						endpoint.Path = specPort.ContextPath
 						endpoint.URL = endpoint.Host + specPort.ContextPath
 					}
