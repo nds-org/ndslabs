@@ -102,15 +102,12 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
  * The name of the product to display in the UI and the URL to link to when clicked
  */
  
-.constant('OrgName', 'NDS')
-.constant('ProductName', 'Labs Workbench')
+.constant('OrgName', 'Einstein Toolkit School')
+.constant('ProductName', 'Workbench')
 .constant('ProductUrl', 'http://www.nationaldataservice.org/projects/labs.html')
 
 .value('HelpLinks', [
-  { name: "Feature Overview",       icon: 'fa-info-circle',        url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Feature+Overview' },
-  { name: "F.A.Q.",                 icon: 'fa-question-circle',    url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Frequently+Asked+Questions'},
-  { name: "User's Guide",           icon: 'fa-book',               url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/User%27s+Guide' },
-  { name: "Developer's Guide",      icon: 'fa-code-fork',          url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Developer%27s+Guide' },
+{ name: "QuickStart Guide",                 icon: 'fa-info-circle',    url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/ETK2017'},
   { name: "Acceptable Use Policy",  icon: 'fa-gavel',              url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Acceptable+Use+Policy' },
 ])
 
