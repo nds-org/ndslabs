@@ -107,7 +107,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 .constant('ProductUrl', 'http://www.nationaldataservice.org/projects/labs.html')
 
 .value('HelpLinks', [
-{ name: "QuickStart Guide",                 icon: 'fa-info-circle',    url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/ETK2017'},
+{ name: "QuickStart Guide",                 icon: 'fa-info-circle',    url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Einstein+Toolkit+School'},
   { name: "Acceptable Use Policy",  icon: 'fa-gavel',              url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Acceptable+Use+Policy' },
 ])
 
