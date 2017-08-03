@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"github.com/ndslabs/apiserver/pkg/config"
 	"github.com/ndslabs/apiserver/pkg/events"
 	ndsapi "github.com/ndslabs/apiserver/pkg/types"
 	"golang.org/x/net/websocket"
@@ -740,7 +741,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 	return &k8svc
 }
 
-func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, domain string, emailAddress string, smtpHost string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec, links *map[string]ServiceAddrPort, volumes *map[string]string) *api.ReplicationController {
+func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, domain string, emailAddress string, smtpHost string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec, links *map[string]ServiceAddrPort, extraVols *[]config.Volume) *api.ReplicationController {
 
 	k8rc := api.ReplicationController{}
 
@@ -805,8 +806,12 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	k8volMounts = append(k8volMounts, k8homeVol)
 
 	// Mount additional shared directories
-	for name, path := range *volumes {
-		k8vol := api.VolumeMount{Name: name, MountPath: path}
+	for _, volume := range *extraVols {
+		k8vol := api.VolumeMount{
+			Name:      volume.Name,
+			MountPath: volume.Path,
+			ReadOnly:  volume.ReadOnly,
+		}
 		k8volMounts = append(k8volMounts, k8vol)
 	}
 
