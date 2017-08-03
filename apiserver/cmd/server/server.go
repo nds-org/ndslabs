@@ -1893,8 +1893,8 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	s.makeDirectories(userId, stackService)
 
 	k8vols := make([]k8api.Volume, 0)
+	extraVols := make([]config.Volume, 0)
 
-	volumeMap := map[string]string{}
 	for _, volume := range s.Config.Volumes {
 		if volume.Name == s.homeVolume {
 			// Mount the home directory
@@ -1905,7 +1905,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 			}
 			k8vols = append(k8vols, k8homeVol)
 		} else {
-			volumeMap[volume.Name] = volume.Path
+			extraVols = append(extraVols, volume)
 			k8vol := k8api.Volume{}
 			k8vol.Name = volume.Name
 			k8vol.HostPath = &k8api.HostPathVolumeSource{
@@ -1917,7 +1917,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 
 	// Create the controller template
 	account, _ := s.etcd.GetAccount(userId)
-	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, s.domain, account.EmailAddress, s.email.Server, stackService, spec, addrPortMap, &volumeMap)
+	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, s.domain, account.EmailAddress, s.email.Server, stackService, spec, addrPortMap, &extraVols)
 
 	homeVol := s.getHomeVolume()
 	if len(stackService.VolumeMounts) > 0 || len(spec.VolumeMounts) > 0 {
