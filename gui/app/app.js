@@ -117,7 +117,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * The version/revision of this GUI
  */
-.constant('BuildVersion', '1.0.12-devel')
+.constant('BuildVersion', '1.0.13-devel')
 .constant('BuildDate', '')
 
 /**
@@ -488,7 +488,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   
   // Every so often, check that our token is still valid
   var checkToken = function() {
-    NdsLabsApi.getCheckToken().then(function() { $log.debug('Token is still valid.'); }, function() {
+    NdsLabsApi.getCheck_token().then(function() { $log.debug('Token is still valid.'); }, function() {
       $log.error('Token expired, redirecting to login.');
       terminateSession();
     });
@@ -519,7 +519,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     if (token) {
       authInfo.get().token = token;
       authInfo.get().namespace = $cookies.get('namespace');
-      NdsLabsApi.getRefreshToken().then(function() {
+      NdsLabsApi.getRefresh_token().then(function() {
         $log.debug('Token refreshed: ' + authInfo.get().token);
         Loading.set(ServerData.populateAll(authInfo.get().namespace));
         

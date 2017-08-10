@@ -208,6 +208,12 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 			if userId == adminUser && password == adminPasswd {
 				return true
 			} else {
+				if strings.Contains(userId, "@") {
+					account := s.getAccountByEmail(userId)
+					if account != nil {
+						userId = account.Namespace
+					}
+				}
 				return s.etcd.CheckPassword(userId, password) && s.etcd.CheckAccess(userId)
 			}
 		},
@@ -225,6 +231,14 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 			if userId == adminUser {
 				payload[adminUser] = true
 			}
+
+			if strings.Contains(userId, "@") {
+				account := s.getAccountByEmail(userId)
+				if account != nil {
+					userId = account.Namespace
+				}
+			}
+
 			payload["server"] = s.hostname
 			payload["user"] = userId
 			account, err := s.etcd.GetAccount(userId)
@@ -281,6 +295,7 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 		rest.Put(s.prefix+"accounts/:userId", s.PutAccount),
 		rest.Get(s.prefix+"accounts/:userId", s.GetAccount),
 		rest.Post(s.prefix+"reset/:userId", s.ResetPassword),
+		rest.Post(s.prefix+"reset", s.ResetPassword),
 		rest.Delete(s.prefix+"accounts/:userId", s.DeleteAccount),
 		rest.Get(s.prefix+"services", s.GetAllServices),
 		rest.Post(s.prefix+"services", s.PostService),
@@ -499,6 +514,13 @@ func (s *Server) IsAdmin(r *rest.Request) bool {
 
 func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 	userId := r.PathParam("userId")
+
+	if strings.Contains(userId, "@") {
+		account := s.getAccountByEmail(userId)
+		if account != nil {
+			userId = account.Namespace
+		}
+	}
 
 	// Check IsAdmin or userId = current user
 	if !(s.IsAdmin(r) || s.getUser(r) == userId) {
@@ -800,7 +822,7 @@ func (s *Server) VerifyAccount(w rest.ResponseWriter, r *rest.Request) {
 			return
 		}
 
-		err = s.email.SendStatusEmail(account.Name, account.EmailAddress, s.origin, true)
+		err = s.email.SendStatusEmail(account.Name, account.Namespace, account.EmailAddress, s.origin, true)
 		if err != nil {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -834,7 +856,7 @@ func (s *Server) ApproveAccount(w rest.ResponseWriter, r *rest.Request) {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		err = s.email.SendStatusEmail(account.Name, account.EmailAddress, s.origin, true)
+		err = s.email.SendStatusEmail(account.Name, account.Namespace, account.EmailAddress, s.origin, true)
 		if err != nil {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -865,7 +887,7 @@ func (s *Server) DenyAccount(w rest.ResponseWriter, r *rest.Request) {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		err = s.email.SendStatusEmail(account.Name, account.EmailAddress, "", false)
+		err = s.email.SendStatusEmail(account.Name, account.Namespace, account.EmailAddress, "", false)
 		if err != nil {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1536,8 +1558,8 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 					if stackService.VolumeMounts == nil {
 						stackService.VolumeMounts = map[string]string{}
 					}
-					volPath := fmt.Sprintf("AppData/%s", s.getAppDataDir(stackService.Id))
 
+					volPath := s.getVolPath(&mount, stackService.Id)
 					stackService.VolumeMounts[volPath] = mount.MountPath
 				}
 			}
@@ -1586,15 +1608,14 @@ func (s *Server) createKubernetesService(userId string, stack *api.Stack, spec *
 
 func (s *Server) createIngressRule(userId string, svc *k8api.Service, stack *api.Stack) error {
 
-	host := fmt.Sprintf("%s.%s", svc.Name, s.domain)
-	_, err := s.kube.CreateIngress(userId, host, svc.Name,
-		int(svc.Spec.Ports[0].Port), stack.Secure)
+	_, err := s.kube.CreateIngress(userId, s.domain, svc.Name,
+		svc.Spec.Ports, stack.Secure)
 	if err != nil {
 		glog.Errorf("Error creating ingress for %s\n", svc.Name)
 		glog.Error(err)
 		return err
 	}
-	glog.V(4).Infof("Started ingress %s for service %s (secure=%t)\n", host, svc.Name, stack.Secure)
+	glog.V(4).Infof("Started ingress for service %s (secure=%t)\n", svc.Name, stack.Secure)
 	return nil
 }
 
@@ -1688,7 +1709,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 					}
 
 					if len(fromPath) == 0 {
-						volPath := fmt.Sprintf("AppData/%s", s.getAppDataDir(stackService.Id))
+						volPath := s.getVolPath(&mount, stackService.Id)
 						stackService.VolumeMounts[volPath] = mount.MountPath
 					}
 				}
@@ -1701,7 +1722,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 
 				if found == 0 {
 					// Create a new temporary folder
-					volPath := fmt.Sprintf("AppData/%s", s.getAppDataDir(stackService.Id))
+					volPath := s.getVolPath(&mount, stackService.Id)
 					stackService.VolumeMounts[volPath] = mount.MountPath
 				}
 			}
@@ -1872,8 +1893,8 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	s.makeDirectories(userId, stackService)
 
 	k8vols := make([]k8api.Volume, 0)
+	extraVols := make([]config.Volume, 0)
 
-	volumeMap := map[string]string{}
 	for _, volume := range s.Config.Volumes {
 		if volume.Name == s.homeVolume {
 			// Mount the home directory
@@ -1884,7 +1905,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 			}
 			k8vols = append(k8vols, k8homeVol)
 		} else {
-			volumeMap[volume.Name] = volume.Path
+			extraVols = append(extraVols, volume)
 			k8vol := k8api.Volume{}
 			k8vol.Name = volume.Name
 			k8vol.HostPath = &k8api.HostPathVolumeSource{
@@ -1896,7 +1917,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 
 	// Create the controller template
 	account, _ := s.etcd.GetAccount(userId)
-	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, s.domain, account.EmailAddress, s.email.Server, stackService, spec, addrPortMap, &volumeMap)
+	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, s.domain, account.EmailAddress, s.email.Server, stackService, spec, addrPortMap, &extraVols)
 
 	homeVol := s.getHomeVolume()
 	if len(stackService.VolumeMounts) > 0 || len(spec.VolumeMounts) > 0 {
@@ -2203,7 +2224,7 @@ func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, erro
 					endpoint.Protocol = specPort.Protocol
 					endpoint.NodePort = k8port.NodePort
 					if s.useLoadBalancer() && spec.Access == api.AccessExternal {
-						endpoint.Host = fmt.Sprintf("%s.%s", stackService.Id, s.domain)
+						endpoint.Host = fmt.Sprintf("%s-%d.%s", stackService.Id, specPort.Port, s.domain)
 						endpoint.Path = specPort.ContextPath
 						endpoint.URL = endpoint.Host + specPort.ContextPath
 					}
@@ -2655,6 +2676,16 @@ func (s *Server) ChangePassword(w rest.ResponseWriter, r *rest.Request) {
 
 func (s *Server) ResetPassword(w rest.ResponseWriter, r *rest.Request) {
 	userId := r.PathParam("userId")
+	if len(userId) == 0 {
+		userId = r.Request.FormValue("userId")
+	}
+
+	if strings.Contains(userId, "@") {
+		account := s.getAccountByEmail(userId)
+		if account != nil {
+			userId = account.Namespace
+		}
+	}
 
 	token, err := s.getTemporaryToken(userId)
 	if err != nil {
@@ -3136,5 +3167,28 @@ func (s *Server) PutLogLevel(w rest.ResponseWriter, r *rest.Request) {
 		flag.Lookup("v").Value.Set(level)
 	} else {
 		glog.Infof("Invalid log level %s\n", level)
+	}
+}
+
+func (s *Server) getAccountByEmail(email string) *api.Account {
+	accounts, _ := s.etcd.GetAccounts()
+	if accounts == nil {
+		return nil
+	}
+
+	for _, account := range *accounts {
+		if account.EmailAddress == email {
+			return &account
+		}
+	}
+	return nil
+}
+
+// NDS-970
+func (s *Server) getVolPath(mount *api.VolumeMount, ssid string) string {
+	if len(mount.DefaultPath) == 0 {
+		return fmt.Sprintf("AppData/%s", s.getAppDataDir(ssid))
+	} else {
+		return mount.DefaultPath
 	}
 }

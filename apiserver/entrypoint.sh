@@ -48,6 +48,10 @@ if [ "$1" = 'apiserver' ]; then
 		SHARED_VOLUME_NAME="shared"
 	fi
 
+	if [ -z "$SHARED_VOLUME_READ_ONLY" ]; then 
+		SHARED_VOLUME_READ_ONLY="false"
+	fi
+
 	if [ -z "$SMTP_HOST" ]; then 
 		SMTP_HOST="smtp.ncsa.illinois.edu"
 	fi
@@ -146,7 +150,8 @@ cat << EOF > /apiserver.json
 		{
 			"name": "$SHARED_VOLUME_NAME",
             "path": "$SHARED_VOLUME_PATH",
-            "type": "local"
+            "type": "local",
+            "readOnly": $SHARED_VOLUME_READ_ONLY
         }
     ]
 }

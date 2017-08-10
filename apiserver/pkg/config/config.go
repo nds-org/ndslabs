@@ -31,9 +31,10 @@ type Specs struct {
 	Path string `json:"path"`
 }
 type Volume struct {
-	Path string     `json:"path"`
-	Name string     `json:"name"`
-	Type VolumeType `json:"type"`
+	Path     string     `json:"path"`
+	Name     string     `json:"name"`
+	Type     VolumeType `json:"type"`
+	ReadOnly bool       `json:"readOnly"`
 }
 
 type DefaultLimits struct {

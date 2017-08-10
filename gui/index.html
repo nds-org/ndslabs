@@ -105,8 +105,8 @@
     
     <div ng-include src="'app/shared/footer/footer.html'" ng-controller="FooterController"></div>
     
-    
     <!-- Warn if users ad-blocker will affect their ability to use our site -->
+    <!-- Also, detect and prompt users to update incompatible browsers -->
     <script>
       if (window.gaCanRun === undefined) {
         // adblocker detected, show fallback message
@@ -121,6 +121,15 @@
         DOM_img.role = "alert";
         DOM_img.innerHTML = "<i class='fa fa-2x fa-fw fa-hand-stop-o'></i><p>Your ad-blocker appears to be blocking Google Analytics.</p><p>Labs Workbench does not contain any ads, but we do use Google Analytics to ensure that we are supporting the platforms/browsers utilized by our users.</p><p>Please disable your ad-blocker for this domain to use Labs Workbench.</p>";
         document.getElementsByTagName('body')[0].appendChild(DOM_img);
+      } else {
+        var $buoop = {vs:{i:10,f:-4,o:-4,s:9,c:-4},unsecure:true,api:4}; 
+        function $buo_f(){ 
+          var e = document.createElement("script"); 
+          e.src = "//browser-update.org/update.min.js"; 
+          document.body.appendChild(e);
+        };
+        try {document.addEventListener("DOMContentLoaded", $buo_f,false)}
+        catch(e){window.attachEvent("onload", $buo_f)}
       }
     </script>
   </body>

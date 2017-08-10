@@ -209,6 +209,11 @@ angular
       spec.readinessProbe = angular.copy($scope.probe);
     }
     
+    // Replace a value of "" in logo with "/asset/png/logos/ndslabs-badge.png"
+    if (!$scope.spec.logo) {
+      $scope.spec.logo = "/asset/png/logos/ndslabs-badge.png"; 
+    }
+    
     // Replace a value of "" in contextPath with "/"
     angular.forEach($scope.spec.ports, function(port) {
       if (!port.contextPath || port.contextPath.replace(/ /g,'') === '') {

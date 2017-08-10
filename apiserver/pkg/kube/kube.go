@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"github.com/ndslabs/apiserver/pkg/config"
 	"github.com/ndslabs/apiserver/pkg/events"
 	ndsapi "github.com/ndslabs/apiserver/pkg/types"
 	"golang.org/x/net/websocket"
@@ -740,7 +741,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 	return &k8svc
 }
 
-func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, domain string, emailAddress string, smtpHost string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec, links *map[string]ServiceAddrPort, volumes *map[string]string) *api.ReplicationController {
+func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, domain string, emailAddress string, smtpHost string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec, links *map[string]ServiceAddrPort, extraVols *[]config.Volume) *api.ReplicationController {
 
 	k8rc := api.ReplicationController{}
 
@@ -805,8 +806,12 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	k8volMounts = append(k8volMounts, k8homeVol)
 
 	// Mount additional shared directories
-	for name, path := range *volumes {
-		k8vol := api.VolumeMount{Name: name, MountPath: path}
+	for _, volume := range *extraVols {
+		k8vol := api.VolumeMount{
+			Name:      volume.Name,
+			MountPath: volume.Path,
+			ReadOnly:  volume.ReadOnly,
+		}
 		k8volMounts = append(k8volMounts, k8vol)
 	}
 
@@ -847,6 +852,8 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	tag := spec.Image.Tags[0]
 	if stackService.ImageTag != "" {
 		tag = stackService.ImageTag
+	} else {
+		tag = "latest"
 	}
 	k8template := api.PodTemplateSpec{
 		ObjectMeta: api.ObjectMeta{
@@ -1154,7 +1161,7 @@ func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHe
 	return &wsHandler
 }
 
-func (k *KubeHelper) CreateIngress(pid string, host string, service string, port int, basicAuth bool) (*extensions.Ingress, error) {
+func (k *KubeHelper) CreateIngress(pid string, domain string, service string, ports []api.ServicePort, basicAuth bool) (*extensions.Ingress, error) {
 
 	name := service + "-ingress"
 	update := true
@@ -1168,27 +1175,31 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 				Name:      name,
 				Namespace: pid,
 			},
-			Spec: extensions.IngressSpec{
-				Rules: []extensions.IngressRule{
-					extensions.IngressRule{
-						Host: host,
-						IngressRuleValue: extensions.IngressRuleValue{
-							HTTP: &extensions.HTTPIngressRuleValue{
-								Paths: []extensions.HTTPIngressPath{
-									extensions.HTTPIngressPath{
-										Path: "/",
-										Backend: extensions.IngressBackend{
-											ServiceName: service,
-											ServicePort: intstr.FromInt(port),
-										},
-									},
-								},
+		}
+	}
+
+	hosts := []string{}
+	for _, port := range ports {
+
+		host := fmt.Sprintf("%s-%d.%s", service, port.Port, domain)
+		rule := extensions.IngressRule{
+			Host: host,
+			IngressRuleValue: extensions.IngressRuleValue{
+				HTTP: &extensions.HTTPIngressRuleValue{
+					Paths: []extensions.HTTPIngressPath{
+						extensions.HTTPIngressPath{
+							Path: "/",
+							Backend: extensions.IngressBackend{
+								ServiceName: service,
+								ServicePort: intstr.FromInt(int(port.Port)),
 							},
 						},
 					},
 				},
 			},
 		}
+		ingress.Spec.Rules = append(ingress.Spec.Rules, rule)
+		hosts = append(hosts, host)
 	}
 
 	annotations := map[string]string{}
@@ -1207,7 +1218,7 @@ func (k *KubeHelper) CreateIngress(pid string, host string, service string, port
 	if secret != nil {
 		ingress.Spec.TLS = []extensions.IngressTLS{
 			extensions.IngressTLS{
-				Hosts:      []string{host},
+				Hosts:      hosts,
 				SecretName: tlsSecretName,
 			},
 		}
