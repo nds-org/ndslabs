@@ -795,8 +795,8 @@ func (s *Server) VerifyAccount(w rest.ResponseWriter, r *rest.Request) {
 				return
 			}
 
-			approveUrl := r.BaseUrl().String() + "/api/register/approve?t=" + account.Token + "&u=" + account.Namespace
-			denyUrl := r.BaseUrl().String() + "/api/register/deny?t=" + account.Token + "&u=" + account.Namespace
+			approveUrl := s.origin + "/api/register/approve?t=" + account.Token + "&u=" + account.Namespace
+			denyUrl := s.origin + "/api/register/deny?t=" + account.Token + "&u=" + account.Namespace
 			err = s.email.SendNewAccountEmail(account, approveUrl, denyUrl)
 			if err != nil {
 				glog.Error(err)
