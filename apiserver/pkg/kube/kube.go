@@ -849,12 +849,14 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 		glog.Warningf("No resource requirements specified for service %s\n", spec.Label)
 	}
 
-	tag := spec.Image.Tags[0]
+	tag := nil
 	if stackService.ImageTag != "" {
 		tag = stackService.ImageTag
+	} else if len(spec.Image.Tags) > 0 {
+		tag = spec.Image.Tags[0]
 	} else {
-		tag = "latest"
-	}
+                tag = "latest"
+        }
 	k8template := api.PodTemplateSpec{
 		ObjectMeta: api.ObjectMeta{
 			Labels: map[string]string{
