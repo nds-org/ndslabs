@@ -34,7 +34,7 @@ import (
 
 var apiBase = "/api/v1"
 var extBase = "/apis/extensions/v1beta1"
-var defaultShell = "sh"
+var defaultShell = "bash"
 
 type ServiceAddrPort struct {
 	Name     string
