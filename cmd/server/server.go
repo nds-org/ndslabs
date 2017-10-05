@@ -395,7 +395,7 @@ func (s *Server) initExistingAccounts() {
 	}
 
 	for _, account := range *accounts {
-		if !s.kube.NamespaceExists(account.Namespace) {
+		if !s.kube.NamespaceExists(account.Namespace) && account.Status == api.AccountStatusApproved {
 			s.kube.CreateNamespace(account.Namespace)
 
 			if account.ResourceLimits.CPUMax > 0 &&
