@@ -107,6 +107,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 .constant('ProductUrl', 'http://www.nationaldataservice.org/projects/labs.html')
 
 .value('HelpLinks', [
+  { name: "Metabolomics Workbench Home", icon: 'fa-question-circle', url: 'http://www.metabolomicsworkbench.org/' },
   { name: "Feature Overview",       icon: 'fa-info-circle',        url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Feature+Overview' },
   //{ name: "F.A.Q.",                 icon: 'fa-question-circle',    url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Frequently+Asked+Questions'},
   { name: "User's Guide",           icon: 'fa-book',               url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/User%27s+Guide' },
