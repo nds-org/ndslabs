@@ -2505,6 +2505,11 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 				}
 			}
 
+			if stackService == nil {
+				glog.Errorf("No such stack service: %s\n", ssid)
+				return
+			}
+
 			if event != nil {
 				// This is a general Event
 				if event.Reason == "MissingClusterDNS" {
