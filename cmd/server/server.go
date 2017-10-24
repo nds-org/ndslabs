@@ -2224,7 +2224,12 @@ func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, erro
 					endpoint.Protocol = specPort.Protocol
 					endpoint.NodePort = k8port.NodePort
 					if s.useLoadBalancer() && spec.Access == api.AccessExternal {
-						endpoint.Host = fmt.Sprintf("%s-%d.%s", stackService.Id, specPort.Port, s.domain)
+						if len(spec.Ports) == 1 {
+							endpoint.Host = fmt.Sprintf("%s.%s", stackService.Id, s.domain)
+						} else {
+							endpoint.Host = fmt.Sprintf("%s-%d.%s", stackService.Id, specPort.Port, s.domain)
+						}
+
 						endpoint.Path = specPort.ContextPath
 						endpoint.URL = endpoint.Host + specPort.ContextPath
 					}
@@ -2503,6 +2508,11 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 				if stack.Services[i].Id == ssid {
 					stackService = &stack.Services[i]
 				}
+			}
+
+			if stackService == nil {
+				glog.Errorf("No such stack service: %s\n", ssid)
+				return
 			}
 
 			if event != nil {
