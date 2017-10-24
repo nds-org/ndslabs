@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
   title: ndslabs
-  version: 1.0.13
+  version: 1.0.14
 basePath: /v1
 schemes:
   - https
