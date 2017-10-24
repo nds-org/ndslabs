@@ -855,8 +855,8 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	} else if len(spec.Image.Tags) > 0 {
 		tag = spec.Image.Tags[0]
 	} else {
-                tag = "latest"
-        }
+		tag = "latest"
+	}
 	k8template := api.PodTemplateSpec{
 		ObjectMeta: api.ObjectMeta{
 			Labels: map[string]string{
@@ -1181,27 +1181,18 @@ func (k *KubeHelper) CreateIngress(pid string, domain string, service string, po
 	}
 
 	hosts := []string{}
-	for _, port := range ports {
-
-		host := fmt.Sprintf("%s-%d.%s", service, port.Port, domain)
-		rule := extensions.IngressRule{
-			Host: host,
-			IngressRuleValue: extensions.IngressRuleValue{
-				HTTP: &extensions.HTTPIngressRuleValue{
-					Paths: []extensions.HTTPIngressPath{
-						extensions.HTTPIngressPath{
-							Path: "/",
-							Backend: extensions.IngressBackend{
-								ServiceName: service,
-								ServicePort: intstr.FromInt(int(port.Port)),
-							},
-						},
-					},
-				},
-			},
-		}
+	if len(ports) == 1 {
+		host := fmt.Sprintf("%s.%s", service, domain)
+		rule := k.createIngressRule(service, host, int(ports[0].Port))
 		ingress.Spec.Rules = append(ingress.Spec.Rules, rule)
 		hosts = append(hosts, host)
+	} else {
+		for _, port := range ports {
+			host := fmt.Sprintf("%s-%d.%s", service, port.Port, domain)
+			rule := k.createIngressRule(service, host, int(port.Port))
+			ingress.Spec.Rules = append(ingress.Spec.Rules, rule)
+			hosts = append(hosts, host)
+		}
 	}
 
 	annotations := map[string]string{}
@@ -1227,6 +1218,26 @@ func (k *KubeHelper) CreateIngress(pid string, domain string, service string, po
 	}
 
 	return k.CreateUpdateIngress(pid, ingress, update)
+}
+
+func (k *KubeHelper) createIngressRule(service string, host string, port int) extensions.IngressRule {
+	rule := extensions.IngressRule{
+		Host: host,
+		IngressRuleValue: extensions.IngressRuleValue{
+			HTTP: &extensions.HTTPIngressRuleValue{
+				Paths: []extensions.HTTPIngressPath{
+					extensions.HTTPIngressPath{
+						Path: "/",
+						Backend: extensions.IngressBackend{
+							ServiceName: service,
+							ServicePort: intstr.FromInt(port),
+						},
+					},
+				},
+			},
+		},
+	}
+	return rule
 }
 
 func (k *KubeHelper) CreateUpdateIngress(pid string, ingress *extensions.Ingress, update bool) (*extensions.Ingress, error) {
