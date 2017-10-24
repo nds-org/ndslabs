@@ -2225,7 +2225,7 @@ func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, erro
 					endpoint.NodePort = k8port.NodePort
 					if s.useLoadBalancer() && spec.Access == api.AccessExternal {
 						if len(spec.Ports) == 1 {
-							endpoint.Host = fmt.Sprintf("%s.%s", stackService.Id, specPort.Port, s.domain)
+							endpoint.Host = fmt.Sprintf("%s.%s", stackService.Id, s.domain)
 						} else {
 							endpoint.Host = fmt.Sprintf("%s-%d.%s", stackService.Id, specPort.Port, s.domain)
 						}
