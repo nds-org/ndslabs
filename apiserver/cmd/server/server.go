@@ -604,7 +604,7 @@ func (s *Server) createBasicAuthSecret(uid string) error {
 		return err
 	}
 
-	_, err = s.kube.CreateBasicAuthSecret(account.Namespace, account.Namespace, account.Password)
+	_, err = s.kube.CreateBasicAuthSecret(account.Namespace, account.Namespace, account.EmailAddress, account.Password)
 	if err != nil {
 		glog.Error(err)
 		return err
@@ -647,7 +647,7 @@ func (s *Server) createLMABasicAuthSecret() error {
 			return err
 		}
 
-		_, err = s.kube.CreateBasicAuthSecret(systemNamespace, adminUser, account.Password)
+		_, err = s.kube.CreateBasicAuthSecret(systemNamespace, adminUser, "", account.Password)
 		if err != nil {
 			glog.Error(err)
 			return err
