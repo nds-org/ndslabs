@@ -1153,7 +1153,12 @@ func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHe
 			}
 		}()
 
-		err = e.Stream(remotecommandserver.SupportedStreamingProtocols, inr, outw, nil, true)
+		err = e.Stream(remotecommand.StreamOptions{
+			SupportedProtocols: remotecommandserver.SupportedStreamingProtocols,
+			Stdin:              inr,
+			Stdout:             outw,
+			Tty:                true,
+		})
 		if err != nil {
 			glog.Error(err)
 			return
@@ -1558,7 +1563,13 @@ func (k *KubeHelper) ExecCommand(pid string, pod string, command []string) (stri
 
 	localOut := &bytes.Buffer{}
 	localErr := &bytes.Buffer{}
-	err = e.Stream(remotecommandserver.SupportedStreamingProtocols, nil, localOut, localErr, false)
+	err = e.Stream(remotecommand.StreamOptions{
+		SupportedProtocols: remotecommandserver.SupportedStreamingProtocols,
+		Stdin:              nil,
+		Stdout:             localOut,
+		Stderr:             localErr,
+		Tty:                true,
+	})
 	return localOut.String(), err
 }
 

@@ -170,7 +170,7 @@ EOF
 	echo $ADMIN_PASSWORD > /password.txt
 	umask 0
 
-	/apiserver -conf /apiserver.json -v 1 -passwd $ADMIN_PASSWORD
+	apiserver -conf /apiserver.json -v 1 -passwd $ADMIN_PASSWORD
 
 else
     exec "$@"
