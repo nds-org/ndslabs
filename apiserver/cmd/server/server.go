@@ -3187,7 +3187,7 @@ func (s *Server) getAccountByEmail(email string) *api.Account {
 	}
 
 	for _, account := range *accounts {
-		if account.EmailAddress == email {
+		if account.EmailAddress == strings.ToLower(email) {
 			return &account
 		}
 	}
