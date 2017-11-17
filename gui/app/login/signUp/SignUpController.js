@@ -14,7 +14,7 @@ angular
 
   if (AuthInfo.get().token) {
     $location.path(HomeRoute);
-  }   
+  }
   
   $scope.forms = {};
   
@@ -25,6 +25,12 @@ angular
   $scope.newProject = Project.create();
   $scope.progressMessage = '';
   $scope.showVerify = false;
+  
+  // To handle special caharacters in passwords, we must escape them in the validation regex pattern
+  // See https://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript/3561711#3561711
+  $scope.escapeRegex = function(pattern) {
+    return pattern.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+  };
   
   $scope.signUp = function(account) {
     if (account.password !== account.passwordConfirmation) {
