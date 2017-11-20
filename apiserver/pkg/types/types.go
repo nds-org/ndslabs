@@ -1,4 +1,4 @@
-// Copyright © 2016 National Data Service
+// Copyright ÃÂÃÂ© 2016 National Data Service
 package types
 
 type ServiceSpec struct {
@@ -124,8 +124,10 @@ type Account struct {
 	Status          AccountStatus         `json:"status"`
 	Token           string                `json:"token"`
 	Organization    string                `json:"organization"`
+	Created         int64                 `json:"created"`
 	LastLogin       int64                 `json:"lastLogin"`
 	InactiveTimeout int                   `json:"inactiveTimeout"`
+	NextURL         string                `json:"nexturl"`
 }
 
 type ResourceLimits struct {
