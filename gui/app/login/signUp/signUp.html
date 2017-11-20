@@ -154,7 +154,7 @@
               'has-success has-feedback': !forms['registerForm'].passwordConf.$pristine && forms['registerForm'].passwordConf.$valid }">
             <label for="password">Confirm Your Password *</label>
             <input type="password" class="form-control" name="passwordConf" id="passwordConf"
-                ng-model="newProject.passwordConfirmation" placeholder="Confirm Password" required minlength="6" pattern="{{ newProject.password }}">
+                ng-model="newProject.passwordConfirmation" placeholder="Confirm Password" required minlength="6" pattern="^{{ escapeRegex(newProject.password) }}$">
             <span class="form-control-feedback glyphicon" ng-if="!forms['registerForm'].passwordConf.$pristine"
                 ng-class="{ 'glyphicon-remove': forms['registerForm'].passwordConf.$invalid, 'glyphicon-ok': forms['registerForm'].passwordConf.$valid }"></span>
                 
