@@ -32,6 +32,17 @@ angular
 .constant('ProductUrl', 'http://www.nationaldataservice.org/projects/labs.html')
 
 /**
+ * Helpful links to include in the landing page / navbar
+ */
+.value('HelpLinks', [
+  { name: "Feature Overview",       icon: 'fa-info-circle',        url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Feature+Overview' },
+  { name: "F.A.Q.",                 icon: 'fa-question-circle',    url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Frequently+Asked+Questions'},
+  { name: "User's Guide",           icon: 'fa-book',               url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/User%27s+Guide' },
+  { name: "Developer's Guide",      icon: 'fa-code-fork',          url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Developer%27s+Guide' },
+  { name: "Acceptable Use Policy",  icon: 'fa-gavel',              url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Acceptable+Use+Policy' },
+])
+
+/**
  * The version/revision of this GUI
  */
 .constant('BuildVersion', '1.0.13-devel')
@@ -161,6 +172,12 @@ angular
     controller: 'LandingController',
     templateUrl: 'landing.html',
     pageTrack: '/'
+  })
+  .when('/contact', {
+    title: 'Contact ' + ProductName + ' Support',
+    controller: 'HelpController',
+    templateUrl: 'help/help.html',
+    pageTrack: '/contact'
   });
 }])
 
@@ -170,8 +187,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('LandingController', [ '$scope', '$location', '$routeParams', '$log', '_', /*'AuthInfo',*/ 'OrgName', 'ProductName', 'ProductUrl', 'ApiServer', /*'HelpLinks', 'ResetPasswordRoute',*/
-    function($scope, $location, $routeParams, $log, _, /*AuthInfo,*/ OrgName, ProductName, ProductUrl, ApiServer/*, HelpLinks, ResetPasswordRoute*/) {
+.controller('LandingController', [ '$scope', '$location', '$routeParams', '$log', '_', /*'AuthInfo',*/ 'OrgName', 'ProductName', 'ProductUrl', 'NdsLabsApi', 'HelpLinks', /*'ResetPasswordRoute',*/
+    function($scope, $location, $routeParams, $log, _, /*AuthInfo,*/ OrgName, ProductName, ProductUrl, NdsLabsApi, HelpLinks/*, ResetPasswordRoute*/) {
   "use strict";
 
   if ($routeParams.t && !$routeParams.u) {
@@ -182,7 +199,7 @@ angular
   $scope.orgName = OrgName;
   $scope.productName = ProductName;
   $scope.productUrl = ProductUrl;
-  //$scope.helpLinks = HelpLinks;
+  $scope.helpLinks = HelpLinks;
   
   //$scope.auth = AuthInfo.get();
   

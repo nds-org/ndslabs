@@ -1,0 +1,37 @@
+<!-- The "Contact Us" View -->
+<section>
+  <div class="row">
+    <div class="text-center col-xs-offset-3 col-xs-6">
+      <h3><i class="fa fa-fw fa-support"></i> Contact Us</h3>
+      
+      <ol class="breadcrumb">
+        <li><a href="#/">{{ productName }}</a></li>
+        <li class="active">Contact Us</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="row text-center" id="supportLinks">
+      <div class="col-sm-12 text-center" ng-if="!links">
+        <h4>E-mail {{ productName }} Support</h4>
+        <a type="button" class="btn btn-lg btn-default support-link" target="_blank" ng-href="mailto:{{ SupportEmail }}">
+            <i class="fa fa-fw fa-3x fa-envelope-o"></i>
+        </a>
+        
+        <p>It appears you are having issues communicating with the server. Please try again in a few minutes.</p>
+        <p>If this problem persists and is preventing you from logging in, please send us an e-mail using the button above.</p>
+      </div>
+    
+      <div class="col-sm-{{ 12 / links.length }} text-center" ng-repeat="link in links track by link.id">
+        <h4>{{ link.label }}</h4>
+        <a id="{{ link.id }}Btn" type="button" class="btn btn-lg btn-default support-link" target="_blank" ng-href="{{ link.url }}">
+            <i class="fa fa-fw fa-3x {{ link.icon }}"></i>
+        </a>
+        
+        <p>{{ link.description }}</p>
+      </div>
+  </div>
+  
+  <hr>
+  
+</section>

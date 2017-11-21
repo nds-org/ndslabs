@@ -28,8 +28,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('NavbarController', [ '$scope', '$location', /*'LoginRoute', 'AppStoreRoute', 'HomeRoute',*/ 'ProductName', 'ProductUrl', /*'HelpLinks', 'FileManager', 'AutoRefresh',*/
-    function($scope, $location, /*LoginRoute, AppStoreRoute, HomeRoute,*/ ProductName, ProductUrl, /*HelpLinks, FileManager, AutoRefresh*/) {
+.controller('NavbarController', [ '$scope', '$location', /*'LoginRoute', 'AppStoreRoute', 'HomeRoute',*/ 'ProductName', 'ProductUrl', 'HelpLinks', /*'FileManager', 'AutoRefresh',*/
+    function($scope, $location, /*LoginRoute, AppStoreRoute, HomeRoute,*/ ProductName, ProductUrl, HelpLinks/*, FileManager, AutoRefresh*/) {
   "use strict";
 
   $scope.$on('$routeChangeSuccess', function(event, current, previous){
@@ -38,16 +38,16 @@ angular
     }
   });
   
-  //$scope.helpLinks = HelpLinks;
+  $scope.helpLinks = HelpLinks;
   
   //$scope.fileManager = FileManager;
   //$scope.launchingFileManager = FileManager.busy;
-  $scope.$watch('fileManager.busy', function(newValue, oldValue) {
+  /*$scope.$watch('fileManager.busy', function(newValue, oldValue) {
     $scope.launchingFileManager = newValue;
     if (newValue) {
       AutoRefresh.start();
     }
-  });
+  });*/
   
   // FIXME: Populate with token / username?
   $scope.settings = {};
