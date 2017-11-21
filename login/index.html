@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html ng-app="ndslabs-landing">
+<html ng-app="ndslabs-login">
   <head>
     <title>Labs Workbench</title>
     
-    <base href="/landing/">
+    <base href="/login/">
     
     <!-- TODO: Enforce using .min.js / .min.css everywhere -->
     <!-- TODO: Configure grunt to do this automatically (grunt-usemin) -->
@@ -45,16 +45,15 @@
     <link rel="stylesheet" href="bower_components/angular-swagger-ui/dist/css/swagger-ui.min.css"> 
     
     <!-- Load our own custom modules -->
-    <script src="../shared/ndslabs-api.js"></script>
-    <script src="../login/static/LoginModule.js"></script>
-    <script src="../login/static/LoginController.js"></script>
-    <script src="../shared/services.js"></script>
     <script src="../shared/navbar/NavbarController.js"></script>
-    <script src="../shared/footer/FooterController.js"></script>
+    <script src="../shared/ndslabs-api.js"></script>
     <script src="../ConfigModule.js"></script>
-    <script src="LandingModule.js"></script>
-    <script src="swagger/SwaggerController.js"></script>
-    <script src="help/HelpController.js"></script>
+    <script src="../shared/services.js"></script>
+    <script src="../shared/footer/FooterController.js"></script>
+    <script src="static/LoginModule.js"></script>
+    <script src="static/signUp/SignUpController.js"></script>
+    <script src="static/LoginController.js"></script>
+    <script src="static/reset/ResetPasswordController.js"></script>
   </head>
 
   <!-- Display the actual contents of the app down here -->

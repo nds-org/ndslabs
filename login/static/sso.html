@@ -1,0 +1,54 @@
+<!doctype html>
+<html ng-app="ndslabs-login">
+  <head>
+    <title>Workbench SSO Example</title>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.11/angular.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.11/angular-route.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.11/angular-cookies.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.11/angular-resource.js"></script>
+
+    <script>
+      angular
+        .module("ndslabs-login", ['ngRoute'])
+        .controller("LoginController", ['$scope', '$http', function($scope, $http) {
+          $scope.username = '';
+          $scope.password = '';
+          $scope.errorMessage = '';
+
+          $scope.submit = function() {
+            console.log("Submitting...");
+            $http.post('/cauth/login', { username: $scope.username, password: $scope.password })
+              .then(function(response) {
+                console.log("OK: ", response);
+                console.log("Now redirecting...");
+                // TODO: Read rd querystring param
+                // TODO: Use $window instead
+                window.location.replace("/");
+              }, function(err) {
+                $scope.password = '';
+                $scope.errorMessage = 'Invalid password.';
+                console.log("ERROR: ", err);
+              });
+          };
+        }]);
+    </script>
+  </head>
+  <body ng-controller="LoginController">
+    <h1>Workbench SSO Example</h1>
+    <ng-form name="wbLogin">
+      <label for="name">User name</label>
+      <input type="text" id="name" name="name" ng-model="username" />
+    
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" ng-model="password" />
+    
+      <button type="submit" ng-click="submit()">Login</button>
+    </ng-form>
+    <div style="color:red;" ng-if="errorMessage">
+      {{ errorMessage }}
+    </div>
+  </body>
+</html>
+
+
+
