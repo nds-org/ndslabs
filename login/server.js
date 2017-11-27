@@ -67,8 +67,9 @@ app.post('/cauth/login', bodyParser.urlencoded({ extended: false }), function (r
             
             if (body.token) {
                 // Attach token to response as a cookie
-                let cookieOpts = { domain: 'ndslabs.org' };
+                let cookieOpts = { domain: req.get('host') /* || req.get('origin') */ };
                 res.cookie('token', body.token, cookieOpts);
+                res.cookie('namespace', req.body.username, cookieOpts);
                 res.sendStatus(status);
             } else {
                 res.status(500);
@@ -149,6 +150,7 @@ app.get('/cauth/logout', function (req, res) {
 
 
 // Serve static files from ./static/ on disk
+// TODO: node_modules/bower_components may require special handling
 app.use(express.static(path.join(__dirname, 'static')));
 
 // Catch-all for other pages, send to /sign_in

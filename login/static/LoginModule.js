@@ -1,13 +1,18 @@
 /* global angular:false */
 
 angular
-.module('ndslabs-login', [ 'ngRoute', 'ngCookies', 'navbar', 'footer', 'ndslabs-services', 'ndslabs-config', 'ndslabs-api', 'angular-google-analytics',  'ui.bootstrap' ])
+.module('ndslabs-login', [ 'ngRoute', 'ngCookies', 'ngMessages', 'navbar', 'footer', 'ndslabs-services', 'ndslabs-config', 'ndslabs-api', 'angular-google-analytics',  'ui.bootstrap' ])
+
+.constant('LoginAppPath', '/login/#')
+.constant('SigninPathSuffix', '/')
+.constant('SignupPathSuffix', '/register')
+.constant('RecoveryPathSuffix', '/recovery')
 
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$routeProvider', '$httpProvider', 'ProductName', 'GaAccount', 'AnalyticsProvider', 
-    function($routeProvider, $httpProvider, ProductName, GaAccount, AnalyticsProvider) {
+.config([ '$routeProvider', '$httpProvider', 'ProductName', 'GaAccount', 'AnalyticsProvider', 'LoginAppPath', 'SigninPathSuffix', 'SignupPathSuffix', 'RecoveryPathSuffix',
+    function($routeProvider, $httpProvider, ProductName, GaAccount, AnalyticsProvider, LoginAppPath, SigninPathSuffix, SignupPathSuffix, RecoveryPathSuffix) {
   "use strict";
   
   // Set up Google Analytics
@@ -23,23 +28,23 @@ angular
                    .useEnhancedLinkAttribution(true);
 
   $routeProvider
-    .when('/login', {
+    .when(SigninPathSuffix, {
       title: ProductName + ' Sign-In',
       controller: 'LoginController',
       templateUrl: 'static/login.html',
-      pageTrack: '/login'
+      pageTrack: LoginAppPath + SigninPathSuffix
     })
-    .when('/register', {
+    .when(SignupPathSuffix, {
       title: ProductName + ' Sign Up',
       controller: 'SignUpController',
       templateUrl: 'static/signUp/signUp.html',
-      pageTrack: '/register'
+      pageTrack: LoginAppPath + SignupPathSuffix
     })
-    .when('/recover', {
+    .when(RecoveryPathSuffix, {
       title: ProductName + ' Password Reset',
       controller: 'ResetPasswordController',
       templateUrl: 'static/reset/reset.html',
-      pageTrack: '/recover'
+      pageTrack: LoginAppPath + RecoveryPathSuffix
     })
-    .otherwise('/login');
+    .otherwise('/');
 }]);

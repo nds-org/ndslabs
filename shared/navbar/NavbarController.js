@@ -1,7 +1,8 @@
 /* global angular:false */
 
 angular
-.module('navbar', ['ndslabs-login'])
+.module('navbar', [ 'ndslabs-config' ])
+
 /**
  * A simple filter to select only left-aligned or right-aligned navbar links
  */
@@ -28,15 +29,17 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'ProductName', 'ProductUrl', 'HelpLinks', 'FileManager', 'AutoRefresh',
-    function($scope, $location, LoginRoute, AppStoreRoute, HomeRoute, ProductName, ProductUrl, HelpLinks, FileManager, AutoRefresh) {
+.controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'AppStoreRoute', 'AuthInfo', 'HomeRoute', 'ProductName', 'ProductUrl', 'HelpLinks', 'FileManager', 'AutoRefresh',
+    function($scope, $location, LoginRoute, AppStoreRoute, AuthInfo, HomeRoute, ProductName, ProductUrl, HelpLinks, FileManager, AutoRefresh) {
   "use strict";
 
-  $scope.$on('$routeChangeSuccess', function(event, current, previous){
+  $scope.$on('$routeChangeSuccess', function(event, current, previous) {
     if (current.$$route) {
       $scope.path = current.$$route.originalPath;
     }
   });
+  
+  $scope.auth = AuthInfo.get();
   
   $scope.helpLinks = HelpLinks;
   
