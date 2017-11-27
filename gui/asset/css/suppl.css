@@ -194,8 +194,10 @@ html,body {
 /* Specific id styles
 -------------------------------------------------- */
 
-#appContent {
-  margin-bottom:70px;
+#artificialMargin {
+  height: 100px;
+  width: 100%;
+  background: transparent;
 }
 
 #dashHeader {
@@ -207,12 +209,12 @@ html,body {
 }
 
 #footer {
- position:fixed;
- left:0px;
- bottom:0px;
- height:70px;
- width:100%;
- background:#a8a8a1;
+  position:fixed;
+  left:0px;
+  bottom:0px;
+  height:70px;
+  width:100%;
+  background:#a8a8a1;
 }
 
 #logBody {
