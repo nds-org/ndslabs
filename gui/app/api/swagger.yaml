@@ -321,6 +321,13 @@ paths:
             properties:
               data:
                 $ref: '#/definitions/Log'
+  '/start':
+    get:
+      description: |
+        Quickstarts the specified stack
+      responses:
+        '200':
+          description: OK
   '/start/{stack-id}':
     parameters:
       - $ref: '#/parameters/stack-id'
