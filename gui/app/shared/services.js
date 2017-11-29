@@ -49,8 +49,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
   return ret;
 }])
 
-.service('QuickStart', [ '$log', '$filter', '_', 'AutoRefresh', 'Loading', 'RandomPassword', 'NdsLabsApi', 'Stacks', 'Specs', 'Stack', 'Popup',
-    function($log, $filter, _, AutoRefresh, Loading, RandomPassword, NdsLabsApi, Stacks, Specs, Stack, Popup) {
+.service('QuickStart', [ '$log', '$filter', '$timeout', '_', 'AutoRefresh', 'NdsLabsApi', 'Popup',
+    function($log, $filter, $timeout, _, AutoRefresh, NdsLabsApi, Popup) {
   "use strict";
   return function(quickstartKey) {
       
@@ -63,82 +63,20 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
           Popup.open($filter('externalHostPort')(ep));
         }
       },
-      startAndNavigate: function(stack) {
-        if (quickstart.busy) {
-          if (stack.status === 'stopping') {
-            alert('You must wait for the service to shut down.');
-            return;
-          } else if (stack.status === 'starting') {
-            alert('Your service is starting. It will open in a new tab once startup is complete.');
-            return;
-          } else {
-            $log.warning('A mismatch was detected in the quick start busy signal state.');
-          }
-        }
-        
-        if (stack.status !== 'started') {
-          quickstart.busy = true;
-          return NdsLabsApi.getStartByStackId({
-              'stackId': stack.id
+      launch: function() {
+        $timeout(function() {
+          AutoRefresh.start();
+        }, 1000);
+        return NdsLabsApi.getStart({
+              'key': quickstartKey
             }).then(function(started, xhr) {
-              $log.debug('successfully started quickstartKey=' + quickstartKey);
+              $log.debug('successfully started quickstartKey=' + quickstartKey + ', stackId=' + started);
               quickstart.navigate(started);
             }, function(headers) {
               $log.error('failed to start quickstartKey=' + quickstartKey);
             }).finally(function() {
               quickstart.busy = false;
             });
-        } else {
-          quickstart.navigate(stack);
-        }
-      },
-      launch: function() {
-        // Make sure we have ALL of our stacks first
-        return Loading.set(Stacks.populate().then(function(stacks) {
-          // Search for CloudCmd stack
-          var stack = _.find(stacks, [ 'key', quickstartKey ]);
-          if (stack) {
-            // If found, start it up
-            quickstart.startAndNavigate(stack);
-          } else {
-            // No Cloud Commander found.. install one
-            var spec = _.find(Specs.all, [ 'key', quickstartKey ]);
-            
-            if (!spec) {
-              $log.error("No spec found with key=" + quickstartKey + "... aborting...");
-              return;
-            }
-            
-            var app = new Stack(spec);
-            
-            // Randomly generate any required passwords
-            angular.forEach(app.services, function(svc) {
-              var configMap = {};
-              angular.forEach(svc.config, function(cfg) {
-                if (cfg.isPassword) {
-                  // TODO: Generate random secure passwords here!
-                  cfg.value = RandomPassword.generate();
-                }
-                
-                configMap[cfg.name] = cfg.value;
-              });
-              
-              svc.config = configMap;
-            });
-            
-            // Install this app to etcd
-            return NdsLabsApi.postStacks({ 'stack': app }).then(function(stack, xhr) {
-              $log.debug("successfully posted to /stacks!");
-              
-              quickstart.startAndNavigate(stack);
-              
-              // Add /the new stack to the UI
-              //Stacks.all.push(stack);
-            }, function(headers) {
-              $log.error("error posting to /stacks!");
-            });
-          }
-        }));
       }
     };
     
