@@ -165,12 +165,14 @@ EOF
 		SPEC_GIT_BRANCH=master
 	fi
 
+
 	git clone -b $SPEC_GIT_BRANCH $SPEC_GIT_REPO /specs
+	echo "Cloned $SPEC_GIT_BRANCH $SPEC_GIT_REPO"
 
 	echo $ADMIN_PASSWORD > /password.txt
 	umask 0
 
-	apiserver -conf /apiserver.json -v 1 -passwd $ADMIN_PASSWORD
+	apiserver -conf /apiserver.json --logtostderr=true -v=1 -passwd $ADMIN_PASSWORD 
 
 else
     exec "$@"
