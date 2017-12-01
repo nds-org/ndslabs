@@ -60,7 +60,9 @@ func main() {
 	var confPath, adminPasswd string
 	flag.StringVar(&confPath, "conf", "apiserver.json", "Configuration path")
 	flag.StringVar(&adminPasswd, "passwd", "admin", "Admin user password")
+	fmt.Println("Flag parse")
 	flag.Parse()
+	fmt.Printf("Reading config %s\n", confPath)
 	cfg, err := readConfig(confPath)
 	if err != nil {
 		glog.Error(err)
@@ -106,18 +108,22 @@ func main() {
 		glog.Fatal(err)
 	}
 
+	glog.Infof("Connecting to etcd on %s\n", cfg.Etcd.Address)
 	etcd, err := etcd.NewEtcdHelper(cfg.Etcd.Address, cfg.Etcd.MaxMessages)
 	if err != nil {
 		glog.Errorf("Etcd not available: %s\n", err)
 		glog.Fatal(err)
 	}
+	glog.Infof("Connected to etcd\n")
 
+	glog.Infof("Connecting to Kubernetes API %s\n", cfg.Kubernetes.Address)
 	kube, err := kube.NewKubeHelper(cfg.Kubernetes.Address,
 		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath)
 	if err != nil {
 		glog.Errorf("Kubernetes API server not available\n")
 		glog.Fatal(err)
 	}
+	glog.Infof("Connected to Kubernetes\n")
 
 	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.TLS, cfg.Support.Email, cfg.Origin, cfg.Name)
 	if err != nil {
@@ -2080,8 +2086,7 @@ func (s *Server) QuickstartStack(w rest.ResponseWriter, r *rest.Request) {
 	userId := s.getUser(r)
 	sid := r.Request.FormValue("key")
 
-	// TODO: Restrict to single-service specs
-	if !s.serviceExists(userId, sid) {
+	if len(sid) == 0 || !s.serviceExists(userId, sid) {
 		rest.Error(w, "No such service", http.StatusNotFound)
 		return
 	}
@@ -2097,6 +2102,12 @@ func (s *Server) QuickstartStack(w rest.ResponseWriter, r *rest.Request) {
 		if err != nil {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Restrict to single service specs (i.e., no dependencies)
+		if len(spec.Dependencies) > 0 {
+			rest.Error(w, err.Error(), http.StatusConflict)
 			return
 		}
 
