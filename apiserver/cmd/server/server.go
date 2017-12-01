@@ -2107,7 +2107,7 @@ func (s *Server) QuickstartStack(w rest.ResponseWriter, r *rest.Request) {
 
 		// Restrict to single service specs (i.e., no dependencies)
 		if len(spec.Dependencies) > 0 {
-			rest.Error(w, err.Error(), http.StatusConflict)
+			rest.Error(w, err.Error(), 422) // unprocessable
 			return
 		}
 
