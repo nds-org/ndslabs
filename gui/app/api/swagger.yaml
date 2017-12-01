@@ -322,9 +322,16 @@ paths:
               data:
                 $ref: '#/definitions/Log'
   '/start':
+    parameters:
+      - in: query
+        name: key
+        schema:
+          type: string
+        required: true
+        description: The key of the service spec to start and navigate to
     get:
       description: |
-        Quickstarts the specified stack
+        Adds, starts, and navigates to the specified application
       responses:
         '200':
           description: OK
