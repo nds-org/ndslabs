@@ -64,6 +64,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
         }
       },
       launch: function() {
+        quickstart.busy = true;
         $timeout(function() {
           AutoRefresh.start();
         }, 1000);
