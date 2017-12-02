@@ -27,67 +27,67 @@ angular
 /**
  * The route to our "Landing Page" View
  */
-.constant('LandingRoute', '/')
+.constant('LandingRoute', '/landing/#/')
 
 /**
  * The route to our "Login" View
  */
-.constant('LoginRoute', '/login')
+.constant('LoginRoute', '/login/#/')
 
 /**
  * The route to the "Contact Us" view
  */
-.constant('ContactUsRoute', '/contact')
+.constant('ContactUsRoute', '/landing/#/contact')
 
 /**
  * The route to our "Request Access" View
  */
-.constant('SignUpRoute', '/register')
+.constant('SignUpRoute', '/login/#/register')
 
 /**
  * The route to our "Verify Account" View
  */
-.constant('VerifyAccountRoute', '/register/verify')
+.constant('VerifyAccountRoute', '/login/#/register/verify')
 
 /**
  * The route to our "Recover Password" View
  */
-.constant('ResetPasswordRoute', '/recover')
+.constant('ResetPasswordRoute', '/login/#/recover')
 
 /**
  * The route to the "AppStore" view
  */
-.constant('AppStoreRoute', '/store')
+.constant('AppStoreRoute', '/dashboard/#/store')
 
 /**
  * The route to the "Add Application Spec" view
  */
-.constant('AddSpecRoute', '/store/add')
+.constant('AddSpecRoute', '/dashboard/#/store/add')
 
 /**
  * The route to the "Edit Application Spec" view
  */
-.constant('EditSpecRoute', '/store/edit/:specKey')
+.constant('EditSpecRoute', '/dashboard/#/store/edit/:specKey')
 
 /**
  * The route to our "Dashboard" View
  */
-.constant('HomeRoute', '/home')
+.constant('HomeRoute', '/dashboard/#/home')
 
 /**
  * The route to the "Add Application Service" view
  */
-.constant('AddServiceRoute', '/home/:stackId/add/:service')
+.constant('AddServiceRoute', '/dashboard/#/home/:stackId/add/:service')
 
 /**
  * The route to the "Edit Application Service" view
  */
-.constant('EditServiceRoute', '/home/:stackId/edit/:service')
+.constant('EditServiceRoute', '/dashboard/#/home/:stackId/edit/:service')
 
 /**
  * The route to the "Application Service Console" view
  */
-.constant('ConsoleRoute', '/home/:stackId/console/:service')
+.constant('ConsoleRoute', '/dashboard/#/home/:stackId/console/:service')
 
 /**
  * The name of the product to display in the UI and the URL to link to when clicked
@@ -121,7 +121,7 @@ angular
  * 
  * TODO: We assume this is running on the same machine as the apiserver.
  */ 
-.constant('ApiHost', 'www.mldev.ndslabs.org')
+.constant('ApiHost', 'www.local.ndslabs.org')
 .constant('ApiPort', '')
 .constant('ApiPath', '/api')
 .constant('ApiSecure', true) 

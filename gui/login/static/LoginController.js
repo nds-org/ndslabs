@@ -37,9 +37,11 @@ angular
     }).then(function(data, xhr) {
       $scope.errorMessage = '';
       $cookies.put('namespace', $scope.settings.namespace);
+      $cookies.put('token', data.token);
       $log.debug("Logged in!");
       //getProject();
-      $location.path(HomeRoute);
+      //$location.path(HomeRoute);
+      window.location.href = HomeRoute;
     }, function(response) {
       var body = response.body || { 'Error': 'Something went wrong. Is the server running?' };
       $scope.errorMessage = response.status === 401 ? 'Invalid username or password' : body.Error;

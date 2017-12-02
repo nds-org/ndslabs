@@ -45,9 +45,15 @@ app.use(bodyParser.json());
 // AngularJS app dependencies
 app.use('/bower_components', express.static('bower_components'));
 
-// Our AngularJS app
+// Our AngularJS apps/assets
 app.use('/app', express.static('app'));
 app.use('/dist', express.static('dist'));
+app.use('/landing', express.static('landing'));
+app.use('/login', express.static('login'));
+app.use('/dashboard', express.static('dashboard'));
+app.use('/shared', express.static('shared'));
+app.use('/asset', express.static('asset'));
+app.use('/ConfigModule.js', express.static('ConfigModule.js'));
 
 // Use optimized versions of the images (drop-in)
 app.use('/asset/png', express.static('dist/png'));
@@ -90,6 +96,32 @@ app.post('/logs', function (req, res) {
 
   // Return success
   res.status(201).send("Successfully POSTed to server logs!\n")
+});
+
+
+// Configure a route to our AngularJS landing app
+app.get('/landing*', function(req, res){
+  res.sendFile('landing/index.html', { root: basedir || __dirname });
+});
+
+// Configure a route to our AngularJS login app
+app.get('/login*', function(req, res){
+  res.sendFile('login/index.html', { root: basedir || __dirname });
+});
+
+// Configure a route to our AngularJS dashboard app
+app.get('/dashboard*', function(req, res){
+  res.sendFile('dashboard/index.html', { root: basedir || __dirname });
+});
+
+// Configure a route to our AngularJS dashboard app
+app.get('/', function(req, res){
+  res.status(404).send("Not Found")
+});
+
+// Configure a route to our AngularJS dashboard app
+app.get('/healthz', function(req, res){
+  res.status(200).send("OK")
 });
 
 // Configure catch-all route to serve up our AngularJS app
