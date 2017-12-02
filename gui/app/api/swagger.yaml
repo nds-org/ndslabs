@@ -615,6 +615,8 @@ definitions:
         type: string
       storageQuota:
         type: string
+      nexturl:
+        type: string
       resourceLimits:
         type: object
         properties:
