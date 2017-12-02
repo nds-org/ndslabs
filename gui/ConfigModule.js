@@ -27,67 +27,67 @@ angular
 /**
  * The route to our "Landing Page" View
  */
-.constant('LandingRoute', '/landing/#/')
+.constant('LandingRoute', '/landing/')
 
 /**
  * The route to our "Login" View
  */
-.constant('LoginRoute', '/login/#/')
+.constant('LoginRoute', '/login/')
 
 /**
  * The route to the "Contact Us" view
  */
-.constant('ContactUsRoute', '/landing/#/contact')
+.constant('ContactUsRoute', '/landing/contact')
 
 /**
  * The route to our "Request Access" View
  */
-.constant('SignUpRoute', '/login/#/register')
+.constant('SignUpRoute', '/login/register')
 
 /**
  * The route to our "Verify Account" View
  */
-.constant('VerifyAccountRoute', '/login/#/register/verify')
+.constant('VerifyAccountRoute', '/login/register/verify')
 
 /**
  * The route to our "Recover Password" View
  */
-.constant('ResetPasswordRoute', '/login/#/recover')
+.constant('ResetPasswordRoute', '/login/recover')
 
 /**
  * The route to the "AppStore" view
  */
-.constant('AppStoreRoute', '/dashboard/#/store')
+.constant('AppStoreRoute', '/dashboard/store')
 
 /**
  * The route to the "Add Application Spec" view
  */
-.constant('AddSpecRoute', '/dashboard/#/store/add')
+.constant('AddSpecRoute', '/dashboard/store/add')
 
 /**
  * The route to the "Edit Application Spec" view
  */
-.constant('EditSpecRoute', '/dashboard/#/store/edit/:specKey')
+.constant('EditSpecRoute', '/dashboard/store/edit/:specKey')
 
 /**
  * The route to our "Dashboard" View
  */
-.constant('HomeRoute', '/dashboard/#/home')
+.constant('HomeRoute', '/dashboard/home')
 
 /**
  * The route to the "Add Application Service" view
  */
-.constant('AddServiceRoute', '/dashboard/#/home/:stackId/add/:service')
+.constant('AddServiceRoute', '/dashboard/home/:stackId/add/:service')
 
 /**
  * The route to the "Edit Application Service" view
  */
-.constant('EditServiceRoute', '/dashboard/#/home/:stackId/edit/:service')
+.constant('EditServiceRoute', '/dashboard/home/:stackId/edit/:service')
 
 /**
  * The route to the "Application Service Console" view
  */
-.constant('ConsoleRoute', '/dashboard/#/home/:stackId/console/:service')
+.constant('ConsoleRoute', '/dashboard/home/:stackId/console/:service')
 
 /**
  * The name of the product to display in the UI and the URL to link to when clicked
@@ -200,12 +200,15 @@ angular
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$provide', '$logProvider', 'GaAccount', 'AnalyticsProvider', 'DEBUG', 
-    function($provide, $logProvider, GaAccount, AnalyticsProvider, DEBUG) {
+.config([ '$provide', '$locationProvider', '$logProvider', 'GaAccount', 'AnalyticsProvider', 'DEBUG', 
+    function($provide, $locationProvider, $logProvider, GaAccount, AnalyticsProvider, DEBUG) {
   "use strict";
   
    // Squelch debug-level log messages
   $logProvider.debugEnabled(DEBUG); 
+  
+  // Enable HTML 5 mode
+  $locationProvider.html5Mode(true); 
   
   // Set up log decorator (log forwarding)
   $provide.decorator('$log', ['$delegate', 'Logging', function($delegate, Logging) {
