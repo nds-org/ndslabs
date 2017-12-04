@@ -137,19 +137,16 @@ app.post('/logs', function (req, res) {
 /** AngularJS app paths here */
 
 // Configure a route to our AngularJS landing app
-app.get('/landing*', function(req, res){
-  res.sendFile('landing/index.html', { root: basedir || __dirname });
-});
+app.get('/landing*', function(req, res) { res.redirect('/dashboard'); });
+app.get('/landing', function(req, res) { res.sendFile('landing/index.html', { root: basedir || __dirname }); });
 
 // Configure a route to our AngularJS login app
-app.get('/login*', function(req, res){
-  res.sendFile('login/index.html', { root: basedir || __dirname });
-});
+app.get('/login*', function(req, res) { res.redirect('/dashboard'); });
+app.get('/login', function(req, res) { res.sendFile('login/index.html', { root: basedir || __dirname }); });
 
 // Configure a route to our AngularJS dashboard app
-app.get('/dashboard*', function(req, res){
-  res.sendFile('dashboard/index.html', { root: basedir || __dirname });
-});
+app.get('/dashboard*', function(req, res) { res.redirect('/dashboard'); });
+app.get('/dashboard', function(req, res) { res.sendFile('dashboard/index.html', { root: basedir || __dirname }); });
 
 /** DefaultBackend endpoints here */
 
@@ -207,6 +204,7 @@ app.post('/cauth/login', bodyParser.urlencoded({ extended: false }), function (r
                 // Attach token to response as a cookie
                 let cookieOpts = { domain: 'ndslabs.org' };
                 res.cookie('token', body.token, cookieOpts);
+                res.cookie('namespace', req.body.username, cookieOpts);
                 res.sendStatus(status);
             } else {
                 res.status(500);
@@ -226,10 +224,6 @@ app.get('/cauth/sign_in', function (req, res) {
 // NOTE: Current JWT secret is hostname (pod name) of apiserver
 // TODO: Will we need a mechanism to share JWT secret? ConfigMap?
 app.get('/cauth/auth', function(req, res) {
-    res.send(200).status("OK");
-    return;
-    
-    
     logRequest('info', req, "Checking session for user");
   
     // No token? Denied.

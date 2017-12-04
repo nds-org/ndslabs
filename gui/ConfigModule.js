@@ -213,7 +213,8 @@ angular
   $logProvider.debugEnabled(DEBUG); 
   
   // Enable HTML 5 mode
-  $locationProvider.html5Mode(true); 
+  // FIXME: Double navigation is weird/annoying
+  //$locationProvider.html5Mode(true); 
   
     // Setup default behaviors for encountering HTTP errors
   $httpProvider.interceptors.push(['$rootScope', '$cookies', '$cookieStore', '$q', '$location', '$log', '_', 'DEBUG', 'ApiUri', 'AuthInfo', 'CookieOptions',
