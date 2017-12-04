@@ -2,33 +2,34 @@
 const util = require('util');
 
 // Import winston for logging
-var winston = require('winston');
+const winston = require('winston');
 
 // Import express and middleware modules
-var express = require('express');
-var compression = require('compression')
-var bodyParser = require('body-parser');
-var morgan = require('morgan');
+const express = require('express');
+const compression = require('compression')
+const bodyParser = require('body-parser');
+const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
 
 // Declare a new express app
-var app = express();
+const app = express();
 
-var basedir = process.env.BASEDIR;
-var port = 3000;
+const basedir = process.env.BASEDIR;
+const port = 3000;
 
-var logger = new (winston.Logger)({
-  transports: [
-    new (winston.transports.Console)({ level: 'warn' }),
-    
-    // TODO: Log to file if we ever find a reason to do so
-    /*new (winston.transports.File)({
-      filename: 'webui.log',
-      level: 'info'
-    })*/
-  ],
-  exitOnError: false,
-  emitErrs: false
-});
+const path = require('path');
+const http = require('http');
+const request = require('request');
+
+// Build up a Workbench API URL
+const apiProtocol = 'http:'; // HTTP, since this isn't going through the loadbalancer
+const apiHost = process.env.NDSLABS_APISERVER_SERVICE_HOST || 'localhost';
+const apiPort = process.env.NDSLABS_APISERVER_SERVICE_PORT || '';
+const apiPath = '/api';
+let apiBase = apiProtocol + '//' + apiHost;
+if (apiPort) { apiBase += ':' + apiPort }
+if (apiPath) { apiBase += apiPath }
 
 // Configure gzip compression
 app.use(compression())
@@ -59,6 +60,41 @@ app.use('/ConfigModule.js', express.static('ConfigModule.js'));
 app.use('/asset/png', express.static('dist/png'));
 app.use('/asset/png/logos', express.static('dist/png/logos'));
 
+// TODO: Restrict CORS
+app.use(cors());
+
+// Parse cookies into helpful structures for manipulation
+app.use(cookieParser());
+
+// Parse request body
+app.use(bodyParser.json());
+
+/** Log endpoint here */
+
+const logger = new (winston.Logger)({
+  transports: [
+    new (winston.transports.Console)({ level: 'warn' }),
+    
+    // TODO: Log to file if we ever find a reason to do so
+    /*new (winston.transports.File)({
+      filename: 'webui.log',
+      level: 'info'
+    })*/
+  ],
+  exitOnError: false,
+  emitErrs: false
+});
+
+const logRequest = function(level, req, message) {
+  // Retrieve log metadata
+  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  const timestamp = new Date(); // req.body.time;
+  const token = req.cookies['token'] || {};
+  const username = token.namespace || "No Session";
+  
+  logger.log(level.toLowerCase(), timestamp + " | " + ip + " (" + username + ") -", message);
+};
+
 // POST /logs => Echo logs to server console
 app.post('/logs', function (req, res) {
   // TODO: Do we want to show ALL requests? or just authorized ones?
@@ -73,15 +109,15 @@ app.post('/logs', function (req, res) {
   }
   
   // Retrieve log metadata
-  var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  var timestamp = req.body.time;
-  var level = req.body.type.toLowerCase();
-  var username = req.body.token.namespace || "No Session";
+  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  const timestamp = req.body.time;
+  const level = req.body.type.toLowerCase();
+  const username = req.body.token.namespace || "No Session";
 
   // Retrieve log message body / stacktrace
-  var logBody = JSON.parse(req.body.message);
-  var message = logBody.message || logBody;
-  var stack = logBody.stack || '';
+  const logBody = JSON.parse(req.body.message);
+  const message = logBody.message || logBody;
+  const stack = logBody.stack || '';
   
   // For debug purposes:
   if (!message) {
@@ -98,6 +134,7 @@ app.post('/logs', function (req, res) {
   res.status(201).send("Successfully POSTed to server logs!\n")
 });
 
+/** AngularJS app paths here */
 
 // Configure a route to our AngularJS landing app
 app.get('/landing*', function(req, res){
@@ -114,6 +151,8 @@ app.get('/dashboard*', function(req, res){
   res.sendFile('dashboard/index.html', { root: basedir || __dirname });
 });
 
+/** DefaultBackend endpoints here */
+
 // Configure a route to our AngularJS dashboard app
 app.get('/', function(req, res){
   res.status(404).send("Not Found")
@@ -124,13 +163,143 @@ app.get('/healthz', function(req, res){
   res.status(200).send("OK")
 });
 
+
+/** CAuth endpoints/paths here */
+
+// Simple auth endpoint
+app.post('/cauth/login', bodyParser.urlencoded({ extended: false }), function (req, res) {
+    // Pull username/password from POST body
+    let postData = { 
+        username: req.body.username, 
+        password: req.body.password 
+    };
+    
+    // Configure our POST target
+    let postOptions = { 
+        url: apiBase + '/authenticate', 
+        method: 'POST', 
+        body: JSON.stringify(postData),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+    };
+     
+    // Generic error handler for this request
+    req.on('error', function (err) {
+        console.log('ERROR: failed to send login request -', err);
+    });
+    
+    // Send login request
+    request(postOptions, function (error, response, responseBody) {
+        console.log("ERROR: ", error);
+        console.log("RESPONSE: ", response);
+        console.log("RESPONSE BODY: ", responseBody);
+
+        let status = response && response.statusCode ? response.statusCode : 500;
+        
+        if (error || status >= 400) {
+            console.log('ERROR: Failed to login -', status, error); // Print the error if one occurred 
+            res.sendStatus(status);
+        } else {
+            let body = JSON.parse(responseBody);
+            
+            if (body.token) {
+                // Attach token to response as a cookie
+                let cookieOpts = { domain: 'ndslabs.org' };
+                res.cookie('token', body.token, cookieOpts);
+                res.sendStatus(status);
+            } else {
+                res.status(500);
+                res.send("No token was provided.");
+            }
+        }
+    });
+});
+
+// Serve our static login page
+app.get('/cauth/sign_in', function (req, res) {
+  logRequest('info', req, "User was redirected to /cauth/sign_in");
+  res.sendFile(path.join(__dirname + '/login/'));
+});
+
+// Check to see if the current user is logged in
+// NOTE: Current JWT secret is hostname (pod name) of apiserver
+// TODO: Will we need a mechanism to share JWT secret? ConfigMap?
+app.get('/cauth/auth', function(req, res) {
+    res.send(200).status("OK");
+    return;
+    
+    
+    logRequest('info', req, "Checking session for user");
+  
+    // No token? Denied.
+    let token = req.cookies['token'];
+    if (!token) {
+        res.sendStatus(401);
+        return;
+    }
+
+    // If token was given, check that it's valid
+    http.get({ 
+        protocol: apiProtocol,
+        host: apiHost,
+        port: apiPort,
+        path: apiPath + '/check_token', 
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+    }, (resp) => {
+        const { statusCode } = resp;
+
+        let error;
+        if (statusCode >= 400) {
+          error = new Error('Request Failed.\n' +
+                            `Status Code: ${statusCode}`);
+        }
+        if (error) {
+          console.error(error.message);
+          // consume response data to free up memory
+          resp.resume();
+          res.sendStatus(200);
+          return;
+        }
+
+        resp.setEncoding('utf8');
+        let rawData = '';
+        resp.on('data', (chunk) => { rawData += chunk; });
+        resp.on('end', () => {
+          try {
+            console.log(rawData);
+            res.sendStatus(200);
+          } catch (e) {
+            console.error(e.message);
+            res.sendStatus(401);
+          }
+        });
+      }).on('error', (e) => {
+        console.error(`Got error: ${e.message}`);
+        res.sendStatus(401);
+      });
+});
+
+// Clear session info
+app.get('/cauth/logout', function (req, res) {
+  // TODO: Delete session somehow?
+
+  res.status(501);
+  res.send('STUB: Session deleted!')
+  //jwt.clear()
+});
+
 // Configure catch-all route to serve up our AngularJS app
 // NOTE: Wildcard needs to be done last, after all other endpoints
 app.get('*', function(req, res){
   res.sendFile('index.html', { root: basedir || __dirname });
 });
 
-// Start server on port 3000
+// Start up our server
 app.listen(port, function () {
-  console.log('Server is listening on port ' + port + '...');
+  console.log('Workbench Login API listening on port', port)
+  console.log('Connecting to Workbench API server at ' + apiBase);
 });
