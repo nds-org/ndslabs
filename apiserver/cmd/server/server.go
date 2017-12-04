@@ -60,9 +60,7 @@ func main() {
 	var confPath, adminPasswd string
 	flag.StringVar(&confPath, "conf", "apiserver.json", "Configuration path")
 	flag.StringVar(&adminPasswd, "passwd", "admin", "Admin user password")
-	fmt.Println("Flag parse")
 	flag.Parse()
-	fmt.Printf("Reading config %s\n", confPath)
 	cfg, err := readConfig(confPath)
 	if err != nil {
 		glog.Error(err)
