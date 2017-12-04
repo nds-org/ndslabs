@@ -9,9 +9,15 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('LoginController', [ '$scope', '$cookies', '$location', '$window', '$log', '$uibModal', 'AuthInfo', 'Project', 'NdsLabsApi', 'LoginRoute', 'HomeRoute', /*'VerifyAccountRoute', 'ResetPasswordRoute',*/ '$uibModalStack', 'ServerData', /*'SignUpRoute', 'ContactUsRoute', 'LandingRoute',*/ 'ProductName',
-    function($scope, $cookies, $location, $window, $log, $uibModal, authInfo, Project, NdsLabsApi, LoginRoute, HomeRoute, /*VerifyAccountRoute, ResetPasswordRoute,*/ $uibModalStack, ServerData, /*SignUpRoute, ContactUsRoute, LandingRoute,*/ ProductName) {
+.controller('LoginController', [ '$scope', '$rootScope', '$cookies', '$routeParams', '$location', '$window', '$log', '$uibModal', 'AuthInfo', 'Project', 'NdsLabsApi', 'LoginRoute', 'HomeRoute', 'CookieOptions', '$uibModalStack', 'ServerData', 'ProductName', 'ReturnRoute',
+    function($scope, $rootScope, $cookies, $routeParams, $location, $window, $log, $uibModal, authInfo, Project, NdsLabsApi, LoginRoute, HomeRoute, CookieOptions, $uibModalStack, ServerData, ProductName, ReturnRoute) {
   "use strict";
+
+  $rootScope.rd = '';
+  if ($routeParams.rd) {
+    ReturnRoute = $routeParams.rd;
+    $rootScope.rd = encodeURIComponent(ReturnRoute);
+  }
 
   $scope.productName = ProductName;
   
@@ -38,13 +44,18 @@ angular
       $scope.errorMessage = '';
       
       // TODO: Eventually, cauth server will set this for us.. for now, set the cookie here
-      $cookies.put('namespace', $scope.settings.namespace, { domain: '.local.ndslabs.org', secure: true, path: '/' });
-      $cookies.put('token', data.token, { domain: '.local.ndslabs.org', secure: true, path: '/' });
+      // FIXME: parameterize domain or connect to cauth endpoint
+      //$cookies.put('namespace', $scope.settings.namespace, CookieOptions);
+      //$cookies.put('token', data.token, CookieOptions);
       
       $log.debug("Logged in!");
       //getProject();
       //$location.path(HomeRoute);
-      $window.location.href = HomeRoute;
+      if ($routeParams.rd) {
+        $window.location.href = $routeParams.rd;
+      } else {
+        $window.location.href = HomeRoute;
+      }
     }, function(response) {
       var body = response.body || { 'Error': 'Something went wrong. Is the server running?' };
       $scope.errorMessage = response.status === 401 ? 'Invalid username or password' : body.Error;

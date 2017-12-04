@@ -21,7 +21,7 @@ angular
  * The back-up (default) administrator e-mail to use for support, 
  * in case the /api/contact endpoint is unavailable
  */
-.constant('SupportEmail', 'ndslabs-support@nationaldataservice.org')
+.constant('SupportEmail', 'lambert8@illinois.edu')
 
 
 /**
@@ -131,6 +131,11 @@ angular
 /** Store our built ApiUri here */
 .value('ApiUri', { api: '', ws: '' })
 
+/** Store the value of the "rd" querystring parameter */
+.value('ReturnRoute', '')
+
+.constant('CookieOptions', { domain: '.local.ndslabs.org', secure: true, path: '/' })
+
 /**
  * A shared store for our AuthInfo, done as a provider so that we
  * can easily inject it into the .config() block below
@@ -200,8 +205,8 @@ angular
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$provide', '$locationProvider', '$logProvider', 'GaAccount', 'AnalyticsProvider', 'DEBUG', 
-    function($provide, $locationProvider, $logProvider, GaAccount, AnalyticsProvider, DEBUG) {
+.config([ '$provide', '$locationProvider', '$httpProvider', '$logProvider', 'GaAccount', 'AnalyticsProvider', 'DEBUG', 
+    function($provide, $locationProvider, $httpProvider, $logProvider, GaAccount, AnalyticsProvider, DEBUG) {
   "use strict";
   
    // Squelch debug-level log messages
@@ -209,6 +214,74 @@ angular
   
   // Enable HTML 5 mode
   $locationProvider.html5Mode(true); 
+  
+    // Setup default behaviors for encountering HTTP errors
+  $httpProvider.interceptors.push(['$rootScope', '$cookies', '$cookieStore', '$q', '$location', '$log', '_', 'DEBUG', 'ApiUri', 'AuthInfo', 'CookieOptions',
+      function (scope, $cookies, $cookieStore, $q, $location, $log, _, DEBUG, ApiUri, AuthInfo, CookieOptions) {
+    return {
+      // Attach our auth token to each outgoing request (to the api server)
+      'request': function(config) {
+        // If this is a request for our API server
+        if (config && _.includes(config.url, ApiUri.api)) {
+          // If this was *not* an attempt to authenticate
+          if (!_.includes(config.url, '/authenticate')) {
+            // We need to attach our token to this request
+            config.headers.Authorization = 'Bearer ' + $cookies.get('token', CookieOptions);
+          }
+        }
+        return config;
+      },
+      'requestError': function(rejection) {
+        if (_.includes(rejection.config.url, ApiUri.api)) {
+          $log.error("Request error encountered: " + rejection.config.url);
+        }
+        return $q.reject(rejection);
+      },
+      'response': function(response) {
+        // If this is a response from our API server
+        if (_.includes(response.config.url, ApiUri.api)) {
+          // If this was in response to an /authenticate or /refresh_token request
+          if ((_.includes(response.config.url, '/authenticate') && response.config.method === 'POST') ||
+              (_.includes(response.config.url, '/refresh_token') && response.config.method === 'GET')) {
+            // This response should contain a new token, so save it as a cookie
+            $cookies.put('token', response.data.token, CookieOptions);
+          }
+        }
+        
+        return response;
+      },
+      'responseError': function(rejection) {
+        // If this is a response from our API server
+        if (_.includes(rejection.config.url, ApiUri.api)) {
+          $log.error("Response error encountered: " + rejection.config.url);
+        
+          // Read out the HTTP error code
+          var status = rejection.status;
+          
+          // Handle HTTP 401: Not Authorized - User needs to provide credentials
+          if (status == 401) {
+            // TODO: If we want to intercept the route to redirect them after a successful login
+            //window.location = "/account/login?redirectUrl=" + Base64.encode(document.URL);
+            
+            // Purge current session data
+            AuthInfo.authInfo.token = null;
+            //$cookies.remove('token', CookieOptions);
+            //$cookies.remove('namespace', CookieOptions);
+            $cookieStore.remove('token', CookieOptions);
+            //$cookieStore.remove('namespace', CookieOptions);
+            
+            $log.debug("Routing to login...");
+            //window.location.href = LoginRoute;
+            
+            return $q.reject(rejection);
+          }
+        }
+        
+        // otherwise
+        return $q.reject(rejection);
+      }
+    };
+  }]);
   
   // Set up log decorator (log forwarding)
   $provide.decorator('$log', ['$delegate', 'Logging', function($delegate, Logging) {
@@ -260,4 +333,50 @@ angular
   //                 .setHybridMobileSupport(true)
                    .useDisplayFeatures(true)
                    .useEnhancedLinkAttribution(true);
+}]).run(['$cookies', '$cookieStore', '$location', '$log', 'AuthInfo', 'Project', 'AutoRefresh', 'ServerData', 'CookieOptions',
+    function($cookies, $cookieStore, $location, $log, AuthInfo, Project, AutoRefresh, ServerData, CookieOptions) {
+  
+  // Grab saved auth data from cookies and attempt to use the leftover session
+  var token = $cookies.get('token', CookieOptions);
+  var namespace = $cookies.get('namespace', CookieOptions);
+  
+  var path = $location.path();
+  if (token && namespace) {
+    console.log(`Found token for namespace ${namespace}:`, token);
+    // Pull our token / namespace from cookies
+    AuthInfo.get().token = token;
+    AuthInfo.get().namespace = namespace;
+  } else {
+    $log.debug("No token detected");
+    return;
+  }
+  
+  var terminateSession = AuthInfo.purge = function() {
+    if (AuthInfo.get().token) {
+      // Purge current session data
+      AuthInfo.get().token = null;
+      $cookieStore.remove('token', CookieOptions);
+      //$cookieStore.remove('namespace', CookieOptions);
+      
+      // Close any open modals
+      //$uibModalStack.dismissAll();
+      
+      // Stop any running auto-refresh interval
+      AutoRefresh.stop();
+      
+      // Purge any server data
+      ServerData.purgeAll();
+      
+      $log.debug("Terminating session... routing to Landing");
+      
+      /*if ($routeParams.t) {
+        // Remove any token from query string
+        $location.search('t', null);
+      }*/
+      
+      // redirect user to landing page
+      //$location.path();
+      //window.location.href = LoginRoute;
+    }
+  };
 }]);

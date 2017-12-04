@@ -8,12 +8,14 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('SignUpController', [ '$scope', '$log', '$location', '_', 'NdsLabsApi', 'Project', 'ProductName', 'AuthInfo', 'HomeRoute', 'HelpLinks',
-    function($scope, $log, $location, _, NdsLabsApi, Project, ProductName, AuthInfo, HomeRoute, HelpLinks) {
+.controller('SignUpController', [ '$scope', '$log', '$rootScope', '$routeParams', '$location', '_', 'NdsLabsApi', 'Project', 'ProductName', 'AuthInfo', 'HomeRoute', 'HelpLinks', 'ReturnRoute', 
+    function($scope, $log, $rootScope, $routeParams, $location, _, NdsLabsApi, Project, ProductName, AuthInfo, HomeRoute, HelpLinks, ReturnRoute) {
   "use strict";
 
-  if (AuthInfo.get().token) {
-    $location.path(HomeRoute);
+  $rootScope.rd = '';
+  if ($routeParams.rd) {
+    ReturnRoute = $routeParams.rd;
+    $rootScope.rd = encodeURIComponent(ReturnRoute);
   }
   
   $scope.forms = {};
@@ -39,6 +41,11 @@ angular
     
     $scope.progressMessage = 'Please wait...';
     $scope.errorMessage = '';
+    
+    // If "rd" querystring parameter is present, pass this along as the "nexturl"
+    if ($routeParams.rd) {
+      account.nexturl = $routeParams.rd;
+    }
     
     return NdsLabsApi.postRegister({ 'account': account }).then(function(data, xhr) {
       $scope.errorMessage = '';

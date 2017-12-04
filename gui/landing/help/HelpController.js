@@ -9,9 +9,15 @@ angular
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
  
-.controller('HelpController', [ '$scope', '$timeout', 'NdsLabsApi', 'ProductName', 'SupportEmail',
-    function($scope, $timeout, NdsLabsApi, ProductName, SupportEmail) {
+.controller('HelpController', [ '$scope', '$rootScope', '$routeParams', '$timeout', 'NdsLabsApi', 'ProductName', 'SupportEmail', 'ReturnRoute',
+    function($scope, $rootScope, $routeParams, $timeout, NdsLabsApi, ProductName, SupportEmail, ReturnRoute) {
   "use strict";
+  
+  $rootScope.rd = '';
+  if ($routeParams.rd) {
+    ReturnRoute = $routeParams.rd;
+    $rootScope.rd = encodeURIComponent(ReturnRoute);
+  }
 
   $scope.types = [
     { label: "Request Help", value: "help", placeholder: "Describe a specific scenario that is causing problems or preventing you from working in " + ProductName + "..." },

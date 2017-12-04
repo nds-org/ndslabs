@@ -14,7 +14,7 @@ angular
     function($scope, Loading, $log, $routeParams, $location, $interval, $q, $window, $filter, $uibModal, _, Project, RandomPassword, Stack, Stacks, Specs, AlertService,AutoRefresh, AuthInfo, LandingRoute,
       StackService, NdsLabsApi, ProductName, FileManager) {
   "use strict";
-
+  
   /*if (!AuthInfo.get().token) {
     $location.path(LandingRoute);
     return;
@@ -91,7 +91,7 @@ angular
     // See 'app/dashboard/modals/stackStop/stackStop.html'
     $uibModal.open({
       animation: true,
-      templateUrl: 'app/dashboard/modals/stackRename/stackRename.html',
+      templateUrl: 'dashboard/modals/stackRename/stackRename.html',
       controller: 'StackRenameCtrl',
       size: 'md',
       keyboard: false,
@@ -110,7 +110,7 @@ angular
     // See 'app/dashboard/modals/stackStop/stackStop.html'
     var modalInstance = $uibModal.open({
       animation: true,
-      templateUrl: 'app/dashboard/modals/stackStop/stackStop.html',
+      templateUrl: 'dashboard/modals/stackStop/stackStop.html',
       controller: 'StackStopCtrl',
       size: 'md',
       keyboard: false,
@@ -170,7 +170,7 @@ angular
     // See 'app/dashboard/modals/logViewer/logViewer.html'
     $uibModal.open({
       animation: true,
-      templateUrl: 'app/dashboard/modals/logViewer/logViewer.html',
+      templateUrl: 'dashboard/modals/logViewer/logViewer.html',
       controller: 'LogViewerCtrl',
       windowClass: 'log-modal-window',
       size: 'lg',
@@ -190,7 +190,7 @@ angular
     // See 'app/dashboard/modals/logViewer/logViewer.html'
     $uibModal.open({
       animation: true,
-      templateUrl: 'app/dashboard/modals/configViewer/configViewer.html',
+      templateUrl: 'dashboard/modals/configViewer/configViewer.html',
       controller: 'ConfigViewerCtrl',
       size: 'md',
       keyboard: false,      // Force the user to explicitly click "Close"
@@ -232,7 +232,7 @@ angular
     // See 'app/dashboard/modals/stackDelete/stackDelete.html'
     var modalInstance = $uibModal.open({
       animation: true,
-      templateUrl: 'app/dashboard/modals/stackDelete/stackDelete.html',
+      templateUrl: 'dashboard/modals/stackDelete/stackDelete.html',
       controller: 'StackDeleteCtrl',
       size: 'md',
       keyboard: false,

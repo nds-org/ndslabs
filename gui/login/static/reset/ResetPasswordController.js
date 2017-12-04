@@ -8,13 +8,20 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('ResetPasswordController', [ '$scope', '$location', '$cookies', '$routeParams', '$log', 'HomeRoute', 'LandingRoute', 'NdsLabsApi', 'ProductName', 'AuthInfo', function($scope, $location, $cookies, $routeParams, $log, HomeRoute, LandingRoute, NdsLabsApi, ProductName, AuthInfo) {
+.controller('ResetPasswordController', [ '$scope', '$rootScope', '$location', '$cookies', '$routeParams', '$log', 'HomeRoute', 'LandingRoute', 'NdsLabsApi', 'ProductName', 'AuthInfo', 'ReturnRoute', 'CookieOptions', 
+    function($scope, $rootScope, $location, $cookies, $routeParams, $log, HomeRoute, LandingRoute, NdsLabsApi, ProductName, AuthInfo, ReturnRoute, CookieOptions) {
   "use strict";
 
   $scope.token = $routeParams.t;
   
   if ($scope.token) {
-    $cookies.put('token', $scope.token);
+    $cookies.put('token', $scope.token, CookieOptions);
+  }
+  
+  $rootScope.rd = '';
+  if ($routeParams.rd) {
+    ReturnRoute = $routeParams.rd;
+    $rootScope.rd = encodeURIComponent(ReturnRoute);
   }
   
   $scope.productName = ProductName;
@@ -28,7 +35,7 @@ angular
       password: '',
       confirmation: ''
     };
-  })();
+  })(); // jshint: ignore
   
   /**
    * Send a reset link to the e-mail associated with the given accountId 

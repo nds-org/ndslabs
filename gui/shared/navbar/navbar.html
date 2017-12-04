@@ -11,7 +11,7 @@
         </button>
         <div class="navbar-brand cursor-pointer">
           <!-- Draw the brand logo -->
-          <a id="navbarBrand" href="/landing" class="undecorate-link">
+          <a id="navbarBrand" href="/landing/#/{{ rd ? '?rd=' + rd : '' }}" class="undecorate-link">
             <img id="navBrandLogo" src="../asset/png/favicon-32x32.png" alt="{{ brand.name }}" height="32" width="32"> {{ brand.name }} <sup><small><small>BETA</small></small></sup>
           </a>
         </div>
@@ -22,11 +22,11 @@
         <!-- Draw once for the left half of the navbar, and once again for the right -->
         <ul class="nav navbar-nav" ng-show="auth.token">
           <li ng-class="{ 'active': path === '/store' }">
-            <a id="catalogNav" ng-href="/dashboard/store"><i class="fa fa-fw fa-list-alt"></i> Catalog</a>
+            <a id="catalogNav" ng-href="/dashboard/#/store"><i class="fa fa-fw fa-list-alt"></i> Catalog</a>
           </li>
           
           <li ng-class="{ 'active': path === '/home' }">
-            <a id="applicationsNav" ng-href="/dashboard/home"><i class="fa fa-fw fa-dashboard"></i> Applications</a>
+            <a id="applicationsNav" ng-href="/dashboard/#/home"><i class="fa fa-fw fa-dashboard"></i> Applications</a>
           </li>
           
 	        <!-- Then draw our Manage Files button -->
@@ -48,24 +48,24 @@
             <ul class="dropdown-menu dropdown-menu-right" role="menu">
               <li ng-repeat="link in helpLinks"><a id="helpLink{{ $index }}Nav" ng-href="{{ link.url }}" target="_blank"><i class="fa fa-fw {{ link.icon }}"></i> {{ link.name }}</a></li>
               <li role="separator" class="divider"></li>
-              <li><a id="apiNav" href="/landing/swagger"><i class="fa fa-fw fa-server"></i> API Reference</a></li>
-              <li><a id="contactUsNav" href="/landing/contact"><i class="fa fa-fw fa-support"></i> Contact Us</a></li>
+              <li><a id="apiNav" ng-href="/landing/#/swagger{{ rd ? '?rd=' + rd : '' }}"><i class="fa fa-fw fa-server"></i> API Reference</a></li>
+              <li><a id="contactUsNav" ng-href="/landing/#/contact{{ rd ? '?rd=' + rd : '' }}"><i class="fa fa-fw fa-support"></i> Contact Us</a></li>
             </ul>
           </li>
           
           <!-- Then draw our register / login links -->
-          <li ng-show="!auth.token"><a id="signupNav" href="/login/register">Sign Up</a></li>
-          <li ng-show="!auth.token"><a id="signinNav" href="/login/">Sign In</a></li>
+          <li ng-show="!auth.token"><a id="signupNav" ng-href="/login/#/register{{ rd ? '?rd=' + rd : '' }}">Sign Up</a></li>
+          <li ng-show="!auth.token"><a id="signinNav" ng-href="/login/#/{{ rd ? '?rd=' + rd : '' }}">Sign In</a></li>
           
 	        <!-- Or, draw our account settings button -->
           <li ng-show="auth.token">
   	        <a id="accountDropdown" class="dropdown-toggle" data-toggle="dropdown">
   	          <img ng-show="loadingSmall.promise.$$state.status === 1" gravatar-src="project.email" gravatar-size="20" style="border-radius:50px;margin-right:10px;" />
-  	          {{ settings.namespace }} <span class="caret"></span>
+  	          {{ auth.namespace }} <span class="caret"></span>
 	          </a>
 	          
-            <ul class="dropdown-menu dropdown-menu-right" ng-class="{ 'open': settings.isOpen }" role="menu">
-              <li><a id="resetPasswordNav" ng-href="/login/recover?t={{ settings.token }}"><i class="fa fa-fw fa-unlock-alt"></i> Change Password</a></li>
+            <ul class="dropdown-menu dropdown-menu-right" ng-class="{ 'open': auth.isOpen }" role="menu">
+              <li><a id="resetPasswordNav" ng-href="/login/#/recovery?t={{ auth.token }}"><i class="fa fa-fw fa-unlock-alt"></i> Change Password</a></li>
               <li><a id="logoutBtn" type="button" ng-click="logout()"><i class="fa fa-fw fa-sign-out"></i> Logout</a></li>
             </ul>
           </li>

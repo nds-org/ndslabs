@@ -29,17 +29,31 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('NavbarController', [ '$scope', '$location', 'LoginRoute', 'AppStoreRoute', 'AuthInfo', 'HomeRoute', 'ProductName', 'ProductUrl', 'HelpLinks', 'FileManager', 'AutoRefresh',
-    function($scope, $location, LoginRoute, AppStoreRoute, AuthInfo, HomeRoute, ProductName, ProductUrl, HelpLinks, FileManager, AutoRefresh) {
-  "use strict";
-
+.controller('NavbarController', [ '$scope', '$rootScope', '$window', '$location', '$cookieStore', 'Project', 'LoginRoute', 'AppStoreRoute', 'AuthInfo', 'HomeRoute', 'ProductName', 'ProductUrl', 'HelpLinks', 'FileManager', 'AutoRefresh', 'ReturnRoute', 'CookieOptions',
+    function($scope, $rootScope, $window, $location, $cookieStore, Project, LoginRoute, AppStoreRoute, AuthInfo, HomeRoute, ProductName, ProductUrl, HelpLinks, FileManager, AutoRefresh, ReturnRoute, CookieOptions) {
+  "use strict"
+  
+  // Enable JS dropdowns on the navbar
+  // FIXME: Is there a cleaner way to do this? Calling jQuery manually is ugly...
+  $('.dropdown-toggle').dropdown();
+  
   $scope.$on('$routeChangeSuccess', function(event, current, previous) {
     if (current.$$route) {
       $scope.path = current.$$route.originalPath;
     }
   });
   
+  // Navbar is not a route, so we can't use $routeParams to access "rd" here
+  $rootScope.rd = '';
+  $scope.$watch(function() { return ReturnRoute; }, function(newValue, oldValue) { $rootScope.rd = encodeURIComponent(ReturnRoute); });
+  $scope.$watch(function() { return Project.project; }, function(newValue, oldValue) { $scope.project = newValue; });
+  $scope.$watch(function() { return AuthInfo.get(); }, function(newValue, oldValue) { $scope.auth = newValue; });
+  
+  // Grab the username / token from our Auth service
   $scope.auth = AuthInfo.get();
+  
+  // FIXME: Grab user's e-mail, limits, settings, etc
+  // Project.populate($scope.auth.namespace);
   
   $scope.helpLinks = HelpLinks;
   
@@ -51,6 +65,18 @@ angular
       AutoRefresh.start();
     }
   });
+  
+  $scope.logout = function() {
+    AuthInfo.purge();
+    
+    AuthInfo.get().token = null;
+    AuthInfo.get().namespace = null;
+    
+    $cookieStore.remove('token', CookieOptions);
+    //$cookieStore.remove('namespace', CookieOptions);
+    
+    //$window.location.href = '/login/#/'
+  };
   
   $scope.brand = 
   {

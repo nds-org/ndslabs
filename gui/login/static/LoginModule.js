@@ -32,19 +32,22 @@ angular
       title: ProductName + ' Sign-In',
       controller: 'LoginController',
       templateUrl: 'static/login.html',
+      reloadOnSearch: false,
       pageTrack: LoginAppPath + SigninPathSuffix
     })
     .when(SignupPathSuffix, {
       title: ProductName + ' Sign Up',
       controller: 'SignUpController',
       templateUrl: 'static/signUp/signUp.html',
+      reloadOnSearch: false,
       pageTrack: LoginAppPath + SignupPathSuffix
     })
     .when(RecoveryPathSuffix, {
       title: ProductName + ' Password Reset',
       controller: 'ResetPasswordController',
       templateUrl: 'static/reset/reset.html',
+      reloadOnSearch: false,
       pageTrack: LoginAppPath + RecoveryPathSuffix
     })
-    .otherwise('/');
+    .otherwise(SigninPathSuffix);
 }]);

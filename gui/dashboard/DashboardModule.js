@@ -39,6 +39,74 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   //                 .setHybridMobileSupport(true)
                    .useDisplayFeatures(true)
                    .useEnhancedLinkAttribution(true);
+                   
+  // Setup default behaviors for encountering HTTP errors
+  $httpProvider.interceptors.push(['$rootScope', '$cookies', '$cookieStore', '$q', '$location', '$log', '_', 'DEBUG', 'ApiUri', 'AuthInfo', 'CookieOptions',
+      function (scope, $cookies, $cookieStore, $q, $location, $log, _, DEBUG, ApiUri, AuthInfo, CookieOptions) {
+    return {
+      // Attach our auth token to each outgoing request (to the api server)
+      'request': function(config) {
+        // If this is a request for our API server
+        if (_.includes(config.url, ApiUri.api)) {
+          // If this was *not* an attempt to authenticate
+          if (!_.includes(config.url, '/authenticate')) {
+            // We need to attach our token to this request
+            config.headers.Authorization = 'Bearer ' + $cookies.get('token', CookieOptions);
+          }
+        }
+        return config;
+      },
+      'requestError': function(rejection) {
+        if (_.includes(rejection.config.url, ApiUri.api)) {
+          $log.error("Request error encountered: " + rejection.config.url);
+        }
+        return $q.reject(rejection);
+      },
+      'response': function(response) {
+        // If this is a response from our API server
+        if (_.includes(response.config.url, ApiUri.api)) {
+          // If this was in response to an /authenticate or /refresh_token request
+          if ((_.includes(response.config.url, '/authenticate') && response.config.method === 'POST') ||
+              (_.includes(response.config.url, '/refresh_token') && response.config.method === 'GET')) {
+            // This response should contain a new token, so save it as a cookie
+            $cookies.put('token', response.data.token, CookieOptions);
+          }
+        }
+        
+        return response;
+      },
+      'responseError': function(rejection) {
+        // If this is a response from our API server
+        if (_.includes(rejection.config.url, ApiUri.api)) {
+          $log.error("Response error encountered: " + rejection.config.url);
+        
+          // Read out the HTTP error code
+          var status = rejection.status;
+          
+          // Handle HTTP 401: Not Authorized - User needs to provide credentials
+          if (status == 401) {
+            // TODO: If we want to intercept the route to redirect them after a successful login
+            //window.location = "/account/login?redirectUrl=" + Base64.encode(document.URL);
+            
+            // Purge current session data
+            AuthInfo.authInfo.token = null;
+            //$cookies.remove('token', CookieOptions);
+            //$cookies.remove('namespace', CookieOptions);
+            $cookieStore.remove('token', CookieOptions);
+            //$cookieStore.remove('namespace', CookieOptions);
+            
+            $log.debug("Routing to login...");
+            //window.location.href = LoginRoute;
+            
+            return $q.reject(rejection);
+          }
+        }
+        
+        // otherwise
+        return $q.reject(rejection);
+      }
+    };
+  }]);
   
   // Set up log decorator (log forwarding)
   $provide.decorator('$log', ['$delegate', 'Logging', function($delegate, Logging) {
@@ -77,72 +145,6 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       }
     };
     return methods;
-  }]);
-      
-  // Setup default behaviors for encountering HTTP errors
-  $httpProvider.interceptors.push(['$rootScope', '$cookies', '$q', '$location', '$log', '_', 'DEBUG', 'ApiUri', 'AuthInfo',
-      function (scope, $cookies, $q, $location, $log, _, DEBUG, ApiUri, AuthInfo) {
-    return {
-      // Attach our auth token to each outgoing request (to the api server)
-      'request': function(config) {
-        // If this is a request for our API server
-        if (_.includes(config.url, ApiUri.api)) {
-          // If this was *not* an attempt to authenticate
-          if (!_.includes(config.url, '/authenticate')) {
-            // We need to attach our token to this request
-            config.headers.Authorization = 'Bearer ' + $cookies.get('token');
-          }
-        }
-        return config;
-      },
-      'requestError': function(rejection) {
-        if (_.includes(rejection.config.url, ApiUri.api)) {
-          $log.error("Request error encountered: " + rejection.config.url);
-        }
-        return $q.reject(rejection);
-      },
-      'response': function(response) {
-        // If this is a response from our API server
-        if (_.includes(response.config.url, ApiUri.api)) {
-          // If this was in response to an /authenticate or /refresh_token request
-          if ((_.includes(response.config.url, '/authenticate') && response.config.method === 'POST') ||
-              (_.includes(response.config.url, '/refresh_token') && response.config.method === 'GET')) {
-            // This response should contain a new token, so save it as a cookie
-            $cookies.put('token', response.data.token);
-          }
-        }
-        
-        return response;
-      },
-      'responseError': function(rejection) {
-        // If this is a response from our API server
-        if (_.includes(rejection.config.url, ApiUri.api)) {
-          $log.error("Response error encountered: " + rejection.config.url);
-        
-          // Read out the HTTP error code
-          var status = rejection.status;
-          
-          // Handle HTTP 401: Not Authorized - User needs to provide credentials
-          if (status == 401) {
-            // TODO: If we want to intercept the route to redirect them after a successful login
-            //window.location = "/account/login?redirectUrl=" + Base64.encode(document.URL);
-            
-            // Purge current session data
-            authInfo.authInfo.token = null;
-            $cookies.remove('token');
-            $cookies.remove('namespace');
-            
-            $log.debug("Routing to login...");
-            window.location.href = LoginRoute;
-            
-            return $q.reject(rejection);
-          }
-        }
-        
-        // otherwise
-        return $q.reject(rejection);
-      }
-    };
   }]);
       
   // Setup routes to our different pages
@@ -196,8 +198,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$window', '$location', '$routeParams', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData', 'Loading', 'LandingRoute', 'VerifyAccountRoute', 'Analytics',
-    function($rootScope, $window, $location, $routeParams, $log, $interval, $cookies, $uibModalStack, Stacks, _, authInfo, LoginRoute, AppStoreRoute, HomeRoute, NdsLabsApi, AutoRefresh, ServerData, Loading, LandingRoute, VerifyAccountRoute, Analytics) {
+.run([ '$rootScope', '$window', '$location', '$routeParams', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData', 'Loading', 'LandingRoute', 'VerifyAccountRoute', 'Analytics', 'CookieOptions',
+    function($rootScope, $window, $location, $routeParams, $log, $interval, $cookies, $uibModalStack, Stacks, _, authInfo, LoginRoute, AppStoreRoute, HomeRoute, NdsLabsApi, AutoRefresh, ServerData, Loading, LandingRoute, VerifyAccountRoute, Analytics, CookieOptions) {
   "use strict";
 
   // Make _ bindable in partial views
@@ -219,8 +221,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     if (authInfo.get().token) {
       // Purge current session data
       authInfo.get().token = null;
-      $cookies.remove('token');
-      $cookies.remove('namespace');
+      $cookies.remove('token', CookieOptions);
+      $cookies.remove('namespace', CookieOptions);
       
       // Close any open modals
       $uibModalStack.dismissAll();
@@ -240,13 +242,13 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       
       // redirect user to landing page
       //$location.path();
-      $window.location.href(LandingRoute);
+      //window.location.href = LoginRoute;
     }
   };
   
   // Grab saved auth data from cookies and attempt to use the leftover session
-  var token = $cookies.get('token');
-  var namespace = $cookies.get('namespace');
+  var token = $cookies.get('token', CookieOptions);
+  var namespace = $cookies.get('namespace', CookieOptions);
   
   console.log(`Found token for namespace ${namespace}:`, token);
   var path = $location.path();
@@ -255,8 +257,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     authInfo.get().token = token;
     authInfo.get().namespace = namespace;
   } else {
-    $log.debug("App started... routing to Login");
-    $window.location.href = LoginRoute;
+    $log.debug("App started with no token... routing to Login");
+    //window.location.href = LoginRoute;
     return;
   }
   
@@ -290,10 +292,10 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     }
   
     // Check if the token is still valid on route changes
-    var token = $cookies.get('token');
+    var token = $cookies.get('token', CookieOptions);
     if (token) {
       authInfo.get().token = token;
-      authInfo.get().namespace = $cookies.get('namespace');
+      authInfo.get().namespace = $cookies.get('namespace', CookieOptions);
       NdsLabsApi.getRefresh_token().then(function() {
         $log.debug('Token refreshed: ' + authInfo.get().token);
         Loading.set(ServerData.populateAll(authInfo.get().namespace));

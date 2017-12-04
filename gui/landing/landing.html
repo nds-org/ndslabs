@@ -19,7 +19,7 @@
           <h1>Welcome to the {{ productName }}!</h1>
           <p>{{ productName }} is an environment where developers can prototype tools and capabilities that help build out the NDS framework and services.</p>
           <p>In particular, it is a place that can host the development activities of <a href="http://www.nationaldataservice.org/projects/pilots.html">NDS pilot projects</a>.</p>
-          <p><a class="btn btn-primary btn-lg" id="learnMoreBtn" href="{{ featureLink.url }}" target="_blank" role="button">Learn more</a></p>
+          <p><a class="btn btn-primary btn-lg" id="learnMoreBtn" ng-href="{{ featureLink.url }}" target="_blank" role="button">Learn more</a></p>
         </div>
         
         <div class="row">
@@ -30,8 +30,8 @@
                 <h3 class="panel-title">Request Access to {{ productName }}</h3>
               </div>
               <div class="panel-body">
-                <p>For more about requesting access to {{ productName }}, click <a href="{{ productUrl }}" target="_blank">here</a>!</p>
-                <a id="signUpBtn" href="/login/#/register" class="btn btn-default">Request Access <i class="fa fa-fw fa-caret-right"></i></a>
+                <p>For more about requesting access to {{ productName }}, click <a ng-href="{{ productUrl }}" target="_blank">here</a>!</p>
+                <a id="signUpBtn" ng-href="/login/#/register{{ rd ? '?rd=' + rd : '' }}" class="btn btn-default">Request Access <i class="fa fa-fw fa-caret-right"></i></a>
               </div>
             </div>
           </div>
@@ -44,7 +44,7 @@
               </div>
               <div class="panel-body">
                 <p>Start using {{ productName }}!</p>
-                <a id="signInBtn" class="btn btn-default" href="/login">Sign in here <i class="fa fa-fw fa-caret-right"></i></a>
+                <a id="signInBtn" class="btn btn-default" ng-href="/login/#/{{ rd ? '?rd=' + rd : '' }}">Sign in here <i class="fa fa-fw fa-caret-right"></i></a>
               </div>
             </div>
           </div>
@@ -72,8 +72,8 @@
             
             <p>
               <ul class="fa-ul">
-                <li><i class="fa-li fa fa-server"></i> <a href="#/swagger" id="apiLink"> API Reference</a></li>
-                <li><i class="fa-li fa fa-support"></i> <a href="#/contact" id="contactUsLink"> Contact Us</a></li>
+                <li><i class="fa-li fa fa-server"></i> <a href="/landing/#/swagger" id="apiLink"> API Reference</a></li>
+                <li><i class="fa-li fa fa-support"></i> <a href="/landing/#/contact" id="contactUsLink"> Contact Us</a></li>
               </ul>
             </p>
           </div>

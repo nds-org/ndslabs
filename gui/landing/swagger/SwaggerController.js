@@ -8,9 +8,15 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('SwaggerController', [ '$scope', '$log', '$http', '_', 'NdsLabsApi', 'ProductName', 
-    function($scope, $log, $http, _, NdsLabsApi, ProductName) {
-  "use strict";    
+.controller('SwaggerController', [ '$scope', '$rootScope', '$routeParams', '$log', '$http', '_', 'NdsLabsApi', 'ProductName', 'ReturnRoute',
+    function($scope, $rootScope, $routeParams, $log, $http, _, NdsLabsApi, ProductName, ReturnRoute) {
+  "use strict";
+  
+  $rootScope.rd = '';
+  if ($routeParams.rd) {
+    ReturnRoute = $routeParams.rd;
+    $rootScope.rd = encodeURIComponent(ReturnRoute);
+  }
       
   var url = '/gui/swagger.yaml';
   
