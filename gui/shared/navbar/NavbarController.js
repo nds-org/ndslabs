@@ -29,8 +29,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('NavbarController', [ '$scope', '$rootScope', '$window', '$location', '$cookieStore', 'Project', 'LoginRoute', 'AppStoreRoute', 'AuthInfo', 'HomeRoute', 'ProductName', 'ProductUrl', 'HelpLinks', 'FileManager', 'AutoRefresh', 'ReturnRoute', 'CookieOptions',
-    function($scope, $rootScope, $window, $location, $cookieStore, Project, LoginRoute, AppStoreRoute, AuthInfo, HomeRoute, ProductName, ProductUrl, HelpLinks, FileManager, AutoRefresh, ReturnRoute, CookieOptions) {
+.controller('NavbarController', [ '$scope', '$rootScope', '$window', '$location', '$cookies', 'Project', 'AuthInfo', 'ProductName', 'ProductUrl', 'HelpLinks', 'FileManager', 'AutoRefresh', 'ReturnRoute', 'CookieOptions',
+    function($scope, $rootScope, $window, $location, $cookies, Project, AuthInfo, ProductName, ProductUrl, HelpLinks, FileManager, AutoRefresh, ReturnRoute, CookieOptions) {
   "use strict"
   
   // Enable JS dropdowns on the navbar
@@ -72,10 +72,11 @@ angular
     AuthInfo.get().token = null;
     AuthInfo.get().namespace = null;
     
-    $cookieStore.remove('token', CookieOptions);
-    //$cookieStore.remove('namespace', CookieOptions);
+    $cookies.remove('token', CookieOptions);
+    $cookies.remove('namespace', CookieOptions);
     
-    //$window.location.href = '/login/#/'
+    // TODO: Can we avoid hard-coding this URL?
+    $window.location.href = '/login/';
   };
   
   $scope.brand = 

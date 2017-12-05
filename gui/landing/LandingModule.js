@@ -15,19 +15,19 @@ angular
       title: ProductName + ' Landing Page',
       controller: 'LandingController',
       templateUrl: 'landing.html',
-      pageTrack: '/'
+      pageTrack: '/landing'
     })
     .when('/contact', {
       title: 'Contact ' + ProductName + ' Support',
       controller: 'HelpController',
       templateUrl: 'help/help.html',
-      pageTrack: '/contact'
+      pageTrack: '/landing/contact'
     })
     .when('/swagger', {
       title: ProductName + ' API Reference',
       controller: 'SwaggerController',
       templateUrl: 'swagger/swagger.html',
-      pageTrack: '/swagger'
+      pageTrack: '/landing/swagger'
     }).otherwise('/');
 }])
 

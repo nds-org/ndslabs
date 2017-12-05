@@ -1,7 +1,7 @@
 /* global angular:false */
 
 angular
-.module('ndslabs-api')
+.module('ndslabs-landing')
 /**
  * The controller for our "Swagger API" View
  * 

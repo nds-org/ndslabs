@@ -25,26 +25,21 @@
     <link href="../asset/css/suppl.css" rel="stylesheet" type="text/css">
     <link href="../asset/css/font-roboto.css" rel="stylesheet" type="text/css">
     <style type="text/css">body { font-family: "Roboto", sans-serif !important; }</style>
-    
-    <!-- Other External JS / CSS -->
-    <script type="text/javascript" src="../bower_components/jquery/dist/jquery.min.js"></script>
-    <script type="text/javascript" src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="../bower_components/lodash/dist/lodash.min.js"></script>
 
     <!-- AngularJS + official modules-->
-    <script src="../bower_components/angular/angular.js"></script>
+    <script src="../bower_components/angular/angular.min.js"></script>
     <script src="../bower_components/angular-route/angular-route.min.js"></script>
     <script src="../bower_components/angular-resource/angular-resource.min.js"></script>
     <script src="../bower_components/angular-animate/angular-animate.min.js"></script>
     <script src="../bower_components/angular-cookies/angular-cookies.min.js"></script>
     <script src="../bower_components/angular-messages/angular-messages.min.js"></script>
-    <script src="../bower_components/angular-sanitize/angular-sanitize.min.js"></script>
 
     <!-- Bridge AngularJS with any external JS / CSS -->
     <script src="../bower_components/angular-google-analytics/dist/angular-google-analytics.js"></script>
+    <script type="text/javascript" src="../bower_components/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../bower_components/lodash/dist/lodash.min.js"></script>
     <script src="../bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
-    <script src="../bower_components/angular-swagger-ui/dist/scripts/swagger-ui.js"></script>
-    <link rel="stylesheet" href="../bower_components/angular-swagger-ui/dist/css/swagger-ui.min.css"> 
     
     <!-- Term.js -->
     <script src="../bower_components/term.js/src/term.js"></script>
@@ -69,10 +64,8 @@
     <link rel="stylesheet" type="text/css" href="../bower_components/angular-busy/dist/angular-busy.css" />
     <script src="../bower_components/angular-busy/dist/angular-busy.js"></script>
     
-    <!-- Load our own custom modules -->
-    <script src="../bower_components/angular-wizard/angular-wizard.js"></script>
+    <!-- Shared Dependencies -->
     <script src="../bower_components/angular-grid/angular-grid.js"></script>
-    <script src="../bower_components/angular-alert/angular-alert.js"></script>
     <script src="../shared/ndslabs-api.js"></script>
     <script src="../shared/services.js"></script>
     <script src="../shared/filters.js"></script>
@@ -81,7 +74,7 @@
     <script src="../shared/footer/FooterController.js"></script>
     <script src="../ConfigModule.js"></script>
     
-    <!-- Our app source -->
+    <!-- Dashboard App Source -->
     <script src="DashboardModule.js"></script>
     <script src="dashboard/DashboardController.js"></script>
     <script src="dashboard/console/ConsoleController.js"></script>
@@ -105,20 +98,6 @@
     <!-- This syntax can be used to isolate smaller page templates (such as our navbar and footer) -->
     <!-- NOTE: This method does not produce a navigatable route. For another full page/route, we need to add the route to app.js -->
     <div ng-include src="'../shared/navbar/navbar.html'" ng-controller="NavbarController"></div> 
-    
-    <!-- TODO: Source these images locally? Or just get rid of them? -->
-    <!--[if IE 6]>
-            <p class="browsehappy"><img height="64" width="64" src="http://vignette2.wikia.nocookie.net/logopedia/images/5/5d/IE9.png/revision/latest?cb=20121221232011" />You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-    <![endif]-->
-    <!--[if IE 7]>
-                <p class="browsehappy"><img height="64" width="64" src="https://upload.wikimedia.org/wikipedia/en/1/10/Internet_Explorer_7_Logo.png" />You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-    <![endif]-->
-    <!--[if IE 8]>
-                <p class="browsehappy"><img height="64" width="64" src="http://vignette3.wikia.nocookie.net/logopedia/images/d/d0/IE6.png/revision/latest?cb=20121221232621" />You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-    <![endif]-->
-    <!--[if IE 9]>
-                <p class="browsehappy"><img height="64" width="64" src="http://www.browser-watch.com/wp-content/uploads/2010/09/ie9-logo.png" />You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-    <![endif]-->
     
     <!-- ng-view tells angular that we will swap in templates for the route specified by app.js (via ngRoute) -->
     <div class="container" id="appContent" ng-view ng-cloak="loadPromise"></div>

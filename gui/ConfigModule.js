@@ -214,7 +214,7 @@ angular
   
   // Enable HTML 5 mode
   // FIXME: Double navigation is weird/annoying
-  //$locationProvider.html5Mode(true); 
+  $locationProvider.html5Mode(true);
   
     // Setup default behaviors for encountering HTTP errors
   $httpProvider.interceptors.push(['$rootScope', '$cookies', '$cookieStore', '$q', '$location', '$log', '_', 'DEBUG', 'ApiUri', 'AuthInfo', 'CookieOptions',
@@ -351,33 +351,4 @@ angular
     $log.debug("No token detected");
     return;
   }
-  
-  var terminateSession = AuthInfo.purge = function() {
-    if (AuthInfo.get().token) {
-      // Purge current session data
-      AuthInfo.get().token = null;
-      $cookieStore.remove('token', CookieOptions);
-      //$cookieStore.remove('namespace', CookieOptions);
-      
-      // Close any open modals
-      //$uibModalStack.dismissAll();
-      
-      // Stop any running auto-refresh interval
-      AutoRefresh.stop();
-      
-      // Purge any server data
-      ServerData.purgeAll();
-      
-      $log.debug("Terminating session... routing to Landing");
-      
-      /*if ($routeParams.t) {
-        // Remove any token from query string
-        $location.search('t', null);
-      }*/
-      
-      // redirect user to landing page
-      //$location.path();
-      //window.location.href = LoginRoute;
-    }
-  };
 }]);

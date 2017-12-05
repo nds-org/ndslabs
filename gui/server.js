@@ -12,6 +12,8 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
+const cookieOpts = { domain: 'local.ndslabs.org' };
+
 // Declare a new express app
 const app = express();
 
@@ -85,16 +87,6 @@ const logger = new (winston.Logger)({
   emitErrs: false
 });
 
-const logRequest = function(level, req, message) {
-  // Retrieve log metadata
-  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  const timestamp = new Date(); // req.body.time;
-  const token = req.cookies['token'] || {};
-  const username = token.namespace || "No Session";
-  
-  logger.log(level.toLowerCase(), timestamp + " | " + ip + " (" + username + ") -", message);
-};
-
 // POST /logs => Echo logs to server console
 app.post('/logs', function (req, res) {
   // TODO: Do we want to show ALL requests? or just authorized ones?
@@ -137,27 +129,27 @@ app.post('/logs', function (req, res) {
 /** AngularJS app paths here */
 
 // Configure a route to our AngularJS landing app
-app.get('/landing*', function(req, res) { res.redirect('/dashboard'); });
-app.get('/landing', function(req, res) { res.sendFile('landing/index.html', { root: basedir || __dirname }); });
+app.get('/landing/', function(req, res) { res.sendFile('landing/index.html', { root: basedir || __dirname }); });
+app.get('/landing*', function(req, res) { res.redirect('/landing/'); });
 
 // Configure a route to our AngularJS login app
-app.get('/login*', function(req, res) { res.redirect('/dashboard'); });
-app.get('/login', function(req, res) { res.sendFile('login/index.html', { root: basedir || __dirname }); });
+app.get('/login/', function(req, res) { res.sendFile('login/index.html', { root: basedir || __dirname }); });
+app.get('/login*', function(req, res) { res.redirect('/login/'); });
 
 // Configure a route to our AngularJS dashboard app
-app.get('/dashboard*', function(req, res) { res.redirect('/dashboard'); });
-app.get('/dashboard', function(req, res) { res.sendFile('dashboard/index.html', { root: basedir || __dirname }); });
+app.get('/dashboard/', function(req, res) { res.sendFile('dashboard/index.html', { root: basedir || __dirname }); });
+app.get('/dashboard*', function(req, res) { res.redirect('/dashboard/'); });
 
 /** DefaultBackend endpoints here */
 
 // Configure a route to our AngularJS dashboard app
 app.get('/', function(req, res){
-  res.status(404).send("Not Found")
+  res.sendStatus(404);
 });
 
 // Configure a route to our AngularJS dashboard app
 app.get('/healthz', function(req, res){
-  res.status(200).send("OK")
+  res.sendStatus(200);
 });
 
 
@@ -165,58 +157,59 @@ app.get('/healthz', function(req, res){
 
 // Simple auth endpoint
 app.post('/cauth/login', bodyParser.urlencoded({ extended: false }), function (req, res) {
-    // Pull username/password from POST body
-    let postData = { 
-        username: req.body.username, 
-        password: req.body.password 
-    };
-    
-    // Configure our POST target
-    let postOptions = { 
-        url: apiBase + '/authenticate', 
-        method: 'POST', 
-        body: JSON.stringify(postData),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-    };
-     
-    // Generic error handler for this request
-    req.on('error', function (err) {
-        console.log('ERROR: failed to send login request -', err);
-    });
-    
-    // Send login request
-    request(postOptions, function (error, response, responseBody) {
-        console.log("ERROR: ", error);
-        console.log("RESPONSE: ", response);
-        console.log("RESPONSE BODY: ", responseBody);
+  // Pull username/password from POST body
+  const username = req.body.username;
+  let postData = { 
+      username: username, 
+      password: req.body.password 
+  };
+  
+  // Configure our POST target
+  let postOptions = { 
+    url: apiBase + '/authenticate', 
+    method: 'POST', 
+    body: JSON.stringify(postData),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+   
+  // Generic error handler for this request
+  req.on('error', function (err) {
+    console.log('ERROR: failed to send login request -', err);
+  });
+  
+  // Send login request
+  request(postOptions, function (error, response, responseBody) {
+    console.log("ERROR: ", error);
+    console.log("RESPONSE: ", response);
+    console.log("RESPONSE BODY: ", responseBody);
 
-        let status = response && response.statusCode ? response.statusCode : 500;
-        
-        if (error || status >= 400) {
-            console.log('ERROR: Failed to login -', status, error); // Print the error if one occurred 
-            res.sendStatus(status);
-        } else {
-            let body = JSON.parse(responseBody);
-            
-            if (body.token) {
-                // Attach token to response as a cookie
-                let cookieOpts = { domain: 'ndslabs.org' };
-                res.cookie('token', body.token, cookieOpts);
-                res.cookie('namespace', req.body.username, cookieOpts);
-                res.sendStatus(status);
-            } else {
-                res.status(500);
-                res.send("No token was provided.");
-            }
-        }
-    });
+    let status = response && response.statusCode ? response.statusCode : 500;
+    
+    if (error || status >= 400) {
+      console.log('ERROR: Failed to login -', status, error); // Print the error if one occurred 
+      res.sendStatus(status);
+    } else {
+      let body = JSON.parse(responseBody);
+      
+      if (body.token) {
+          // Attach token to response as a cookie
+          res.cookie('token', body.token, cookieOpts);
+          res.cookie('namespace', username, cookieOpts);
+          res.sendStatus(status);
+      } else {
+          res.status(500);
+          res.send("No token was provided.");
+      }
+    }
+  });
 });
 
 // Serve our static login page
 app.get('/cauth/sign_in', function (req, res) {
-  logRequest('info', req, "User was redirected to /cauth/sign_in");
+  //logger.log('info', "", "User was redirected to /cauth/sign_in.");
+  console.log("User redirected to sign-in.");
   res.sendFile(path.join(__dirname + '/login/'));
 });
 
@@ -224,57 +217,59 @@ app.get('/cauth/sign_in', function (req, res) {
 // NOTE: Current JWT secret is hostname (pod name) of apiserver
 // TODO: Will we need a mechanism to share JWT secret? ConfigMap?
 app.get('/cauth/auth', function(req, res) {
-    logRequest('info', req, "Checking session for user");
+  // No token? Denied.
+  let token = req.cookies['token'];
+  //logger.log('info', "", "Checking user session: " + token);
+  console.log("Checking user session: ", token);
   
-    // No token? Denied.
-    let token = req.cookies['token'];
-    if (!token) {
-        res.sendStatus(401);
-        return;
+  if (!token) {
+      res.sendStatus(401);
+      return;
+  }
+
+  // If token was given, check that it's valid
+  http.get({ 
+      protocol: apiProtocol,
+      host: apiHost,
+      port: apiPort,
+      path: apiPath + '/check_token', 
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+      }
+  }, 
+  (resp) => {
+    const { statusCode } = resp;
+
+    let error;
+    if (statusCode >= 400) {
+      error = new Error('Request Failed.\n' +
+                        `Status Code: ${statusCode}`);
+    }
+    if (error) {
+      console.error(error.message);
+      // consume response data to free up memory
+      resp.resume();
+      res.sendStatus(200);
+      return;
     }
 
-    // If token was given, check that it's valid
-    http.get({ 
-        protocol: apiProtocol,
-        host: apiHost,
-        port: apiPort,
-        path: apiPath + '/check_token', 
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-        }
-    }, (resp) => {
-        const { statusCode } = resp;
-
-        let error;
-        if (statusCode >= 400) {
-          error = new Error('Request Failed.\n' +
-                            `Status Code: ${statusCode}`);
-        }
-        if (error) {
-          console.error(error.message);
-          // consume response data to free up memory
-          resp.resume();
-          res.sendStatus(200);
-          return;
-        }
-
-        resp.setEncoding('utf8');
-        let rawData = '';
-        resp.on('data', (chunk) => { rawData += chunk; });
-        resp.on('end', () => {
-          try {
-            console.log(rawData);
-            res.sendStatus(200);
-          } catch (e) {
-            console.error(e.message);
-            res.sendStatus(401);
-          }
-        });
-      }).on('error', (e) => {
-        console.error(`Got error: ${e.message}`);
+    resp.setEncoding('utf8');
+    let rawData = '';
+    resp.on('data', (chunk) => { rawData += chunk; });
+    resp.on('end', () => {
+      try {
+        console.log(rawData);
+        res.sendStatus(200);
+      } catch (e) {
+        console.error(e.message);
         res.sendStatus(401);
-      });
+      }
+    });
+  }).on('error', (e) => {
+    console.error(`Got error: ${e.message}`);
+    res.sendStatus(401);
+  });
 });
 
 // Clear session info
@@ -282,8 +277,9 @@ app.get('/cauth/logout', function (req, res) {
   // TODO: Delete session somehow?
 
   res.status(501);
-  res.send('STUB: Session deleted!')
-  //jwt.clear()
+  res.send('STUB: Session deleted!');
+  res.clearCookie("token");
+  res.clearCookie("namespace");
 });
 
 // Configure catch-all route to serve up our AngularJS app
