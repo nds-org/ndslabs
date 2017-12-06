@@ -136,7 +136,7 @@ module.exports = function(grunt) {
             options: {
                 apis: [
                     {
-                        swagger: 'swagger.yaml',
+                        swagger: 'app/api/swagger.yaml',
                         className: 'ApiServer',
                         moduleName: 'ndslabs-api', // This is the model and file name 
                         angularjs: true

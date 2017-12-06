@@ -10,9 +10,9 @@ angular
  */
 .controller('SwaggerController', [ '$scope', '$log', '$http', '_', 'NdsLabsApi', 'ProductName', 
     function($scope, $log, $http, _, NdsLabsApi, ProductName) {
-  "use strict";    
+  "use strict";
       
-  var url = '/app/api/ndslabs.json';
+  var url = '/app/api/swagger.yaml';
   
   $scope.productName = ProductName;
   $scope.swaggerSpec = '';
