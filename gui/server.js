@@ -12,7 +12,7 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
-const cookieOpts = { domain: 'local.ndslabs.org' };
+const cookieOpts = { domain: process.env.DOMAIN || 'local.ndslabs.org' };
 
 // Declare a new express app
 const app = express();
