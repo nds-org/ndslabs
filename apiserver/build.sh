@@ -17,8 +17,8 @@ if [ "$1" == "local" ] || [ "$1" == "docker" ]; then
     echo "  BUILD_DATE = \"$BUILD_DATE\"" >> $VERSIONFILE
     echo ")" >> $VERSIONFILE
     
-    glide install --strip-vendor --strip-vcs 
-    
+    glide install --strip-vendor
+
 	if [ "$1" == "local" ]; then 
         UNAME=$(uname)
         if [ "$UNAME" == "Darwin" ]; then
@@ -45,7 +45,6 @@ if [ "$1" == "local" ] || [ "$1" == "docker" ]; then
         GOOS=darwin GOARCH=amd64 go build -o build/bin/ndslabsctl-darwin-amd64 ./cmd/apictl
     fi
     
-    rm -r pkg/version
 elif [ "$1" == "clean" ]; then
 	rm -r build
 	rm -r vendor/github.com vendor/golang.org vendor/gopkg.in vendor/k8s.io

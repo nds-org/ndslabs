@@ -79,3 +79,18 @@ To run
 ```
 ./apiserver -v <log verbosity 1-4> --conf <path to apiserver.conf> --passwd <admin password>
 ```
+
+## Find URL of Minikube Kubernetes
+`minikube ip`
+
+Add a NodePort setting to etcd running inside Kubernetes so we can get an external URL for this service:
+
+`minikube service ndslabs-etcd --url`
+
+Set the `address` property of `etcd` object in apiserver.json to the ip address and port
+```
+  "etcd": {
+    "address": "192.168.64.2:32600",
+    "maxMessages": 100
+  },
+```
