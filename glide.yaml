@@ -12,6 +12,14 @@ import:
   version: ^3.0.7
   subpackages:
   - client
+- package: github.com/sirupsen/logrus
+  version: 33a34430d1c3dc71777fdd677864928e5b5812bc
+# Git Account name changed and broke old dependencies
+# https://github.com/sirupsen/logrus/issues/553#issuecomment-306591437
+- package: github.com/Sirupsen/logrus
+  repo: https://github.com/sirupsen/logrus.git
+  vcs: git
+  version: 33a34430d1c3dc71777fdd677864928e5b5812bc
 - package: github.com/docker/docker
   version: ^1.12.1
   subpackages:
@@ -40,8 +48,8 @@ import:
   - pkg/api/resource
   - pkg/api/unversioned
   - pkg/apis/extensions
-  - pkg/client/restclient
-  - pkg/client/unversioned/remotecommand
+#  - pkg/client/restclient
+#  - pkg/client/unversioned/remotecommand
   - pkg/kubelet/server/remotecommand
   - pkg/util/intstr
   - pkg/util/rand
@@ -53,3 +61,6 @@ import:
 - package: github.com/tredoe/osutil
   subpackages:
   - user/crypt/apr1_crypt
+- package: k8s.io/client-go
+  version: 2.0
+

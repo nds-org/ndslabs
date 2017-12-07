@@ -23,12 +23,18 @@ import (
 	validate "github.com/ndslabs/apiserver/pkg/validate"
 	version "github.com/ndslabs/apiserver/pkg/version"
 	k8api "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/watch"
+	//"k8s.io/kubernetes/pkg/watch"
 
 	"github.com/StephanDollberg/go-json-rest-middleware-jwt"
 	"github.com/ant0ine/go-json-rest/rest"
 	jwtbase "github.com/dgrijalva/jwt-go"
 	"github.com/golang/glog"
+	"path/filepath"
+
+	"k8s.io/client-go/tools/clientcmd"
+
+	"k8s.io/kubernetes/pkg/watch"
+	"k8s.io/client-go/kubernetes"
 )
 
 var adminUser = "admin"
@@ -39,6 +45,7 @@ type Server struct {
 	Config          *config.Config
 	etcd            *etcd.EtcdHelper
 	kube            *kube.KubeHelper
+	kubeGo 			*kubernetes.Clientset
 	Validator       *validate.Validator
 	email           *email.EmailHelper
 	Namespace       string
@@ -60,7 +67,16 @@ func main() {
 	var confPath, adminPasswd string
 	flag.StringVar(&confPath, "conf", "apiserver.json", "Configuration path")
 	flag.StringVar(&adminPasswd, "passwd", "admin", "Admin user password")
+
+	var kubeconfig *string
+	if home := os.Getenv("HOME"); home != "" {
+		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+	} else {
+		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+	}
+
 	flag.Parse()
+
 	cfg, err := readConfig(confPath)
 	if err != nil {
 		glog.Error(err)
@@ -112,6 +128,22 @@ func main() {
 		glog.Fatal(err)
 	}
 
+	// use the current context in kubeconfig
+	kConfig, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	glog.Infof("Hi %s", kConfig.APIPath)
+
+	// create the clientset
+	kubeGo, err := kubernetes.NewForConfig(kConfig)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	glog.Infof("Hmm %s", kubeGo.LegacyPrefix)
+
 	kube, err := kube.NewKubeHelper(cfg.Kubernetes.Address,
 		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath)
 	if err != nil {
@@ -136,6 +168,7 @@ func main() {
 	}
 	server.etcd = etcd
 	server.kube = kube
+	server.kubeGo = kubeGo
 	server.email = email
 	server.Config = cfg
 	server.homeVolume = cfg.HomeVolume
