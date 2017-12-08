@@ -379,8 +379,9 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 	s.createAdminUser(adminPasswd)
 	go s.initExistingAccounts()
 
-	go s.kube.WatchEvents(s)
-	go s.kube.WatchPods(s)
+	go s.kube.WatchEvents(s, s.kubeGo)
+
+	go s.kube.WatchPods(s, s.kubeGo)
 	go s.shutdownInactiveServices()
 
 	http.Handle(s.prefix, api.MakeHandler())

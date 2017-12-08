@@ -33,6 +33,10 @@ import (
 	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/client/unversioned/remotecommand"
 
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/pkg/fields"
 )
 
 var apiBase = "/api/v1"
@@ -921,100 +925,160 @@ func (k *KubeHelper) GenerateName(randomLength int) string {
 	return fmt.Sprintf("s%s", utilrand.String(randomLength))
 }
 
-func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
+func (k *KubeHelper) WatchEvents(handler events.EventHandler, kubeGo *kubernetes.Clientset) {
 	glog.V(4).Infoln("WatchEvents started")
 
-	for {
-		startTime := time.Now()
-		url := k.kubeBase + apiBase + "/watch/events"
-		request, _ := http.NewRequest("GET", url, nil)
-		request.Header.Set("Content-Type", "application/json")
-		request.Header.Set("Authorization", k.getAuthHeader())
-		httpresp, httperr := k.client.Do(request)
-		if httperr != nil {
-			glog.Error(httperr)
-			return
-		} else {
-			if httpresp.StatusCode == http.StatusOK {
-				reader := bufio.NewReader(httpresp.Body)
-				for {
-					data, err := reader.ReadBytes('\n')
-					if err != nil {
-						// EOF error location NDS-372 needs fixing
-						//glog.Error(err)
-						break
-					}
+	startTime := time.Now()
 
-					wevent := watch.WatchEvent{}
-					json.Unmarshal(data, &wevent)
+	podWatchlist := cache.NewListWatchFromClient(kubeGo.Core().RESTClient(), "pods", "",
+		fields.Everything())
 
-					event := api.Event{}
-
-					json.Unmarshal([]byte(wevent.Object.Raw), &event)
-
-					created := event.LastTimestamp
-					if created.After(startTime) {
-
-						if event.InvolvedObject.Kind == "Pod" {
-							pod, err := k.GetPod(event.InvolvedObject.Namespace, event.InvolvedObject.Name)
-							if err != nil {
-								glog.Error(err)
-							}
-							if pod != nil {
-								handler.HandlePodEvent(wevent.Type, &event, pod)
-							}
-						} else if event.InvolvedObject.Kind == "ReplicationController" {
-							rc, err := k.GetReplicationController(event.InvolvedObject.Namespace,
-								event.InvolvedObject.Name)
-							if err != nil {
-								glog.Error(err)
-							}
-							if rc != nil {
-								handler.HandleReplicationControllerEvent(wevent.Type, &event, rc)
-							}
-						}
-					}
+	_, podController := cache.NewInformer(
+		podWatchlist,
+		&v1.Pod{},
+		time.Second * 0,
+		cache.ResourceEventHandlerFuncs{
+			AddFunc: func(obj interface{}) {
+				if obj.(*v1.Pod).GetCreationTimestamp().After(startTime) {
+					fmt.Printf("pod added: %s \n", obj.(*v1.Pod).Name)
 				}
-			}
-		}
-	}
+			},
+			DeleteFunc: func(obj interface{}) {
+				if obj.(*v1.Pod).GetDeletionTimestamp().After(startTime) {
+					fmt.Printf("pod deleted: %s \n", obj.(*v1.Pod).Name)
+				}
+			},
+			UpdateFunc:func(oldObj, newObj interface{}) {
+
+			},
+		},
+	)
+
+	go podController.Run(make(chan struct{}))
+
+	rcWatchlist := cache.NewListWatchFromClient(kubeGo.Core().RESTClient(), "replicationcontrollers", "",
+		fields.Everything())
+
+	_, rcController := cache.NewInformer(
+		rcWatchlist,
+		&v1.ReplicationController{},
+		time.Second * 0,
+		cache.ResourceEventHandlerFuncs{
+			AddFunc: func(obj interface{}) {
+				if obj.(*v1.ReplicationController).GetCreationTimestamp().After(startTime) {
+					fmt.Printf("rc added: %s \n", obj.(*v1.ReplicationController).Name)
+				}
+			},
+			DeleteFunc: func(obj interface{}) {
+				if obj.(*v1.ReplicationController).GetDeletionTimestamp().After(startTime) {
+					fmt.Printf("rc deleted: %s \n", obj.(*v1.ReplicationController).Name)
+				}
+			},
+			UpdateFunc:func(oldObj, newObj interface{}) {
+				fmt.Printf("rc changed %s -> %s\n", oldObj.(*v1.ReplicationController).Name, newObj.(*v1.ReplicationController).Name)
+			},
+		},
+	)
+
+	go rcController.Run(make(chan struct{}))
+	//for {
+	//	startTime := time.Now()
+	//
+		//url := k.kubeBase + apiBase + "/watch/events"
+		//request, _ := http.NewRequest("GET", url, nil)
+		//request.Header.Set("Content-Type", "application/json")
+		//request.Header.Set("Authorization", k.getAuthHeader())
+		//httpresp, httperr := k.client.Do(request)
+		//if httperr != nil {
+		//	glog.Error(httperr)
+		//	return
+		//} else {
+		//	if httpresp.StatusCode == http.StatusOK {
+		//		reader := bufio.NewReader(httpresp.Body)
+		//		for {
+		//			data, err := reader.ReadBytes('\n')
+		//			if err != nil {
+		//				// EOF error location NDS-372 needs fixing
+		//				//glog.Error(err)
+		//				break
+		//			}
+		//
+		//			wevent := watch.WatchEvent{}
+		//			json.Unmarshal(data, &wevent)
+		//
+		//			event := api.Event{}
+		//
+		//			json.Unmarshal([]byte(wevent.Object.Raw), &event)
+		//
+		//			created := event.LastTimestamp
+		//			if created.After(startTime) {
+		//
+		//				if event.InvolvedObject.Kind == "Pod" {
+		//					pod, err := k.GetPod(event.InvolvedObject.Namespace, event.InvolvedObject.Name)
+		//					if err != nil {
+		//						glog.Error(err)
+		//					}
+		//					if pod != nil {
+		//						handler.HandlePodEvent(wevent.Type, &event, pod)
+		//					}
+		//				} else if event.InvolvedObject.Kind == "ReplicationController" {
+		//					rc, err := k.GetReplicationController(event.InvolvedObject.Namespace,
+		//						event.InvolvedObject.Name)
+		//					if err != nil {
+		//						glog.Error(err)
+		//					}
+		//					if rc != nil {
+		//						handler.HandleReplicationControllerEvent(wevent.Type, &event, rc)
+		//					}
+		//				}
+		//			}
+		//		}
+		//	}
+		//}
+	//}
 }
 
-func (k *KubeHelper) WatchPods(handler events.EventHandler) {
+func (k *KubeHelper) WatchPods(handler events.EventHandler, kubeGo *kubernetes.Clientset) {
+	// Hopefully this isn't needed.
+	// From Craig:
+	// "I originally only had WatchEvents, but found that there were certain Pod events that didn't come
+	// through (I'd need to look in detail to make sure, but I believe it was ADD and DELETE).
+	// I added the WatchPods to catch those.
+
 	glog.V(4).Infoln("WatchPods started")
-	url := k.kubeBase + apiBase + "/watch/pods"
-
-	for {
-		request, _ := http.NewRequest("GET", url, nil)
-		request.Header.Set("Content-Type", "application/json")
-		request.Header.Set("Authorization", k.getAuthHeader())
-		httpresp, httperr := k.client.Do(request)
-		if httperr != nil {
-			glog.Error(httperr)
-			return
-		} else {
-			if httpresp.StatusCode == http.StatusOK {
-				reader := bufio.NewReader(httpresp.Body)
-				for {
-					data, err := reader.ReadBytes('\n')
-					if err != nil {
-						// TODO: NDS-372
-						//glog.Error(err)
-						break
-					}
-
-					wevent := watch.WatchEvent{}
-					json.Unmarshal(data, &wevent)
-
-					pod := api.Pod{}
-
-					json.Unmarshal([]byte(wevent.Object.Raw), &pod)
-
-					handler.HandlePodEvent(wevent.Type, nil, &pod)
-				}
-			}
-		}
-	}
+	//url := k.kubeBase + apiBase + "/watch/pods"
+	//
+	//for {
+	//	request, _ := http.NewRequest("GET", url, nil)
+	//	request.Header.Set("Content-Type", "application/json")
+	//	request.Header.Set("Authorization", k.getAuthHeader())
+	//	httpresp, httperr := k.client.Do(request)
+	//	if httperr != nil {
+	//		glog.Error(httperr)
+	//		return
+	//	} else {
+	//		if httpresp.StatusCode == http.StatusOK {
+	//			reader := bufio.NewReader(httpresp.Body)
+	//			for {
+	//				data, err := reader.ReadBytes('\n')
+	//				if err != nil {
+	//					// TODO: NDS-372
+	//					//glog.Error(err)
+	//					break
+	//				}
+	//
+	//				wevent := watch.WatchEvent{}
+	//				json.Unmarshal(data, &wevent)
+	//
+	//				pod := api.Pod{}
+	//
+	//				json.Unmarshal([]byte(wevent.Object.Raw), &pod)
+	//
+	//				handler.HandlePodEvent(wevent.Type, nil, &pod)
+	//			}
+	//		}
+	//	}
+	//}
 }
 
 func (k *KubeHelper) GetPod(pid string, name string) (*api.Pod, error) {
@@ -1077,93 +1141,94 @@ func (k *KubeHelper) GetReplicationController(pid string, name string) (*api.Rep
 
 func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHelper) *websocket.Handler {
 
-	url, err := url.Parse(
-		k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + pod +
-			"/exec?container=" + container + "&command=" + defaultShell + "&tty=true&stdin=true&stdout=true&stderr=false")
-	if err != nil {
-		glog.Warning(err)
-	}
-
-	conf := &restclient.Config{
-		Host:     k.kubeBase,
-		Insecure: true,
-	}
-
-	if len(k.token) > 0 {
-		conf.BearerToken = string(k.token)
-	} else {
-		conf.Username = k.username
-		conf.Password = k.password
-	}
-
-	e, err := remotecommand.NewExecutor(conf, "POST", url)
-	if err != nil {
-		glog.Warning(err)
-	}
-
-	wsHandler := websocket.Handler(func(ws *websocket.Conn) {
-		defer ws.Close()
-
-		outr, outw, err := os.Pipe()
-		if err != nil {
-			glog.Warning(err)
-			return
-		}
-		defer outr.Close()
-		defer outw.Close()
-
-		inr, inw, err := os.Pipe()
-		if err != nil {
-			glog.Fatal(err)
-			return
-		}
-		defer inr.Close()
-		defer inw.Close()
-
-		go func() {
-			for {
-
-				in := make([]byte, 2048)
-				n, err := ws.Read(in)
-				if err != nil {
-					//glog.Error(err)
-					return
-				}
-				inLen, err := inw.Write(in[:n])
-				if err != nil {
-					glog.Error(err)
-					return
-				}
-				if inLen < n {
-					panic("pty write overflow")
-				}
-			}
-		}()
-
-		go func() {
-			for {
-				out := make([]byte, 2048)
-				n, err := outr.Read(out)
-				if err != nil {
-					//glog.Error(err)
-					return
-				}
-				_, err = ws.Write(out[:n])
-				if err != nil {
-					glog.Error(err)
-					return
-				}
-			}
-		}()
-
-		err = e.Stream(remotecommandserver.SupportedStreamingProtocols, inr, outw, nil, true)
-		if err != nil {
-			glog.Error(err)
-			return
-		}
-	})
-
-	return &wsHandler
+	//url, err := url.Parse(
+	//	k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + pod +
+	//		"/exec?container=" + container + "&command=" + defaultShell + "&tty=true&stdin=true&stdout=true&stderr=false")
+	//if err != nil {
+	//	glog.Warning(err)
+	//}
+	//
+	//conf := &restclient.Config{
+	//	Host:     k.kubeBase,
+	//	Insecure: true,
+	//}
+	//
+	//if len(k.token) > 0 {
+	//	conf.BearerToken = string(k.token)
+	//} else {
+	//	conf.Username = k.username
+	//	conf.Password = k.password
+	//}
+	//
+	//e, err := remotecommand.NewExecutor(conf, "POST", url)
+	//if err != nil {
+	//	glog.Warning(err)
+	//}
+	//
+	//wsHandler := websocket.Handler(func(ws *websocket.Conn) {
+	//	defer ws.Close()
+	//
+	//	outr, outw, err := os.Pipe()
+	//	if err != nil {
+	//		glog.Warning(err)
+	//		return
+	//	}
+	//	defer outr.Close()
+	//	defer outw.Close()
+	//
+	//	inr, inw, err := os.Pipe()
+	//	if err != nil {
+	//		glog.Fatal(err)
+	//		return
+	//	}
+	//	defer inr.Close()
+	//	defer inw.Close()
+	//
+	//	go func() {
+	//		for {
+	//
+	//			in := make([]byte, 2048)
+	//			n, err := ws.Read(in)
+	//			if err != nil {
+	//				//glog.Error(err)
+	//				return
+	//			}
+	//			inLen, err := inw.Write(in[:n])
+	//			if err != nil {
+	//				glog.Error(err)
+	//				return
+	//			}
+	//			if inLen < n {
+	//				panic("pty write overflow")
+	//			}
+	//		}
+	//	}()
+	//
+	//	go func() {
+	//		for {
+	//			out := make([]byte, 2048)
+	//			n, err := outr.Read(out)
+	//			if err != nil {
+	//				//glog.Error(err)
+	//				return
+	//			}
+	//			_, err = ws.Write(out[:n])
+	//			if err != nil {
+	//				glog.Error(err)
+	//				return
+	//			}
+	//		}
+	//	}()
+	//
+	//	err = e.Stream(remotecommandserver.SupportedStreamingProtocols, inr, outw, nil, true)
+	//	if err != nil {
+	//		glog.Error(err)
+	//		return
+	//	}
+	//})
+	//
+	//return &wsHandler
+	return nil
 }
 
 func (k *KubeHelper) CreateIngress(pid string, domain string, service string, ports []api.ServicePort, basicAuth bool) (*extensions.Ingress, error) {
