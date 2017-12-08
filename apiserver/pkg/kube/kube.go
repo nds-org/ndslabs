@@ -20,7 +20,6 @@ import (
 	ndsapi "github.com/ndslabs/apiserver/pkg/types"
 	"golang.org/x/net/websocket"
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	//"k8s.io/kubernetes/pkg/client/restclient"
 	//"k8s.io/kubernetes/pkg/client/unversioned/remotecommand"
 	remotecommandserver "k8s.io/kubernetes/pkg/kubelet/server/remotecommand"
@@ -36,6 +35,7 @@ import (
 	"k8s.io/client-go/pkg/api/resource"
 	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/pkg/util/intstr"
+	"k8s.io/client-go/pkg/api/unversioned"
 )
 
 var apiBase = "/api/v1"
@@ -326,123 +326,128 @@ func (k *KubeHelper) GetNamespace(pid string) (*v1.Namespace, error) {
 }
 
 func (k *KubeHelper) NamespaceExists(pid string) bool {
-	ns, _ := k.kubeGo.Namespaces().Get(pid)
-	if ns != nil {
-		return true
-	} else {
-		return false
-	}
+	ns, _ := k.GetNamespace(pid)
+	return ns != nil
 }
 
-func (k *KubeHelper) DeleteNamespace(pid string) (*api.Namespace, error) {
+func (k *KubeHelper) DeleteNamespace(pid string)  error {
+	deleteOptions := v1.DeleteOptions{}
+	return k.kubeGo.Namespaces().Delete(pid, &deleteOptions)
 
-	url := k.kubeBase + apiBase + "/namespaces/" + pid
-	glog.V(4).Infoln(url)
-	request, _ := http.NewRequest("DELETE", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return nil, httperr
-	} else {
-		if httpresp.StatusCode == http.StatusOK {
-			glog.V(2).Infof("Deleted namespace %s\n", pid)
-			data, err := ioutil.ReadAll(httpresp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			ns := api.Namespace{}
-			json.Unmarshal(data, &ns)
-			return &ns, nil
-		} else {
-			return nil, fmt.Errorf("Error deleting namespace for account %s: %s\n", pid, httpresp.Status)
-		}
-	}
-	return nil, nil
+	//url := k.kubeBase + apiBase + "/namespaces/" + pid
+	//glog.V(4).Infoln(url)
+	//request, _ := http.NewRequest("DELETE", url, nil)
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//httpresp, httperr := k.client.Do(request)
+	//if httperr != nil {
+	//	glog.Error(httperr)
+	//	return nil, httperr
+	//} else {
+	//	if httpresp.StatusCode == http.StatusOK {
+	//		glog.V(2).Infof("Deleted namespace %s\n", pid)
+	//		data, err := ioutil.ReadAll(httpresp.Body)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//
+	//		ns := api.Namespace{}
+	//		json.Unmarshal(data, &ns)
+	//		return &ns, nil
+	//	} else {
+	//		return nil, fmt.Errorf("Error deleting namespace for account %s: %s\n", pid, httpresp.Status)
+	//	}
+	//}
+	//return nil, nil
 }
 
 // Start the specified replication controller
-func (k *KubeHelper) StartController(pid string, spec *api.ReplicationController) (bool, error) {
+func (k *KubeHelper) StartController(pid string, spec *v1.ReplicationController) (bool, error) {
 
-	name := spec.Labels["name"]
-
-	// Get ReplicationController spec
-	data, err := json.MarshalIndent(spec, "", "    ")
-	if err != nil {
-		return false, err
-	}
-
-	fmt.Println(string(data))
-
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers"
-	request, _ := http.NewRequest("POST", url, bytes.NewBuffer([]byte(data)))
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return true, httperr
-	} else {
-		if httpresp.StatusCode == http.StatusCreated {
-			glog.V(4).Infof("Created controller " + name)
-		} else {
-			glog.Errorf("Error starting controller (%d)\n", httpresp.StatusCode)
-		}
-	}
+	//name := spec.Labels["name"]
+	rslt, err := k.kubeGo.ReplicationControllers(pid).Create(spec)
 
 	// Give Kubernetes time to create the pods for the RC
 	time.Sleep(time.Second * 5)
 
-	return true, nil
+	return rslt !=nil, err
+
+	//// Get ReplicationController spec
+	//data, err := json.MarshalIndent(spec, "", "    ")
+	//if err != nil {
+	//	return false, err
+	//}
+	//
+	//fmt.Println(string(data))
+	//
+	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers"
+	//request, _ := http.NewRequest("POST", url, bytes.NewBuffer([]byte(data)))
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//httpresp, httperr := k.client.Do(request)
+	//if httperr != nil {
+	//	glog.Error(httperr)
+	//	return true, httperr
+	//} else {
+	//	if httpresp.StatusCode == http.StatusCreated {
+	//		glog.V(4).Infof("Created controller " + name)
+	//	} else {
+	//		glog.Errorf("Error starting controller (%d)\n", httpresp.StatusCode)
+	//	}
+	//}
+
+	// Give Kubernetes time to create the pods for the RC
+	//time.Sleep(time.Second * 5)
+	//
+	//return true, nil
 }
 
-func (k *KubeHelper) StartService(pid string, spec *api.Service) (*api.Service, error) {
+func (k *KubeHelper) StartService(pid string, spec *v1.Service) (*v1.Service, error) {
+	return k.kubeGo.Services(pid).Create(spec)
 
-	name := spec.Name
-
-	data, err := json.MarshalIndent(spec, "", "    ")
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println(string(data))
-
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services"
-	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return nil, httperr
-	} else {
-		if httpresp.StatusCode == http.StatusCreated {
-			glog.V(4).Infof("Created Kubernetes service " + name)
-
-			data, err := ioutil.ReadAll(httpresp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			service := api.Service{}
-			json.Unmarshal(data, &service)
-
-			return &service, nil
-		} else {
-			if httpresp.StatusCode == 409 {
-				service, err := k.GetService(pid, name)
-				if err != nil {
-					return nil, err
-				}
-				return service, nil
-			} else {
-				glog.Warningf("Error starting Kubernetes service (%d): %s\n", httpresp.StatusCode, httpresp.Status)
-			}
-		}
-	}
-
-	return nil, nil
+	//name := spec.Name
+	//
+	//data, err := json.MarshalIndent(spec, "", "    ")
+	//if err != nil {
+	//	return nil, err
+	//}
+	//fmt.Println(string(data))
+	//
+	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services"
+	//request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//httpresp, httperr := k.client.Do(request)
+	//if httperr != nil {
+	//	glog.Error(httperr)
+	//	return nil, httperr
+	//} else {
+	//	if httpresp.StatusCode == http.StatusCreated {
+	//		glog.V(4).Infof("Created Kubernetes service " + name)
+	//
+	//		data, err := ioutil.ReadAll(httpresp.Body)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//
+	//		service := api.Service{}
+	//		json.Unmarshal(data, &service)
+	//
+	//		return &service, nil
+	//	} else {
+	//		if httpresp.StatusCode == 409 {
+	//			service, err := k.GetService(pid, name)
+	//			if err != nil {
+	//				return nil, err
+	//			}
+	//			return service, nil
+	//		} else {
+	//			glog.Warningf("Error starting Kubernetes service (%d): %s\n", httpresp.StatusCode, httpresp.Status)
+	//		}
+	//	}
+	//}
+	//
+	//return nil, nil
 }
 
 func (k *KubeHelper) ServiceExists(pid string, name string) bool {
@@ -453,177 +458,204 @@ func (k *KubeHelper) ServiceExists(pid string, name string) bool {
 		return false
 	}
 }
-func (k *KubeHelper) GetService(pid string, name string) (*api.Service, error) {
+func (k *KubeHelper) GetService(pid string, name string) (*v1.Service, error) {
+	return k.kubeGo.Services(pid).Get(name)
 
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services/" + name
-	request, _ := http.NewRequest("GET", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	resp, err := k.client.Do(request)
-	if err != nil {
-		glog.Error(err)
-		return nil, err
-	} else {
-		if resp.StatusCode == http.StatusOK {
-			data, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			service := api.Service{}
-			json.Unmarshal(data, &service)
-			return &service, nil
-		} else {
-			//glog.Warningf("Failed to get Kubernetes service %s:%s: %s %d", pid, name,
-			//		resp.Status, resp.StatusCode)
-		}
-	}
-	return nil, nil
+	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services/" + name
+	//request, _ := http.NewRequest("GET", url, nil)
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//resp, err := k.client.Do(request)
+	//if err != nil {
+	//	glog.Error(err)
+	//	return nil, err
+	//} else {
+	//	if resp.StatusCode == http.StatusOK {
+	//		data, err := ioutil.ReadAll(resp.Body)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//
+	//		service := api.Service{}
+	//		json.Unmarshal(data, &service)
+	//		return &service, nil
+	//	} else {
+	//		//glog.Warningf("Failed to get Kubernetes service %s:%s: %s %d", pid, name,
+	//		//		resp.Status, resp.StatusCode)
+	//	}
+	//}
+	//return nil, nil
 }
 
-func (k *KubeHelper) GetServices(pid string, stack string) ([]api.Service, error) {
-
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services?labelSelector=stack%3D" + stack
-	request, _ := http.NewRequest("GET", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	resp, err := k.client.Do(request)
-	if err != nil {
-		glog.Error(err)
-		return nil, err
-	} else {
-		if resp.StatusCode == http.StatusOK {
-			data, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			serviceList := api.ServiceList{}
-			services := make([]api.Service, len(serviceList.Items))
-			json.Unmarshal(data, &serviceList)
-			for _, service := range serviceList.Items {
-				services = append(services, service)
-			}
-			return services, nil
-		} else {
-			glog.Warningf("Failed to get Kubernetes services: %s %d", resp.Status, resp.StatusCode)
-		}
+func (k *KubeHelper) GetServices(pid string, stack string) (*v1.ServiceList, error) {
+	listOptions := v1.ListOptions{
+		LabelSelector: "stack="+stack,
 	}
-	return nil, nil
+
+	return k.kubeGo.Services(pid).List(listOptions)
+
+	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services?labelSelector=stack%3D" + stack
+	//request, _ := http.NewRequest("GET", url, nil)
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//resp, err := k.client.Do(request)
+	//if err != nil {
+	//	glog.Error(err)
+	//	return nil, err
+	//} else {
+	//	if resp.StatusCode == http.StatusOK {
+	//		data, err := ioutil.ReadAll(resp.Body)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//
+	//		serviceList := api.ServiceList{}
+	//		services := make([]api.Service, len(serviceList.Items))
+	//		json.Unmarshal(data, &serviceList)
+	//		for _, service := range serviceList.Items {
+	//			services = append(services, service)
+	//		}
+	//		return services, nil
+	//	} else {
+	//		glog.Warningf("Failed to get Kubernetes services: %s %d", resp.Status, resp.StatusCode)
+	//	}
+	//}
+	//return nil, nil
 }
-func (k *KubeHelper) GetReplicationControllers(pid string, label string, value string) ([]api.ReplicationController, error) {
-
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers?labelSelector=" + label + "%3D" + value
-	request, _ := http.NewRequest("GET", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	resp, err := k.client.Do(request)
-	if err != nil {
-		glog.Error(err)
-		return nil, err
-	} else {
-		if resp.StatusCode == http.StatusOK {
-			data, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			rcList := api.ReplicationControllerList{}
-			rcs := make([]api.ReplicationController, len(rcList.Items))
-			json.Unmarshal(data, &rcList)
-			for _, rc := range rcList.Items {
-				rcs = append(rcs, rc)
-			}
-			return rcs, nil
-		} else {
-			glog.Warningf("Get rcs failed: %s %d", resp.Status, resp.StatusCode)
-		}
+func (k *KubeHelper) GetReplicationControllers(pid string, label string, value string) (*v1.ReplicationControllerList, error) {
+	listOptions := v1.ListOptions{
+		LabelSelector: label+"="+value,
 	}
-	return nil, nil
+
+	return k.kubeGo.ReplicationControllers(pid).List(listOptions)
+
+	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers?labelSelector=" + label + "%3D" + value
+	//request, _ := http.NewRequest("GET", url, nil)
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//resp, err := k.client.Do(request)
+	//if err != nil {
+	//	glog.Error(err)
+	//	return nil, err
+	//} else {
+	//	if resp.StatusCode == http.StatusOK {
+	//		data, err := ioutil.ReadAll(resp.Body)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//
+	//		rcList := api.ReplicationControllerList{}
+	//		rcs := make([]api.ReplicationController, len(rcList.Items))
+	//		json.Unmarshal(data, &rcList)
+	//		for _, rc := range rcList.Items {
+	//			rcs = append(rcs, rc)
+	//		}
+	//		return rcs, nil
+	//	} else {
+	//		glog.Warningf("Get rcs failed: %s %d", resp.Status, resp.StatusCode)
+	//	}
+	//}
+	//return nil, nil
 }
 
-func (k *KubeHelper) GetPods(pid string, label string, value string) ([]api.Pod, error) {
+func (k *KubeHelper) GetPods(pid string, label string, value string) (*v1.PodList, error) {
 
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods?labelSelector=" + label + "%3D" + value
-	request, _ := http.NewRequest("GET", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	resp, err := k.client.Do(request)
-	if err != nil {
-		glog.Error(err)
-		return nil, err
-	} else {
-		if resp.StatusCode == http.StatusOK {
-			data, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			podList := api.PodList{}
-			pods := make([]api.Pod, len(podList.Items))
-			json.Unmarshal(data, &podList)
-			for _, pod := range podList.Items {
-				pods = append(pods, pod)
-			}
-			return pods, nil
-		} else {
-			glog.Warningf("Get pods failed: %s %d", resp.Status, resp.StatusCode)
-		}
+	listOptions := v1.ListOptions{
+		LabelSelector: label+"="+value,
 	}
-	return nil, nil
+
+	return k.kubeGo.Pods(pid).List(listOptions)
+
+
+	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods?labelSelector=" + label + "%3D" + value
+	//request, _ := http.NewRequest("GET", url, nil)
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//resp, err := k.client.Do(request)
+	//if err != nil {
+	//	glog.Error(err)
+	//	return nil, err
+	//} else {
+	//	if resp.StatusCode == http.StatusOK {
+	//		data, err := ioutil.ReadAll(resp.Body)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//
+	//		podList := api.PodList{}
+	//		pods := make([]api.Pod, len(podList.Items))
+	//		json.Unmarshal(data, &podList)
+	//		for _, pod := range podList.Items {
+	//			pods = append(pods, pod)
+	//		}
+	//		return pods, nil
+	//	} else {
+	//		glog.Warningf("Get pods failed: %s %d", resp.Status, resp.StatusCode)
+	//	}
+	//}
+	//return nil, nil
 }
 
 func (k *KubeHelper) StopService(pid string, name string) error {
 
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services/" + name
-	request, _ := http.NewRequest("DELETE", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return httperr
-	} else {
-		if httpresp.StatusCode == http.StatusOK {
-			glog.V(4).Infof("Deleted service " + name)
-			return nil
-		} else {
-			glog.V(4).Infof("Error stopping service (%d)\n", httpresp.StatusCode)
-			return fmt.Errorf("%s", httpresp.Status)
-		}
-	}
-	return nil
+	deleteOptions := v1.DeleteOptions{}
+	return k.kubeGo.Services(pid).Delete(name, &deleteOptions)
+
+	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services/" + name
+	//request, _ := http.NewRequest("DELETE", url, nil)
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//httpresp, httperr := k.client.Do(request)
+	//if httperr != nil {
+	//	glog.Error(httperr)
+	//	return httperr
+	//} else {
+	//	if httpresp.StatusCode == http.StatusOK {
+	//		glog.V(4).Infof("Deleted service " + name)
+	//		return nil
+	//	} else {
+	//		glog.V(4).Infof("Error stopping service (%d)\n", httpresp.StatusCode)
+	//		return fmt.Errorf("%s", httpresp.Status)
+	//	}
+	//}
+	//return nil
 }
 
 func (k *KubeHelper) StopController(pid string, name string) error {
+	deleteOptions := v1.DeleteOptions{}
+	rcDeleteErr := k.kubeGo.ReplicationControllers(pid).Delete(name, &deleteOptions)
 
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers/" + name
-	request, _ := http.NewRequest("DELETE", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return httperr
-	} else {
-		if httpresp.StatusCode == http.StatusOK {
-			glog.V(4).Infof("Deleted controller " + name)
-		} else {
-			glog.V(4).Infof("Error stopping controller (%d)\n", httpresp.StatusCode)
-		}
+	if rcDeleteErr != nil{
+		return rcDeleteErr
 	}
+
+	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers/" + name
+	//request, _ := http.NewRequest("DELETE", url, nil)
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//httpresp, httperr := k.client.Do(request)
+	//if httperr != nil {
+	//	glog.Error(httperr)
+	//	return httperr
+	//} else {
+	//	if httpresp.StatusCode == http.StatusOK {
+	//		glog.V(4).Infof("Deleted controller " + name)
+	//	} else {
+	//		glog.V(4).Infof("Error stopping controller (%d)\n", httpresp.StatusCode)
+	//	}
+	//}
 	rcs, _ := k.GetReplicationControllers(pid, "name", name)
-	glog.V(4).Infof("Waiting for rc to terminate %s %d\n", name, len(rcs))
-	for len(rcs) > 0 {
+	glog.V(4).Infof("Waiting for rc to terminate %s %d\n", name, rcs.Size())
+	for rcs.Size() > 0 {
 		rcs, _ = k.GetReplicationControllers(pid, "name", name)
 		time.Sleep(time.Second * 1)
 	}
 
 	stopped := map[string]int{}
 	pods, _ := k.GetPods(pid, "name", name)
-	glog.V(4).Infof("Waiting for pods to terminate %s %d\n", name, len(pods))
-	for len(pods) > 0 {
-		for _, pod := range pods {
+	glog.V(4).Infof("Waiting for pods to terminate %s %d\n", name, pods.Size())
+	for pods.Size() > 0 {
+		for _, pod := range pods.Items {
 			if stopped[pod.Name] != 1 {
 				err := k.stopPod(pid, pod.Name)
 				if err != nil {
@@ -661,23 +693,27 @@ func (k *KubeHelper) StopController(pid string, name string) error {
 func (k *KubeHelper) stopPod(pid string, podName string) error {
 	glog.V(4).Infof("Stopping pod %s\n", podName)
 
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + podName
-	request, _ := http.NewRequest("DELETE", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return httperr
-	} else {
-		if httpresp.StatusCode == http.StatusOK {
-			glog.V(4).Infof("Deleted pod " + podName)
-		} else {
-			glog.V(4).Infof("Error stopping pod (%d)\n", httpresp.StatusCode)
-			return fmt.Errorf("Error stopping pod (%d)\n", httpresp.StatusCode)
-		}
-	}
-	return nil
+	deleteOptions := v1.DeleteOptions{}
+
+	return k.kubeGo.Pods(pid).Delete(podName, &deleteOptions)
+
+	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + podName
+	//request, _ := http.NewRequest("DELETE", url, nil)
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//httpresp, httperr := k.client.Do(request)
+	//if httperr != nil {
+	//	glog.Error(httperr)
+	//	return httperr
+	//} else {
+	//	if httpresp.StatusCode == http.StatusOK {
+	//		glog.V(4).Infof("Deleted pod " + podName)
+	//	} else {
+	//		glog.V(4).Infof("Error stopping pod (%d)\n", httpresp.StatusCode)
+	//		return fmt.Errorf("Error stopping pod (%d)\n", httpresp.StatusCode)
+	//	}
+	//}
+	//return nil
 }
 
 func (k *KubeHelper) GetLog(pid string, podName string, tailLines int) (string, error) {
@@ -716,7 +752,7 @@ func (k *KubeHelper) GetPodsStatus(pid string, selector string) (*map[string]str
 	// Get the pods for this stack
 	podStatus := make(map[string]string)
 	pods, _ := k.GetPods(pid, "rc", selector)
-	for _, pod := range pods {
+	for _, pod := range pods.Items {
 		label := pod.Labels["name"]
 		glog.V(4).Infof("Pod %s %d\n", label, len(pod.Status.Conditions))
 		if len(pod.Status.Conditions) > 0 {
@@ -730,7 +766,7 @@ func (k *KubeHelper) GetServiceEndpoints(pid string, stackKey string) (*map[stri
 
 	k8services, _ := k.GetServices(pid, stackKey)
 	endpoints := make(map[string]string)
-	for _, k8service := range k8services {
+	for _, k8service := range k8services.Items {
 		glog.V(4).Infof("Service : %s %s\n", k8service.Name, k8service.Spec.Type)
 		if k8service.Spec.Type == "NodePort" {
 			glog.V(4).Infof("NodePort : %d\n", k8service.Spec.Ports[0].NodePort)
@@ -749,15 +785,15 @@ func (k *KubeHelper) RandomString(randomLength int) string {
 }
 
 func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsapi.ServiceSpec,
-	useNodePort bool) *api.Service {
+	useNodePort bool) *v1.Service {
 
 	// Create the Kubernetes service definition
-	k8svc := api.Service{
+	k8svc := v1.Service{
 		TypeMeta: unversioned.TypeMeta{
 			APIVersion: "v1",
 			Kind:       "Service",
 		},
-		ObjectMeta: api.ObjectMeta{
+		ObjectMeta: v1.ObjectMeta{
 			Name: name,
 			Labels: map[string]string{
 				"name":    name,
@@ -765,7 +801,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 				"service": spec.Key,
 			},
 		},
-		Spec: api.ServiceSpec{
+		Spec: v1.ServiceSpec{
 			Selector: map[string]string{
 				"name": name,
 			},
@@ -773,17 +809,17 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 	}
 
 	if useNodePort && spec.Access == ndsapi.AccessExternal {
-		k8svc.Spec.Type = api.ServiceTypeNodePort
+		k8svc.Spec.Type = v1.ServiceTypeNodePort
 	}
 
 	if len(spec.Ports) > 0 {
 		for _, port := range spec.Ports {
-			k8port := api.ServicePort{
+			k8port := v1.ServicePort{
 				Name: fmt.Sprintf("%d", port.Port),
 				Port: port.Port,
 			}
 			// For now, assume all ports are TCP
-			k8port.Protocol = api.ProtocolTCP
+			k8port.Protocol = v1.ProtocolTCP
 			k8svc.Spec.Ports = append(k8svc.Spec.Ports, k8port)
 		}
 	}
@@ -791,9 +827,11 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 	return &k8svc
 }
 
-func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, domain string, emailAddress string, smtpHost string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec, links *map[string]ServiceAddrPort, extraVols *[]config.Volume) *api.ReplicationController {
+func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, domain string,
+	emailAddress string, smtpHost string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec,
+		links *map[string]ServiceAddrPort, extraVols *[]config.Volume) *v1.ReplicationController {
 
-	k8rc := api.ReplicationController{}
+	k8rc := v1.ReplicationController{}
 
 	// Replication controller
 	k8rc.APIVersion = "v1"
@@ -806,23 +844,23 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	}
 
 	homeDir := "/home/" + ns
-	env := []api.EnvVar{}
-	env = append(env, api.EnvVar{Name: "NDSLABS_HOSTNAME", Value: name + "." + domain})
-	env = append(env, api.EnvVar{Name: "NDSLABS_DOMAIN", Value: domain})
-	env = append(env, api.EnvVar{Name: "NDSLABS_EMAIL", Value: emailAddress})
-	env = append(env, api.EnvVar{Name: "NDSLABS_STACK", Value: stack})
-	env = append(env, api.EnvVar{Name: "NAMESPACE", Value: ns})
-	env = append(env, api.EnvVar{Name: "NDSLABS_HOME", Value: homeDir})
-	env = append(env, api.EnvVar{Name: "TERM", Value: "linux"})
-	env = append(env, api.EnvVar{Name: "COLUMNS", Value: "100"})
-	env = append(env, api.EnvVar{Name: "LINES", Value: "30"})
-	env = append(env, api.EnvVar{Name: "NDSLABS_SMTP_HOST", Value: smtpHost})
+	env := []v1.EnvVar{}
+	env = append(env, v1.EnvVar{Name: "NDSLABS_HOSTNAME", Value: name + "." + domain})
+	env = append(env, v1.EnvVar{Name: "NDSLABS_DOMAIN", Value: domain})
+	env = append(env, v1.EnvVar{Name: "NDSLABS_EMAIL", Value: emailAddress})
+	env = append(env, v1.EnvVar{Name: "NDSLABS_STACK", Value: stack})
+	env = append(env, v1.EnvVar{Name: "NAMESPACE", Value: ns})
+	env = append(env, v1.EnvVar{Name: "NDSLABS_HOME", Value: homeDir})
+	env = append(env, v1.EnvVar{Name: "TERM", Value: "linux"})
+	env = append(env, v1.EnvVar{Name: "COLUMNS", Value: "100"})
+	env = append(env, v1.EnvVar{Name: "LINES", Value: "30"})
+	env = append(env, v1.EnvVar{Name: "NDSLABS_SMTP_HOST", Value: smtpHost})
 
 	for name, addrPort := range *links {
 
 		if addrPort.NodePort > 0 {
 			env = append(env,
-				api.EnvVar{
+				v1.EnvVar{
 					Name:  fmt.Sprintf("%s_NODE_PORT", strings.ToUpper(name)),
 					Value: fmt.Sprintf("%d", addrPort.NodePort),
 				})
@@ -833,31 +871,31 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 		}
 
 		env = append(env,
-			api.EnvVar{
+			v1.EnvVar{
 				Name:  fmt.Sprintf("%s_PORT_%d_TCP_ADDR", strings.ToUpper(name), addrPort.Port),
 				Value: addrPort.Host,
 			})
 
 		env = append(env,
-			api.EnvVar{
+			v1.EnvVar{
 				Name:  fmt.Sprintf("%s_PORT_%d_TCP_PORT", strings.ToUpper(name), addrPort.Port),
 				Value: fmt.Sprintf("%d", addrPort.Port),
 			})
 	}
 
 	for name, value := range stackService.Config {
-		env = append(env, api.EnvVar{Name: name, Value: value})
+		env = append(env, v1.EnvVar{Name: name, Value: value})
 	}
 
-	k8volMounts := []api.VolumeMount{}
+	k8volMounts := []v1.VolumeMount{}
 
 	// Mount the home directory
-	k8homeVol := api.VolumeMount{Name: "home", MountPath: homeDir}
+	k8homeVol := v1.VolumeMount{Name: "home", MountPath: homeDir}
 	k8volMounts = append(k8volMounts, k8homeVol)
 
 	// Mount additional shared directories
 	for _, volume := range *extraVols {
-		k8vol := api.VolumeMount{
+		k8vol := v1.VolumeMount{
 			Name:      volume.Name,
 			MountPath: volume.Path,
 			ReadOnly:  volume.ReadOnly,
@@ -871,30 +909,30 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 			if vol.Type == ndsapi.MountTypeDocker {
 				volName = "docker"
 			}
-			k8vol := api.VolumeMount{Name: volName, MountPath: vol.MountPath}
+			k8vol := v1.VolumeMount{Name: volName, MountPath: vol.MountPath}
 			k8volMounts = append(k8volMounts, k8vol)
 		}
 	}
 
-	k8cps := []api.ContainerPort{}
+	k8cps := []v1.ContainerPort{}
 	if len(spec.Ports) > 0 {
 		for _, port := range spec.Ports {
-			k8cp := api.ContainerPort{}
+			k8cp := v1.ContainerPort{}
 			k8cp.ContainerPort = port.Port
 			k8cps = append(k8cps, k8cp)
 		}
 	}
 
-	k8rq := api.ResourceRequirements{}
+	k8rq := v1.ResourceRequirements{}
 	if spec.ResourceLimits.CPUMax > 0 && spec.ResourceLimits.MemoryMax > 0 {
-		//k8rq.Limits = api.ResourceList{
-		//	api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", spec.ResourceLimits.CPUMax)),
-		//	api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", spec.ResourceLimits.MemoryMax)),
-		//}
-		//k8rq.Requests = api.ResourceList{
-		//	api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", spec.ResourceLimits.CPUDefault)),
-		//	api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", spec.ResourceLimits.MemoryDefault)),
-		//}
+		k8rq.Limits = v1.ResourceList{
+			v1.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", spec.ResourceLimits.CPUMax)),
+			v1.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", spec.ResourceLimits.MemoryMax)),
+		}
+		k8rq.Requests = v1.ResourceList{
+			v1.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", spec.ResourceLimits.CPUDefault)),
+			v1.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", spec.ResourceLimits.MemoryDefault)),
+		}
 	} else {
 		glog.Warningf("No resource requirements specified for service %s\n", spec.Label)
 	}
@@ -907,17 +945,17 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	} else {
 		tag = "latest"
 	}
-	k8template := api.PodTemplateSpec{
-		ObjectMeta: api.ObjectMeta{
+	k8template := v1.PodTemplateSpec{
+		ObjectMeta: v1.ObjectMeta{
 			Labels: map[string]string{
 				"name":    name,
 				"stack":   stack,
 				"service": spec.Key,
 			},
 		},
-		Spec: api.PodSpec{
-			Containers: []api.Container{
-				api.Container{
+		Spec: v1.PodSpec{
+			Containers: []v1.Container{
+				v1.Container{
 					Name:            spec.Key,
 					Image:           spec.Image.Name + ":" + tag,
 					Env:             env,
@@ -926,8 +964,8 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 					Args:            spec.Args,
 					Command:         spec.Command,
 					Resources:       k8rq,
-					ImagePullPolicy: api.PullAlways,
-					SecurityContext: &api.SecurityContext{
+					ImagePullPolicy: v1.PullAlways,
+					SecurityContext: &v1.SecurityContext{
 						Privileged: &spec.Privileged,
 					},
 				},
@@ -952,8 +990,10 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	//	}
 	//}
 
-	k8rcs := api.ReplicationControllerSpec{
-		Replicas: 1,
+	var replicas int32 = 1
+
+	k8rcs := v1.ReplicationControllerSpec{
+		Replicas: &replicas,
 		Selector: map[string]string{
 			"name": name,
 		},
@@ -1274,7 +1314,7 @@ func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHe
 	return nil
 }
 
-func (k *KubeHelper) CreateIngress(pid string, domain string, service string, ports []api.ServicePort, basicAuth bool) (*v1beta1.Ingress, error) {
+func (k *KubeHelper) CreateIngress(pid string, domain string, service string, ports []v1.ServicePort, basicAuth bool) (*v1beta1.Ingress, error) {
 
 	name := service + "-ingress"
 	update := true
