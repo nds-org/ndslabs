@@ -113,7 +113,8 @@ func main() {
 	}
 
 	kube, err := kube.NewKubeHelper(cfg.Kubernetes.Address,
-		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath)
+		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath,
+		fmt.Sprintf("%s/cauth", cfg.Origin))
 	if err != nil {
 		glog.Errorf("Kubernetes API server not available\n")
 		glog.Fatal(err)
@@ -587,35 +588,7 @@ func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	err = s.createBasicAuthSecret(account.Namespace)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	w.WriteJson(&account)
-}
-
-func (s *Server) createBasicAuthSecret(uid string) error {
-	account, err := s.etcd.GetAccount(uid)
-	if err != nil {
-		glog.Error(err)
-		return err
-	}
-
-	_, err = s.kube.CreateBasicAuthSecret(account.Namespace, account.Namespace, account.Password)
-	if err != nil {
-		glog.Error(err)
-		return err
-	}
-
-	err = s.updateIngress(uid)
-	if err != nil {
-		glog.Error(err)
-		return err
-	}
-	return nil
 }
 
 func (s *Server) updateIngress(uid string) error {
@@ -706,10 +679,6 @@ func (s *Server) setupAccount(account *api.Account) error {
 		return err
 	}
 
-	err = s.createBasicAuthSecret(account.Namespace)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -971,13 +940,6 @@ func (s *Server) PutAccount(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	err = s.etcd.PutAccount(userId, &account, true)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	err = s.createBasicAuthSecret(userId)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -2668,19 +2630,12 @@ func (s *Server) ChangePassword(w rest.ResponseWriter, r *rest.Request) {
 
 	data := make(map[string]string)
 	err := r.DecodeJsonPayload(&data)
-	ok, err := s.etcd.ChangePassword(userId, data["password"])
+	_, err = s.etcd.ChangePassword(userId, data["password"])
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	if ok {
-		err = s.createBasicAuthSecret(userId)
-		if err != nil {
-			glog.Error(err)
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	}
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -2947,13 +2902,6 @@ func (s *Server) ImportAccount(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	err = s.setupAccount(&account)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	err = s.createBasicAuthSecret(account.Namespace)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
