@@ -647,7 +647,7 @@ func (s *Server) updateIngress(uid string) error {
 		return err
 	}
 	if ingresses != nil {
-		for _, ingress := range ingresses {
+		for _, ingress := range ingresses.Items {
 			glog.V(4).Infof("Touching ingress %s\n", ingress.Name)
 			_, err = s.kube.CreateUpdateIngress(uid, &ingress, true)
 			if err != nil {
@@ -1675,7 +1675,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 					glog.Error(err)
 				}
 			}
-			_, err := s.kube.DeleteIngress(userId, stackService.Id+"-ingress")
+			err := s.kube.DeleteIngress(userId, stackService.Id+"-ingress")
 			if err != nil {
 				glog.Error(err)
 			}
