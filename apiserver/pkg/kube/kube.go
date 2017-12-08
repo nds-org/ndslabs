@@ -974,6 +974,7 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 				}
 			}
 		}
+		httpresp.Body.Close()
 	}
 }
 
@@ -1011,6 +1012,7 @@ func (k *KubeHelper) WatchPods(handler events.EventHandler) {
 				}
 			}
 		}
+		httpresp.Body.Close()
 	}
 }
 
