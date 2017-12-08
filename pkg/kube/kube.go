@@ -20,13 +20,10 @@ import (
 	ndsapi "github.com/ndslabs/apiserver/pkg/types"
 	"golang.org/x/net/websocket"
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/resource"
 	"k8s.io/kubernetes/pkg/api/unversioned"
-	"k8s.io/kubernetes/pkg/apis/extensions"
 	//"k8s.io/kubernetes/pkg/client/restclient"
 	//"k8s.io/kubernetes/pkg/client/unversioned/remotecommand"
 	remotecommandserver "k8s.io/kubernetes/pkg/kubelet/server/remotecommand"
-	intstr "k8s.io/kubernetes/pkg/util/intstr"
 	utilrand "k8s.io/kubernetes/pkg/util/rand"
 	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/client/unversioned/remotecommand"
@@ -36,6 +33,9 @@ import (
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/pkg/fields"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/pkg/api/resource"
+	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	"k8s.io/client-go/pkg/util/intstr"
 )
 
 var apiBase = "/api/v1"
@@ -116,183 +116,217 @@ func (k *KubeHelper) isRunning() error {
 	return nil
 }
 
-func (k *KubeHelper) CreateNamespace(pid string) (*api.Namespace, error) {
-
-	// Create the K8 namespace
-	ns := api.Namespace{}
+func (k *KubeHelper) CreateNamespace(pid string) (*v1.Namespace, error) {
+	ns := v1.Namespace{}
 	ns.SetName(pid)
 
-	data, err := json.Marshal(ns)
-	if err != nil {
-		return nil, err
-	}
+	return k.kubeGo.Namespaces().Create(&ns)
 
-	url := k.kubeBase + apiBase + "/namespaces"
-	glog.V(4).Infoln(url)
-	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return nil, httperr
-	} else {
-		if httpresp.StatusCode == http.StatusCreated {
-			glog.V(2).Infof("Added namespace %s\n", pid)
-			data, err := ioutil.ReadAll(httpresp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			json.Unmarshal(data, &ns)
-			return &ns, nil
-		} else if httpresp.StatusCode == http.StatusConflict {
-			return nil, fmt.Errorf("Namespace exists for account %s: %s\n", pid, httpresp.Status)
-		} else {
-			return nil, fmt.Errorf("Error adding namespace for account %s: %s\n", pid, httpresp.Status)
-		}
-	}
-	return nil, nil
+	//// Create the K8 namespace
+	//ns := api.Namespace{}
+	//ns.SetName(pid)
+	//
+	//data, err := json.Marshal(ns)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//url := k.kubeBase + apiBase + "/namespaces"
+	//glog.V(4).Infoln(url)
+	//request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//httpresp, httperr := k.client.Do(request)
+	//if httperr != nil {
+	//	glog.Error(httperr)
+	//	return nil, httperr
+	//} else {
+	//	if httpresp.StatusCode == http.StatusCreated {
+	//		glog.V(2).Infof("Added namespace %s\n", pid)
+	//		data, err := ioutil.ReadAll(httpresp.Body)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//
+	//		json.Unmarshal(data, &ns)
+	//		return &ns, nil
+	//	} else if httpresp.StatusCode == http.StatusConflict {
+	//		return nil, fmt.Errorf("Namespace exists for account %s: %s\n", pid, httpresp.Status)
+	//	} else {
+	//		return nil, fmt.Errorf("Error adding namespace for account %s: %s\n", pid, httpresp.Status)
+	//	}
+	//}
+	//return nil, nil
 }
 
-func (k *KubeHelper) CreateResourceQuota(pid string, cpu int, mem int) (*api.ResourceQuota, error) {
-
-	glog.V(4).Infof("Creating resource quota for %s: %s, %s\n", pid, cpu, mem)
-	rq := api.ResourceQuota{
-		TypeMeta: unversioned.TypeMeta{
-			APIVersion: "v1",
-			Kind:       "ResourceQuota",
-		},
-		ObjectMeta: api.ObjectMeta{Name: "quota"},
-		Spec: api.ResourceQuotaSpec{
-			Hard: api.ResourceList{
-				api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", cpu)),
-				api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", mem)),
+func (k *KubeHelper) CreateResourceQuota(pid string, cpu int, mem int) (*v1.ResourceQuota, error) {
+	resourceQuota := v1.ResourceQuota{
+		Spec: v1.ResourceQuotaSpec{
+			Hard:
+			v1.ResourceList{
+				v1.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", cpu)),
+				v1.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", mem)),
 			},
 		},
 	}
 
-	data, err := json.MarshalIndent(rq, "", "    ")
-	if err != nil {
-		return nil, err
-	}
+	return k.kubeGo.ResourceQuotas(pid).Create(&resourceQuota)
 
-	fmt.Println(string(data))
-
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/resourcequotas"
-	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return nil, httperr
-	} else {
-		if httpresp.StatusCode == http.StatusCreated {
-			glog.V(2).Infof("Added quota %s\n", pid)
-			data, err := ioutil.ReadAll(httpresp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			json.Unmarshal(data, &rq)
-			return &rq, nil
-		} else if httpresp.StatusCode == http.StatusConflict {
-			return nil, fmt.Errorf("Quota exists for account %s: %s\n", pid, httpresp.Status)
-		} else {
-			return nil, fmt.Errorf("Error adding quota for account %s: %s\n", pid, httpresp.Status)
-		}
-	}
-	return nil, nil
+	//glog.V(4).Infof("Creating resource quota for %s: %s, %s\n", pid, cpu, mem)
+	//rq := api.ResourceQuota{
+	//	TypeMeta: unversioned.TypeMeta{
+	//		APIVersion: "v1",
+	//		Kind:       "ResourceQuota",
+	//	},
+	//	ObjectMeta: api.ObjectMeta{Name: "quota"},
+	//	Spec: api.ResourceQuotaSpec{
+	//		Hard: api.ResourceList{
+	//			api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", cpu)),
+	//			api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", mem)),
+	//		},
+	//	},
+	//}
+	//
+	//data, err := json.MarshalIndent(rq, "", "    ")
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//fmt.Println(string(data))
+	//
+	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/resourcequotas"
+	//request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//httpresp, httperr := k.client.Do(request)
+	//if httperr != nil {
+	//	glog.Error(httperr)
+	//	return nil, httperr
+	//} else {
+	//	if httpresp.StatusCode == http.StatusCreated {
+	//		glog.V(2).Infof("Added quota %s\n", pid)
+	//		data, err := ioutil.ReadAll(httpresp.Body)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//
+	//		json.Unmarshal(data, &rq)
+	//		return &rq, nil
+	//	} else if httpresp.StatusCode == http.StatusConflict {
+	//		return nil, fmt.Errorf("Quota exists for account %s: %s\n", pid, httpresp.Status)
+	//	} else {
+	//		return nil, fmt.Errorf("Error adding quota for account %s: %s\n", pid, httpresp.Status)
+	//	}
+	//}
+	//return nil, nil
 }
 
-func (k *KubeHelper) CreateLimitRange(pid string, cpu int, mem int) (*api.LimitRange, error) {
+func (k *KubeHelper) CreateLimitRange(pid string, cpu int, mem int) (*v1.LimitRange, error) {
 
-	lr := &api.LimitRange{
-		TypeMeta: unversioned.TypeMeta{
-			APIVersion: "v1",
-			Kind:       "LimitRange",
-		},
-		ObjectMeta: api.ObjectMeta{
-			Name: "limits",
-		},
-		Spec: api.LimitRangeSpec{
-			Limits: []api.LimitRangeItem{
+	limitRange := v1.LimitRange{
+		Spec: v1.LimitRangeSpec{
+			Limits: [ ]v1.LimitRangeItem{
 				{
-					Type: api.LimitTypeContainer,
-					Default: api.ResourceList{
-						api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", cpu)),
-						api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", mem)),
+					Type: v1.LimitTypeContainer,
+					Default: v1.ResourceList{
+						v1.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", cpu)),
+						v1.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", mem)),
 					},
 				},
 			},
 		},
 	}
 
-	data, err := json.MarshalIndent(lr, "", "    ")
-	if err != nil {
-		return nil, err
-	}
+	return k.kubeGo.LimitRanges(pid).Create(&limitRange)
 
-	fmt.Println(string(data))
 
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/limitranges"
-	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return nil, httperr
-	} else {
-		if httpresp.StatusCode == http.StatusCreated {
-			glog.V(2).Infof("Added limit range %s\n", pid)
-			data, err := ioutil.ReadAll(httpresp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			json.Unmarshal(data, &lr)
-			return lr, nil
-		} else if httpresp.StatusCode == http.StatusConflict {
-			return nil, fmt.Errorf("Quota exists for account %s: %s\n", pid, httpresp.Status)
-		} else {
-			return nil, fmt.Errorf("Error adding limit range for account %s: %s\n", pid, httpresp.Status)
-		}
-	}
-	return nil, nil
+	//
+	//lr := &api.LimitRange{
+	//	TypeMeta: unversioned.TypeMeta{
+	//		APIVersion: "v1",
+	//		Kind:       "LimitRange",
+	//	},
+	//	ObjectMeta: api.ObjectMeta{
+	//		Name: "limits",
+	//	},
+	//	Spec: api.LimitRangeSpec{
+	//		Limits: []api.LimitRangeItem{
+	//			{
+	//				Type: api.LimitTypeContainer,
+	//				Default: api.ResourceList{
+	//					api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", cpu)),
+	//					api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", mem)),
+	//				},
+	//			},
+	//		},
+	//	},
+	//}
+	//
+	//data, err := json.MarshalIndent(lr, "", "    ")
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//fmt.Println(string(data))
+	//
+	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/limitranges"
+	//request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//httpresp, httperr := k.client.Do(request)
+	//if httperr != nil {
+	//	glog.Error(httperr)
+	//	return nil, httperr
+	//} else {
+	//	if httpresp.StatusCode == http.StatusCreated {
+	//		glog.V(2).Infof("Added limit range %s\n", pid)
+	//		data, err := ioutil.ReadAll(httpresp.Body)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//
+	//		json.Unmarshal(data, &lr)
+	//		return lr, nil
+	//	} else if httpresp.StatusCode == http.StatusConflict {
+	//		return nil, fmt.Errorf("Quota exists for account %s: %s\n", pid, httpresp.Status)
+	//	} else {
+	//		return nil, fmt.Errorf("Error adding limit range for account %s: %s\n", pid, httpresp.Status)
+	//	}
+	//}
+	//return nil, nil
 }
 
-func (k *KubeHelper) GetNamespace(pid string) (*api.Namespace, error) {
+func (k *KubeHelper) GetNamespace(pid string) (*v1.Namespace, error) {
+	return k.kubeGo.Namespaces().Get(pid)
 
-	url := k.kubeBase + apiBase + "/namespaces/" + pid
-	//glog.V(4).Infoln(url)
-	request, _ := http.NewRequest("GET", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return nil, httperr
-	} else {
-		if httpresp.StatusCode == http.StatusOK {
-			data, err := ioutil.ReadAll(httpresp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			ns := api.Namespace{}
-			json.Unmarshal(data, &ns)
-			return &ns, nil
-		} else {
-			return nil, fmt.Errorf("Error getting namespace for account %s: %s\n", pid, httpresp.Status)
-		}
-	}
-	return nil, nil
+	//url := k.kubeBase + apiBase + "/namespaces/" + pid
+	////glog.V(4).Infoln(url)
+	//request, _ := http.NewRequest("GET", url, nil)
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//httpresp, httperr := k.client.Do(request)
+	//if httperr != nil {
+	//	glog.Error(httperr)
+	//	return nil, httperr
+	//} else {
+	//	if httpresp.StatusCode == http.StatusOK {
+	//		data, err := ioutil.ReadAll(httpresp.Body)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//
+	//		ns := api.Namespace{}
+	//		json.Unmarshal(data, &ns)
+	//		return &ns, nil
+	//	} else {
+	//		return nil, fmt.Errorf("Error getting namespace for account %s: %s\n", pid, httpresp.Status)
+	//	}
+	//}
+	//return nil, nil
 }
 
 func (k *KubeHelper) NamespaceExists(pid string) bool {
-	ns, _ := k.GetNamespace(pid)
+	ns, _ := k.kubeGo.Namespaces().Get(pid)
 	if ns != nil {
 		return true
 	} else {
@@ -853,14 +887,14 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 
 	k8rq := api.ResourceRequirements{}
 	if spec.ResourceLimits.CPUMax > 0 && spec.ResourceLimits.MemoryMax > 0 {
-		k8rq.Limits = api.ResourceList{
-			api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", spec.ResourceLimits.CPUMax)),
-			api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", spec.ResourceLimits.MemoryMax)),
-		}
-		k8rq.Requests = api.ResourceList{
-			api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", spec.ResourceLimits.CPUDefault)),
-			api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", spec.ResourceLimits.MemoryDefault)),
-		}
+		//k8rq.Limits = api.ResourceList{
+		//	api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", spec.ResourceLimits.CPUMax)),
+		//	api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", spec.ResourceLimits.MemoryMax)),
+		//}
+		//k8rq.Requests = api.ResourceList{
+		//	api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", spec.ResourceLimits.CPUDefault)),
+		//	api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", spec.ResourceLimits.MemoryDefault)),
+		//}
 	} else {
 		glog.Warningf("No resource requirements specified for service %s\n", spec.Label)
 	}
@@ -904,19 +938,19 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 		},
 	}
 
-	if spec.ReadyProbe.Path != "" {
-		if spec.ReadyProbe.Type == "http" {
-			k8template.Spec.Containers[0].ReadinessProbe = k.createHttpProbe(spec.ReadyProbe.Path, spec.ReadyProbe.Port,
-				spec.ReadyProbe.InitialDelay, 3)
-			//k8template.Spec.Containers[0].LivenessProbe = k.createHttpProbe(spec.ReadyProbe.Path,
-			//	spec.ReadyProbe.Port, spec.ReadyProbe.Timeout, 2)
-		} else if spec.ReadyProbe.Type == "tcp" {
-			k8template.Spec.Containers[0].ReadinessProbe = k.createTcpProbe(spec.ReadyProbe.Port,
-				spec.ReadyProbe.InitialDelay, 3)
-			//k8template.Spec.Containers[0].LivenessProbe = k.createTcpProbe(spec.ReadyProbe.Port,
-			//	spec.ReadyProbe.Timeout, 2)
-		}
-	}
+	//if spec.ReadyProbe.Path != "" {
+	//	if spec.ReadyProbe.Type == "http" {
+	//		k8template.Spec.Containers[0].ReadinessProbe = k.createHttpProbe(spec.ReadyProbe.Path, spec.ReadyProbe.Port,
+	//			spec.ReadyProbe.InitialDelay, 3)
+	//		//k8template.Spec.Containers[0].LivenessProbe = k.createHttpProbe(spec.ReadyProbe.Path,
+	//		//	spec.ReadyProbe.Port, spec.ReadyProbe.Timeout, 2)
+	//	} else if spec.ReadyProbe.Type == "tcp" {
+	//		k8template.Spec.Containers[0].ReadinessProbe = k.createTcpProbe(spec.ReadyProbe.Port,
+	//			spec.ReadyProbe.InitialDelay, 3)
+	//		//k8template.Spec.Containers[0].LivenessProbe = k.createTcpProbe(spec.ReadyProbe.Port,
+	//		//	spec.ReadyProbe.Timeout, 2)
+	//	}
+	//}
 
 	k8rcs := api.ReplicationControllerSpec{
 		Replicas: 1,
@@ -1240,7 +1274,7 @@ func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHe
 	return nil
 }
 
-func (k *KubeHelper) CreateIngress(pid string, domain string, service string, ports []api.ServicePort, basicAuth bool) (*extensions.Ingress, error) {
+func (k *KubeHelper) CreateIngress(pid string, domain string, service string, ports []api.ServicePort, basicAuth bool) (*v1beta1.Ingress, error) {
 
 	name := service + "-ingress"
 	update := true
@@ -1249,8 +1283,8 @@ func (k *KubeHelper) CreateIngress(pid string, domain string, service string, po
 	if ingress == nil {
 		update = false
 
-		ingress = &extensions.Ingress{
-			ObjectMeta: api.ObjectMeta{
+		ingress = &v1beta1.Ingress{
+			ObjectMeta: v1.ObjectMeta{
 				Name:      name,
 				Namespace: pid,
 			},
@@ -1286,8 +1320,8 @@ func (k *KubeHelper) CreateIngress(pid string, domain string, service string, po
 	tlsSecretName := fmt.Sprintf("%s-tls-secret", pid)
 	secret, _ := k.GetSecret(pid, tlsSecretName)
 	if secret != nil {
-		ingress.Spec.TLS = []extensions.IngressTLS{
-			extensions.IngressTLS{
+		ingress.Spec.TLS = []v1beta1.IngressTLS{
+			v1beta1.IngressTLS{
 				Hosts:      hosts,
 				SecretName: tlsSecretName,
 			},
@@ -1297,15 +1331,15 @@ func (k *KubeHelper) CreateIngress(pid string, domain string, service string, po
 	return k.CreateUpdateIngress(pid, ingress, update)
 }
 
-func (k *KubeHelper) createIngressRule(service string, host string, port int) extensions.IngressRule {
-	rule := extensions.IngressRule{
+func (k *KubeHelper) createIngressRule(service string, host string, port int) v1beta1.IngressRule {
+	rule := v1beta1.IngressRule{
 		Host: host,
-		IngressRuleValue: extensions.IngressRuleValue{
-			HTTP: &extensions.HTTPIngressRuleValue{
-				Paths: []extensions.HTTPIngressPath{
-					extensions.HTTPIngressPath{
+		IngressRuleValue: v1beta1.IngressRuleValue{
+			HTTP: &v1beta1.HTTPIngressRuleValue{
+				Paths: []v1beta1.HTTPIngressPath{
+					v1beta1.HTTPIngressPath{
 						Path: "/",
-						Backend: extensions.IngressBackend{
+						Backend: v1beta1.IngressBackend{
 							ServiceName: service,
 							ServicePort: intstr.FromInt(port),
 						},
@@ -1317,148 +1351,162 @@ func (k *KubeHelper) createIngressRule(service string, host string, port int) ex
 	return rule
 }
 
-func (k *KubeHelper) CreateUpdateIngress(pid string, ingress *extensions.Ingress, update bool) (*extensions.Ingress, error) {
+func (k *KubeHelper) CreateUpdateIngress(pid string, ingress *v1beta1.Ingress, update bool) (*v1beta1.Ingress, error) {
 
 	glog.V(4).Info("Updating ingress " + ingress.Name)
 	ingress.ObjectMeta.Annotations["ndslabs.org/updated"] = time.Now().String()
-	data, err := json.Marshal(ingress)
-	if err != nil {
-		return nil, err
+
+	if update{
+		return k.kubeGo.Ingresses(pid).Update(ingress)
+
+	}else {
+		return k.kubeGo.Ingresses(pid).Create(ingress)
 	}
 
-	url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses"
-	method := "POST"
-	if update {
-		method = "PUT"
-		url += "/" + ingress.Name
-	}
-	glog.V(4).Infoln(url)
-	request, _ := http.NewRequest(method, url, bytes.NewBuffer(data))
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return nil, httperr
-	} else {
-		if httpresp.StatusCode == http.StatusCreated || httpresp.StatusCode == http.StatusOK {
-			glog.V(2).Infof("Added/updated ingress %s\n", ingress.Name)
-			data, err := ioutil.ReadAll(httpresp.Body)
-			if err != nil {
-				return nil, err
-			}
 
-			json.Unmarshal(data, &ingress)
-			return ingress, nil
-		} else if httpresp.StatusCode == http.StatusConflict {
-			return nil, fmt.Errorf("Ingress exists for namespace %s: %s\n", pid, httpresp.Status)
-		} else {
-			return nil, fmt.Errorf("Error adding/updating ingress for namespace %s: %s\n", pid, httpresp.Status)
-		}
-	}
-	return nil, nil
+	//data, err := json.Marshal(ingress)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses"
+	//method := "POST"
+	//if update {
+	//	method = "PUT"
+	//	url += "/" + ingress.Name
+	//}
+	//glog.V(4).Infoln(url)
+	//request, _ := http.NewRequest(method, url, bytes.NewBuffer(data))
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//httpresp, httperr := k.client.Do(request)
+	//if httperr != nil {
+	//	glog.Error(httperr)
+	//	return nil, httperr
+	//} else {
+	//	if httpresp.StatusCode == http.StatusCreated || httpresp.StatusCode == http.StatusOK {
+	//		glog.V(2).Infof("Added/updated ingress %s\n", ingress.Name)
+	//		data, err := ioutil.ReadAll(httpresp.Body)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//
+	//		json.Unmarshal(data, &ingress)
+	//		return ingress, nil
+	//	} else if httpresp.StatusCode == http.StatusConflict {
+	//		return nil, fmt.Errorf("Ingress exists for namespace %s: %s\n", pid, httpresp.Status)
+	//	} else {
+	//		return nil, fmt.Errorf("Error adding/updating ingress for namespace %s: %s\n", pid, httpresp.Status)
+	//	}
+	//}
+	//return nil, nil
 }
 
-func (k *KubeHelper) GetIngress(pid string, ingressName string) (*extensions.Ingress, error) {
+func (k *KubeHelper) GetIngress(pid string, ingressName string) (*v1beta1.Ingress, error) {
+	return k.kubeGo.Ingresses(pid).Get(ingressName)
 
-	url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses/" + ingressName
-	glog.V(4).Infoln(url)
-	request, _ := http.NewRequest("GET", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return nil, httperr
-	} else {
-		if httpresp.StatusCode == http.StatusOK {
-			data, err := ioutil.ReadAll(httpresp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			ingress := extensions.Ingress{}
-			json.Unmarshal(data, &ingress)
-			return &ingress, nil
-		} else {
-			return nil, fmt.Errorf("Error getting ingress %s for account %s: %s\n", ingressName, pid, httpresp.Status)
-		}
-	}
-	return nil, nil
+	//url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses/" + ingressName
+	//glog.V(4).Infoln(url)
+	//request, _ := http.NewRequest("GET", url, nil)
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//httpresp, httperr := k.client.Do(request)
+	//if httperr != nil {
+	//	glog.Error(httperr)
+	//	return nil, httperr
+	//} else {
+	//	if httpresp.StatusCode == http.StatusOK {
+	//		data, err := ioutil.ReadAll(httpresp.Body)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//
+	//		ingress := extensions.Ingress{}
+	//		json.Unmarshal(data, &ingress)
+	//		return &ingress, nil
+	//	} else {
+	//		return nil, fmt.Errorf("Error getting ingress %s for account %s: %s\n", ingressName, pid, httpresp.Status)
+	//	}
+	//}
+	//return nil, nil
 }
 
-func (k *KubeHelper) GetIngresses(pid string) ([]extensions.Ingress, error) {
+func (k *KubeHelper) GetIngresses(pid string) (*v1beta1.IngressList, error) {
+	listOptions := v1.ListOptions{}
+	return k.kubeGo.Ingresses(pid).List(listOptions)
 
-	url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses"
-	glog.V(4).Infoln(url)
-	request, _ := http.NewRequest("GET", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return nil, httperr
-	} else {
-		if httpresp.StatusCode == http.StatusOK {
-			data, err := ioutil.ReadAll(httpresp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			ingressList := extensions.IngressList{}
-			json.Unmarshal(data, &ingressList)
-
-			var ingresses = []extensions.Ingress{}
-			for _, ingress := range ingressList.Items {
-				ingresses = append(ingresses, ingress)
-			}
-			return ingresses, nil
-
-		} else {
-			return nil, fmt.Errorf("Error getting ingresses for account %s: %s\n", pid, httpresp.Status)
-		}
-	}
-	return nil, nil
+	//url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses"
+	//glog.V(4).Infoln(url)
+	//request, _ := http.NewRequest("GET", url, nil)
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//httpresp, httperr := k.client.Do(request)
+	//if httperr != nil {
+	//	glog.Error(httperr)
+	//	return nil, httperr
+	//} else {
+	//	if httpresp.StatusCode == http.StatusOK {
+	//		data, err := ioutil.ReadAll(httpresp.Body)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//
+	//		ingressList := extensions.IngressList{}
+	//		json.Unmarshal(data, &ingressList)
+	//
+	//		var ingresses = []extensions.Ingress{}
+	//		for _, ingress := range ingressList.Items {
+	//			ingresses = append(ingresses, ingress)
+	//		}
+	//		return ingresses, nil
+	//
+	//	} else {
+	//		return nil, fmt.Errorf("Error getting ingresses for account %s: %s\n", pid, httpresp.Status)
+	//	}
+	//}
+	//return nil, nil
 }
 
 //http://kubernetes.io/docs/api-reference/extensions/v1beta1/operations/
-func (k *KubeHelper) DeleteIngress(pid string, name string) (*extensions.Ingress, error) {
+func (k *KubeHelper) DeleteIngress(pid string, name string)  error {
+	deleteOptions := v1.DeleteOptions{}
+	return k.kubeGo.Ingresses(pid).Delete(name, &deleteOptions)
 
-	url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses/" + name
-	glog.V(4).Infoln(url)
-	request, _ := http.NewRequest("DELETE", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return nil, httperr
-	} else {
-		if httpresp.StatusCode == http.StatusOK {
-			glog.V(2).Infof("Deleted ingress %s\n", pid)
-			data, err := ioutil.ReadAll(httpresp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			ingress := extensions.Ingress{}
-			json.Unmarshal(data, &ingress)
-			return &ingress, nil
-		} else {
-			return nil, fmt.Errorf("Error deleting ingress for account %s: %s\n", pid, httpresp.Status)
-		}
-	}
-	return nil, nil
+	//url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses/" + name
+	//glog.V(4).Infoln(url)
+	//request, _ := http.NewRequest("DELETE", url, nil)
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//httpresp, httperr := k.client.Do(request)
+	//if httperr != nil {
+	//	glog.Error(httperr)
+	//	return nil, httperr
+	//} else {
+	//	if httpresp.StatusCode == http.StatusOK {
+	//		glog.V(2).Infof("Deleted ingress %s\n", pid)
+	//		data, err := ioutil.ReadAll(httpresp.Body)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//
+	//		ingress := extensions.Ingress{}
+	//		json.Unmarshal(data, &ingress)
+	//		return &ingress, nil
+	//	} else {
+	//		return nil, fmt.Errorf("Error deleting ingress for account %s: %s\n", pid, httpresp.Status)
+	//	}
+	//}
+	//return nil, nil
 }
 
-func (k *KubeHelper) CreateBasicAuthSecret(pid string, username string, hashedPassword string) (*api.Secret, error) {
+func (k *KubeHelper) CreateBasicAuthSecret(pid string, username string, hashedPassword string) (*v1.Secret, error) {
 	secret, _ := k.GetSecret(pid, "basic-auth")
 	if secret != nil {
 		k.DeleteSecret(pid, "basic-auth")
 	}
 
-	secret = &api.Secret{
-		ObjectMeta: api.ObjectMeta{
+	secret = &v1.Secret{
+		ObjectMeta: v1.ObjectMeta{
 			Name:      "basic-auth",
 			Namespace: pid,
 		},
@@ -1469,10 +1517,10 @@ func (k *KubeHelper) CreateBasicAuthSecret(pid string, username string, hashedPa
 	return k.CreateSecret(pid, secret)
 }
 
-func (k *KubeHelper) CreateTLSSecret(pid string, secretName string, tlsCert []byte, tlsKey []byte) (*api.Secret, error) {
+func (k *KubeHelper) CreateTLSSecret(pid string, secretName string, tlsCert []byte, tlsKey []byte) (*v1.Secret, error) {
 
-	secret := api.Secret{
-		ObjectMeta: api.ObjectMeta{
+	secret := v1.Secret{
+		ObjectMeta: v1.ObjectMeta{
 			Name:      secretName,
 			Namespace: pid,
 		},
@@ -1484,94 +1532,104 @@ func (k *KubeHelper) CreateTLSSecret(pid string, secretName string, tlsCert []by
 	return k.CreateSecret(pid, &secret)
 }
 
-func (k *KubeHelper) CreateSecret(pid string, secret *api.Secret) (*api.Secret, error) {
-	data, err := json.Marshal(secret)
+func (k *KubeHelper) CreateSecret(pid string, secret *v1.Secret) (*v1.Secret, error) {
+	return k.kubeGo.Secrets(pid).Create(secret)
+	//data, err := json.Marshal(secret)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/secrets"
+	//glog.V(4).Infoln(url)
+	//request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//httpresp, httperr := k.client.Do(request)
+	//if httperr != nil {
+	//	glog.Error(httperr)
+	//	return nil, httperr
+	//} else {
+	//	if httpresp.StatusCode == http.StatusCreated {
+	//		glog.V(2).Infof("Added secret %s %s\n", pid, secret.Name)
+	//		data, err := ioutil.ReadAll(httpresp.Body)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//
+	//		json.Unmarshal(data, secret)
+	//		return secret, nil
+	//	} else if httpresp.StatusCode == http.StatusConflict {
+	//		return nil, fmt.Errorf("Secret %s exists for account %s: %s\n", secret.Name, pid, httpresp.Status)
+	//	} else {
+	//		return nil, fmt.Errorf("Error adding secret %s for account %s: %s\n", secret.Name, pid, httpresp.Status)
+	//	}
+	//}
+	//return nil, nil
+}
+
+func (k *KubeHelper) DeleteSecret(pid string, name string) (*v1.Secret, error) {
+	oldSecret, err := k.GetSecret(pid, name)
+
 	if err != nil {
-		return nil, err
-	}
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/secrets"
-	glog.V(4).Infoln(url)
-	request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return nil, httperr
+		return nil,fmt.Errorf("Error retreiving old secret %s for account %s: %s - %s\n", name, err.Error())
 	} else {
-		if httpresp.StatusCode == http.StatusCreated {
-			glog.V(2).Infof("Added secret %s %s\n", pid, secret.Name)
-			data, err := ioutil.ReadAll(httpresp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			json.Unmarshal(data, secret)
-			return secret, nil
-		} else if httpresp.StatusCode == http.StatusConflict {
-			return nil, fmt.Errorf("Secret %s exists for account %s: %s\n", secret.Name, pid, httpresp.Status)
-		} else {
-			return nil, fmt.Errorf("Error adding secret %s for account %s: %s\n", secret.Name, pid, httpresp.Status)
-		}
+		deleteOptions := v1.DeleteOptions{}
+		return oldSecret, k.kubeGo.Secrets(pid).Delete(name, &deleteOptions)
 	}
-	return nil, nil
+
+	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/secrets/" + name
+	//glog.V(4).Infoln(url)
+	//request, _ := http.NewRequest("DELETE", url, nil)
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//httpresp, httperr := k.client.Do(request)
+	//if httperr != nil {
+	//	glog.Error(httperr)
+	//	return nil, httperr
+	//} else {
+	//	if httpresp.StatusCode == http.StatusOK {
+	//		glog.V(2).Infof("Deleted secret %s %s\n", pid, name)
+	//		data, err := ioutil.ReadAll(httpresp.Body)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//
+	//		secret := api.Secret{}
+	//		json.Unmarshal(data, &secret)
+	//		return &secret, nil
+	//	} else {
+	//		return nil, fmt.Errorf("Error deleting secret %s for account %s: %s\n", name, pid, httpresp.Status)
+	//	}
+	//}
+	//return nil, nil
 }
 
-func (k *KubeHelper) DeleteSecret(pid string, name string) (*api.Secret, error) {
+func (k *KubeHelper) GetSecret(pid string, secretName string) (*v1.Secret, error) {
+	return k.kubeGo.Secrets(pid).Get(secretName)
 
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/secrets/" + name
-	glog.V(4).Infoln(url)
-	request, _ := http.NewRequest("DELETE", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return nil, httperr
-	} else {
-		if httpresp.StatusCode == http.StatusOK {
-			glog.V(2).Infof("Deleted secret %s %s\n", pid, name)
-			data, err := ioutil.ReadAll(httpresp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			secret := api.Secret{}
-			json.Unmarshal(data, &secret)
-			return &secret, nil
-		} else {
-			return nil, fmt.Errorf("Error deleting secret %s for account %s: %s\n", name, pid, httpresp.Status)
-		}
-	}
-	return nil, nil
-}
-
-func (k *KubeHelper) GetSecret(pid string, secretName string) (*api.Secret, error) {
-
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/secrets/" + secretName
-	glog.V(4).Infoln(url)
-	request, _ := http.NewRequest("GET", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return nil, httperr
-	} else {
-		if httpresp.StatusCode == http.StatusOK {
-			data, err := ioutil.ReadAll(httpresp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			secret := api.Secret{}
-			json.Unmarshal(data, &secret)
-			return &secret, nil
-		} else {
-			return nil, fmt.Errorf("Error getting secret %s for account %s: %s\n", secretName, pid, httpresp.Status)
-		}
-	}
-	return nil, nil
+	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/secrets/" + secretName
+	//glog.V(4).Infoln(url)
+	//request, _ := http.NewRequest("GET", url, nil)
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//httpresp, httperr := k.client.Do(request)
+	//if httperr != nil {
+	//	glog.Error(httperr)
+	//	return nil, httperr
+	//} else {
+	//	if httpresp.StatusCode == http.StatusOK {
+	//		data, err := ioutil.ReadAll(httpresp.Body)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//
+	//		secret := api.Secret{}
+	//		json.Unmarshal(data, &secret)
+	//		return &secret, nil
+	//	} else {
+	//		return nil, fmt.Errorf("Error getting secret %s for account %s: %s\n", secretName, pid, httpresp.Status)
+	//	}
+	//}
+	//return nil, nil
 }
 
 func (k *KubeHelper) GetResourceQuota(pid string) (*api.ResourceQuotaList, error) {
@@ -1639,13 +1697,13 @@ func (k *KubeHelper) ExecCommand(pid string, pod string, command []string) (stri
 	return localOut.String(), err
 }
 
-func (k *KubeHelper) createHttpProbe(path string, port int, initialDelay int32, threshold int32) *api.Probe {
-	return &api.Probe{
-		Handler: api.Handler{
-			HTTPGet: &api.HTTPGetAction{
+func (k *KubeHelper) createHttpProbe(path string, port int, initialDelay int32, threshold int32) *v1.Probe {
+	return &v1.Probe{
+		Handler: v1.Handler{
+			HTTPGet: &v1.HTTPGetAction{
 				Path:   path,
 				Port:   intstr.FromInt(port),
-				Scheme: api.URISchemeHTTP,
+				Scheme: v1.URISchemeHTTP,
 			},
 		},
 		InitialDelaySeconds: initialDelay,
@@ -1653,10 +1711,10 @@ func (k *KubeHelper) createHttpProbe(path string, port int, initialDelay int32, 
 	}
 }
 
-func (k *KubeHelper) createTcpProbe(port int, initialDelay int32, threshold int32) *api.Probe {
-	return &api.Probe{
-		Handler: api.Handler{
-			TCPSocket: &api.TCPSocketAction{
+func (k *KubeHelper) createTcpProbe(port int, initialDelay int32, threshold int32) *v1.Probe {
+	return &v1.Probe{
+		Handler: v1.Handler{
+			TCPSocket: &v1.TCPSocketAction{
 				Port: intstr.FromInt(port),
 			},
 		},
