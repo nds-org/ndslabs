@@ -2,7 +2,6 @@
 package kube
 
 import (
-	"bufio"
 	"bytes"
 	"crypto/tls"
 	"encoding/base64"
@@ -29,7 +28,6 @@ import (
 	remotecommandserver "k8s.io/kubernetes/pkg/kubelet/server/remotecommand"
 	intstr "k8s.io/kubernetes/pkg/util/intstr"
 	utilrand "k8s.io/kubernetes/pkg/util/rand"
-	watch "k8s.io/kubernetes/pkg/watch/json"
 	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/client/unversioned/remotecommand"
 
@@ -37,6 +35,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/pkg/fields"
+	"k8s.io/client-go/rest"
 )
 
 var apiBase = "/api/v1"
@@ -56,9 +55,10 @@ type KubeHelper struct {
 	username string
 	password string
 	token    string
+	kubeGo *kubernetes.Clientset
 }
 
-func NewKubeHelper(kubeBase string, username string, password string, tokenPath string) (*KubeHelper, error) {
+func NewKubeHelper(kubeBase string, username string, password string, tokenPath string, kConfig *rest.Config) (*KubeHelper, error) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -66,6 +66,15 @@ func NewKubeHelper(kubeBase string, username string, password string, tokenPath 
 	kubeHelper := KubeHelper{}
 	kubeHelper.kubeBase = kubeBase
 	kubeHelper.client = &http.Client{Transport: tr}
+
+	// create the clientset
+	kubeGo, k8Err := kubernetes.NewForConfig(kConfig)
+	if k8Err != nil {
+		panic(k8Err.Error())
+	} else{
+		kubeHelper.kubeGo = kubeGo
+	}
+
 
 	if _, err := os.Stat(tokenPath); err == nil {
 		glog.V(4).Infof("Reading token from %s\n", tokenPath)
@@ -925,12 +934,12 @@ func (k *KubeHelper) GenerateName(randomLength int) string {
 	return fmt.Sprintf("s%s", utilrand.String(randomLength))
 }
 
-func (k *KubeHelper) WatchEvents(handler events.EventHandler, kubeGo *kubernetes.Clientset) {
+func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 	glog.V(4).Infoln("WatchEvents started")
 
 	startTime := time.Now()
 
-	podWatchlist := cache.NewListWatchFromClient(kubeGo.Core().RESTClient(), "pods", "",
+	podWatchlist := cache.NewListWatchFromClient(k.kubeGo.Core().RESTClient(), "pods", "",
 		fields.Everything())
 
 	_, podController := cache.NewInformer(
@@ -956,7 +965,7 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler, kubeGo *kubernetes
 
 	go podController.Run(make(chan struct{}))
 
-	rcWatchlist := cache.NewListWatchFromClient(kubeGo.Core().RESTClient(), "replicationcontrollers", "",
+	rcWatchlist := cache.NewListWatchFromClient(k.kubeGo.Core().RESTClient(), "replicationcontrollers", "",
 		fields.Everything())
 
 	_, rcController := cache.NewInformer(
@@ -1038,7 +1047,7 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler, kubeGo *kubernetes
 	//}
 }
 
-func (k *KubeHelper) WatchPods(handler events.EventHandler, kubeGo *kubernetes.Clientset) {
+func (k *KubeHelper) WatchPods(handler events.EventHandler) {
 	// Hopefully this isn't needed.
 	// From Craig:
 	// "I originally only had WatchEvents, but found that there were certain Pod events that didn't come

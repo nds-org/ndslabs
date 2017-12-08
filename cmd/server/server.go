@@ -34,7 +34,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"k8s.io/kubernetes/pkg/watch"
-	"k8s.io/client-go/kubernetes"
 )
 
 var adminUser = "admin"
@@ -45,7 +44,6 @@ type Server struct {
 	Config          *config.Config
 	etcd            *etcd.EtcdHelper
 	kube            *kube.KubeHelper
-	kubeGo 			*kubernetes.Clientset
 	Validator       *validate.Validator
 	email           *email.EmailHelper
 	Namespace       string
@@ -134,18 +132,8 @@ func main() {
 		panic(err.Error())
 	}
 
-	glog.Infof("Hi %s", kConfig.APIPath)
-
-	// create the clientset
-	kubeGo, err := kubernetes.NewForConfig(kConfig)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	glog.Infof("Hmm %s", kubeGo.LegacyPrefix)
-
 	kube, err := kube.NewKubeHelper(cfg.Kubernetes.Address,
-		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath)
+		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath, kConfig)
 	if err != nil {
 		glog.Errorf("Kubernetes API server not available\n")
 		glog.Fatal(err)
@@ -168,7 +156,6 @@ func main() {
 	}
 	server.etcd = etcd
 	server.kube = kube
-	server.kubeGo = kubeGo
 	server.email = email
 	server.Config = cfg
 	server.homeVolume = cfg.HomeVolume
@@ -379,9 +366,9 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 	s.createAdminUser(adminPasswd)
 	go s.initExistingAccounts()
 
-	go s.kube.WatchEvents(s, s.kubeGo)
+	go s.kube.WatchEvents(s)
 
-	go s.kube.WatchPods(s, s.kubeGo)
+	go s.kube.WatchPods(s)
 	go s.shutdownInactiveServices()
 
 	http.Handle(s.prefix, api.MakeHandler())
