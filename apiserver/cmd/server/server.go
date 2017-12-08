@@ -462,13 +462,33 @@ func Version(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) CheckToken(w rest.ResponseWriter, r *rest.Request) {
+	// Basic token validation is handled by jwt middleware
 	userId := s.getUser(r)
+	host := r.Request.FormValue("host")
+
+	// Log last activity for user
 	account, err := s.etcd.GetAccount(userId)
 	if err == nil {
 		account.LastLogin = time.Now().Unix()
 		s.etcd.PutAccount(account.Namespace, account, false)
 	}
-	w.WriteHeader(http.StatusOK)
+
+	// If host specified, see if it belongs to this namespace
+	if len(host) > 0 {
+		ok, err := (s.checkIngress(userId, host))
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+		} else {
+			if ok || s.IsAdmin(r) {
+				w.WriteHeader(http.StatusOK)
+			} else {
+				w.WriteHeader(http.StatusUnauthorized)
+			}
+		}
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
 }
 
 func (s *Server) Logout(w rest.ResponseWriter, r *rest.Request) {
@@ -2630,6 +2650,11 @@ func (s *Server) ChangePassword(w rest.ResponseWriter, r *rest.Request) {
 
 	data := make(map[string]string)
 	err := r.DecodeJsonPayload(&data)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
 	_, err = s.etcd.ChangePassword(userId, data["password"])
 	if err != nil {
 		glog.Error(err)
@@ -3149,4 +3174,24 @@ func (s *Server) getVolPath(mount *api.VolumeMount, ssid string) string {
 	} else {
 		return mount.DefaultPath
 	}
+}
+
+// Check if host exists in ingresses for namespace
+func (s *Server) checkIngress(uid string, host string) (bool, error) {
+
+	glog.V(4).Infof("Checking ingress for %s %s", uid, host)
+	ingresses, err := s.kube.GetIngresses(uid)
+	if err != nil {
+		glog.Error(err)
+		return false, err
+	}
+	if ingresses != nil {
+		for _, ingress := range ingresses {
+			if ingress.Spec.Rules[0].Host == host {
+				glog.V(4).Infof("Found ingress with host %s", ingress.Spec.Rules[0].Host)
+				return true, nil
+			}
+		}
+	}
+	return false, nil
 }
