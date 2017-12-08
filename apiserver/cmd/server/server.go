@@ -2084,7 +2084,12 @@ func (s *Server) QuickstartStack(w rest.ResponseWriter, r *rest.Request) {
 	userId := s.getUser(r)
 	sid := r.Request.FormValue("key")
 
-	if len(sid) == 0 || !s.serviceExists(userId, sid) {
+	if len(sid) == 0 {
+		rest.Error(w, "You must specify a service key", http.StatusBadRequest)
+		return
+	}
+
+	if !s.serviceExists(userId, sid) {
 		rest.Error(w, "No such service", http.StatusNotFound)
 		return
 	}
