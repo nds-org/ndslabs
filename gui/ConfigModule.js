@@ -27,67 +27,67 @@ angular
 /**
  * The route to our "Landing Page" View
  */
-.constant('LandingRoute', '/landing/')
+.constant('LandingRoute', '/landing/#/')
 
 /**
  * The route to our "Login" View
  */
-.constant('LoginRoute', '/login/')
+.constant('LoginRoute', '/login/#/')
 
 /**
  * The route to the "Contact Us" view
  */
-.constant('ContactUsRoute', '/landing/contact')
+.constant('ContactUsRoute', '/landing/#/contact')
 
 /**
  * The route to our "Request Access" View
  */
-.constant('SignUpRoute', '/login/register')
+.constant('SignUpRoute', '/login/#/register')
 
 /**
  * The route to our "Verify Account" View
  */
-.constant('VerifyAccountRoute', '/login/register/verify')
+.constant('VerifyAccountRoute', '/login/#/register/verify')
 
 /**
  * The route to our "Recover Password" View
  */
-.constant('ResetPasswordRoute', '/login/recover')
+.constant('ResetPasswordRoute', '/login/#/recover')
 
 /**
  * The route to the "AppStore" view
  */
-.constant('AppStoreRoute', '/dashboard/store')
+.constant('AppStoreRoute', '/dashboard/#/store')
 
 /**
  * The route to the "Add Application Spec" view
  */
-.constant('AddSpecRoute', '/dashboard/store/add')
+.constant('AddSpecRoute', '/dashboard/#/store/add')
 
 /**
  * The route to the "Edit Application Spec" view
  */
-.constant('EditSpecRoute', '/dashboard/store/edit/:specKey')
+.constant('EditSpecRoute', '/dashboard/#/store/edit/:specKey')
 
 /**
  * The route to our "Dashboard" View
  */
-.constant('HomeRoute', '/dashboard/home')
+.constant('HomeRoute', '/dashboard/#/home')
 
 /**
  * The route to the "Add Application Service" view
  */
-.constant('AddServiceRoute', '/dashboard/home/:stackId/add/:service')
+.constant('AddServiceRoute', '/dashboard/#/home/:stackId/add/:service')
 
 /**
  * The route to the "Edit Application Service" view
  */
-.constant('EditServiceRoute', '/dashboard/home/:stackId/edit/:service')
+.constant('EditServiceRoute', '/dashboard/#/home/:stackId/edit/:service')
 
 /**
  * The route to the "Application Service Console" view
  */
-.constant('ConsoleRoute', '/dashboard/home/:stackId/console/:service')
+.constant('ConsoleRoute', '/dashboard/#/home/:stackId/console/:service')
 
 /**
  * The name of the product to display in the UI and the URL to link to when clicked
@@ -217,8 +217,8 @@ angular
   $locationProvider.html5Mode(true);
   
     // Setup default behaviors for encountering HTTP errors
-  $httpProvider.interceptors.push(['$rootScope', '$cookies', '$cookieStore', '$q', '$location', '$log', '_', 'DEBUG', 'ApiUri', 'AuthInfo', 'CookieOptions',
-      function (scope, $cookies, $cookieStore, $q, $location, $log, _, DEBUG, ApiUri, AuthInfo, CookieOptions) {
+  $httpProvider.interceptors.push(['$rootScope', '$cookies', '$q', '$location', '$log', '_', 'DEBUG', 'ApiUri', 'AuthInfo', 'CookieOptions',
+      function (scope, $cookies, $q, $location, $log, _, DEBUG, ApiUri, AuthInfo, CookieOptions) {
     return {
       // Attach our auth token to each outgoing request (to the api server)
       'request': function(config) {
@@ -268,8 +268,8 @@ angular
             AuthInfo.authInfo.token = null;
             //$cookies.remove('token', CookieOptions);
             //$cookies.remove('namespace', CookieOptions);
-            $cookieStore.remove('token', CookieOptions);
-            //$cookieStore.remove('namespace', CookieOptions);
+            $cookies.remove('token', CookieOptions);
+            $cookies.remove('namespace', CookieOptions);
             
             $log.debug("Routing to login...");
             //window.location.href = LoginRoute;
@@ -334,14 +334,16 @@ angular
   //                 .setHybridMobileSupport(true)
                    .useDisplayFeatures(true)
                    .useEnhancedLinkAttribution(true);
-}]).run(['$cookies', '$cookieStore', '$location', '$log', 'AuthInfo', 'Project', 'AutoRefresh', 'ServerData', 'CookieOptions',
-    function($cookies, $cookieStore, $location, $log, AuthInfo, Project, AutoRefresh, ServerData, CookieOptions) {
+}]).run(['$cookies', '$location', '$log', 'AuthInfo', 'CookieOptions',
+    function($cookies, $location, $log, AuthInfo, CookieOptions) {
   
   // Grab saved auth data from cookies and attempt to use the leftover session
   var token = $cookies.get('token', CookieOptions);
   var namespace = $cookies.get('namespace', CookieOptions);
+  var auth = $cookies.get('auth', CookieOptions);
   
-  var path = $location.path();
+  debugger;
+  
   if (token && namespace) {
     console.log(`Found token for namespace ${namespace}:`, token);
     // Pull our token / namespace from cookies
