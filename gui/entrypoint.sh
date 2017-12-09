@@ -15,6 +15,7 @@ fi
 /bin/sed -i -e "s#^\.constant('ApiPort', '.*')#.constant('ApiPort', '${APISERVER_PORT}')#" "$BASEDIR/ConfigModule.js"
 /bin/sed -i -e "s#^\.constant('ApiPath', '.*')#.constant('ApiPath', '${APISERVER_PATH}')#" "$BASEDIR/ConfigModule.js"
 /bin/sed -i -e "s#^\.constant('ApiSecure', .*)#.constant('ApiSecure', ${APISERVER_SECURE})#" "$BASEDIR/ConfigModule.js"
+/bin/sed -i -e "s#^\.constant('CookieOptions', .*#.constant('CookieOptions', { domain: '.${DOMAIN:-local.ndslabs.org}', secure: ${API_SECURE:-true}, path: '/' })#" "$BASEDIR/ConfigModule.js"
 
 # Substitute the SUPPORT_EMAIL passed in by "docker run -e" or kubernetes
 /bin/sed -i -e "s#^\.constant('SupportEmail', .*)#.constant('SupportEmail', '${SUPPORT_EMAIL}')#" "$BASEDIR/ConfigModule.js"
