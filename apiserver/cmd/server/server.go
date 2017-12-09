@@ -561,12 +561,20 @@ func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 		} else {
-			glog.V(4).Infof("Usage: %d %d \n", quota.Items[0].Status.Used.Memory().Value(), quota.Items[0].Status.Hard.Memory().Value())
+			usedMemory := quota.Items[0].Status.Used[v1.ResourceMemory]
+			hardMemory := quota.Items[0].Status.Hard[v1.ResourceMemory]
+			usedCPU := quota.Items[0].Status.Used[v1.ResourceCPU]
+			hardCPU := quota.Items[0].Status.Hard[v1.ResourceCPU]
+
+			glog.V(4).Infof("Usage: %d %d \n", usedMemory.Value(), hardMemory.Value())
+
 			account.ResourceUsage = api.ResourceUsage{
-				CPU:       quota.Items[0].Status.Used.Cpu().String(),
-				Memory:    quota.Items[0].Status.Used.Memory().String(),
-				CPUPct:    fmt.Sprintf("%f", float64(quota.Items[0].Status.Used.Cpu().Value())/float64(quota.Items[0].Status.Hard.Cpu().Value())),
-				MemoryPct: fmt.Sprintf("%f", float64(quota.Items[0].Status.Used.Memory().Value())/float64(quota.Items[0].Status.Hard.Memory().Value())),
+				CPU:       usedCPU.String(),
+				Memory:    usedMemory.String(),
+				CPUPct:    fmt.Sprintf("%f",
+					float64(usedCPU.Value()) / float64(hardCPU.Value())),
+				MemoryPct: fmt.Sprintf("%f",
+					float64(usedMemory.Value()) / float64(hardMemory.Value())),
 			}
 		}
 		account.Password = ""
@@ -935,7 +943,7 @@ func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if gfs.Size() > 0 {
+	if len(gfs.Items) > 0 {
 		cmd := []string{"gluster", "volume", "quota", homeVol.Name, "limit-usage", "/" + account.Namespace, fmt.Sprintf("%dGB", account.ResourceLimits.StorageQuota)}
 		_, err := s.kube.ExecCommand(systemNamespace, gfs.Items[0].Name, cmd)
 		if err != nil {
@@ -956,7 +964,9 @@ func (s *Server) getGlusterStatus() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if gfs.Size() > 0 {
+
+	glog.Infof("Ok Gluster pods of %s size = %d or %d\n", glusterPodName, len(gfs.Items), len(gfs.Items))
+	if len(gfs.Items) > 0 {
 		cmd := []string{"gluster", "volume", "status", homeVol.Name}
 		_, err := s.kube.ExecCommand(systemNamespace, gfs.Items[0].Name, cmd)
 		if err != nil {
