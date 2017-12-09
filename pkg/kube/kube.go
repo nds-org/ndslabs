@@ -719,32 +719,22 @@ func (k *KubeHelper) stopPod(pid string, podName string) error {
 func (k *KubeHelper) GetLog(pid string, podName string, tailLines int) (string, error) {
 	glog.V(4).Infof("Get log for %s %s\n", pid, podName)
 
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + podName + "/log"
-
-	if tailLines > 0 {
-		url += fmt.Sprintf("?tailLines=%d", tailLines)
+	var tailLines64 int64 = int64(tailLines)
+	podLogOptions := v1.PodLogOptions{
+		TailLines: &tailLines64,
 	}
 
-	glog.V(4).Infoln(url)
-	request, _ := http.NewRequest("GET", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	resp, err := k.client.Do(request)
-	if err != nil {
-		glog.Error(err)
+	request := k.kubeGo.Pods(pid).GetLogs(podName, &podLogOptions)
+
+	readCloser, err := request.Stream()
+
+	if err == nil{
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(readCloser)
+		return buf.String(), nil
+	}else{
 		return "", err
-	} else {
-		if resp.StatusCode == http.StatusOK {
-			data, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return "", err
-			}
-			return string(data), nil
-		} else {
-			glog.Warningf("Failed to get Kubernetes services: %s %d", resp.Status, resp.StatusCode)
-		}
 	}
-	return "", err
 }
 
 func (k *KubeHelper) GetPodsStatus(pid string, selector string) (*map[string]string, error) {
