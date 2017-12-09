@@ -483,7 +483,7 @@ func (s *Server) CheckToken(w rest.ResponseWriter, r *rest.Request) {
 			if ok || s.IsAdmin(r) {
 				w.WriteHeader(http.StatusOK)
 			} else {
-				w.WriteHeader(http.StatusUnauthorized)
+				w.WriteHeader(http.StatusForbidden)
 			}
 		}
 	} else {
