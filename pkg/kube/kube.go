@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -19,9 +18,6 @@ import (
 	"github.com/ndslabs/apiserver/pkg/events"
 	ndsapi "github.com/ndslabs/apiserver/pkg/types"
 	"golang.org/x/net/websocket"
-	"k8s.io/kubernetes/pkg/api"
-	//"k8s.io/kubernetes/pkg/client/restclient"
-	//"k8s.io/kubernetes/pkg/client/unversioned/remotecommand"
 	remotecommandserver "k8s.io/kubernetes/pkg/kubelet/server/remotecommand"
 	utilrand "k8s.io/kubernetes/pkg/util/rand"
 	"k8s.io/kubernetes/pkg/client/restclient"
@@ -645,16 +641,16 @@ func (k *KubeHelper) StopController(pid string, name string) error {
 	//	}
 	//}
 	rcs, _ := k.GetReplicationControllers(pid, "name", name)
-	glog.V(4).Infof("Waiting for rc to terminate %s %d\n", name, rcs.Size())
-	for rcs.Size() > 0 {
+	glog.V(4).Infof("Waiting for rc to terminate %s %d\n", name, len(rcs.Items))
+	for len(rcs.Items) > 0 {
 		rcs, _ = k.GetReplicationControllers(pid, "name", name)
 		time.Sleep(time.Second * 1)
 	}
 
 	stopped := map[string]int{}
 	pods, _ := k.GetPods(pid, "name", name)
-	glog.V(4).Infof("Waiting for pods to terminate %s %d\n", name, pods.Size())
-	for pods.Size() > 0 {
+	glog.V(4).Infof("Waiting for pods to terminate %s %d\n", name, len(pods.Items))
+	for len(pods.Items) > 0 {
 		for _, pod := range pods.Items {
 			if stopped[pod.Name] != 1 {
 				err := k.stopPod(pid, pod.Name)
@@ -738,6 +734,7 @@ func (k *KubeHelper) GetLog(pid string, podName string, tailLines int) (string, 
 }
 
 func (k *KubeHelper) GetPodsStatus(pid string, selector string) (*map[string]string, error) {
+
 
 	// Get the pods for this stack
 	podStatus := make(map[string]string)
@@ -966,19 +963,19 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 		},
 	}
 
-	//if spec.ReadyProbe.Path != "" {
-	//	if spec.ReadyProbe.Type == "http" {
-	//		k8template.Spec.Containers[0].ReadinessProbe = k.createHttpProbe(spec.ReadyProbe.Path, spec.ReadyProbe.Port,
-	//			spec.ReadyProbe.InitialDelay, 3)
-	//		//k8template.Spec.Containers[0].LivenessProbe = k.createHttpProbe(spec.ReadyProbe.Path,
-	//		//	spec.ReadyProbe.Port, spec.ReadyProbe.Timeout, 2)
-	//	} else if spec.ReadyProbe.Type == "tcp" {
-	//		k8template.Spec.Containers[0].ReadinessProbe = k.createTcpProbe(spec.ReadyProbe.Port,
-	//			spec.ReadyProbe.InitialDelay, 3)
-	//		//k8template.Spec.Containers[0].LivenessProbe = k.createTcpProbe(spec.ReadyProbe.Port,
-	//		//	spec.ReadyProbe.Timeout, 2)
-	//	}
-	//}
+	if spec.ReadyProbe.Path != "" {
+		if spec.ReadyProbe.Type == "http" {
+			k8template.Spec.Containers[0].ReadinessProbe = k.createHttpProbe(spec.ReadyProbe.Path, spec.ReadyProbe.Port,
+				spec.ReadyProbe.InitialDelay, 3)
+			k8template.Spec.Containers[0].LivenessProbe = k.createHttpProbe(spec.ReadyProbe.Path,
+				spec.ReadyProbe.Port, spec.ReadyProbe.Timeout, 2)
+		} else if spec.ReadyProbe.Type == "tcp" {
+			k8template.Spec.Containers[0].ReadinessProbe = k.createTcpProbe(spec.ReadyProbe.Port,
+				spec.ReadyProbe.InitialDelay, 3)
+			k8template.Spec.Containers[0].LivenessProbe = k.createTcpProbe(spec.ReadyProbe.Port,
+				spec.ReadyProbe.Timeout, 2)
+		}
+	}
 
 	var replicas int32 = 1
 
@@ -1154,62 +1151,66 @@ func (k *KubeHelper) WatchPods(handler events.EventHandler) {
 	//}
 }
 
-func (k *KubeHelper) GetPod(pid string, name string) (*api.Pod, error) {
+// @TODO: Delete this method. Doesn't look like it is used anywhere
+func (k *KubeHelper) GetPod(pid string, name string) (*v1.Pod, error) {
+	return k.kubeGo.Pods(pid).Get(name)
 
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + name
-	request, _ := http.NewRequest("GET", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	resp, err := k.client.Do(request)
-
-	if err != nil {
-		glog.Error(err)
-		return nil, err
-	} else {
-		if resp.StatusCode == http.StatusOK {
-			data, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				glog.Error(err)
-				return nil, err
-			}
-
-			pod := api.Pod{}
-			json.Unmarshal(data, &pod)
-			return &pod, nil
-		} else {
-			glog.Warningf("Get pod failed (%s): %s %d", name, resp.Status, resp.StatusCode)
-		}
-	}
-	return nil, nil
+	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + name
+	//request, _ := http.NewRequest("GET", url, nil)
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//resp, err := k.client.Do(request)
+	//
+	//if err != nil {
+	//	glog.Error(err)
+	//	return nil, err
+	//} else {
+	//	if resp.StatusCode == http.StatusOK {
+	//		data, err := ioutil.ReadAll(resp.Body)
+	//		if err != nil {
+	//			glog.Error(err)
+	//			return nil, err
+	//		}
+	//
+	//		pod := api.Pod{}
+	//		json.Unmarshal(data, &pod)
+	//		return &pod, nil
+	//	} else {
+	//		glog.Warningf("Get pod failed (%s): %s %d", name, resp.Status, resp.StatusCode)
+	//	}
+	//}
+	//return nil, nil
 }
 
-func (k *KubeHelper) GetReplicationController(pid string, name string) (*api.ReplicationController, error) {
+// @TODO: Delete this method. Doesn't look like it is used anywhere
+func (k *KubeHelper) GetReplicationController(pid string, name string) (*v1.ReplicationController, error) {
+	return k.kubeGo.ReplicationControllers(pid).Get(name)
 
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers/" + name
-	request, _ := http.NewRequest("GET", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	resp, err := k.client.Do(request)
-
-	if err != nil {
-		glog.Error(err)
-		return nil, err
-	} else {
-		if resp.StatusCode == http.StatusOK {
-			data, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				glog.Error(err)
-				return nil, err
-			}
-
-			rc := api.ReplicationController{}
-			json.Unmarshal(data, &rc)
-			return &rc, nil
-		} else {
-			glog.Warningf("Get replicationcontroller failed (%s): %s %d", name, resp.Status, resp.StatusCode)
-		}
-	}
-	return nil, nil
+	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers/" + name
+	//request, _ := http.NewRequest("GET", url, nil)
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//resp, err := k.client.Do(request)
+	//
+	//if err != nil {
+	//	glog.Error(err)
+	//	return nil, err
+	//} else {
+	//	if resp.StatusCode == http.StatusOK {
+	//		data, err := ioutil.ReadAll(resp.Body)
+	//		if err != nil {
+	//			glog.Error(err)
+	//			return nil, err
+	//		}
+	//
+	//		rc := api.ReplicationController{}
+	//		json.Unmarshal(data, &rc)
+	//		return &rc, nil
+	//	} else {
+	//		glog.Warningf("Get replicationcontroller failed (%s): %s %d", name, resp.Status, resp.StatusCode)
+	//	}
+	//}
+	//return nil, nil
 }
 
 func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHelper) *websocket.Handler {
@@ -1596,15 +1597,10 @@ func (k *KubeHelper) CreateSecret(pid string, secret *v1.Secret) (*v1.Secret, er
 	//return nil, nil
 }
 
-func (k *KubeHelper) DeleteSecret(pid string, name string) (*v1.Secret, error) {
-	oldSecret, err := k.GetSecret(pid, name)
+func (k *KubeHelper) DeleteSecret(pid string, name string)  error {
 
-	if err != nil {
-		return nil,fmt.Errorf("Error retreiving old secret %s for account %s: %s - %s\n", name, err.Error())
-	} else {
-		deleteOptions := v1.DeleteOptions{}
-		return oldSecret, k.kubeGo.Secrets(pid).Delete(name, &deleteOptions)
-	}
+	deleteOptions := v1.DeleteOptions{}
+	return k.kubeGo.Secrets(pid).Delete(name, &deleteOptions)
 
 	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/secrets/" + name
 	//glog.V(4).Infoln(url)
@@ -1662,32 +1658,35 @@ func (k *KubeHelper) GetSecret(pid string, secretName string) (*v1.Secret, error
 	//return nil, nil
 }
 
-func (k *KubeHelper) GetResourceQuota(pid string) (*api.ResourceQuotaList, error) {
+func (k *KubeHelper) GetResourceQuota(pid string) (*v1.ResourceQuotaList, error) {
 
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/resourcequotas/"
-	glog.V(4).Infoln(url)
-	request, _ := http.NewRequest("GET", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return nil, httperr
-	} else {
-		if httpresp.StatusCode == http.StatusOK {
-			data, err := ioutil.ReadAll(httpresp.Body)
-			if err != nil {
-				return nil, err
-			}
+	resourceListOptions := v1.ListOptions{ }
+	return k.kubeGo.ResourceQuotas(pid).List(resourceListOptions)
 
-			quota := api.ResourceQuotaList{}
-			json.Unmarshal(data, &quota)
-			return &quota, nil
-		} else {
-			return nil, fmt.Errorf("Error getting quota for account %s: %s\n", pid, httpresp.Status)
-		}
-	}
-	return nil, nil
+	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/resourcequotas/"
+	//glog.V(4).Infoln(url)
+	//request, _ := http.NewRequest("GET", url, nil)
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//httpresp, httperr := k.client.Do(request)
+	//if httperr != nil {
+	//	glog.Error(httperr)
+	//	return nil, httperr
+	//} else {
+	//	if httpresp.StatusCode == http.StatusOK {
+	//		data, err := ioutil.ReadAll(httpresp.Body)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//
+	//		quota := api.ResourceQuotaList{}
+	//		json.Unmarshal(data, &quota)
+	//		return &quota, nil
+	//	} else {
+	//		return nil, fmt.Errorf("Error getting quota for account %s: %s\n", pid, httpresp.Status)
+	//	}
+	//}
+	//return nil, nil
 }
 
 // Execute an arbitrary command in the specified pod and return stdout
