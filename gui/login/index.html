@@ -62,6 +62,9 @@
     <!-- ng-view tells angular that we will swap in templates for the route specified by app.js (via ngRoute) -->
     <div class="container" id="appContent" ng-view></div>
     
+    <!-- Safari doesn't seem to respect margins on <div>, so we use CSS height some artificial space in here -->
+    <div id="artificialMargin"></div>
+    
     <div ng-include src="'../shared/footer/footer.html'" ng-controller="FooterController"></div>
     
     <!-- Detect and prompt users to update incompatible browsers -->
