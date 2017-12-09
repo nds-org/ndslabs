@@ -18,7 +18,7 @@ angular
     $rootScope.rd = encodeURIComponent(ReturnRoute);
   }
       
-  var url = '/app/api/swagger.yaml';
+  var url = '/swagger.yaml';
   
   $scope.productName = ProductName;
   $scope.swaggerSpec = '';

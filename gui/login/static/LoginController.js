@@ -43,7 +43,7 @@ angular
     }).then(function(data, xhr) {
       $scope.errorMessage = '';
       
-      // TODO: Eventually, cauth server will set this for us.. for now, set the cookie here
+      // TODO: cauth server should set this for us, but doesn't seem to be working
       // FIXME: parameterize domain or connect to cauth endpoint
       $cookies.put('namespace', $scope.settings.namespace, CookieOptions);
       $cookies.put('token', data.token, CookieOptions);

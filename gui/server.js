@@ -1,28 +1,29 @@
 // Import utilities
-const util = require('util');
+const path = require('path');
+const http = require('http');
+const request = require('request');
 
 // Import winston for logging
 const winston = require('winston');
 
 // Import express and middleware modules
 const express = require('express');
-const compression = require('compression')
+const compression = require('compression');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
-const cookieOpts = { domain: process.env.DOMAIN || 'local.ndslabs.org' };
+// Cookies options must be EXACTLY the same to properly clear a cookie
+const secureCookie = process.env.API_SECURE || true;
+const cookieDomain = '.' + (process.env.DOMAIN || 'local.ndslabs.org');
+const cookieOpts = { domain: cookieDomain, path: '/', secure: secureCookie };
 
 // Declare a new express app
 const app = express();
 
 const basedir = process.env.BASEDIR;
 const port = 3000;
-
-const path = require('path');
-const http = require('http');
-const request = require('request');
 
 // Build up a Workbench API URL
 const apiProtocol = 'http:'; // HTTP, since this isn't going through the loadbalancer
@@ -34,7 +35,7 @@ if (apiPort) { apiBase += ':' + apiPort }
 if (apiPath) { apiBase += apiPath }
 
 // Configure gzip compression
-app.use(compression())
+app.use(compression());
 
 // Configure HTTP parser middleware (only log HTTP errors)
 app.use(morgan('combined', {
@@ -57,6 +58,7 @@ app.use('/dashboard', express.static('dashboard'));
 app.use('/shared', express.static('shared'));
 app.use('/asset', express.static('asset'));
 app.use('/ConfigModule.js', express.static('ConfigModule.js'));
+app.use('/swagger.yaml', express.static('swagger.yaml'));
 
 // Use optimized versions of the images (drop-in)
 app.use('/asset/png', express.static('dist/png'));
@@ -123,7 +125,7 @@ app.post('/logs', function (req, res) {
   }
 
   // Return success
-  res.status(201).send("Successfully POSTed to server logs!\n")
+  res.status(201).send("Successfully POSTed to server logs!\n");
 });
 
 /** AngularJS app paths here */
@@ -157,8 +159,10 @@ app.get('/healthz', function(req, res){
 
 // Simple auth endpoint
 app.post('/cauth/login', bodyParser.urlencoded({ extended: false }), function (req, res) {
+  
   // Pull username/password from POST body
-  const username = req.body.username;
+  let username = req.body.username;
+  logger.log("info", "Logging in: " + username);
   let postData = { 
       username: username, 
       password: req.body.password 
@@ -192,15 +196,16 @@ app.post('/cauth/login', bodyParser.urlencoded({ extended: false }), function (r
       res.sendStatus(status);
     } else {
       let body = JSON.parse(responseBody);
+      let tokenString = body.token;
+      logger.log('info', `Logged in as ${username}: ${tokenString}`);
       
-      if (body.token) {
+      if (tokenString) {
           // Attach token to response as a cookie
-          res.cookie('token', body.token, cookieOpts);
+          res.cookie('token', tokenString, cookieOpts);
           res.cookie('namespace', username, cookieOpts);
           res.sendStatus(status);
       } else {
-          res.status(500);
-          res.send("No token was provided.");
+          res.sendStatus(401);
       }
     }
   });
@@ -220,7 +225,7 @@ app.get('/cauth/auth', function(req, res) {
   // No token? Denied.
   let token = req.cookies['token'];
   //logger.log('info', "", "Checking user session: " + token);
-  console.log("Checking user session: ", token);
+  logger.log("info", "Checking user session: " + token);
   
   if (!token) {
       res.sendStatus(401);
@@ -276,10 +281,9 @@ app.get('/cauth/auth', function(req, res) {
 app.get('/cauth/logout', function (req, res) {
   // TODO: Delete session somehow?
 
-  res.status(501);
-  res.send('STUB: Session deleted!');
-  res.clearCookie("token");
-  res.clearCookie("namespace");
+  res.clearCookie("token", cookieOpts);
+  res.clearCookie("namespace", cookieOpts);
+  res.sendStatus(501);
 });
 
 // Configure catch-all route to serve up our AngularJS app
@@ -290,6 +294,6 @@ app.get('*', function(req, res){
 
 // Start up our server
 app.listen(port, function () {
-  console.log('Workbench Login API listening on port', port)
+  console.log('Workbench Login API listening on port', port);
   console.log('Connecting to Workbench API server at ' + apiBase);
 });
