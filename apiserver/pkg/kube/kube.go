@@ -1153,7 +1153,12 @@ func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHe
 			}
 		}()
 
-		err = e.Stream(remotecommandserver.SupportedStreamingProtocols, inr, outw, nil, true)
+		err = e.Stream(remotecommand.StreamOptions{
+			SupportedProtocols: remotecommandserver.SupportedStreamingProtocols,
+			Stdin:              inr,
+			Stdout:             outw,
+			Tty:                true,
+		})
 		if err != nil {
 			glog.Error(err)
 			return
@@ -1374,7 +1379,7 @@ func (k *KubeHelper) DeleteIngress(pid string, name string) (*extensions.Ingress
 	return nil, nil
 }
 
-func (k *KubeHelper) CreateBasicAuthSecret(pid string, username string, hashedPassword string) (*api.Secret, error) {
+func (k *KubeHelper) CreateBasicAuthSecret(pid string, username string, email string, hashedPassword string) (*api.Secret, error) {
 	secret, _ := k.GetSecret(pid, "basic-auth")
 	if secret != nil {
 		k.DeleteSecret(pid, "basic-auth")
@@ -1386,7 +1391,7 @@ func (k *KubeHelper) CreateBasicAuthSecret(pid string, username string, hashedPa
 			Namespace: pid,
 		},
 		Data: map[string][]byte{
-			"auth": []byte(fmt.Sprintf("%s:%s", username, string(hashedPassword))),
+			"auth": []byte(fmt.Sprintf("%s:%s\n%s:%s", username, string(hashedPassword), email, hashedPassword)),
 		},
 	}
 	return k.CreateSecret(pid, secret)
@@ -1558,7 +1563,13 @@ func (k *KubeHelper) ExecCommand(pid string, pod string, command []string) (stri
 
 	localOut := &bytes.Buffer{}
 	localErr := &bytes.Buffer{}
-	err = e.Stream(remotecommandserver.SupportedStreamingProtocols, nil, localOut, localErr, false)
+	err = e.Stream(remotecommand.StreamOptions{
+		SupportedProtocols: remotecommandserver.SupportedStreamingProtocols,
+		Stdin:              nil,
+		Stdout:             localOut,
+		Stderr:             localErr,
+		Tty:                true,
+	})
 	return localOut.String(), err
 }
 
