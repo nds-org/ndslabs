@@ -33,8 +33,8 @@ import (
 
 	"k8s.io/client-go/tools/clientcmd"
 
-	"k8s.io/kubernetes/pkg/watch"
 	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/watch"
 )
 
 var adminUser = "admin"
@@ -569,12 +569,12 @@ func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 			glog.V(4).Infof("Usage: %d %d \n", usedMemory.Value(), hardMemory.Value())
 
 			account.ResourceUsage = api.ResourceUsage{
-				CPU:       usedCPU.String(),
-				Memory:    usedMemory.String(),
-				CPUPct:    fmt.Sprintf("%f",
-					float64(usedCPU.Value()) / float64(hardCPU.Value())),
+				CPU:    usedCPU.String(),
+				Memory: usedMemory.String(),
+				CPUPct: fmt.Sprintf("%f",
+					float64(usedCPU.Value())/float64(hardCPU.Value())),
 				MemoryPct: fmt.Sprintf("%f",
-					float64(usedMemory.Value()) / float64(hardMemory.Value())),
+					float64(usedMemory.Value())/float64(hardMemory.Value())),
 			}
 		}
 		account.Password = ""
@@ -1619,12 +1619,13 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 // Create the Kubernetes service and ingress rules
 func (s *Server) createKubernetesService(userId string, stack *api.Stack, spec *api.ServiceSpec) (*v1.Service, error) {
 	name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
+	glog.V(4).Infof("createKubernetesService %s %s\n", userId, name)
 	template := s.kube.CreateServiceTemplate(name, stack.Id, spec, s.useNodePort())
 
-	svc, err := s.kube.GetService(userId, name)
-	if svc == nil {
+	svc, _ := s.kube.GetService(userId, name)
+	if svc.Name == "" {
 		glog.V(4).Infof("Starting Kubernetes service %s\n", name)
-		svc, err = s.kube.StartService(userId, template)
+		svc, err := s.kube.StartService(userId, template)
 		if err != nil {
 			glog.Errorf("Error starting service %s\n", name)
 			glog.Error(err)
