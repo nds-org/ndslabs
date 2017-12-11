@@ -125,12 +125,13 @@ func (s *EmailHelper) SendNewAccountEmail(account *api.Account, approveUrl strin
 }
 
 // Send approve/deny status email
-func (s *EmailHelper) SendStatusEmail(name string, username string, address string, url string, approved bool) error {
+func (s *EmailHelper) SendStatusEmail(name string, username string, address string, url string, nexturl string, approved bool) error {
 	data := struct {
 		Name          string
 		Username      string
 		Email         string
 		Link          string
+		ServiceLink   string
 		SupportEmail  string
 		WorkbenchName string
 	}{
@@ -138,6 +139,7 @@ func (s *EmailHelper) SendStatusEmail(name string, username string, address stri
 		Username:      username,
 		Email:         address,
 		Link:          url,
+		ServiceLink:   nexturl,
 		SupportEmail:  s.SupportEmail,
 		WorkbenchName: s.WorkbenchName,
 	}
@@ -245,7 +247,7 @@ func (s *EmailHelper) sendEmail(to string, subject string, body string) (bool, e
 	subject = "Subject: " + subject + "\n"
 	msg := []byte(from + subject + mime + "\n" + body)
 
-	glog.V(4).Infof("Sending email to %s %s", to, subject)
+	glog.V(4).Infof("Sending email to %s %s\n%s", to, subject, body)
 
 	c, err := smtp.Dial(fmt.Sprintf("%s:%d", s.Server, s.port))
 	if err != nil {

@@ -1030,3 +1030,34 @@ func (c *Client) SetLogLevel(level string) error {
 		return errors.New(resp.Status)
 	}
 }
+
+func (c *Client) QuickStartStack(spec string) (*api.Stack, error) {
+
+	url := c.BasePath + "start?key=" + spec
+
+	request, err := http.NewRequest("GET", url, nil)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))
+	resp, err := c.HttpClient.Do(request)
+	if err != nil {
+		return nil, err
+	} else {
+		if resp.StatusCode == http.StatusOK {
+			defer resp.Body.Close()
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return nil, err
+			}
+
+			stack := api.Stack{}
+			err = json.Unmarshal([]byte(body), &stack)
+			if err != nil {
+				return nil, err
+			}
+
+			return &stack, nil
+		} else {
+			return nil, errors.New(resp.Status)
+		}
+	}
+}

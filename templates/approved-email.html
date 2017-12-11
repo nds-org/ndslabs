@@ -5,7 +5,20 @@
 <p>
 Hello {{.Name}}, 
 <br/><br/>
-Your {{.WorkbenchName}} account has been approved.  You should now be able to login at <a href="{{.Link}}">{{.Link}}</a>. Using either your username "{{.Username}}" or email address "{{.Email}}".
+
+Your {{.WorkbenchName}} account has been approved.  
+
+{{ if .ServiceLink }}
+
+You should now be able to access the requested application <a href="{{.ServiceLink}}">{{.ServiceLink}}</a> using either your username "{{.Username}}" or email address "{{.Email}}".
+
+Please explore the complete set of {{.WorkbenchName}} services at <a href="{{.Link}}">{{.Link}}</a>.
+
+{{ else }}
+
+You should now be able to login at <a href="{{.Link}}">{{.Link}}</a> using either your username "{{.Username}}" or email address "{{.Email}}".
+
+{{ end }}
 
 <br/><br/>
 Thank you,<br>

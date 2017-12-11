@@ -3,6 +3,7 @@ package etcd
 
 import (
 	"encoding/json"
+	"strings"
 	"time"
 
 	"github.com/ndslabs/apiserver/pkg/crypto"
@@ -101,6 +102,7 @@ func (s *EtcdHelper) PutAccount(uid string, account *api.Account, changePassword
 		}
 		account.Password = hashedPassword
 	}
+	account.EmailAddress = strings.ToLower(account.EmailAddress)
 
 	// Access token used for account registration and approval
 	account.Token = s.crypto.HashString(account.EmailAddress + string(account.Status))
