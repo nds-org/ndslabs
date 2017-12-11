@@ -7,7 +7,7 @@
 angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-filters', 'ndslabs-directives',  'ndslabs-api', 'ngGrid', 'ngTagsInput', 'cgBusy', 
     'ngRoute', 'ngCookies', 'ngMessages', 'ui.bootstrap', 'ngPasswordStrength', 'angular-clipboard', 'ui.pwgen', 'ui.gravatar', 'angular-google-analytics' ])
 
-.constant('DashboardAppPath', '/dashboard')
+.constant('DashboardAppPath', '/dashboard/#')
 
 .constant('HomePathSuffix', '/home')
 .constant('AddServicePathSuffix', '/home/:stackId/add/:service')
@@ -133,29 +133,12 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
         // Remove any token from query string
         $location.search('t', null);
       }
-      
-      // redirect user to landing page
-      //$location.path();
-      //window.location.href = LoginRoute;
     }
+    
+    window.location.href = '/login/';
   };
   
-  /*
-  // Grab saved auth data from cookies and attempt to use the leftover session
-  let token = $cookies.get('token', CookieOptions);
-  let namespace = $cookies.get('namespace', CookieOptions);
-  
-  console.log(`Found token for namespace ${namespace}:`, token);
-  let path = $location.path();
-  if (token && namespace) {
-    // Pull our token / namespace from cookies
-    authInfo.get().token = token;
-    authInfo.get().namespace = namespace;
-  } else {
-    $log.debug("App started with no token... routing to Login");
-    //window.location.href = LoginRoute;
-    return;
-  }*/
+  $log.debug('Starting token checker...');
   
   // Every so often, check that our token is still valid
   let checkToken = function() {

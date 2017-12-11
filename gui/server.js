@@ -146,7 +146,10 @@ app.get('/dashboard*', function(req, res) { res.redirect('/dashboard/'); });
 
 // Configure a route to our AngularJS dashboard app
 app.get('/', function(req, res){
-  res.sendStatus(404);
+  // TODO: Experiment with using this container as the "Default Backend"
+  //res.sendStatus(404);
+  
+  res.redirect('/landing/');
 });
 
 // Configure a route to our AngularJS dashboard app

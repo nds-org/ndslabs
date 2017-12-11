@@ -10,10 +10,14 @@ angular
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
 .controller('DashboardController', [ '$scope', 'Loading', '$log', '$routeParams', '$location', '$interval', '$q', '$window', '$filter', '$uibModal', '_', 'Project', 'RandomPassword', 'Stack', 'Stacks', 'Specs', 'AutoRefresh', 'AuthInfo',
-      'StackService', 'NdsLabsApi', 'ProductName', 'FileManager',
+      'StackService', 'NdsLabsApi', 'ProductName', 'FileManager', 'QuickStart',
     function($scope, Loading, $log, $routeParams, $location, $interval, $q, $window, $filter, $uibModal, _, Project, RandomPassword, Stack, Stacks, Specs, AutoRefresh, AuthInfo, StackService, NdsLabsApi,
-      ProductName, FileManager) {
+      ProductName, FileManager, QuickStart) {
   "use strict";
+  
+  if ($routeParams.quickstart) {
+    new QuickStart($routeParams.quickstart).launch();
+  }
   
   $scope.fileManager = FileManager;
   

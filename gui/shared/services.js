@@ -13,6 +13,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  */ 
 .constant('_', window._)
 
+/** Helper service to enable/disable "Loading" indicator */
 .factory('Loading', [ '$rootScope', function($rootScope) {
   "use strict";
 
@@ -49,108 +50,61 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
   return ret;
 }])
 
-.constant('FileManagerKey', 'cloudcmd')
-.factory('FileManager', [ '$log', '$filter', '_', 'AutoRefresh', 'Loading', 'FileManagerKey', 'RandomPassword', 'NdsLabsApi', 'Stacks', 'Specs', 'Stack', 'Popup',
-    function($log, $filter, _, AutoRefresh, Loading, FileManagerKey, RandomPassword, NdsLabsApi, Stacks, Specs, Stack, Popup) {
+/** 
+ *  Helper service to add/launch/navigate to a particular application by key 
+ * 
+ *  @constructor
+ *  @param string quickstartKey: The key of the service spec to launch
+ */
+.service('QuickStart', [ '$log', '$filter', '$timeout', '_', 'AutoRefresh', 'NdsLabsApi', 'Popup',
+    function($log, $filter, $timeout, _, AutoRefresh, NdsLabsApi, Popup) {
   "use strict";
-
-  // TODO: Allow user to set their own file manager?
-  var fileManager = {
-    busy: false,
-    launch: function() {
-      var fileMgrKey = FileManagerKey;
-      var navigate = function(stack) {
-        var cc = _.find(stack.services, [ 'service', fileMgrKey ]);
+  return function(quickstartKey) {
+      
+    var quickstart = {
+      busy: false,
+      navigate: function(stack) {
+        var cc = _.find(stack.services, [ 'service', quickstartKey ]);
         var ep = _.head(cc.endpoints);
         if (ep) {
           Popup.open($filter('externalHostPort')(ep));
         }
-      };
-      
-      var startAndNavigate = function(stack) {
-        if (fileManager.busy) {
-          if (stack.status === 'stopping') {
-            alert('You must wait for the File Manager to shut down.');
-            return;
-          } else if (stack.status === 'starting') {
-            alert('The file manager is starting. It will open in a new tab once startup is complete.');
-            return;
-          } else {
-            $log.warning('A mismatch was detected in the file manager busy signal state.');
-          }
-        }
-        
-        if (stack.status !== 'started') {
-          //$scope.launchingFileManager /*= $scope.stopping[stack.id]*/ = true;
-          fileManager.busy = true;
-          return NdsLabsApi.getStartByStackId({
-              'stackId': stack.id
-            }).then(function(started, xhr) {
-              $log.debug('successfully started file manager: ' + stack.id);
-              navigate(started);
-            }, function(headers) {
-              $log.error('failed to start file manager: ' + stack.id);
-            }).finally(function() {
-              //$scope.launchingFileManager /*= $scope.starting[stack.id]*/ = false;
-              fileManager.busy = false;
-            });
-        } else {
-          navigate(stack);
-        }
-      };
-      
-      // Make sure we have ALL of our stacks first
-      return Loading.set(Stacks.populate().then(function(stacks) {
-        // Search for CloudCmd stack
-        var stack = _.find(stacks, [ 'key', fileMgrKey ]);
-        if (stack) {
-          // If found, start it up
-          startAndNavigate(stack);
-        } else {
-          // No Cloud Commander found.. install one
-          var spec = _.find(Specs.all, [ 'key', fileMgrKey ]);
-          
-          if (!spec) {
-            $log.error("No file manager found... aborting...");
-            return;
-          }
-          
-          var app = new Stack(spec);
-          
-          // Randomly generate any required passwords
-          angular.forEach(app.services, function(svc) {
-            var configMap = {};
-            angular.forEach(svc.config, function(cfg) {
-              if (cfg.isPassword) {
-                // TODO: Generate random secure passwords here!
-                cfg.value = RandomPassword.generate();
-              }
-              
-              configMap[cfg.name] = cfg.value;
-            });
-            
-            svc.config = configMap;
-          });
-          
-          // Install this app to etcd
-          return NdsLabsApi.postStacks({ 'stack': app }).then(function(stack, xhr) {
-            $log.debug("successfully posted to /stacks!");
-            
-            startAndNavigate(stack);
-            
-            // Add /the new stack to the UI
-            //Stacks.all.push(stack);
+      },
+      launch: function() {
+        quickstart.busy = true;
+        $timeout(function() {
+          AutoRefresh.start();
+        }, 1000);
+        return NdsLabsApi.getStart({
+            'key': quickstartKey
+          }).then(function(started, xhr) {
+            $log.debug('Successfully started quickstartKey=' + quickstartKey + ', stackId=' + started);
+            quickstart.navigate(started);
           }, function(headers) {
-            $log.error("error posting to /stacks!");
+            $log.error('Failed to start quickstartKey=' + quickstartKey);
+            alert(`Failed to start ${quickstartKey}. Please be sure that this application is available on your system.`);
+          }).finally(function() {
+            quickstart.busy = false;
           });
-        }
-      }));
-    }
+      }
+    };
+    
+    return quickstart;
   };
-  
-  return fileManager;
 }])
 
+// TODO: Allow user to set their own file manager?
+.constant('FileManagerKey', 'cloudcmd')
+
+/** Specialized QuickStart service for launching the FileManager */
+.factory('FileManager', [ 'QuickStart', 'FileManagerKey', 'NdsLabsApi',
+    function(QuickStart, FileManagerKey,  NdsLabsApi) {
+  "use strict";
+
+  return new QuickStart(FileManagerKey);
+}])
+
+/** Helper service for generating random secure passwords */
 .factory('RandomPassword', [ function() {
   "use strict";
 
@@ -167,6 +121,12 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
   };
 }])
 
+/** 
+ *  Decorator service for $log that will forward log messages 
+ *  back to the server to output them in the container logs
+ * 
+ *  See ConfigModule.js
+ */
 .service('Logging', [ '$filter', '$injector', 'AuthInfo', function($filter, $injector, AuthInfo) {
   "use strict";
 
@@ -244,9 +204,9 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
   };
 
   return service;
-
 }])
 
+/** Helper service that will refresh server data without reloading the page */
 .factory('SoftRefresh', [ 'Stacks', 'Project', 'Specs', function(Stacks, Project, Specs) {
   "use strict";
 
@@ -272,6 +232,10 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  return refresh;
 }])
 
+/** 
+ *  Helper service that will automatically refresh server data 
+ *  every 5 seconds without reloading the page
+ */
 .factory('AutoRefresh', [ '$interval', '$log', 'SoftRefresh', 'Loading', function($interval, $log, SoftRefresh, Loading) {
   "use strict";
 
@@ -313,10 +277,12 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
   "use strict";
 
   var project = {
+    /** Purge/delete all user account data */
     purge: function() {
       project.project = {};
     },
-    // Grab the project associated with our current namespace
+    
+    /** Grab the project associated with our current namespace */
     populate: function(projectId) {
       return Loading.setNavbarLoading(NdsLabsApi.getAccountsByAccountId({ 
         "accountId": projectId 
@@ -329,6 +295,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
         $log.debug("Error pulling account information: " + projectId);
       });
     },
+    
+    /** Generates a new Project object */
     create: function() {
       return {
         name: '',
@@ -340,7 +308,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
         passwordConfirmation: ''
       };
     },
-    // An empty place-holder for our project data
+    
+    /** Lazy-loaded field for housing project data */
     project: {}
   };
     
@@ -355,12 +324,12 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 
   // An empty place-holder for our service/stack specs
   var specs = {
+    /** Purge/delete all catalog data */
     purge: function() {
       specs.all = specs.stacks = specs.deps = [];
     },
-    /**
-     * Grab the current site's available services
-     */ 
+    
+    /** Grab the current site's available services */ 
     populate: function() {
       // Grab the list of available services at our site
       return NdsLabsApi.getServices({ catalog: 'all' }).then(function(data, xhr) {
@@ -394,6 +363,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
         $log.error("error grabbing from /services!");
       });
     },
+    
+    /** Lazy-loaded categories to ease sorting */
     all: [],
     system: [],
     user: [],
@@ -416,12 +387,12 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 
   // An empty place-holder for our deployed stacks
   var stacks = {
+    /** Purge/delete all user stack data */
     purge: function() {
       stacks.all = [];
     },
-     /**
-      * Grab the list of configured stacks in our project
-      */
+    
+    /** Grab the list of configured stacks in our project */
     populate: function(projectId) {
       return NdsLabsApi.getStacks().then(function(data, xhr) {
         $log.debug("successfully grabbed from /projects/" + projectId + "/stacks!");
@@ -432,6 +403,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
         $log.error("error grabbing from /projects/" + projectId + "/stacks!");
       });
     },
+    
+    /** Lazy-loaded categories to ease sorting */
     all: []
   };
   
@@ -446,12 +419,12 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 
   // An empty place-holder for our deployed stacks
   var vocab = {
+    /** Purge/delete all catalog tag data */
     purge: function() {
       vocab.all = [];
     },
-     /**
-      * Grab the list of configured stacks in our project
-      */
+    
+    /** Grab the list of configured stacks in our project */
     populate: function(name) {
       return NdsLabsApi.getVocabularyByVocabName({ vocabName: name }).then(function(data, xhr) {
         $log.debug("successfully grabbed vocab list for " + name + "!");
@@ -461,6 +434,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
         $log.error("error grabbing vocab list!");
       });
     },
+    
+    /** Lazy-loaded categories to ease sorting */
     all: []
   };
   
@@ -585,7 +560,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
 }])
 
 /**
- * 
+ * A shared storage wrapper for all data pulled from the server
  */
 .factory('ServerData', [ '$log', '$q', 'Specs', 'Stacks', 'Project', 'Vocabulary', function($log, $q, Specs, Stacks,  Project, Vocabulary) {
   "use strict";
@@ -622,7 +597,10 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
   return data;
 }])
 
+/** Helper service for navigating to a link (by default, this will open a new tab)  */
 .factory('Popup', [ '$window', 'PopupChecker', function($window, PopupChecker) {
+  "use strict";
+  
   return {
     open: function(url, target) {
       var popup = $window.open(url, target || "_blank");
@@ -631,11 +609,15 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
   };
 }])
 
+/** Helper service for checking if the user has enabled their browser's popup blocker */
 .factory('PopupChecker', [ function() {
+  "use strict";
+  
   var popupBlockerChecker = {
     check: function(popup_window){
       var _scope = this;
       if (popup_window) {
+        // TODO: Look into other browser support here?
         if(/chrome/.test(navigator.userAgent.toLowerCase())){
             setTimeout(function () {
                 _scope._is_popup_blocked(_scope, popup_window);

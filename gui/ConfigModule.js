@@ -340,17 +340,15 @@ angular
   // Grab saved auth data from cookies and attempt to use the leftover session
   var token = $cookies.get('token', CookieOptions);
   var namespace = $cookies.get('namespace', CookieOptions);
-  var auth = $cookies.get('auth', CookieOptions);
-  
-  debugger;
   
   if (token && namespace) {
-    console.log(`Found token for namespace ${namespace}:`, token);
+    $log.debug(`Found token for namespace ${namespace}:`, token);
+    
     // Pull our token / namespace from cookies
     AuthInfo.get().token = token;
     AuthInfo.get().namespace = namespace;
   } else {
-    $log.debug("No token detected");
+    $log.debug("WARNING: No token detected");
     return;
   }
 }]);
