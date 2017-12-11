@@ -9,8 +9,8 @@ angular
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
  
-.controller('HelpController', [ '$scope', '$rootScope', '$routeParams', '$timeout', 'NdsLabsApi', 'ProductName', 'SupportEmail', 'ReturnRoute',
-    function($scope, $rootScope, $routeParams, $timeout, NdsLabsApi, ProductName, SupportEmail, ReturnRoute) {
+.controller('HelpController', [ '$scope', '$rootScope', '$routeParams', '$timeout', 'NdsLabsApi', 'ProductName', 'SupportEmail', 'ReturnRoute', 'AuthInfo',
+    function($scope, $rootScope, $routeParams, $timeout, NdsLabsApi, ProductName, SupportEmail, ReturnRoute, AuthInfo) {
   "use strict";
   
   $rootScope.rd = '';
@@ -18,6 +18,8 @@ angular
     ReturnRoute = $routeParams.rd;
     $rootScope.rd = encodeURIComponent(ReturnRoute);
   }
+  
+  $scope.auth = AuthInfo.get();
 
   $scope.types = [
     { label: "Request Help", value: "help", placeholder: "Describe a specific scenario that is causing problems or preventing you from working in " + ProductName + "..." },
@@ -27,8 +29,6 @@ angular
   ];
   
   $scope.productName = ProductName;
-  
-  $scope.forms = {};
     
   NdsLabsApi.getContact().then(function(contact) {
     $scope.support = contact;
@@ -39,4 +39,43 @@ angular
       { id: "email", label: "Support E-mail", url:  "mailto:" + SupportEmail, icon: "fa-envelope", description: "Ask for support via free-form e-mail" },
     ];
   });
+  
+  $scope.forms = {};
+  $scope.status = 'unsent';
+  
+  /** Resets the "Submit Feedback" form */
+  ($scope.resetForm = function() {
+    var request = $scope.request = {
+        "anonymous": false, 
+        "type": $scope.types[0].value, 
+        "message": ""
+    };
+    return request;
+  })(); // jshint ignore:line
+  
+  /** Disable "anonymous" checkbox for "help" requests */
+  $scope.$watch('request.type', function(newValue, oldValue) {
+    if (newValue === 'help') {
+      $scope.request.anonymous = false;
+    }
+  });
+  
+  $scope.submitFeedback = function() {
+    if ($scope.status !== 'unsent') {
+      return;
+    }
+    
+    $scope.status = "sending";
+    return NdsLabsApi.postSupport({ support: $scope.request }).then(function(data) {
+      $scope.resetForm();
+      $scope.forms.supportForm.messageField.$pristine = true;
+      $scope.status = "sent";
+      $timeout(function() {
+        $scope.status = 'unsent';
+      }, 5000);
+    }, function() {
+      $scope.status = "error";
+    });
+  };
+  
 }]);

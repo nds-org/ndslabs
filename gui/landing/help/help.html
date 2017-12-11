@@ -34,4 +34,53 @@
   
   <hr>
   
+  <!-- FIXME: Form validation appears broken for "Request Help" -->
+  <!--<div class="row" ng-show="auth.token">
+      <div class="col-sm-12" ng-controller="HelpController">
+          <h4>Feedback and Support</h4>
+          <p>Please include as much detail as possible when submitting your request.</p>
+  
+          <form name="forms['supportForm']" ng-submit="submitFeedback()">
+            <div class="form-group">
+              <label for="typeField">Type of Request</label>
+              <div class="input-group">
+                <select class="form-control" id="typeField" name="typeField" ng-model="request.type" required>
+                  <option ng-repeat="type in types" value="{{ type.value }}">{{ type.label }}</option>
+                </select>
+                <span class="input-group-addon">
+                  <div class="checkbox" id="checkboxAddon">
+                    <label>
+                      <input id="anonymousInput" name="anonymousInput" type="checkbox" ng-disabled="request.type === 'help'" ng-model="request.anonymous"> Send message anonymously?
+                    </label>
+                  </div>
+                </span>
+              </div>
+              
+              <ng-messages class="alert-danger" role="alert" for="forms['supportForm'].typeField.$error">
+                  <ng-message when="required">You must select a type of support to request.</ng-message>
+              </ng-messages>
+            </div>
+              
+            <div class="form-group" ng-class="{ 
+                'has-error has-feedback': !forms['supportForm'].messageField.$pristine && forms['supportForm'].messageField.$invalid, 
+                'has-success has-feedback': !forms['supportForm'].messageField.$pristine && forms['supportForm'].messageField.$valid }">
+              <label for="messageField">Message</label>
+              <textarea class="form-control" id="messageField" name="messageField" type="text" ng-model="request.message" placeholder="{{ _.find(types, [ 'value', request.type ]).placeholder }}" required ng-minlength="20"></textarea>
+              
+              <span class="form-control-feedback glyphicon" ng-if="!forms['supportForm'].messageField.$pristine"
+                  ng-class="{ 'glyphicon-remove': forms['supportForm'].messageField.$invalid, 'glyphicon-ok': forms['supportForm'].messageField.$valid }"></span>
+              
+              <ng-messages class="alert-danger" role="alert" for="forms['supportForm'].messageField.$error" ng-if="!forms['supportForm'].messageField.$pristine">
+                  <ng-message when="required">You must attach a message to your support request.</ng-message>
+                  <ng-message when="minlength">Your message must be at least 20 characters.</ng-message>
+              </ng-messages>
+            </div>
+            
+            <button id="feedbackBtn" type="submit" class="btn btn-primary pull-right" ng-class="{ 'btn-primary': status !== 'sent', 'btn-success': status === 'sent' }" 
+                  type="submit" ng-disabled="!forms['supportForm'].$valid || status !== 'unsent'">
+              <i class="fa fa-fw" ng-class="{ 'fa-send': status === 'unsent', 'fa-spinner fa-spin': status === 'sending', 'fa-check': status === 'sent' }" ></i>
+            </button>
+          </form>
+      </div>
+  </div>-->
 </section>
