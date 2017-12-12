@@ -114,7 +114,7 @@ func main() {
 
 	kube, err := kube.NewKubeHelper(cfg.Kubernetes.Address,
 		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath,
-		fmt.Sprintf("%s/", cfg.Origin))
+		cfg.AuthSignInURL, cfg.AuthURL)
 	if err != nil {
 		glog.Errorf("Kubernetes API server not available\n")
 		glog.Fatal(err)

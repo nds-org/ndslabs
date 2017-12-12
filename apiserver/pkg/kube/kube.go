@@ -44,15 +44,17 @@ type ServiceAddrPort struct {
 }
 
 type KubeHelper struct {
-	kubeBase     string
-	client       *http.Client
-	username     string
-	password     string
-	token        string
-	authEndpoint string
+	kubeBase      string
+	client        *http.Client
+	username      string
+	password      string
+	token         string
+	authSignInURL string
+	authURL       string
 }
 
-func NewKubeHelper(kubeBase string, username string, password string, tokenPath string, authEndpoint string) (*KubeHelper, error) {
+func NewKubeHelper(kubeBase string, username string, password string, tokenPath string,
+	authSignInURL string, authURL string) (*KubeHelper, error) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -72,7 +74,8 @@ func NewKubeHelper(kubeBase string, username string, password string, tokenPath 
 		kubeHelper.username = username
 		kubeHelper.password = password
 	}
-	kubeHelper.authEndpoint = authEndpoint
+	kubeHelper.authSignInURL = authSignInURL
+	kubeHelper.authURL = authURL
 
 	err := kubeHelper.isRunning()
 
@@ -1208,8 +1211,8 @@ func (k *KubeHelper) CreateIngress(pid string, domain string, service string, po
 
 	annotations := map[string]string{}
 	if enableAuth {
-		annotations["nginx.ingress.kubernetes.io/auth-signin"] = k.authEndpoint + "/login/#/"
-		annotations["nginx.ingress.kubernetes.io/auth-url"] = k.authEndpoint + "/cauth/auth"
+		annotations["nginx.ingress.kubernetes.io/auth-signin"] = k.authSignInURL
+		annotations["nginx.ingress.kubernetes.io/auth-url"] = k.authURL
 	} else {
 		glog.V(4).Info("Removing auth annotations for " + ingress.Name)
 	}
