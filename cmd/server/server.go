@@ -2,7 +2,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -343,7 +342,6 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 		rest.Post(s.prefix+"import/:userId", s.ImportAccount),
 		rest.Get(s.prefix+"export/:userId", s.ExportAccount),
 		rest.Get(s.prefix+"stop_all", s.StopAllStacks),
-		rest.Put(s.prefix+"mount/:sid", s.PutDataset),
 		rest.Put(s.prefix+"log_level/:level", s.PutLogLevel),
 	)
 
@@ -3066,98 +3064,6 @@ func readConfig(path string) (*config.Config, error) {
 		return nil, err
 	}
 	return &config, nil
-}
-
-// Mount data into the user's home directory. Delegate actual work to data-mounting service
-func (s *Server) PutDataset(w rest.ResponseWriter, r *rest.Request) {
-	userId := s.getUser(r)
-	sid := r.PathParam("sid")
-
-	dataset := api.Dataset{}
-	err := r.DecodeJsonPayload(&dataset)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	stack, err := s.etcd.GetStack(userId, sid)
-	if stack == nil {
-		glog.Errorf("Stack %s not found for user %s", sid, userId)
-		rest.NotFound(w, r)
-		return
-	}
-
-	if len(stack.Services) > 1 {
-		rest.Error(w, "Cannot mount data into multi-service stack", http.StatusConflict)
-		return
-	}
-
-	// Get sole stack service
-	stackService := stack.Services[0]
-
-	// Get the default mount path from spec
-	servicePath := ""
-	spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
-	if spec != nil {
-		for _, mount := range spec.VolumeMounts {
-			for vpath, value := range stackService.VolumeMounts {
-				if value == mount.MountPath {
-					if len(spec.VolumeMounts) == 1 || mount.Default {
-						servicePath = vpath
-					}
-				}
-			}
-		}
-	}
-
-	// Get the path in the user's home directory where dataset will be
-	// mounted/copied
-	dataPath := s.getHomeVolume().Path + "/" + userId + "/" + servicePath + "/data"
-	err = os.MkdirAll(dataPath, 0777)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Delegate the mount request
-	dataset.LocalPath = dataPath
-	err = s.mountData(&dataset)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-	} else {
-		w.WriteHeader(http.StatusOK)
-	}
-}
-
-// Delegate mount/fetch request to data-provider service
-func (s *Server) mountData(dataset *api.Dataset) error {
-
-	if s.Config.DataProviderURL != "" {
-		client := http.Client{}
-		data, err := json.Marshal(dataset)
-		request, err := http.NewRequest("POST",
-			s.Config.DataProviderURL+"/mount", bytes.NewBuffer([]byte(data)))
-		if err != nil {
-			return err
-		}
-		request.Header.Set("Content-Type", "application/json")
-		resp, err := client.Do(request)
-		if err != nil {
-			return err
-		} else {
-			if resp.StatusCode == http.StatusOK {
-				return nil
-			} else {
-				return fmt.Errorf("Error from data provider: %d", resp.StatusCode)
-			}
-		}
-	} else {
-		glog.Error("MountData called with empty dataProviderURL")
-	}
-	return nil
 }
 
 func (s *Server) shutdownInactiveServices() {

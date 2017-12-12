@@ -18,7 +18,6 @@ type Config struct {
 	HomeVolume      string        `json:"homeVolume"`
 	Volumes         []Volume      `json:"volumes"`
 	Support         SupportLinks  `json:"support"`
-	DataProviderURL string        `json:"dataProviderURL"`
 }
 
 type SupportLinks struct {
