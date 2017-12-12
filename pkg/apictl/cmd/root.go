@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	apiclient "github.com/ndslabs/apiserver/pkg/apictl/client"
 	"github.com/spf13/cobra"
@@ -51,10 +52,11 @@ func Connect(cmd *cobra.Command, args []string) {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
+	clientTimeout := 30 * time.Second
 	if server[0:5] == "https" {
-		client = apiclient.NewClient(server, &http.Client{Transport: tr}, apiUser.token)
+		client = apiclient.NewClient(server, &http.Client{Transport: tr, Timeout: clientTimeout}, apiUser.token)
 	} else {
-		client = apiclient.NewClient(server, &http.Client{}, apiUser.token)
+		client = apiclient.NewClient(server, &http.Client{Timeout: clientTimeout}, apiUser.token)
 	}
 }
 func RefreshToken(cmd *cobra.Command, args []string) {
