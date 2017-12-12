@@ -14,14 +14,14 @@ import (
 	"strings"
 	"time"
 
-	config "github.com/ndslabs/apiserver/pkg/config"
-	email "github.com/ndslabs/apiserver/pkg/email"
-	etcd "github.com/ndslabs/apiserver/pkg/etcd"
-	kube "github.com/ndslabs/apiserver/pkg/kube"
+	"github.com/ndslabs/apiserver/pkg/config"
+	"github.com/ndslabs/apiserver/pkg/email"
+	"github.com/ndslabs/apiserver/pkg/etcd"
+	"github.com/ndslabs/apiserver/pkg/kube"
 	mw "github.com/ndslabs/apiserver/pkg/middleware"
 	api "github.com/ndslabs/apiserver/pkg/types"
-	validate "github.com/ndslabs/apiserver/pkg/validate"
-	version "github.com/ndslabs/apiserver/pkg/version"
+	"github.com/ndslabs/apiserver/pkg/validate"
+	"github.com/ndslabs/apiserver/pkg/version"
 	k8api "k8s.io/kubernetes/pkg/api"
 	//"k8s.io/kubernetes/pkg/watch"
 
@@ -33,8 +33,8 @@ import (
 
 	"k8s.io/client-go/tools/clientcmd"
 
-	"k8s.io/kubernetes/pkg/watch"
 	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/watch"
 )
 
 var adminUser = "admin"
@@ -569,12 +569,12 @@ func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 			glog.V(4).Infof("Usage: %d %d \n", usedMemory.Value(), hardMemory.Value())
 
 			account.ResourceUsage = api.ResourceUsage{
-				CPU:       usedCPU.String(),
-				Memory:    usedMemory.String(),
-				CPUPct:    fmt.Sprintf("%f",
-					float64(usedCPU.Value()) / float64(hardCPU.Value())),
+				CPU:    usedCPU.String(),
+				Memory: usedMemory.String(),
+				CPUPct: fmt.Sprintf("%f",
+					float64(usedCPU.Value())/float64(hardCPU.Value())),
 				MemoryPct: fmt.Sprintf("%f",
-					float64(usedMemory.Value()) / float64(hardMemory.Value())),
+					float64(usedMemory.Value())/float64(hardMemory.Value())),
 			}
 		}
 		account.Password = ""
