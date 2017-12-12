@@ -18,20 +18,20 @@ import (
 	"github.com/ndslabs/apiserver/pkg/events"
 	ndsapi "github.com/ndslabs/apiserver/pkg/types"
 	"golang.org/x/net/websocket"
-	remotecommandserver "k8s.io/kubernetes/pkg/kubelet/server/remotecommand"
-	utilrand "k8s.io/kubernetes/pkg/util/rand"
 	"k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/client/unversioned/remotecommand"
+	remotecommandserver "k8s.io/kubernetes/pkg/kubelet/server/remotecommand"
+	utilrand "k8s.io/kubernetes/pkg/util/rand"
 
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/pkg/fields"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/pkg/api/resource"
-	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
-	"k8s.io/client-go/pkg/util/intstr"
 	"k8s.io/client-go/pkg/api/unversioned"
+	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	"k8s.io/client-go/pkg/fields"
+	"k8s.io/client-go/pkg/util/intstr"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
 )
 
 var apiBase = "/api/v1"
@@ -51,7 +51,7 @@ type KubeHelper struct {
 	username string
 	password string
 	token    string
-	kubeGo *kubernetes.Clientset
+	kubeGo   *kubernetes.Clientset
 }
 
 func NewKubeHelper(kubeBase string, username string, password string, tokenPath string, kConfig *rest.Config) (*KubeHelper, error) {
@@ -67,10 +67,9 @@ func NewKubeHelper(kubeBase string, username string, password string, tokenPath 
 	kubeGo, k8Err := kubernetes.NewForConfig(kConfig)
 	if k8Err != nil {
 		panic(k8Err.Error())
-	} else{
+	} else {
 		kubeHelper.kubeGo = kubeGo
 	}
-
 
 	if _, err := os.Stat(tokenPath); err == nil {
 		glog.V(4).Infof("Reading token from %s\n", tokenPath)
@@ -158,8 +157,7 @@ func (k *KubeHelper) CreateNamespace(pid string) (*v1.Namespace, error) {
 func (k *KubeHelper) CreateResourceQuota(pid string, cpu int, mem int) (*v1.ResourceQuota, error) {
 	resourceQuota := v1.ResourceQuota{
 		Spec: v1.ResourceQuotaSpec{
-			Hard:
-			v1.ResourceList{
+			Hard: v1.ResourceList{
 				v1.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", cpu)),
 				v1.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", mem)),
 			},
@@ -221,7 +219,7 @@ func (k *KubeHelper) CreateLimitRange(pid string, cpu int, mem int) (*v1.LimitRa
 
 	limitRange := v1.LimitRange{
 		Spec: v1.LimitRangeSpec{
-			Limits: [ ]v1.LimitRangeItem{
+			Limits: []v1.LimitRangeItem{
 				{
 					Type: v1.LimitTypeContainer,
 					Default: v1.ResourceList{
@@ -234,7 +232,6 @@ func (k *KubeHelper) CreateLimitRange(pid string, cpu int, mem int) (*v1.LimitRa
 	}
 
 	return k.kubeGo.LimitRanges(pid).Create(&limitRange)
-
 
 	//
 	//lr := &api.LimitRange{
@@ -326,7 +323,7 @@ func (k *KubeHelper) NamespaceExists(pid string) bool {
 	return ns != nil
 }
 
-func (k *KubeHelper) DeleteNamespace(pid string)  error {
+func (k *KubeHelper) DeleteNamespace(pid string) error {
 	deleteOptions := v1.DeleteOptions{}
 	return k.kubeGo.Namespaces().Delete(pid, &deleteOptions)
 
@@ -366,7 +363,7 @@ func (k *KubeHelper) StartController(pid string, spec *v1.ReplicationController)
 	// Give Kubernetes time to create the pods for the RC
 	time.Sleep(time.Second * 5)
 
-	return rslt !=nil, err
+	return rslt != nil, err
 
 	//// Get ReplicationController spec
 	//data, err := json.MarshalIndent(spec, "", "    ")
@@ -485,7 +482,7 @@ func (k *KubeHelper) GetService(pid string, name string) (*v1.Service, error) {
 
 func (k *KubeHelper) GetServices(pid string, stack string) (*v1.ServiceList, error) {
 	listOptions := v1.ListOptions{
-		LabelSelector: "stack="+stack,
+		LabelSelector: "stack=" + stack,
 	}
 
 	return k.kubeGo.Services(pid).List(listOptions)
@@ -520,7 +517,7 @@ func (k *KubeHelper) GetServices(pid string, stack string) (*v1.ServiceList, err
 }
 func (k *KubeHelper) GetReplicationControllers(pid string, label string, value string) (*v1.ReplicationControllerList, error) {
 	listOptions := v1.ListOptions{
-		LabelSelector: label+"="+value,
+		LabelSelector: label + "=" + value,
 	}
 
 	return k.kubeGo.ReplicationControllers(pid).List(listOptions)
@@ -557,11 +554,10 @@ func (k *KubeHelper) GetReplicationControllers(pid string, label string, value s
 func (k *KubeHelper) GetPods(pid string, label string, value string) (*v1.PodList, error) {
 
 	listOptions := v1.ListOptions{
-		LabelSelector: label+"="+value,
+		LabelSelector: label + "=" + value,
 	}
 
 	return k.kubeGo.Pods(pid).List(listOptions)
-
 
 	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods?labelSelector=" + label + "%3D" + value
 	//request, _ := http.NewRequest("GET", url, nil)
@@ -621,7 +617,7 @@ func (k *KubeHelper) StopController(pid string, name string) error {
 	deleteOptions := v1.DeleteOptions{}
 	rcDeleteErr := k.kubeGo.ReplicationControllers(pid).Delete(name, &deleteOptions)
 
-	if rcDeleteErr != nil{
+	if rcDeleteErr != nil {
 		return rcDeleteErr
 	}
 
@@ -724,17 +720,16 @@ func (k *KubeHelper) GetLog(pid string, podName string, tailLines int) (string, 
 
 	readCloser, err := request.Stream()
 
-	if err == nil{
+	if err == nil {
 		buf := new(bytes.Buffer)
 		buf.ReadFrom(readCloser)
 		return buf.String(), nil
-	}else{
+	} else {
 		return "", err
 	}
 }
 
 func (k *KubeHelper) GetPodsStatus(pid string, selector string) (*map[string]string, error) {
-
 
 	// Get the pods for this stack
 	podStatus := make(map[string]string)
@@ -816,7 +811,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 
 func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, domain string,
 	emailAddress string, smtpHost string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec,
-		links *map[string]ServiceAddrPort, extraVols *[]config.Volume) *v1.ReplicationController {
+	links *map[string]ServiceAddrPort, extraVols *[]config.Volume) *v1.ReplicationController {
 
 	k8rc := v1.ReplicationController{}
 
@@ -1006,7 +1001,7 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 	_, podController := cache.NewInformer(
 		podWatchlist,
 		&v1.Pod{},
-		time.Second * 0,
+		time.Second*0,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				if obj.(*v1.Pod).GetCreationTimestamp().After(startTime) {
@@ -1018,7 +1013,7 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 					fmt.Printf("pod deleted: %s \n", obj.(*v1.Pod).Name)
 				}
 			},
-			UpdateFunc:func(oldObj, newObj interface{}) {
+			UpdateFunc: func(oldObj, newObj interface{}) {
 
 			},
 		},
@@ -1032,7 +1027,7 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 	_, rcController := cache.NewInformer(
 		rcWatchlist,
 		&v1.ReplicationController{},
-		time.Second * 0,
+		time.Second*0,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				if obj.(*v1.ReplicationController).GetCreationTimestamp().After(startTime) {
@@ -1044,7 +1039,7 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 					fmt.Printf("rc deleted: %s \n", obj.(*v1.ReplicationController).Name)
 				}
 			},
-			UpdateFunc:func(oldObj, newObj interface{}) {
+			UpdateFunc: func(oldObj, newObj interface{}) {
 				fmt.Printf("rc changed %s -> %s\n", oldObj.(*v1.ReplicationController).Name, newObj.(*v1.ReplicationController).Name)
 			},
 		},
@@ -1054,57 +1049,57 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 	//for {
 	//	startTime := time.Now()
 	//
-		//url := k.kubeBase + apiBase + "/watch/events"
-		//request, _ := http.NewRequest("GET", url, nil)
-		//request.Header.Set("Content-Type", "application/json")
-		//request.Header.Set("Authorization", k.getAuthHeader())
-		//httpresp, httperr := k.client.Do(request)
-		//if httperr != nil {
-		//	glog.Error(httperr)
-		//	return
-		//} else {
-		//	if httpresp.StatusCode == http.StatusOK {
-		//		reader := bufio.NewReader(httpresp.Body)
-		//		for {
-		//			data, err := reader.ReadBytes('\n')
-		//			if err != nil {
-		//				// EOF error location NDS-372 needs fixing
-		//				//glog.Error(err)
-		//				break
-		//			}
-		//
-		//			wevent := watch.WatchEvent{}
-		//			json.Unmarshal(data, &wevent)
-		//
-		//			event := api.Event{}
-		//
-		//			json.Unmarshal([]byte(wevent.Object.Raw), &event)
-		//
-		//			created := event.LastTimestamp
-		//			if created.After(startTime) {
-		//
-		//				if event.InvolvedObject.Kind == "Pod" {
-		//					pod, err := k.GetPod(event.InvolvedObject.Namespace, event.InvolvedObject.Name)
-		//					if err != nil {
-		//						glog.Error(err)
-		//					}
-		//					if pod != nil {
-		//						handler.HandlePodEvent(wevent.Type, &event, pod)
-		//					}
-		//				} else if event.InvolvedObject.Kind == "ReplicationController" {
-		//					rc, err := k.GetReplicationController(event.InvolvedObject.Namespace,
-		//						event.InvolvedObject.Name)
-		//					if err != nil {
-		//						glog.Error(err)
-		//					}
-		//					if rc != nil {
-		//						handler.HandleReplicationControllerEvent(wevent.Type, &event, rc)
-		//					}
-		//				}
-		//			}
-		//		}
-		//	}
-		//}
+	//url := k.kubeBase + apiBase + "/watch/events"
+	//request, _ := http.NewRequest("GET", url, nil)
+	//request.Header.Set("Content-Type", "application/json")
+	//request.Header.Set("Authorization", k.getAuthHeader())
+	//httpresp, httperr := k.client.Do(request)
+	//if httperr != nil {
+	//	glog.Error(httperr)
+	//	return
+	//} else {
+	//	if httpresp.StatusCode == http.StatusOK {
+	//		reader := bufio.NewReader(httpresp.Body)
+	//		for {
+	//			data, err := reader.ReadBytes('\n')
+	//			if err != nil {
+	//				// EOF error location NDS-372 needs fixing
+	//				//glog.Error(err)
+	//				break
+	//			}
+	//
+	//			wevent := watch.WatchEvent{}
+	//			json.Unmarshal(data, &wevent)
+	//
+	//			event := api.Event{}
+	//
+	//			json.Unmarshal([]byte(wevent.Object.Raw), &event)
+	//
+	//			created := event.LastTimestamp
+	//			if created.After(startTime) {
+	//
+	//				if event.InvolvedObject.Kind == "Pod" {
+	//					pod, err := k.GetPod(event.InvolvedObject.Namespace, event.InvolvedObject.Name)
+	//					if err != nil {
+	//						glog.Error(err)
+	//					}
+	//					if pod != nil {
+	//						handler.HandlePodEvent(wevent.Type, &event, pod)
+	//					}
+	//				} else if event.InvolvedObject.Kind == "ReplicationController" {
+	//					rc, err := k.GetReplicationController(event.InvolvedObject.Namespace,
+	//						event.InvolvedObject.Name)
+	//					if err != nil {
+	//						glog.Error(err)
+	//					}
+	//					if rc != nil {
+	//						handler.HandleReplicationControllerEvent(wevent.Type, &event, rc)
+	//					}
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
 	//}
 }
 
@@ -1387,13 +1382,12 @@ func (k *KubeHelper) CreateUpdateIngress(pid string, ingress *v1beta1.Ingress, u
 	glog.V(4).Info("Updating ingress " + ingress.Name)
 	ingress.ObjectMeta.Annotations["ndslabs.org/updated"] = time.Now().String()
 
-	if update{
+	if update {
 		return k.kubeGo.Ingresses(pid).Update(ingress)
 
-	}else {
+	} else {
 		return k.kubeGo.Ingresses(pid).Create(ingress)
 	}
-
 
 	//data, err := json.Marshal(ingress)
 	//if err != nil {
@@ -1499,7 +1493,7 @@ func (k *KubeHelper) GetIngresses(pid string) (*v1beta1.IngressList, error) {
 }
 
 //http://kubernetes.io/docs/api-reference/extensions/v1beta1/operations/
-func (k *KubeHelper) DeleteIngress(pid string, name string)  error {
+func (k *KubeHelper) DeleteIngress(pid string, name string) error {
 	deleteOptions := v1.DeleteOptions{}
 	return k.kubeGo.Ingresses(pid).Delete(name, &deleteOptions)
 
@@ -1597,7 +1591,7 @@ func (k *KubeHelper) CreateSecret(pid string, secret *v1.Secret) (*v1.Secret, er
 	//return nil, nil
 }
 
-func (k *KubeHelper) DeleteSecret(pid string, name string)  error {
+func (k *KubeHelper) DeleteSecret(pid string, name string) error {
 
 	deleteOptions := v1.DeleteOptions{}
 	return k.kubeGo.Secrets(pid).Delete(name, &deleteOptions)
@@ -1660,7 +1654,7 @@ func (k *KubeHelper) GetSecret(pid string, secretName string) (*v1.Secret, error
 
 func (k *KubeHelper) GetResourceQuota(pid string) (*v1.ResourceQuotaList, error) {
 
-	resourceListOptions := v1.ListOptions{ }
+	resourceListOptions := v1.ListOptions{}
 	return k.kubeGo.ResourceQuotas(pid).List(resourceListOptions)
 
 	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/resourcequotas/"
