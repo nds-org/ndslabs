@@ -1717,13 +1717,7 @@ func (k *KubeHelper) ExecCommand(pid string, pod string, command []string) (stri
 
 	localOut := &bytes.Buffer{}
 	localErr := &bytes.Buffer{}
-	err = e.Stream(remotecommand.StreamOptions{
-		SupportedProtocols: remotecommandserver.SupportedStreamingProtocols,
-		Stdin:              nil,
-		Stdout:             localOut,
-		Stderr:             localErr,
-		Tty:                true,
-	})
+	err = e.Stream(remotecommandserver.SupportedStreamingProtocols, nil, localOut, localErr, false)
 	return localOut.String(), err
 }
 
