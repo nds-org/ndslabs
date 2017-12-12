@@ -51,8 +51,9 @@ type KubeHelper struct {
 	username string
 	password string
 	token    string
-	kubeGo   *kubernetes.Clientset
+	kubeGo   kubernetes.Interface
 }
+
 
 func NewKubeHelper(kubeBase string, username string, password string, tokenPath string, kConfig *rest.Config) (*KubeHelper, error) {
 	tr := &http.Transport{
@@ -115,7 +116,7 @@ func (k *KubeHelper) CreateNamespace(pid string) (*v1.Namespace, error) {
 	ns := v1.Namespace{}
 	ns.SetName(pid)
 
-	return k.kubeGo.Namespaces().Create(&ns)
+	return k.kubeGo.CoreV1().Namespaces().Create(&ns)
 
 	//// Create the K8 namespace
 	//ns := api.Namespace{}
@@ -165,7 +166,7 @@ func (k *KubeHelper) CreateResourceQuota(pid string, cpu int, mem int) (*v1.Reso
 		},
 	}
 
-	return k.kubeGo.ResourceQuotas(pid).Create(&resourceQuota)
+	return k.kubeGo.CoreV1().ResourceQuotas(pid).Create(&resourceQuota)
 
 	//glog.V(4).Infof("Creating resource quota for %s: %s, %s\n", pid, cpu, mem)
 	//rq := api.ResourceQuota{
@@ -232,7 +233,7 @@ func (k *KubeHelper) CreateLimitRange(pid string, cpu int, mem int) (*v1.LimitRa
 		},
 	}
 
-	return k.kubeGo.LimitRanges(pid).Create(&limitRange)
+	return k.kubeGo.CoreV1().LimitRanges(pid).Create(&limitRange)
 
 	//
 	//lr := &api.LimitRange{
@@ -291,7 +292,7 @@ func (k *KubeHelper) CreateLimitRange(pid string, cpu int, mem int) (*v1.LimitRa
 }
 
 func (k *KubeHelper) GetNamespace(pid string) (*v1.Namespace, error) {
-	return k.kubeGo.Namespaces().Get(pid)
+	return k.kubeGo.CoreV1().Namespaces().Get(pid)
 
 	//url := k.kubeBase + apiBase + "/namespaces/" + pid
 	////glog.V(4).Infoln(url)
@@ -326,7 +327,7 @@ func (k *KubeHelper) NamespaceExists(pid string) bool {
 
 func (k *KubeHelper) DeleteNamespace(pid string) error {
 	deleteOptions := v1.DeleteOptions{}
-	return k.kubeGo.Namespaces().Delete(pid, &deleteOptions)
+	return k.kubeGo.CoreV1().Namespaces().Delete(pid, &deleteOptions)
 
 	//url := k.kubeBase + apiBase + "/namespaces/" + pid
 	//glog.V(4).Infoln(url)
@@ -359,7 +360,7 @@ func (k *KubeHelper) DeleteNamespace(pid string) error {
 func (k *KubeHelper) StartController(pid string, spec *v1.ReplicationController) (bool, error) {
 
 	//name := spec.Labels["name"]
-	rslt, err := k.kubeGo.ReplicationControllers(pid).Create(spec)
+	rslt, err := k.kubeGo.CoreV1().ReplicationControllers(pid).Create(spec)
 
 	// Give Kubernetes time to create the pods for the RC
 	time.Sleep(time.Second * 5)
@@ -397,7 +398,7 @@ func (k *KubeHelper) StartController(pid string, spec *v1.ReplicationController)
 }
 
 func (k *KubeHelper) StartService(pid string, spec *v1.Service) (*v1.Service, error) {
-	return k.kubeGo.Services(pid).Create(spec)
+	return k.kubeGo.CoreV1().Services(pid).Create(spec)
 
 	//name := spec.Name
 	//
@@ -453,7 +454,7 @@ func (k *KubeHelper) ServiceExists(pid string, name string) bool {
 	}
 }
 func (k *KubeHelper) GetService(pid string, name string) (*v1.Service, error) {
-	return k.kubeGo.Services(pid).Get(name)
+	return k.kubeGo.CoreV1().Services(pid).Get(name)
 
 	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services/" + name
 	//request, _ := http.NewRequest("GET", url, nil)
@@ -486,7 +487,7 @@ func (k *KubeHelper) GetServices(pid string, stack string) (*v1.ServiceList, err
 		LabelSelector: "stack=" + stack,
 	}
 
-	return k.kubeGo.Services(pid).List(listOptions)
+	return k.kubeGo.CoreV1().Services(pid).List(listOptions)
 
 	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services?labelSelector=stack%3D" + stack
 	//request, _ := http.NewRequest("GET", url, nil)
@@ -521,7 +522,7 @@ func (k *KubeHelper) GetReplicationControllers(pid string, label string, value s
 		LabelSelector: label + "=" + value,
 	}
 
-	return k.kubeGo.ReplicationControllers(pid).List(listOptions)
+	return k.kubeGo.CoreV1().ReplicationControllers(pid).List(listOptions)
 
 	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers?labelSelector=" + label + "%3D" + value
 	//request, _ := http.NewRequest("GET", url, nil)
@@ -558,7 +559,7 @@ func (k *KubeHelper) GetPods(pid string, label string, value string) (*v1.PodLis
 		LabelSelector: label + "=" + value,
 	}
 
-	return k.kubeGo.Pods(pid).List(listOptions)
+	return k.kubeGo.CoreV1().Pods(pid).List(listOptions)
 
 	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods?labelSelector=" + label + "%3D" + value
 	//request, _ := http.NewRequest("GET", url, nil)
@@ -592,7 +593,7 @@ func (k *KubeHelper) GetPods(pid string, label string, value string) (*v1.PodLis
 func (k *KubeHelper) StopService(pid string, name string) error {
 
 	deleteOptions := v1.DeleteOptions{}
-	return k.kubeGo.Services(pid).Delete(name, &deleteOptions)
+	return k.kubeGo.CoreV1().Services(pid).Delete(name, &deleteOptions)
 
 	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services/" + name
 	//request, _ := http.NewRequest("DELETE", url, nil)
@@ -616,7 +617,7 @@ func (k *KubeHelper) StopService(pid string, name string) error {
 
 func (k *KubeHelper) StopController(pid string, name string) error {
 	deleteOptions := v1.DeleteOptions{}
-	rcDeleteErr := k.kubeGo.ReplicationControllers(pid).Delete(name, &deleteOptions)
+	rcDeleteErr := k.kubeGo.CoreV1().ReplicationControllers(pid).Delete(name, &deleteOptions)
 
 	if rcDeleteErr != nil {
 		return rcDeleteErr
@@ -688,7 +689,7 @@ func (k *KubeHelper) stopPod(pid string, podName string) error {
 
 	deleteOptions := v1.DeleteOptions{}
 
-	return k.kubeGo.Pods(pid).Delete(podName, &deleteOptions)
+	return k.kubeGo.CoreV1().Pods(pid).Delete(podName, &deleteOptions)
 
 	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + podName
 	//request, _ := http.NewRequest("DELETE", url, nil)
@@ -717,7 +718,7 @@ func (k *KubeHelper) GetLog(pid string, podName string, tailLines int) (string, 
 		TailLines: &tailLines64,
 	}
 
-	request := k.kubeGo.Pods(pid).GetLogs(podName, &podLogOptions)
+	request := k.kubeGo.CoreV1().Pods(pid).GetLogs(podName, &podLogOptions)
 
 	readCloser, err := request.Stream()
 
@@ -1149,7 +1150,7 @@ func (k *KubeHelper) WatchPods(handler events.EventHandler) {
 
 // @TODO: Delete this method. Doesn't look like it is used anywhere
 func (k *KubeHelper) GetPod(pid string, name string) (*v1.Pod, error) {
-	return k.kubeGo.Pods(pid).Get(name)
+	return k.kubeGo.CoreV1().Pods(pid).Get(name)
 
 	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + name
 	//request, _ := http.NewRequest("GET", url, nil)
@@ -1180,7 +1181,7 @@ func (k *KubeHelper) GetPod(pid string, name string) (*v1.Pod, error) {
 
 // @TODO: Delete this method. Doesn't look like it is used anywhere
 func (k *KubeHelper) GetReplicationController(pid string, name string) (*v1.ReplicationController, error) {
-	return k.kubeGo.ReplicationControllers(pid).Get(name)
+	return k.kubeGo.CoreV1().ReplicationControllers(pid).Get(name)
 
 	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers/" + name
 	//request, _ := http.NewRequest("GET", url, nil)
@@ -1384,10 +1385,10 @@ func (k *KubeHelper) CreateUpdateIngress(pid string, ingress *v1beta1.Ingress, u
 	ingress.ObjectMeta.Annotations["ndslabs.org/updated"] = time.Now().String()
 
 	if update {
-		return k.kubeGo.Ingresses(pid).Update(ingress)
+		return k.kubeGo.ExtensionsV1beta1().Ingresses(pid).Update(ingress)
 
 	} else {
-		return k.kubeGo.Ingresses(pid).Create(ingress)
+		return k.kubeGo.ExtensionsV1beta1().Ingresses(pid).Create(ingress)
 	}
 
 	//data, err := json.Marshal(ingress)
@@ -1429,7 +1430,7 @@ func (k *KubeHelper) CreateUpdateIngress(pid string, ingress *v1beta1.Ingress, u
 }
 
 func (k *KubeHelper) GetIngress(pid string, ingressName string) (*v1beta1.Ingress, error) {
-	return k.kubeGo.Ingresses(pid).Get(ingressName)
+	return k.kubeGo.ExtensionsV1beta1().Ingresses(pid).Get(ingressName)
 
 	//url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses/" + ingressName
 	//glog.V(4).Infoln(url)
@@ -1459,7 +1460,7 @@ func (k *KubeHelper) GetIngress(pid string, ingressName string) (*v1beta1.Ingres
 
 func (k *KubeHelper) GetIngresses(pid string) (*v1beta1.IngressList, error) {
 	listOptions := v1.ListOptions{}
-	return k.kubeGo.Ingresses(pid).List(listOptions)
+	return k.kubeGo.ExtensionsV1beta1().Ingresses(pid).List(listOptions)
 
 	//url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses"
 	//glog.V(4).Infoln(url)
@@ -1496,7 +1497,7 @@ func (k *KubeHelper) GetIngresses(pid string) (*v1beta1.IngressList, error) {
 //http://kubernetes.io/docs/api-reference/extensions/v1beta1/operations/
 func (k *KubeHelper) DeleteIngress(pid string, name string) error {
 	deleteOptions := v1.DeleteOptions{}
-	return k.kubeGo.Ingresses(pid).Delete(name, &deleteOptions)
+	return k.kubeGo.ExtensionsV1beta1().Ingresses(pid).Delete(name, &deleteOptions)
 
 	//url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses/" + name
 	//glog.V(4).Infoln(url)
@@ -1559,7 +1560,7 @@ func (k *KubeHelper) CreateTLSSecret(pid string, secretName string, tlsCert []by
 }
 
 func (k *KubeHelper) CreateSecret(pid string, secret *v1.Secret) (*v1.Secret, error) {
-	return k.kubeGo.Secrets(pid).Create(secret)
+	return k.kubeGo.CoreV1().Secrets(pid).Create(secret)
 	//data, err := json.Marshal(secret)
 	//if err != nil {
 	//	return nil, err
@@ -1595,7 +1596,7 @@ func (k *KubeHelper) CreateSecret(pid string, secret *v1.Secret) (*v1.Secret, er
 func (k *KubeHelper) DeleteSecret(pid string, name string) error {
 
 	deleteOptions := v1.DeleteOptions{}
-	return k.kubeGo.Secrets(pid).Delete(name, &deleteOptions)
+	return k.kubeGo.CoreV1().Secrets(pid).Delete(name, &deleteOptions)
 
 	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/secrets/" + name
 	//glog.V(4).Infoln(url)
@@ -1625,7 +1626,7 @@ func (k *KubeHelper) DeleteSecret(pid string, name string) error {
 }
 
 func (k *KubeHelper) GetSecret(pid string, secretName string) (*v1.Secret, error) {
-	return k.kubeGo.Secrets(pid).Get(secretName)
+	return k.kubeGo.CoreV1().Secrets(pid).Get(secretName)
 
 	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/secrets/" + secretName
 	//glog.V(4).Infoln(url)
@@ -1656,7 +1657,7 @@ func (k *KubeHelper) GetSecret(pid string, secretName string) (*v1.Secret, error
 func (k *KubeHelper) GetResourceQuota(pid string) (*v1.ResourceQuotaList, error) {
 
 	resourceListOptions := v1.ListOptions{}
-	return k.kubeGo.ResourceQuotas(pid).List(resourceListOptions)
+	return k.kubeGo.CoreV1().ResourceQuotas(pid).List(resourceListOptions)
 
 	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/resourcequotas/"
 	//glog.V(4).Infoln(url)
