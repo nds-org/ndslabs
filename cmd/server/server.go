@@ -22,7 +22,6 @@ import (
 	"github.com/ndslabs/apiserver/pkg/validate"
 	"github.com/ndslabs/apiserver/pkg/version"
 	k8api "k8s.io/kubernetes/pkg/api"
-	//"k8s.io/kubernetes/pkg/watch"
 
 	"github.com/StephanDollberg/go-json-rest-middleware-jwt"
 	"github.com/ant0ine/go-json-rest/rest"
@@ -33,7 +32,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/watch"
 )
 
 var adminUser = "admin"
@@ -2604,7 +2602,7 @@ func (s *Server) loadSpecs(path string) error {
 	return nil
 }
 
-func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, pod *k8api.Pod) {
+func (s *Server) HandlePodEvent(eventType string, pod *v1.Pod) {
 
 	if pod.Namespace != "default" && pod.Namespace != systemNamespace {
 		glog.V(4).Infof("HandlePodEvent %s", eventType)
@@ -2636,60 +2634,44 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 				return
 			}
 
-			if event != nil {
-				// This is a general Event
-				if event.Reason == "MissingClusterDNS" {
-					// Ignore these for now
-					return
-				}
-				if event.Type == "Warning" &&
-					(event.Reason != "Unhealthy" || event.Reason == "FailedSync" ||
-						event.Reason == "BackOff") {
-					// This is an error
-					stackService.Status = "error"
-				}
-
-				stackService.StatusMessages = append(stackService.StatusMessages,
-					fmt.Sprintf("Reason=%s, Message=%s", event.Reason, event.Message))
-			} else {
-				// This is a Pod event
-				ready := false
-				if len(pod.Status.Conditions) > 0 {
-					for _, condition := range pod.Status.Conditions {
-						if condition.Type == "Ready" {
-							ready = (condition.Status == "True")
-						}
+			// This is a Pod event
+			ready := false
+			if len(pod.Status.Conditions) > 0 {
+				for _, condition := range pod.Status.Conditions {
+					if condition.Type == "Ready" {
+						ready = (condition.Status == "True")
 					}
+				}
 
-					if len(pod.Status.ContainerStatuses) > 0 {
-						// The pod was terminated, this is an error
-						if pod.Status.ContainerStatuses[0].State.Terminated != nil {
-							reason := pod.Status.ContainerStatuses[0].State.Terminated.Reason
-							message := pod.Status.ContainerStatuses[0].State.Terminated.Message
-							stackService.Status = "error"
-							stackService.StatusMessages = append(stackService.StatusMessages,
-								fmt.Sprintf("Reason=%s, Message=%s", reason, message))
-						}
-					} else {
-						reason := pod.Status.Conditions[0].Reason
-						message := pod.Status.Conditions[0].Message
+				if len(pod.Status.ContainerStatuses) > 0 {
+					// The pod was terminated, this is an error
+					if pod.Status.ContainerStatuses[0].State.Terminated != nil {
+						reason := pod.Status.ContainerStatuses[0].State.Terminated.Reason
+						message := pod.Status.ContainerStatuses[0].State.Terminated.Message
+						stackService.Status = "error"
 						stackService.StatusMessages = append(stackService.StatusMessages,
 							fmt.Sprintf("Reason=%s, Message=%s", reason, message))
 					}
-
+				} else {
+					reason := pod.Status.Conditions[0].Reason
+					message := pod.Status.Conditions[0].Message
+					stackService.StatusMessages = append(stackService.StatusMessages,
+						fmt.Sprintf("Reason=%s, Message=%s", reason, message))
 				}
 
-				if ready {
-					stackService.Status = "ready"
-				} else {
-					if eventType == "ADDED" {
-						stackService.Status = "starting"
-					} else if eventType == "DELETED" {
-						if stackService.Status == "timeout" {
-							stackService.Status = "error"
-						} else {
-							stackService.Status = "stopped"
-						}
+			}
+
+			fmt.Sprintf("DEBUG READY %v\n", ready)
+			if ready {
+				stackService.Status = "ready"
+			} else {
+				if eventType == "ADDED" {
+					stackService.Status = "starting"
+				} else if eventType == "DELETED" {
+					if stackService.Status == "timeout" {
+						stackService.Status = "error"
+					} else {
+						stackService.Status = "stopped"
 					}
 				}
 			}
@@ -2705,8 +2687,7 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 	}
 }
 
-func (s *Server) HandleReplicationControllerEvent(eventType watch.EventType, event *k8api.Event,
-	rc *k8api.ReplicationController) {
+func (s *Server) HandleReplicationControllerEvent(eventType string, event *k8api.Event, rc *k8api.ReplicationController) {
 
 	if rc.Namespace != "default" && rc.Namespace != systemNamespace {
 		glog.V(4).Infof("HandleReplicationControllerEvent %s", eventType)

@@ -1,11 +1,12 @@
 package events
 
 import (
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/watch"
+	//	"k8s.io/kubernetes/pkg/watch"
 )
 
 type EventHandler interface {
-	HandlePodEvent(eventType watch.EventType, event *api.Event, pod *api.Pod)
-	HandleReplicationControllerEvent(eventType watch.EventType, event *api.Event, rc *api.ReplicationController)
+	HandlePodEvent(eventType string, pod *v1.Pod)
+	HandleReplicationControllerEvent(eventType string, event *api.Event, rc *api.ReplicationController)
 }
