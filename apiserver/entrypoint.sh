@@ -110,6 +110,8 @@ cat << EOF > /apiserver.json
     "homeVolume": "$VOLUME_NAME",
     "name": "$WORKBENCH_NAME",
     "dataProviderURL": "$DATA_PROVIDER_URL",
+    "authURL": "$CORS_ORIGIN_ADDR/login/#/",
+    "authSignInURL": "$CORS_ORIGIN_ADDR/cauth/auth",
     "support": {
         "email": "$SUPPORT_EMAIL",
         "forum": "$SUPPORT_FORUM",
