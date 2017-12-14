@@ -1205,21 +1205,16 @@ func (k *KubeHelper) CreateIngress(pid string, domain string, service string, po
 		glog.V(4).Info("Removing basic-auth annotations for " + ingress.Name)
 	}
 	if basicAuth {
-		annotations["ingress.kubernetes.io/auth-type"] = "basic"
-		annotations["ingress.kubernetes.io/auth-secret"] = "basic-auth"
-		annotations["ingress.kubernetes.io/auth-realm"] = "Workbench Credentials Required"
+		annotations["nginx.ingress.kubernetes.io/auth-type"] = "basic"
+		annotations["nginx.ingress.kubernetes.io/auth-secret"] = "basic-auth"
+		annotations["nginx.ingress.kubernetes.io/auth-realm"] = "Workbench Credentials Required"
 	}
 	ingress.Annotations = annotations
 
-	tlsSecretName := fmt.Sprintf("%s-tls-secret", pid)
-	secret, _ := k.GetSecret(pid, tlsSecretName)
-	if secret != nil {
-		ingress.Spec.TLS = []extensions.IngressTLS{
-			extensions.IngressTLS{
-				Hosts:      hosts,
-				SecretName: tlsSecretName,
-			},
-		}
+	ingress.Spec.TLS = []extensions.IngressTLS{
+		extensions.IngressTLS{
+			Hosts: hosts,
+		},
 	}
 
 	return k.CreateUpdateIngress(pid, ingress, update)
@@ -1395,21 +1390,6 @@ func (k *KubeHelper) CreateBasicAuthSecret(pid string, username string, email st
 		},
 	}
 	return k.CreateSecret(pid, secret)
-}
-
-func (k *KubeHelper) CreateTLSSecret(pid string, secretName string, tlsCert []byte, tlsKey []byte) (*api.Secret, error) {
-
-	secret := api.Secret{
-		ObjectMeta: api.ObjectMeta{
-			Name:      secretName,
-			Namespace: pid,
-		},
-		Data: map[string][]byte{
-			"tls.crt": tlsCert,
-			"tls.key": tlsKey,
-		},
-	}
-	return k.CreateSecret(pid, &secret)
 }
 
 func (k *KubeHelper) CreateSecret(pid string, secret *api.Secret) (*api.Secret, error) {
