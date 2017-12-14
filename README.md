@@ -77,7 +77,7 @@ The server requires etcd and Kubernetes. You can either run a separate etcd or u
 
 To run
 ```
-./apiserver -v <log verbosity 1-4> --conf <path to apiserver.conf> --passwd <admin password>
+./apiserver -v <log verbosity 1-4> -logtostderr --conf <path to apiserver.conf> --passwd <admin password>
 ```
 
 ## Find URL of Minikube Kubernetes
@@ -94,3 +94,37 @@ Set the `address` property of `etcd` object in apiserver.json to the ip address 
     "maxMessages": 100
   },
 ```
+
+## Debugging locally
+
+It is possible to run the Workbench API server outside of the cluster. This has been tested with minikube via VirtualBox on MacOS.
+
+Create a file `external-apiserver.yaml` with the following. Note that 10.0.2.2 is the internal address of your minikube VM. You can confirm this via `minikube ssh` and `netstat -rn`:
+```
+kind: "Service"
+apiVersion: "v1"
+metadata:
+  name: "ndslabs-apiserver"
+spec:
+  ports:
+    - protocol: "TCP"
+      port: 30001
+      targetPort: 30001
+---
+kind: "Endpoints"
+apiVersion: "v1"
+metadata:
+  name: "ndslabs-apiserver"
+subsets:
+  - addresses:
+    - ip: "10.0.2.2"
+    ports:
+    - port: 30001
+```
+
+Delete the in-cluster API server and create this external service/endpoint:
+```
+kubectl delete svc,rc ndslabs-apiserver
+kubectl create -f external-apiserver.yaml
+```
+
