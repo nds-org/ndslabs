@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -53,7 +54,6 @@ type KubeHelper struct {
 	token    string
 	kubeGo   kubernetes.Interface
 }
-
 
 func NewKubeHelper(kubeBase string, username string, password string, tokenPath string, kConfig *rest.Config) (*KubeHelper, error) {
 	tr := &http.Transport{
@@ -992,6 +992,9 @@ func (k *KubeHelper) GenerateName(randomLength int) string {
 	return fmt.Sprintf("s%s", utilrand.String(randomLength))
 }
 
+//func (s *Server) HandlePodEvent(eventType string, event *k8api.Event, pod *k8api.Pod) {
+//func (s *Server) HandleReplicationControllerEvent(eventType watch.EventType, event *k8api.Event,
+
 func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 	glog.V(4).Infoln("WatchEvents started")
 
@@ -1008,14 +1011,24 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 			AddFunc: func(obj interface{}) {
 				if obj.(*v1.Pod).GetCreationTimestamp().After(startTime) {
 					fmt.Printf("pod added: %s \n", obj.(*v1.Pod).Name)
+					handler.HandlePodEvent("ADDED", obj.(*v1.Pod))
+					data, _ := json.MarshalIndent(obj.(*v1.Pod), "", "    ")
+					fmt.Println(string(data))
 				}
 			},
 			DeleteFunc: func(obj interface{}) {
 				if obj.(*v1.Pod).GetDeletionTimestamp().After(startTime) {
 					fmt.Printf("pod deleted: %s \n", obj.(*v1.Pod).Name)
+					handler.HandlePodEvent("DELETED", obj.(*v1.Pod))
+					data, _ := json.MarshalIndent(obj.(*v1.Pod), "", "    ")
+					fmt.Println(string(data))
 				}
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
+				fmt.Printf("pod updated: %s %s \n", oldObj.(*v1.Pod).Name, newObj.(*v1.Pod).Name)
+				handler.HandlePodEvent("UPDATED", newObj.(*v1.Pod))
+				data, _ := json.MarshalIndent(newObj.(*v1.Pod), "", "    ")
+				fmt.Println(string(data))
 
 			},
 		},
