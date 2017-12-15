@@ -336,7 +336,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       
   // Setup routes to our different pages
   $routeProvider
-  .when(LoginRoute, {
+  /*.when(LoginRoute, {
     title: 'Sign In to ' + ProductName,
     controller: 'LoginController',
     templateUrl: 'app/login/login.html',
@@ -377,7 +377,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     controller: 'ResetPasswordController',
     templateUrl: 'app/login/reset/reset.html',
     pageTrack: '/recovery'
-  })
+  })*/
   .when(AppStoreRoute, {
     title: ProductName + ' Catalog',
     controller: 'CatalogController',
@@ -420,7 +420,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     templateUrl: 'app/dashboard/console/console.html',
     pageTrack: '/dashboard/console'
   })
-  .otherwise({ redirectTo: LandingRoute });
+  .otherwise({ redirectTo: '/' });
 }])
 
 /**
@@ -469,7 +469,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       }
       
       // redirect user to landing page
-      $location.path(LandingRoute);
+      //$location.path();
+      window.location.href('/login/#/')
     }
   };
   
@@ -483,7 +484,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     authInfo.get().namespace = namespace;
   } else if (path !== VerifyAccountRoute) {
     $log.debug("App started... routing to Landing");
-    $location.path(LandingRoute);
+    //$location.path(LandingRoute);
   }
   
   // Every so often, check that our token is still valid
@@ -506,7 +507,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   // When user changes routes, check that they are still authed
   $rootScope.$on( "$routeChangeStart", function(event, next, current) {
     // Skip token checking for the "Verify Account" View
-    if (next.$$route.templateUrl === 'app/login/verify/verify.html' ||
+    if (next.$$route && 
+        next.$$route.templateUrl === 'app/login/verify/verify.html' ||
         next.$$route.templateUrl === 'app/landing/landing.html' ||
         next.$$route.templateUrl === 'app/help/help.html' ||
         next.$$route.templateUrl === 'app/login/reset/reset.html' ||
