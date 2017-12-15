@@ -44,14 +44,17 @@ type ServiceAddrPort struct {
 }
 
 type KubeHelper struct {
-	kubeBase string
-	client   *http.Client
-	username string
-	password string
-	token    string
+	kubeBase      string
+	client        *http.Client
+	username      string
+	password      string
+	token         string
+	authSignInURL string
+	authURL       string
 }
 
-func NewKubeHelper(kubeBase string, username string, password string, tokenPath string) (*KubeHelper, error) {
+func NewKubeHelper(kubeBase string, username string, password string, tokenPath string,
+	authSignInURL string, authURL string) (*KubeHelper, error) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -69,8 +72,10 @@ func NewKubeHelper(kubeBase string, username string, password string, tokenPath 
 		kubeHelper.token = string(token)
 	} else {
 		kubeHelper.username = username
-		kubeHelper.username = username
+		kubeHelper.password = password
 	}
+	kubeHelper.authSignInURL = authSignInURL
+	kubeHelper.authURL = authURL
 
 	err := kubeHelper.isRunning()
 
@@ -927,6 +932,7 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 		request, _ := http.NewRequest("GET", url, nil)
 		request.Header.Set("Content-Type", "application/json")
 		request.Header.Set("Authorization", k.getAuthHeader())
+		request.Header.Set("Connection", "close")
 		httpresp, httperr := k.client.Do(request)
 		if httperr != nil {
 			glog.Error(httperr)
@@ -974,6 +980,7 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 				}
 			}
 		}
+		httpresp.Body.Close()
 	}
 }
 
@@ -985,6 +992,7 @@ func (k *KubeHelper) WatchPods(handler events.EventHandler) {
 		request, _ := http.NewRequest("GET", url, nil)
 		request.Header.Set("Content-Type", "application/json")
 		request.Header.Set("Authorization", k.getAuthHeader())
+		request.Header.Set("Connection", "close")
 		httpresp, httperr := k.client.Do(request)
 		if httperr != nil {
 			glog.Error(httperr)
@@ -1011,6 +1019,7 @@ func (k *KubeHelper) WatchPods(handler events.EventHandler) {
 				}
 			}
 		}
+		httpresp.Body.Close()
 	}
 }
 
@@ -1168,7 +1177,7 @@ func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHe
 	return &wsHandler
 }
 
-func (k *KubeHelper) CreateIngress(pid string, domain string, service string, ports []api.ServicePort, basicAuth bool) (*extensions.Ingress, error) {
+func (k *KubeHelper) CreateIngress(pid string, domain string, service string, ports []api.ServicePort, enableAuth bool) (*extensions.Ingress, error) {
 
 	name := service + "-ingress"
 	update := true
@@ -1201,13 +1210,11 @@ func (k *KubeHelper) CreateIngress(pid string, domain string, service string, po
 	}
 
 	annotations := map[string]string{}
-	if !basicAuth {
-		glog.V(4).Info("Removing basic-auth annotations for " + ingress.Name)
-	}
-	if basicAuth {
-		annotations["ingress.kubernetes.io/auth-type"] = "basic"
-		annotations["ingress.kubernetes.io/auth-secret"] = "basic-auth"
-		annotations["ingress.kubernetes.io/auth-realm"] = "Workbench Credentials Required"
+	if enableAuth {
+		annotations["nginx.ingress.kubernetes.io/auth-signin"] = k.authSignInURL
+		annotations["nginx.ingress.kubernetes.io/auth-url"] = k.authURL
+	} else {
+		glog.V(4).Info("Removing auth annotations for " + ingress.Name)
 	}
 	ingress.Annotations = annotations
 
