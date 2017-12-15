@@ -29,9 +29,9 @@ import (
 	"github.com/golang/glog"
 	"path/filepath"
 
-	"k8s.io/client-go/tools/clientcmd"
-
 	"k8s.io/client-go/pkg/api/v1"
+	kuberest "k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 var adminUser = "admin"
@@ -126,10 +126,21 @@ func main() {
 	}
 	glog.Infof("Connected to etcd\n")
 
-	// use the current context in kubeconfig
-	kConfig, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
-	if err != nil {
-		panic(err.Error())
+	var kConfig *kuberest.Config
+	if _, err := os.Stat(*kubeconfig); os.IsNotExist(err) {
+		glog.Infof("File %s does not exist, assuming in-cluster\n", *kubeconfig)
+		// Assume running in cluster
+		kConfig, err = kuberest.InClusterConfig()
+		if err != nil {
+			panic(err.Error())
+		}
+	} else {
+		glog.Infof("File %s exists, assuming out-of-cluster\n", *kubeconfig)
+		// Assume running out of cluster
+		kConfig, err = clientcmd.BuildConfigFromFlags("", *kubeconfig)
+		if err != nil {
+			panic(err.Error())
+		}
 	}
 
 	kube, err := kube.NewKubeHelper(cfg.Kubernetes.Address,
