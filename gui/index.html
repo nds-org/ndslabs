@@ -73,14 +73,24 @@
     <script src="bower_components/angular-wizard/angular-wizard.js"></script>
     <script src="bower_components/angular-grid/angular-grid.js"></script>
     <script src="bower_components/angular-alert/angular-alert.js"></script>
-    <script src="dist/main.min.js"></script>
+    <script src="shared/ndslabs-api.js"></script>
+    <script src="shared/services.js"></script>
+    <script src="shared/filters.js"></script>
+    <script src="shared/directives.js"></script>
+    <script src="shared/navbar/NavbarController.js"></script>
+    <script src="shared/footer/FooterController.js"></script>
+    <script src="ConfigModule.js"></script>
+    
+    <!-- Our minified app source -->
+    <script src="app/app.js"></script>
+    <!--<script src="dist/main.min.js"></script>-->
   </head>
 
   <!-- Display the actual contents of the app down here -->
   <body cg-busy="loading">
     <!-- This syntax can be used to isolate smaller page templates (such as our navbar and footer) -->
     <!-- NOTE: This method does not produce a navigatable route. For another full page/route, we need to add the route to app.js -->
-    <div ng-include src="'app/shared/navbar/navbar.html'" ng-controller="NavbarController"></div> 
+    <div ng-include src="'shared/navbar/navbar.html'" ng-controller="NavbarController"></div> 
     
     <!-- TODO: Source these images locally? Or just get rid of them? -->
     <!--[if IE 6]>
