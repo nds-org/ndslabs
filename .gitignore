@@ -7,6 +7,8 @@
 **/*.log
 **/coverage/
 **/dist/
+**/.DS_Store
 gui/tests/reports/*
+gui/shared/ndslabs-api.js
 gui/app/shared/ndslabs-api.js
 gui/protractor.auth.json
