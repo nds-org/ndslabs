@@ -96,6 +96,13 @@ paths:
     get:
       description: |
         Validate the JWT token
+      parameters:
+        - name: host
+          in: query
+          description: 'If specified, test authorization for JWT to access \
+              the given hostname'
+          required: false
+          type: string
       responses:
         '200':
           description: OK
