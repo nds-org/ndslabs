@@ -19,6 +19,8 @@ type Config struct {
 	Volumes         []Volume      `json:"volumes"`
 	Support         SupportLinks  `json:"support"`
 	DataProviderURL string        `json:"dataProviderURL"`
+	AuthURL         string        `json:"authURL"`
+	AuthSignInURL   string        `json:"authSignInURL"`
 }
 
 type SupportLinks struct {
