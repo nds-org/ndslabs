@@ -128,20 +128,6 @@ app.post('/logs', function (req, res) {
   res.status(201).send("Successfully POSTed to server logs!\n");
 });
 
-/** AngularJS app paths here */
-
-// Configure a route to our AngularJS landing app
-app.get('/landing/', function(req, res) { res.sendFile('landing/index.html', { root: basedir || __dirname }); });
-app.get('/landing*', function(req, res) { res.redirect('/landing/'); });
-
-// Configure a route to our AngularJS login app
-app.get('/login/', function(req, res) { res.sendFile('login/index.html', { root: basedir || __dirname }); });
-app.get('/login*', function(req, res) { res.redirect('/login/'); });
-
-// Configure a route to our AngularJS dashboard app
-app.get('/dashboard/', function(req, res) { res.sendFile('dashboard/index.html', { root: basedir || __dirname }); });
-app.get('/dashboard*', function(req, res) { res.redirect('/dashboard/'); });
-
 /** DefaultBackend endpoints here */
 
 // Configure a route to our AngularJS dashboard app
@@ -230,9 +216,18 @@ app.get('/cauth/auth', function(req, res) {
   //logger.log('info', "", "Checking user session: " + token);
   logger.log("info", "Checking user session: " + token);
   
+  let requestedUrl = req.headers['x-original-url'];
+  let prefix = secureCookie ? 'https://www' : 'http://www';
+  let checkHost = '';
+  
   if (!token) {
       res.sendStatus(401);
       return;
+  } else if (requestedUrl.indexOf(prefix+cookieDomain) !== 0) {
+     // if request starts with an arbitrary host (e.g. not 'www.'), 
+     //    we need to check authorization
+    checkHost = requestedUrl.replace(/https?:\/\//, '').replace(/\/.*$/, '');
+    console.log(`Checking token's access to ${checkHost}`);
   }
 
   // If token was given, check that it's valid
@@ -240,7 +235,7 @@ app.get('/cauth/auth', function(req, res) {
       protocol: apiProtocol,
       host: apiHost,
       port: apiPort,
-      path: apiPath + '/check_token', 
+      path: apiPath + '/check_token' + (checkHost ? '?host=' + checkHost : ''), 
       headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token
@@ -258,7 +253,7 @@ app.get('/cauth/auth', function(req, res) {
       console.error(error.message);
       // consume response data to free up memory
       resp.resume();
-      res.sendStatus(200);
+      res.sendStatus(statusCode);
       return;
     }
 
@@ -271,7 +266,7 @@ app.get('/cauth/auth', function(req, res) {
         res.sendStatus(200);
       } catch (e) {
         console.error(e.message);
-        res.sendStatus(401);
+        res.sendStatus(statusCode);
       }
     });
   }).on('error', (e) => {
@@ -286,14 +281,20 @@ app.get('/cauth/logout', function (req, res) {
 
   res.clearCookie("token", cookieOpts);
   res.clearCookie("namespace", cookieOpts);
-  res.sendStatus(501);
+  res.sendStatus(200);
 });
 
-// Configure catch-all route to serve up our AngularJS app
-// NOTE: Wildcard needs to be done last, after all other endpoints
-app.get('*', function(req, res){
-  res.sendFile('index.html', { root: basedir || __dirname });
-});
+/** AngularJS app paths here */
+// NOTE: Wildcards need to be done last, after all other endpoints
+
+// Configure a route to our AngularJS landing app
+app.get('/landing/*', function(req, res) { res.sendFile('landing/index.html', { root: basedir || __dirname }); });
+
+// Configure a route to our AngularJS login app
+app.get('/login/*', function(req, res) { res.sendFile('login/index.html', { root: basedir || __dirname }); });
+
+// Configure a route to our AngularJS dashboard app
+app.get('/dashboard/*', function(req, res) { res.sendFile('dashboard/index.html', { root: basedir || __dirname }); });
 
 // Start up our server
 app.listen(port, function () {
