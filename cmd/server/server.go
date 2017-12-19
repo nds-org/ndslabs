@@ -690,15 +690,6 @@ func (s *Server) setupAccount(account *api.Account) error {
 		return err
 	}
 
-	secret, err := s.kube.GetSecret("default", "ndslabs-tls-secret")
-	if secret != nil {
-		secretName := fmt.Sprintf("%s-tls-secret", account.Namespace)
-		_, err := s.kube.CreateTLSSecret(account.Namespace, secretName, secret.Data["tls.crt"], secret.Data["tls.key"])
-		if err != nil {
-			return err
-		}
-	}
-
 	_, err = s.updateStorageQuota(account)
 	if err != nil {
 		return err
