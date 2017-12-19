@@ -126,21 +126,8 @@ app.post('/logs', function (req, res) {
 
   // Return success
   res.status(201).send("Successfully POSTed to server logs!\n");
+
 });
-
-/** AngularJS app paths here */
-
-// Configure a route to our AngularJS landing app
-app.get('/landing/', function(req, res) { res.sendFile('landing/index.html', { root: basedir || __dirname }); });
-app.get('/landing*', function(req, res) { res.redirect('/landing/'); });
-
-// Configure a route to our AngularJS login app
-app.get('/login/', function(req, res) { res.sendFile('login/index.html', { root: basedir || __dirname }); });
-app.get('/login*', function(req, res) { res.redirect('/login/'); });
-
-// Configure a route to our AngularJS dashboard app
-app.get('/dashboard/', function(req, res) { res.sendFile('dashboard/index.html', { root: basedir || __dirname }); });
-app.get('/dashboard*', function(req, res) { res.redirect('/dashboard/'); });
 
 /** DefaultBackend endpoints here */
 
@@ -298,11 +285,12 @@ app.get('/cauth/logout', function (req, res) {
   res.sendStatus(200);
 });
 
-// Configure catch-all route to serve up our AngularJS app
-// NOTE: Wildcard needs to be done last, after all other endpoints
-app.get('*', function(req, res){
-  res.sendFile('index.html', { root: basedir || __dirname });
-});
+// NOTE: Wildcards need to be done last, after all other endpoints
+
+/** Set up routes to our AngularJS apps here */
+app.get('/landing/*', function(req, res) { res.sendFile('landing/index.html', { root: basedir || __dirname }); });
+app.get('/login/*', function(req, res) { res.sendFile('login/index.html', { root: basedir || __dirname }); });
+app.get('/dashboard/*', function(req, res) { res.sendFile('dashboard/index.html', { root: basedir || __dirname }); });
 
 // Start up our server
 app.listen(port, function () {

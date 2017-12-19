@@ -64,7 +64,6 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
     title: ProductName + ' Dashboard',
     controller: 'DashboardController',
     templateUrl: 'dashboard/dashboard.html',
-    reloadOnSearch: false,
     pageTrack: DashboardAppPath + HomePathSuffix
   })
   .when(AddServicePathSuffix, {
