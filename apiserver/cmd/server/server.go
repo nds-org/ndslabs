@@ -106,18 +106,23 @@ func main() {
 		glog.Fatal(err)
 	}
 
+	glog.Infof("Connecting to etcd on %s\n", cfg.Etcd.Address)
 	etcd, err := etcd.NewEtcdHelper(cfg.Etcd.Address, cfg.Etcd.MaxMessages)
 	if err != nil {
 		glog.Errorf("Etcd not available: %s\n", err)
 		glog.Fatal(err)
 	}
+	glog.Infof("Connected to etcd\n")
 
+	glog.Infof("Connecting to Kubernetes API %s\n", cfg.Kubernetes.Address)
 	kube, err := kube.NewKubeHelper(cfg.Kubernetes.Address,
-		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath)
+		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath,
+		cfg.AuthSignInURL, cfg.AuthURL)
 	if err != nil {
 		glog.Errorf("Kubernetes API server not available\n")
 		glog.Fatal(err)
 	}
+	glog.Infof("Connected to Kubernetes\n")
 
 	email, err := email.NewEmailHelper(cfg.Email.Host, cfg.Email.Port, cfg.Email.TLS, cfg.Support.Email, cfg.Origin, cfg.Name)
 	if err != nil {
@@ -308,6 +313,7 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 		rest.Put(s.prefix+"stacks/:sid", s.PutStack),
 		rest.Get(s.prefix+"stacks/:sid", s.GetStack),
 		rest.Delete(s.prefix+"stacks/:sid", s.DeleteStack),
+		rest.Get(s.prefix+"start", s.QuickstartStack),
 		rest.Get(s.prefix+"start/:sid", s.StartStack),
 		rest.Get(s.prefix+"stop/:sid", s.StopStack),
 		rest.Get(s.prefix+"logs/:ssid", s.GetLogs),
@@ -461,13 +467,33 @@ func Version(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) CheckToken(w rest.ResponseWriter, r *rest.Request) {
+	// Basic token validation is handled by jwt middleware
 	userId := s.getUser(r)
+	host := r.Request.FormValue("host")
+
+	// Log last activity for user
 	account, err := s.etcd.GetAccount(userId)
 	if err == nil {
 		account.LastLogin = time.Now().Unix()
 		s.etcd.PutAccount(account.Namespace, account, false)
 	}
-	w.WriteHeader(http.StatusOK)
+
+	// If host specified, see if it belongs to this namespace
+	if len(host) > 0 {
+		ok, err := (s.checkIngress(userId, host))
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+		} else {
+			if ok || s.IsAdmin(r) {
+				w.WriteHeader(http.StatusOK)
+			} else {
+				w.WriteHeader(http.StatusForbidden)
+			}
+		}
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
 }
 
 func (s *Server) Logout(w rest.ResponseWriter, r *rest.Request) {
@@ -587,35 +613,7 @@ func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	err = s.createBasicAuthSecret(account.Namespace)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	w.WriteJson(&account)
-}
-
-func (s *Server) createBasicAuthSecret(uid string) error {
-	account, err := s.etcd.GetAccount(uid)
-	if err != nil {
-		glog.Error(err)
-		return err
-	}
-
-	_, err = s.kube.CreateBasicAuthSecret(account.Namespace, account.Namespace, account.Password)
-	if err != nil {
-		glog.Error(err)
-		return err
-	}
-
-	err = s.updateIngress(uid)
-	if err != nil {
-		glog.Error(err)
-		return err
-	}
-	return nil
 }
 
 func (s *Server) updateIngress(uid string) error {
@@ -647,7 +645,7 @@ func (s *Server) createLMABasicAuthSecret() error {
 			return err
 		}
 
-		_, err = s.kube.CreateBasicAuthSecret(systemNamespace, adminUser, account.Password)
+		_, err = s.kube.CreateBasicAuthSecret(systemNamespace, adminUser, "", account.Password)
 		if err != nil {
 			glog.Error(err)
 			return err
@@ -706,10 +704,6 @@ func (s *Server) setupAccount(account *api.Account) error {
 		return err
 	}
 
-	err = s.createBasicAuthSecret(account.Namespace)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -822,7 +816,7 @@ func (s *Server) VerifyAccount(w rest.ResponseWriter, r *rest.Request) {
 			return
 		}
 
-		err = s.email.SendStatusEmail(account.Name, account.Namespace, account.EmailAddress, s.origin, true)
+		err = s.email.SendStatusEmail(account.Name, account.Namespace, account.EmailAddress, s.origin, account.NextURL, true)
 		if err != nil {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -856,7 +850,8 @@ func (s *Server) ApproveAccount(w rest.ResponseWriter, r *rest.Request) {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		err = s.email.SendStatusEmail(account.Name, account.Namespace, account.EmailAddress, s.origin, true)
+
+		err = s.email.SendStatusEmail(account.Name, account.Namespace, account.EmailAddress, s.origin, account.NextURL, true)
 		if err != nil {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -887,7 +882,7 @@ func (s *Server) DenyAccount(w rest.ResponseWriter, r *rest.Request) {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		err = s.email.SendStatusEmail(account.Name, account.Namespace, account.EmailAddress, "", false)
+		err = s.email.SendStatusEmail(account.Name, account.Namespace, account.EmailAddress, "", "", false)
 		if err != nil {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -971,13 +966,6 @@ func (s *Server) PutAccount(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	err = s.etcd.PutAccount(userId, &account, true)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	err = s.createBasicAuthSecret(userId)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1360,6 +1348,22 @@ func (s *Server) getStacks(userId string) (*[]api.Stack, error) {
 	return &stacks, nil
 }
 
+func (s *Server) getStackByServiceId(userId string, sid string) (*api.Stack, error) {
+
+	var stack *api.Stack = nil
+
+	stks, err := s.etcd.GetStacks(userId)
+	if err == nil {
+		for _, stk := range *stks {
+			if stk.Key == sid {
+				stack = &stk
+				break
+			}
+		}
+	}
+	return stack, nil
+}
+
 func (s *Server) isStackStopped(userId string, ssid string) bool {
 	sid := ssid[0:strings.LastIndex(ssid, "-")]
 	stack, _ := s.etcd.GetStack(userId, sid)
@@ -1512,22 +1516,32 @@ func (s *Server) GetStack(w rest.ResponseWriter, r *rest.Request) {
 func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 	userId := s.getUser(r)
 
-	stack := api.Stack{}
-	err := r.DecodeJsonPayload(&stack)
+	stack := &api.Stack{}
+	err := r.DecodeJsonPayload(stack)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	stack, err = s.addStack(userId, stack)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteJson(&stack)
+}
+
+func (s *Server) addStack(userId string, stack *api.Stack) (*api.Stack, error) {
+
 	glog.V(4).Infof("Adding stack %s %s\n", stack.Key, stack.Name)
 
-	_, err = s.etcd.GetServiceSpec(userId, stack.Key)
+	_, err := s.etcd.GetServiceSpec(userId, stack.Key)
 	if err != nil {
 		glog.V(4).Infof("Service %s not found for user %s\n", stack.Key, userId)
-
-		w.WriteHeader(http.StatusNotFound)
-		return
+		return nil, err
 	}
 
 	sid := s.kube.GenerateName(5)
@@ -1566,7 +1580,7 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 
 			// Start the Kubernetes service and ingress
 			if len(spec.Ports) > 0 {
-				_, err := s.createKubernetesService(userId, &stack, spec)
+				_, err := s.createKubernetesService(userId, stack, spec)
 				if err != nil {
 					glog.V(4).Infof("Failed to start service service %s-%s\n", stack.Id, spec.Key)
 					continue
@@ -1575,13 +1589,12 @@ func (s *Server) PostStack(w rest.ResponseWriter, r *rest.Request) {
 		}
 	}
 
-	err = s.etcd.PutStack(userId, stack.Id, &stack)
+	err = s.etcd.PutStack(userId, stack.Id, stack)
 	if err != nil {
 		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
-	w.WriteJson(&stack)
+	return stack, nil
 }
 
 // Create the Kubernetes service and ingress rules
@@ -2047,6 +2060,66 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	} else {
 		return true, nil
 	}
+}
+
+func (s *Server) QuickstartStack(w rest.ResponseWriter, r *rest.Request) {
+	userId := s.getUser(r)
+	sid := r.Request.FormValue("key")
+
+	if len(sid) == 0 {
+		rest.Error(w, "You must specify a service key", http.StatusBadRequest)
+		return
+	}
+
+	if !s.serviceExists(userId, sid) {
+		rest.Error(w, "No such service", http.StatusNotFound)
+		return
+	}
+
+	stack, err := s.getStackByServiceId(userId, sid)
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	if stack == nil {
+		spec, err := s.etcd.GetServiceSpec(userId, sid)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Restrict to single service specs (i.e., no dependencies)
+		if len(spec.Dependencies) > 0 {
+			rest.Error(w, err.Error(), 422) // unprocessable
+			return
+		}
+
+		stack = &api.Stack{
+			Key:    sid,
+			Name:   spec.Label,
+			Secure: true,
+		}
+
+		// Add the default service
+		stack.Services = append(stack.Services, api.StackService{Service: sid})
+
+		stack, err = s.addStack(userId, stack)
+		if err != nil {
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	if stack.Status != "starting" && stack.Status != "started" {
+		stack, err = s.startStack(userId, stack)
+		if err != nil {
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+	w.WriteJson(stack)
 }
 
 func (s *Server) StartStack(w rest.ResponseWriter, r *rest.Request) {
@@ -2668,19 +2741,17 @@ func (s *Server) ChangePassword(w rest.ResponseWriter, r *rest.Request) {
 
 	data := make(map[string]string)
 	err := r.DecodeJsonPayload(&data)
-	ok, err := s.etcd.ChangePassword(userId, data["password"])
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	if ok {
-		err = s.createBasicAuthSecret(userId)
-		if err != nil {
-			glog.Error(err)
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+	_, err = s.etcd.ChangePassword(userId, data["password"])
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -2953,13 +3024,6 @@ func (s *Server) ImportAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	err = s.createBasicAuthSecret(account.Namespace)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	w.WriteJson(&account)
 }
 
@@ -3187,7 +3251,7 @@ func (s *Server) getAccountByEmail(email string) *api.Account {
 	}
 
 	for _, account := range *accounts {
-		if account.EmailAddress == email {
+		if account.EmailAddress == strings.ToLower(email) {
 			return &account
 		}
 	}
@@ -3201,4 +3265,24 @@ func (s *Server) getVolPath(mount *api.VolumeMount, ssid string) string {
 	} else {
 		return mount.DefaultPath
 	}
+}
+
+// Check if host exists in ingresses for namespace
+func (s *Server) checkIngress(uid string, host string) (bool, error) {
+
+	glog.V(4).Infof("Checking ingress for %s %s", uid, host)
+	ingresses, err := s.kube.GetIngresses(uid)
+	if err != nil {
+		glog.Error(err)
+		return false, err
+	}
+	if ingresses != nil {
+		for _, ingress := range ingresses {
+			if ingress.Spec.Rules[0].Host == host {
+				glog.V(4).Infof("Found ingress with host %s", ingress.Spec.Rules[0].Host)
+				return true, nil
+			}
+		}
+	}
+	return false, nil
 }

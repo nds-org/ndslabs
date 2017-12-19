@@ -1,4 +1,6 @@
 package: github.com/ndslabs/apiserver
+ignore:
+- github.com/ndslabs/apiserver
 import:
 - package: github.com/dgrijalva/jwt-go
   version: f164e17f59b82642a3895ba065c385db6c547344
@@ -31,10 +33,12 @@ import:
   subpackages:
   - context
   - websocket
+- package: golang.org/x/sys
+  version: bf42f188b9bc6f2cf5b8ee5a912ef1aedd0eba4c
 - package: gopkg.in/gcfg.v1
   version: ^1.2.0
 - package: k8s.io/kubernetes
-  version: "1.3"
+  version: "1.5"
   subpackages:
   - pkg/api
   - pkg/api/resource
@@ -53,3 +57,10 @@ import:
 - package: github.com/tredoe/osutil
   subpackages:
   - user/crypt/apr1_crypt
+- package: k8s.io/client-go
+  version: v2.0.0
+- package: github.com/gogo/protobuf
+  version: v0.3
+  subpackages:
+  - proto
+- package: github.com/golang/protobuf

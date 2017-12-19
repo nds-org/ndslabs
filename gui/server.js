@@ -126,6 +126,7 @@ app.post('/logs', function (req, res) {
 
   // Return success
   res.status(201).send("Successfully POSTed to server logs!\n");
+
 });
 
 /** DefaultBackend endpoints here */
@@ -284,16 +285,11 @@ app.get('/cauth/logout', function (req, res) {
   res.sendStatus(200);
 });
 
-/** AngularJS app paths here */
 // NOTE: Wildcards need to be done last, after all other endpoints
 
-// Configure a route to our AngularJS landing app
+/** Set up routes to our AngularJS apps here */
 app.get('/landing/*', function(req, res) { res.sendFile('landing/index.html', { root: basedir || __dirname }); });
-
-// Configure a route to our AngularJS login app
 app.get('/login/*', function(req, res) { res.sendFile('login/index.html', { root: basedir || __dirname }); });
-
-// Configure a route to our AngularJS dashboard app
 app.get('/dashboard/*', function(req, res) { res.sendFile('dashboard/index.html', { root: basedir || __dirname }); });
 
 // Start up our server
