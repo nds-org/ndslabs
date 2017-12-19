@@ -3,32 +3,37 @@
 angular
 .module('ndslabs-landing', [ 'ngRoute', 'ngCookies', 'navbar', 'footer', 'ndslabs-config', 'ndslabs-api', 'angular-google-analytics', 'swaggerUi' ])
 
+.constant('LandingAppRoute', '/landing/#')
+.constant('LandingPathSuffix', '/')
+.constant('ContactUsPathSuffix', '/contact')
+.constant('ApiRefPathSuffix', '/swagger')
+
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$routeProvider', 'ProductName',
-    function($routeProvider, ProductName) {
+.config([ '$routeProvider', 'ProductName', 'LandingAppRoute', 'LandingPathSuffix', 'ContactUsPathSuffix', 'ApiRefPathSuffix',
+    function($routeProvider, ProductName, LandingAppRoute, LandingPathSuffix, ContactUsPathSuffix, ApiRefPathSuffix) {
   "use strict";
       
   $routeProvider
-    .when('/', {
+    .when(LandingPathSuffix, {
       title: ProductName + ' Landing Page',
       controller: 'LandingController',
       templateUrl: 'landing.html',
-      pageTrack: '/landing'
+      pageTrack: LandingAppRoute + LandingPathSuffix
     })
-    .when('/contact', {
+    .when(ContactUsPathSuffix, {
       title: 'Contact ' + ProductName + ' Support',
       controller: 'HelpController',
       templateUrl: 'help/help.html',
-      pageTrack: '/landing/contact'
+      pageTrack: LandingAppRoute + ContactUsPathSuffix
     })
-    .when('/swagger', {
+    .when(ApiRefPathSuffix, {
       title: ProductName + ' API Reference',
       controller: 'SwaggerController',
       templateUrl: 'swagger/swagger.html',
-      pageTrack: '/landing/swagger'
-    }).otherwise('/');
+      pageTrack: LandingAppRoute + ApiRefPathSuffix
+    }).otherwise(LandingPathSuffix);
 }])
 
 /**
