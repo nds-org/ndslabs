@@ -230,9 +230,18 @@ app.get('/cauth/auth', function(req, res) {
   //logger.log('info', "", "Checking user session: " + token);
   logger.log("info", "Checking user session: " + token);
   
+  let requestedUrl = req.headers['x-original-url'];
+  let prefix = secureCookie ? 'https://www' : 'http://www';
+  let checkHost = '';
+  
   if (!token) {
       res.sendStatus(401);
       return;
+  } else if (requestedUrl.indexOf(prefix+cookieDomain) !== 0) {
+     // if request starts with an arbitrary host (e.g. not 'www.'), 
+     //    we need to check authorization
+    checkHost = requestedUrl.replace(/https?:\/\//, '').replace(/\/.*$/, '');
+    console.log(`Checking token's access to ${checkHost}`);
   }
 
   // If token was given, check that it's valid
@@ -240,7 +249,7 @@ app.get('/cauth/auth', function(req, res) {
       protocol: apiProtocol,
       host: apiHost,
       port: apiPort,
-      path: apiPath + '/check_token', 
+      path: apiPath + '/check_token' + (checkHost ? '?host=' + checkHost : ''), 
       headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token
@@ -258,7 +267,7 @@ app.get('/cauth/auth', function(req, res) {
       console.error(error.message);
       // consume response data to free up memory
       resp.resume();
-      res.sendStatus(200);
+      res.sendStatus(statusCode);
       return;
     }
 
@@ -271,7 +280,7 @@ app.get('/cauth/auth', function(req, res) {
         res.sendStatus(200);
       } catch (e) {
         console.error(e.message);
-        res.sendStatus(401);
+        res.sendStatus(statusCode);
       }
     });
   }).on('error', (e) => {
@@ -286,7 +295,7 @@ app.get('/cauth/logout', function (req, res) {
 
   res.clearCookie("token", cookieOpts);
   res.clearCookie("namespace", cookieOpts);
-  res.sendStatus(501);
+  res.sendStatus(200);
 });
 
 // Configure catch-all route to serve up our AngularJS app

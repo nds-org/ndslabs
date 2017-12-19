@@ -6,7 +6,7 @@ info:
    email: ndslabs-support@nationaldataservice.org
    name:  NDS Labs Support
    url: http://www.nationaldataservice.org/projects/labs.html
-  version: 1.0.13
+  version: 1.0.14
 basePath: /api
 schemes:
   - https
@@ -96,6 +96,13 @@ paths:
     get:
       description: |
         Validate the JWT token
+      parameters:
+        - name: host
+          in: query
+          description: 'If specified, test authorization for JWT to access \
+              the given hostname'
+          required: false
+          type: string
       responses:
         '200':
           description: OK
