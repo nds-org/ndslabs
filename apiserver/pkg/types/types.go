@@ -211,6 +211,7 @@ type StackService struct {
 	Config         map[string]string `json:"config"`
 	VolumeMounts   map[string]string `json:"volumeMounts"`
 	InternalIP     string            `json:"internalIP"`
+	ResourceLimits ResourceLimits    `json:"resourceLimits"`
 }
 
 type Endpoint struct {
