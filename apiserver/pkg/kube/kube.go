@@ -841,7 +841,16 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	}
 
 	k8rq := api.ResourceRequirements{}
-	if spec.ResourceLimits.CPUMax > 0 && spec.ResourceLimits.MemoryMax > 0 {
+	if stackService.ResourceLimits.CPUMax > 0 && stackService.ResourceLimits.MemoryMax > 0 {
+		k8rq.Limits = api.ResourceList{
+			api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", stackService.ResourceLimits.CPUMax)),
+			api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", stackService.ResourceLimits.MemoryMax)),
+		}
+		k8rq.Requests = api.ResourceList{
+			api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", stackService.ResourceLimits.CPUDefault)),
+			api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", stackService.ResourceLimits.MemoryDefault)),
+		}
+	} else if spec.ResourceLimits.CPUMax > 0 && spec.ResourceLimits.MemoryMax > 0 {
 		k8rq.Limits = api.ResourceList{
 			api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", spec.ResourceLimits.CPUMax)),
 			api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", spec.ResourceLimits.MemoryMax)),
