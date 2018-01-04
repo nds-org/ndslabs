@@ -56,26 +56,45 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
  *  @constructor
  *  @param string quickstartKey: The key of the service spec to launch
  */
-.service('QuickStart', [ '$log', '$filter', '$timeout', '_', 'AutoRefresh', 'NdsLabsApi', 'Popup',
+.factory('QuickStart', [ '$log', '$filter', '$timeout', '_', 'AutoRefresh', 'NdsLabsApi', 'Popup',
     function($log, $filter, $timeout, _, AutoRefresh, NdsLabsApi, Popup) {
   "use strict";
-  return function(quickstartKey) {
+  
+  var cache = {
+    get: function(quickstartKey) {
+      if (!quickstartKey) {
+        $log.warn("WARNING: Empty quickstartKey encountered... ignoring.");
+        return;
+      }
       
-    var quickstart = {
-      busy: false,
-      navigate: function(stack) {
-        var cc = _.find(stack.services, [ 'service', quickstartKey ]);
-        var ep = _.head(cc.endpoints);
-        if (ep) {
-          Popup.open($filter('externalHostPort')(ep));
-        }
-      },
-      launch: function() {
-        quickstart.busy = true;
-        $timeout(function() {
-          AutoRefresh.start();
-        }, 1000);
-        return NdsLabsApi.getStart({
+      // Check if we've already created an instace of this quickstart
+      let existing = cache[quickstartKey];
+      if (existing) {
+        return existing;
+      }
+      
+      // No existing quickstart, so create and return a new one
+      var quickstart = {
+        busy: false,
+        navigate: function(stack) {
+          var cc = _.find(stack.services, [ 'service', quickstartKey ]);
+          var ep = _.head(cc.endpoints);
+          if (ep) {
+            Popup.open($filter('externalHostPort')(ep));
+          }
+        },
+        launch: function() {
+          // Block multiple concurrent launches on the same service
+          if (quickstart.busy) {
+            $log.warn(`WARNING: QuickStart already starting ${quickstartKey}... ignoring.`);
+            return;
+          }
+          
+          quickstart.busy = true;
+          /*$timeout(function() {
+            AutoRefresh.start();
+          }, 1000);*/
+          return NdsLabsApi.getStart({
             'key': quickstartKey
           }).then(function(started, xhr) {
             $log.debug('Successfully started quickstartKey=' + quickstartKey + ', stackId=' + started);
@@ -84,13 +103,18 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
             $log.error('Failed to start quickstartKey=' + quickstartKey);
             alert(`Failed to start ${quickstartKey}. Please be sure that this application is available on your system.`);
           }).finally(function() {
-            quickstart.busy = false;
+            $timeout(function() {
+              quickstart.busy = false;
+            }, 10000);
           });
-      }
-    };
-    
-    return quickstart;
+        }
+      };
+      
+      return cache[quickstartKey] = quickstart;
+    }
   };
+  
+  return cache;
 }])
 
 // TODO: Allow user to set their own file manager?
@@ -101,7 +125,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
     function(QuickStart, FileManagerKey,  NdsLabsApi) {
   "use strict";
 
-  return new QuickStart(FileManagerKey);
+  return QuickStart.get(FileManagerKey);
 }])
 
 /** Helper service for generating random secure passwords */
@@ -214,22 +238,22 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
     /**
      * Perform a partial "soft-refresh" - refresh the stack data without fully re-rendering the page
      */ 
-   stacks: function() {
-    return Stacks.populate(Project.project.namespace);
-   },
+    stacks: function() {
+      return Stacks.populate(Project.project.namespace);
+     },
    
     /**
      * Perform a full "soft-refresh" - refresh all data without fully re-rendering the page
      */ 
-   full: function() {
-    Specs.populate();
-    return Project.populate(Project.project.namespace).then(function() {
-      return refresh.stacks();
-    });
-   }
- };
+    full: function() {
+      Specs.populate();
+      return Project.populate(Project.project.namespace).then(function() {
+        return refresh.stacks();
+      });
+    }
+  };
  
- return refresh;
+  return refresh;
 }])
 
 /** 
