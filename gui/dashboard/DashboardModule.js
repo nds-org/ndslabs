@@ -9,14 +9,14 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 
 .constant('DashboardAppPath', '/dashboard/#')
 
-.constant('HomePathSuffix', '/home')
-.constant('AddServicePathSuffix', '/home/:stackId/add/:service')
-.constant('EditServicePathSuffix', '/home/:stackId/edit/:service')
-.constant('ServiceConsolePathSuffix', '/home/:stackId/console/:service')
+.constant('HomePathSuffix', '/home/')
+.constant('AddServicePathSuffix', '/home/:stackId/add/:service/')
+.constant('EditServicePathSuffix', '/home/:stackId/edit/:service/')
+.constant('ServiceConsolePathSuffix', '/home/:stackId/console/:service/')
 
-.constant('AppStorePathSuffix', '/store')
-.constant('AddSpecPathSuffix', '/store/add')
-.constant('EditSpecPathSuffix', '/store/edit/:specKey')
+.constant('AppStorePathSuffix', '/store/')
+.constant('AddSpecPathSuffix', '/store/add/')
+.constant('EditSpecPathSuffix', '/store/edit/:specKey/')
 
 /**
  * Configure routes / HTTP for our app using the services defined above
