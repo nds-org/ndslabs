@@ -100,11 +100,11 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   $rootScope._ = window._;
     
   // Check our token every 60s
-  let tokenCheckMs = 60000;
+  var tokenCheckMs = 60000;
   
   // Define the logic for ending a user's session in the browser
-  let authInterval = null;
-  let terminateSession = authInfo.purge = function() {
+  var authInterval = null;
+  var terminateSession = authInfo.purge = function() {
     // Cancel the auth check interval
     if (authInterval) {
       $interval.cancel(authInterval);
@@ -140,7 +140,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   $log.debug('Starting token checker...');
   
   // Every so often, check that our token is still valid
-  let checkToken = function() {
+  var checkToken = function() {
     NdsLabsApi.getCheck_token().then(function() { $log.debug('Token is still valid.'); }, function() {
       $log.error('Token expired, redirecting to login.');
       terminateSession();
@@ -157,7 +157,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   // When user changes routes, check that they are still authed
   $rootScope.$on( "$routeChangeStart", function(event, next, current) {
     // Check if the token is still valid on route changes
-    let token = $cookies.get('token', CookieOptions);
+    var token = $cookies.get('token', CookieOptions);
     if (token) {
       authInfo.get().token = token;
       authInfo.get().namespace = $cookies.get('namespace', CookieOptions);

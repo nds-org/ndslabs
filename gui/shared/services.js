@@ -68,7 +68,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       }
       
       // Check if we've already created an instace of this quickstart
-      let existing = cache[quickstartKey];
+      var existing = cache[quickstartKey];
       if (existing) {
         return existing;
       }
