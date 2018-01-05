@@ -16,7 +16,7 @@ angular
   "use strict";
   
   if ($routeParams.quickstart) {
-    new QuickStart($routeParams.quickstart).launch();
+    QuickStart.get($routeParams.quickstart).launch();
   }
   
   $scope.fileManager = FileManager;

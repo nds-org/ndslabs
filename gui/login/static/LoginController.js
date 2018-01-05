@@ -53,13 +53,13 @@ angular
       
       // HACK: this pattern does not scale very well
       // If we were given an "rd" parameter, redirect to it on successful login
-      let rd = $routeParams.rd;
+      var rd = $routeParams.rd;
       if (rd && rd.indexOf('#') !== -1) {
         // rd contains hash, so it should be routable
         window.location.href = rd;
       } else if (rd && rd.indexOf('#') === -1) {
         // rd does not contain hash, so we artifically inject one
-        let newRd = rd.replace('/dashboard/', '/dashboard/#/');
+        var newRd = rd.replace('/dashboard/', '/dashboard/#/');
         window.location.href = newRd;
       } else {
         $window.location.href = HomeRoute;
