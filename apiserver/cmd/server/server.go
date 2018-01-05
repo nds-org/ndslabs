@@ -205,7 +205,7 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 	glog.Infof("ingress %s", cfg.Ingress)
 
 	jwt := &jwt.JWTMiddleware{
-		Key:        []byte(s.hostname),
+		Key:        []byte(adminPasswd),
 		Realm:      "ndslabs",
 		Timeout:    timeout,
 		MaxRefresh: time.Hour * 24,
