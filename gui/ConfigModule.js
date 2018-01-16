@@ -21,7 +21,7 @@ angular
  * The back-up (default) administrator e-mail to use for support, 
  * in case the /api/contact endpoint is unavailable
  */
-.constant('SupportEmail', 'lambert8@illinois.edu')
+.constant('SupportEmail', 'ndslabs-support@nationaldataservice.org')
 
 
 /**
@@ -265,7 +265,7 @@ angular
             //window.location = "/account/login?redirectUrl=" + Base64.encode(document.URL);
             
             // Purge current session data
-            AuthInfo.authInfo.token = null;
+            AuthInfo.get().token = null;
             //$cookies.remove('token', CookieOptions);
             //$cookies.remove('namespace', CookieOptions);
             $cookies.remove('token', CookieOptions);
