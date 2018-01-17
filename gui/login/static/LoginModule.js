@@ -5,8 +5,8 @@ angular
 
 .constant('LoginAppPath', '/login/#')
 .constant('SigninPathSuffix', '/')
-.constant('SignupPathSuffix', '/register')
-.constant('RecoveryPathSuffix', '/recovery')
+.constant('SignupPathSuffix', '/register/')
+.constant('RecoveryPathSuffix', '/recovery/')
 
 /**
  * Configure routes / HTTP for our app using the services defined above

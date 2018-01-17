@@ -5,8 +5,8 @@ angular
 
 .constant('LandingAppRoute', '/landing/#')
 .constant('LandingPathSuffix', '/')
-.constant('ContactUsPathSuffix', '/contact')
-.constant('ApiRefPathSuffix', '/swagger')
+.constant('ContactUsPathSuffix', '/contact/')
+.constant('ApiRefPathSuffix', '/swagger/')
 
 /**
  * Configure routes / HTTP for our app using the services defined above
