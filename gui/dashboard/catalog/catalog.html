@@ -125,8 +125,8 @@
                   <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu aria-labelledby="simple-dropdown">
                     <li><a id="cloneBtn" href ng-click="cloneSpec(spec)" ng-if="!spec.privileged"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
                     <li><a id="copyToClipboardBtn" href ng-click="copyToClipboard(spec)"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</a></li>
-                    <li><a id="qsLinkBtn" href ng-click="shareLink(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt"></i> Get QuickStart Link</a></li>
-                    <li><a id="embedLinkBtn" href ng-click="shareEmbed(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt-square"></i> Get Embedded QuickStart Snippet</a></li>
+                    <li><a id="qsLinkBtn" href ng-click="shareLink(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt"></i> Generate QuickStart Link</a></li>
+                    <li><a id="embedLinkBtn" href ng-click="shareEmbed(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt-square"></i> Generate QuickStart HTML Snippet</a></li>
                     <li><a id="viewJsonBtn" href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> View JSON</a></li>
                     <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}" target="_blank"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
                     <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="editBtn" ng-href="/dashboard/#/store/edit/{{ spec.key }}" ><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
@@ -218,8 +218,8 @@
                     <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu aria-labelledby="simple-dropdown">
                       <li><a id="cloneBtn" href ng-click="cloneSpec(spec)" ng-if="!spec.privileged"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
                       <li><a id="copyToClipboardBtn" href ng-click="copyToClipboard(spec)"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</a></li>
-                      <li><a id="qsLinkBtn" href ng-click="shareLink(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt"></i> Get QuickStart Link</a></li>
-                      <li><a id="embedLinkBtn" href ng-click="shareEmbed(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt-square"></i> Get Embedded QuickStart Snippet</a></li>
+                      <li><a id="qsLinkBtn" href ng-click="shareLink(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt"></i> Generate QuickStart Link</a></li>
+                      <li><a id="embedLinkBtn" href ng-click="shareEmbed(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt-square"></i> Generate QuickStart HTML Snippet</a></li>
                       <li><a id="viewJsonBtn" href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> View JSON</a></li>
                       <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}" target="_blank"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
                       <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="editBtn" ng-href="/dashboard/#/store/edit/{{ spec.key }}" ><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
