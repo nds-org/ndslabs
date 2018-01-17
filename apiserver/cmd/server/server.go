@@ -2093,8 +2093,18 @@ func (s *Server) QuickstartStack(w rest.ResponseWriter, r *rest.Request) {
 			Secure: true,
 		}
 
+		stackService := api.StackService{
+			Service: sid,
+			ResourceLimits: api.ResourceLimits{
+				CPUMax:        spec.ResourceLimits.CPUMax,
+				CPUDefault:    spec.ResourceLimits.CPUDefault,
+				MemoryMax:     spec.ResourceLimits.MemoryMax,
+				MemoryDefault: spec.ResourceLimits.MemoryDefault,
+			},
+		}
+
 		// Add the default service
-		stack.Services = append(stack.Services, api.StackService{Service: sid})
+		stack.Services = append(stack.Services, stackService)
 
 		stack, err = s.addStack(userId, stack)
 		if err != nil {
