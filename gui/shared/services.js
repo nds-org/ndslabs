@@ -528,9 +528,9 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
             
     var stack = {
       id: "",
-      name: spec.label,
+      name: angular.copy(spec.label),
       key: key,
-      secure: spec.authRequired,
+      secure: angular.copy(spec.authRequired),
       status: "stopped",
       services: []
     };
@@ -566,6 +566,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       stack: stack.key,
       service: spec.key,
       status: "",
+      resourceLimits: angular.copy(spec.resourceLimits),
       depends: angular.copy(spec.depends),
       config: angular.copy(spec.config),
       volumes: angular.copy(spec.volumeMounts),
