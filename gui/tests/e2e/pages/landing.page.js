@@ -5,9 +5,9 @@ module.exports = {};
 var helpers = require('../helpers.e2e.js');
 var shared = require('./shared.page.js');
 
+var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 var PAGE_TITLE = 'Labs Workbench'; // Landing Page';
 var PAGE_ROUTE = /https?\:\/\/.+\/landing\/\#?\/?/;
-var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 
 var LandingPage = function() {
   "use strict";

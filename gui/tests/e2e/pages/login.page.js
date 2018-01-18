@@ -5,7 +5,9 @@ module.exports = {};
 // Load other pages
 var Navbar = require('./navbar.page.js');
 var LandingPage = require('./landing.page.js');
+var shared = require('./shared.page.js');
 
+var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 var PAGE_TITLE = /*'Sign In to */ 'Labs Workbench';
 var PAGE_ROUTE = /https?\:\/\/.+\/login\/\#?\/?/;
 
@@ -28,6 +30,7 @@ LoginPage.prototype.get = function() {
   
   landingPage.get();
   navbar.clickSignIn();
+  //browser.get(TEST_HOSTNAME + '/login');
   this.verify();
 };
 
