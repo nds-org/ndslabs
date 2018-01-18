@@ -5,7 +5,7 @@ var shared = require('./shared.page.js');
 
 var DashboardPage = require('./dashboard.page.js');
 
-var PAGE_TITLE = 'Labs Workbench'; ///Console: .*/;
+var PAGE_TITLE = /Console: .*/;
 var PAGE_ROUTE = /https?\:\/\/.*\/dashboard\/\#?\/?home\/.*\/console/;
 
 var EC = protractor.ExpectedConditions;
