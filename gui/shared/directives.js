@@ -2,8 +2,8 @@
 
 angular.module('ndslabs-directives', [])
 
-.directive('terminal', [ '$log', '$window', '$timeout', '$location', 'AuthInfo', 'ApiUri', 'HomeRoute', 'NdsLabsApi', 
-        function($log, $window, $timeout, $location, AuthInfo, ApiUri, HomeRoute, NdsLabsApi) {
+.directive('terminal', [ '$log', '$window', '$timeout', '$location', 'AuthInfo', 'ApiUri', 'NdsLabsApi', 'DashboardAppPath', 'HomePathSuffix',
+        function($log, $window, $timeout, $location, AuthInfo, ApiUri, NdsLabsApi, DashboardAppRoute, HomePathSuffix) {
   "use strict";
 
     return {
@@ -36,7 +36,7 @@ angular.module('ndslabs-directives', [])
                 //term.destroy();
                 term.write('Session has been terminated. You may now close this tab.');
                 
-                $location.path(HomeRoute);
+                $location.path(DashboardAppPath + HomePathSuffix);
                 $window.close();
             };
         
