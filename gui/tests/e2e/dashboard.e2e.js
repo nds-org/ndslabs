@@ -31,7 +31,7 @@ var WAIT_TIME_APPLICATION_REMOVE = 30000;
 
 var TIMEOUT_EXPECT_NEW_TAB = 30000;
   
-var TEST_SPEC_KEY = 'latis';
+var TEST_SPEC_KEY = 'toolmanager';
     
 // dashboard.e2e.js
 describe('Labs Workbench Dashboard View', function() {
