@@ -8,7 +8,7 @@ var helpers = require('../helpers.e2e.js');
 var LandingPage = require('./landing.page.js');
 
 var PAGE_TITLE = 'Contact Labs Workbench Support';
-var PAGE_ROUTE = /https?\:\/\/.+\/\#\/contact/;
+var PAGE_ROUTE = /https?\:\/\/.+\/landing\/\#?\/?contact/;
 
 
 // 
