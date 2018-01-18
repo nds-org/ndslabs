@@ -60,7 +60,7 @@ describe('Labs Workbench Login View', function() {
     // Log out to reset test state
     navbar.expandAccountDropdown();
     navbar.clickSignOut();
-    landingPage.verify();
+    loginPage.verify();
   });
   
   it('should link to the Reset Password view', function() {
