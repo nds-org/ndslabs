@@ -6,7 +6,7 @@ module.exports = {};
 var Navbar = require('./navbar.page.js');
 var LandingPage = require('./landing.page.js');
 
-var PAGE_TITLE = 'Sign In to Labs Workbench';
+var PAGE_TITLE = /*'Sign In to */ 'Labs Workbench';
 var PAGE_ROUTE = /https?\:\/\/.+\/login\/\#?\/?/;
 
 var LoginPage = function() {
