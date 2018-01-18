@@ -7,13 +7,13 @@
                 
                 <ol class="breadcrumb">
                     <!-- <li><a ng-href="{{ productUrl }}">{{ productName }}</a></li> -->
-                    <li><a href="/landing/#/">{{ productName }}</a></li>
-                    <li><a ng-href="/dashboard/#/home">Applications</a></li>
-                    <li><a ng-href="/dashboard/#/store">Catalog</a></li>
+                    <li><a href="/landing/">{{ productName }}</a></li>
+                    <li><a ng-href="/dashboard/home">Applications</a></li>
+                    <li><a ng-href="/dashboard/store">Catalog</a></li>
                     <li class="active">{{ editingSpec ? spec.label : 'Add Application' }}</li>
                 </ol>
                                 
-                <div ng-if="spec.key | stackExistsFromSpec" uib-alert class="text-center alert-danger">You must remove any <a ng-href="#/home?expand={{ spec.key }}">existing application instances</a> before you can edit the spec</div>
+                <div ng-if="spec.key | stackExistsFromSpec" uib-alert class="text-center alert-danger">You must remove any <a ng-href="/dashboard/home?expand={{ spec.key }}">existing application instances</a> before you can edit the spec</div>
         
                 <div class="row">
                     <div class="col-sm-12">
