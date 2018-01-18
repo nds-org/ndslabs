@@ -13,7 +13,7 @@ var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 
 // TODO: How to handle "service name" in title?
 // TODO: How to handle "stackServiceId" in url?
-var PAGE_TITLE = 'Swagger UI';
+var PAGE_TITLE = 'Labs Workbench'; //'Swagger UI';
 var PAGE_ROUTE = /https?\:\/\/.+\/landing\/\#?\/?swagger/;;
 
 var SwaggerUiPage = function() {
@@ -42,7 +42,7 @@ SwaggerUiPage.prototype.get = function() {
 SwaggerUiPage.prototype.verify = function() { 
   "use strict";
 
-  expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
+  expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 

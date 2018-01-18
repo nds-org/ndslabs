@@ -46,7 +46,7 @@ SignUpPage.prototype.get = function() {
 SignUpPage.prototype.verify = function() {
   "use strict";
 
-  expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
+  expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 
