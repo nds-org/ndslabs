@@ -2301,7 +2301,14 @@ func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, erro
 					stackService.Endpoints = append(stackService.Endpoints, endpoint)
 				}
 			}
+		}
 
+		// NDS-1154
+		if stackService.ResourceLimits == (api.ResourceLimits{}) {
+			stackService.ResourceLimits.CPUMax = spec.ResourceLimits.CPUMax
+			stackService.ResourceLimits.MemoryMax = spec.ResourceLimits.MemoryMax
+			stackService.ResourceLimits.CPUDefault = spec.ResourceLimits.CPUDefault
+			stackService.ResourceLimits.MemoryDefault = spec.ResourceLimits.MemoryDefault
 		}
 	}
 
