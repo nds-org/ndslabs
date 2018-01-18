@@ -14,7 +14,7 @@ var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 // TODO: How to handle "service name" in title?
 // TODO: How to handle "stackServiceId" in url?
 var PAGE_TITLE = 'Swagger UI';
-var PAGE_ROUTE = TEST_HOSTNAME + '/swagger';
+var PAGE_ROUTE = /https?\:\/\/.+\/landing\/\#?\/?swagger/;;
 
 var SwaggerUiPage = function() {
   "use strict";

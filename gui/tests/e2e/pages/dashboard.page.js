@@ -10,7 +10,7 @@ var Navbar = require('./navbar.page.js');
 var TEST_USERNAME = shared.config.TEST_USERNAME;
 var TEST_PASSWORD = shared.config.TEST_PASSWORD;
 
-var PAGE_TITLE = 'Labs Workbench Dashboard';
+var PAGE_TITLE = 'Labs Workbench'; //'Labs Workbench Dashboard';
 var PAGE_ROUTE = /https?\:\/\/.+\/dashboard\/\#?\/?home(\?t=.+|expand=.)?/;
 
 var EC = protractor.ExpectedConditions;

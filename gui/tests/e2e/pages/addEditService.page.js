@@ -11,7 +11,7 @@ var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 // TODO: How to handle "edit" case?
 // TODO: How to handle "service name" in title?
 // TODO: How to handle "stackServiceId" in url?
-var PAGE_TITLE = /(Add|Edit) Application Service(\: .*)?/;
+var PAGE_TITLE = 'Labs Workbench'; ///(Add|Edit) Application Service(\: .*)?/;
 var PAGE_ROUTE = /https?\:\/\/.+\/dashboard\/\#?\/?home\/.+\/(add|edit)\/?.*/;
 
 var EC = protractor.ExpectedConditions;

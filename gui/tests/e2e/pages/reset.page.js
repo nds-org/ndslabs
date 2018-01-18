@@ -11,7 +11,7 @@ var LoginPage = require('./login.page.js');
 
 var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 
-var PAGE_TITLE = 'Reset Password';
+var PAGE_TITLE = 'Labs Workbench'; //'Reset Password';
 var PAGE_ROUTE = /^https?\:\/\/.*\/login\/\#?\/?recover(\?t=.+)?$/;
 
 var ResetPasswordPage = function() {

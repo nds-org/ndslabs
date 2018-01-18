@@ -9,7 +9,7 @@ var DashboardPage = require('./dashboard.page.js');
 
 var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 
-var PAGE_TITLE = 'Labs Workbench Catalog';
+var PAGE_TITLE = 'Labs Workbench'; //'Labs Workbench Catalog';
 var PAGE_ROUTE = /https?\:\/\/.+\/dashboard\/\#?\/?store/;
 
 var EC = protractor.ExpectedConditions;
