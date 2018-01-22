@@ -5,7 +5,7 @@ var helpers = require("./helpers.e2e.js");
 var shared = require("./pages/shared.page.js");
 
 var Navbar = require('./pages/navbar.page.js');
-var LandingPage = require('./pages/landing.page.js');
+var LoginPage = require('./pages/login.page.js');
 var DashboardPage = require('./pages/dashboard.page.js');
 var CatalogPage = require('./pages/catalog.page.js');
 
@@ -31,14 +31,14 @@ var WAIT_TIME_APPLICATION_REMOVE = 30000;
 
 var TIMEOUT_EXPECT_NEW_TAB = 30000;
   
-var TEST_SPEC_KEY = 'latis';
+var TEST_SPEC_KEY = 'toolmanager';
     
 // dashboard.e2e.js
 describe('Labs Workbench Dashboard View', function() {
   "use strict";
 
   var navbar = new Navbar();
-  var landingPage = new LandingPage();
+  var loginPage = new LoginPage();
   var catalogPage = new CatalogPage();
   var dashboardPage = new DashboardPage();
   var consolePage = new ConsolePage();
@@ -67,7 +67,7 @@ describe('Labs Workbench Dashboard View', function() {
     
     navbar.expandAccountDropdown();
     navbar.clickSignOut();
-    landingPage.verify();
+    loginPage.verify();
   });
   
   // How to set up for test? Is it safe to simply delete all existing applications?

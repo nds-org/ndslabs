@@ -92,9 +92,9 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
           }
           
           quickstart.busy = true;
-          /*$timeout(function() {
+          $timeout(function() {
             AutoRefresh.start();
-          }, 1000);*/
+          }, 1000);
           return NdsLabsApi.getStart({
             'key': quickstartKey
           }).then(function(started, xhr) {

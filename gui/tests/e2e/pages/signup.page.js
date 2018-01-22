@@ -10,8 +10,8 @@ var LoginPage = require('./login.page.js');
 
 var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 
-var PAGE_TITLE = 'Sign Up for Labs Workbench';
-var PAGE_ROUTE = TEST_HOSTNAME + '/register';
+var PAGE_TITLE = 'Labs Workbench'; //'Sign Up for Labs Workbench';
+var PAGE_ROUTE = /https?\:\/\/.+\/login\/\#?\/?register/;;
 
 
 var SignUpPage = function() {
@@ -46,7 +46,7 @@ SignUpPage.prototype.get = function() {
 SignUpPage.prototype.verify = function() {
   "use strict";
 
-  expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
+  expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 

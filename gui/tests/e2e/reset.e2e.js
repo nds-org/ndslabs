@@ -101,7 +101,7 @@ describe('Labs Workbench Reset Password View', function() {
       navbar.logoutBtn.click();
       
       // Bug? See NDS-638
-      landingPage.verify();
+      loginPage.verify();
       
       loggedIn = false;
     });
@@ -129,10 +129,9 @@ describe('Labs Workbench Reset Password View', function() {
       // Log out to reset test state
       navbar.accountDropdown.click();
       navbar.logoutBtn.click();
-      landingPage.verify();
+      loginPage.verify();
       
       // Log in again to ensure password actually changed
-      loginPage.get();
       loginPage.usernameInput.sendKeys(TEST_VALID_USERNAME);
       loginPage.passwordInput.sendKeys(TEST_NEW_PASSWORD);
       loginPage.loginBtn.click();

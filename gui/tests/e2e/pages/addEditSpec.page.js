@@ -12,7 +12,7 @@ var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 // TODO: How to handle "spec name" in title?
 // TODO: How to handle "id" in url?
 var PAGE_TITLE = /(Add|Edit) Application\:?.*/;
-var PAGE_ROUTE = /https?\:\/\/.+\/\#\/store\/(add|edit)\/?.*/;
+var PAGE_ROUTE = /https?\:\/\/.+\/dashboard\/\#?\/?store\/(add|edit)\/?.*/;
 
 var EC = protractor.ExpectedConditions;
 

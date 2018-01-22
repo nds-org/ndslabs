@@ -7,13 +7,13 @@
                 
                 <ol class="breadcrumb">
                     <!-- <li><a ng-href="{{ productUrl }}">{{ productName }}</a></li> -->
-                    <li><a href="/landing/#/">{{ productName }}</a></li>
-                    <li><a ng-href="/dashboard/#/home">Applications</a></li>
-                    <li><a ng-href="/dashboard/#/store">Catalog</a></li>
+                    <li><a href="/landing/">{{ productName }}</a></li>
+                    <li><a ng-href="/dashboard/home">Applications</a></li>
+                    <li><a ng-href="/dashboard/store">Catalog</a></li>
                     <li class="active">{{ editingSpec ? spec.label : 'Add Application' }}</li>
                 </ol>
                                 
-                <div ng-if="spec.key | stackExistsFromSpec" uib-alert class="text-center alert-danger">You must remove any <a ng-href="#/home?expand={{ spec.key }}">existing application instances</a> before you can edit the spec</div>
+                <div ng-if="spec.key | stackExistsFromSpec" uib-alert class="text-center alert-danger">You must remove any <a ng-href="/dashboard/home?expand={{ spec.key }}">existing application instances</a> before you can edit the spec</div>
         
                 <div class="row">
                     <div class="col-sm-12">
@@ -52,10 +52,10 @@
                                             <!-- All user specs in the catalog will default to using the NDS badge -->
                                             <div class="form-group">
                                                 <label for="logoField">Logo <sup><i class="fa fa-fw fa-question-circle" tooltip-placement="left" uib-tooltip="A URL to a small logo for this service"></i></sup></label>
-                                                <input type="url" class="form-control" id="logoField" name="logoField" placeholder="Enter Logo URL..." ng-model="spec.logo">
+                                                <input type="url" class="form-control" id="logoField" name="logoField" placeholder="Enter Logo URL..." ng-pattern="/^((\/.+)+|(https?:\/\/)?(www\.)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/?.*))$/" ng-model="spec.logo">
                                                 
                                                 <ng-messages class="text-danger" for="modifySpec.logoField.$error" role="alert">
-                                                  <ng-message when="url">Please enter a valid URL</ng-message>
+                                                  <ng-message when="pattern">Please enter a valid URL pattern</ng-message>
                                                 </ng-messages>
                                             </div>
                                             

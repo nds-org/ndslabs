@@ -4,14 +4,14 @@
 var helpers = require("./helpers.e2e.js");
 
 var Navbar = require('./pages/navbar.page.js');
-var LandingPage = require('./pages/landing.page.js');
+var LoginPage = require('./pages/login.page.js');
 var DashboardPage = require('./pages/dashboard.page.js');
 var CatalogPage = require('./pages/catalog.page.js');
 var AddEditSpecPage = require('./pages/addEditSpec.page.js');
 
 var EC = protractor.ExpectedConditions;
 
-var TEST_HELP_LINK_TARGET = /https\:\/\/nationaldataservice\.atlassian\.net\/wiki\/display\/NDSC\/.+/;
+var TEST_HELP_LINK_TARGET = /https\:\/\/nationaldataservice\.atlassian\.net\/wiki\/spaces\/NDSC\/.+/;
 
 var specKey = 'cloud9cpp';
 var cloneKey = 'clonedspec';
@@ -25,7 +25,7 @@ describe('Labs Workbench Catalog View', function() {
   var navbar = new Navbar();
   var catalogPage = new CatalogPage();
   var dashboardPage = new DashboardPage();
-  var landingPage = new LandingPage();
+  var loginPage = new LoginPage();
   var addSpecPage = new AddEditSpecPage();
   var editSpecPage = new AddEditSpecPage();
   
@@ -64,7 +64,7 @@ describe('Labs Workbench Catalog View', function() {
     helpers.afterAll();
     navbar.expandAccountDropdown();
     navbar.clickSignOut();
-    landingPage.verify();
+    loginPage.verify();
   });
   
   it('should offer main services that we expect to see', function() {
