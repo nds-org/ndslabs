@@ -6,7 +6,9 @@ RUN apt-get -qq update && \
     go get github.com/Masterminds/glide  &&  \
     cd /go/src/github.com/ndslabs/apiserver && ./build.sh docker test
 
+
 FROM debian:jessie
+ENV TEST true
 COPY --from=gobuild /go/src/github.com/ndslabs/apiserver/build/bin/ndslabsctl-linux-amd64 /ndslabsctl/ndslabsctl-linux-amd64
 COPY --from=gobuild /go/src/github.com/ndslabs/apiserver/build/bin/ndslabsctl-darwin-amd64 /ndslabsctl/ndslabsctl-darwin-amd64
 COPY --from=gobuild /go/src/github.com/ndslabs/apiserver/build/bin/apiserver-linux-amd64 /usr/local/bin/apiserver
