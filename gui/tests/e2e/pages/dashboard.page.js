@@ -22,10 +22,12 @@ var DashboardPage = function() {
   this.catalogLink = element(by.id('catalogLink'));
 
   // Repeaters
-  this.firstApplication = element.all(by.repeater("stack in configuredStacks | orderBy:['name','id'] track by stack.id"))[0];
+  this.firstApplication = element.all(by.repeater("stack in configuredStacks | orderBy:['name','id'] track by stack.id")).first();
 
   this.applications = element.all(by.repeater("stack in configuredStacks | orderBy:['name','id'] track by stack.id"));
   this.services = function(app) {  return app.all(by.repeater("svc in stack.services track by svc.id")); };
+  this.firstService = function(app) {  return app.all(by.repeater("svc in stack.services track by svc.id")).first(); };
+
   this.endpointLinks = function(svc) {  return svc.all(by.repeater('endpt in svc.endpoints track by endpt.port')); };
 
   // Modal (popup) windows
@@ -200,7 +202,7 @@ DashboardPage.prototype.shutdownAndRemoveAllApplications = function() {
     for (let i = 0; i < applications.length; i++) {
       let application = applications[i];
 
-      browser.wait(EC.elementToBeClickable(application), 5000);
+      browser.wait(EC.elementToBeClickable(application), 120000);
       //console.log("Expanding: " + i);
       application.click();
 

@@ -100,8 +100,8 @@ describe('Labs Workbench Dashboard View', function() {
       });
     }, WAIT_TIME_APPLICATION_REMOVE);
 
-    it('should allow the user to change the label of an application', function() {
-      let application = dashboardPage.applications.first()
+    xit('should allow the user to change the label of an application', function() {
+      let application = dashboardPage.firstApplication
       dashboardPage.applicationLabel(application).getText().then(function(oldLabel) {
         // Rename an application
         browser.wait(EC.elementToBeClickable(dashboardPage.renameBtn(application)), WAIT_TIME_ELEMENT_CLICKABLE);
@@ -136,9 +136,9 @@ describe('Labs Workbench Dashboard View', function() {
       });
     });
 
-    it('should allow basic auth toggle on select system applications', function() {
+    xit('should allow basic auth toggle on select system applications', function() {
       // Expand application header
-      var application = dashboardPage.applications.first()
+      var application = dashboardPage.firstApplication
       application.click();
       browser.wait(EC.textToBePresentInElement(dashboardPage.toggleAuthBtn(application), 'Disabled'), WAIT_TIME_ELEMENT_CLICKABLE);
       expect(dashboardPage.toggleAuthBtn(application).getText()).toBe(TEXT_BASIC_AUTH_DISABLED);
@@ -163,23 +163,21 @@ describe('Labs Workbench Dashboard View', function() {
     });*/
 
     xit('should link to each application service\'s help documentation', function() {
-      dashboardPage.applications.each(function(application) {
-        application.click();
-        dashboardPage.services(application).each(function(service) {
-          expect(dashboardPage.helpLink(service).isPresent()).toBe(true);
+      var application = dashboardPage.firstApplication
+      application.click();
+      dashboardPage.services(application).each(function(service) {
+        expect(dashboardPage.helpLink(service).isPresent()).toBe(true);
 
-          // TODO: Verify destination
-        });
+        // TODO: Verify destination
       });
     });
 
     xit('should allow the user to edit an application service', function() {
-      dashboardPage.applications.each(function(application) {
-        application.click();
-        dashboardPage.services(application).each(function(service) {
-          dashboardPage.editServiceBtn(service).click();
-          editServicePage.verify();
-        });
+      var application = dashboardPage.firstApplication
+      application.click();
+      dashboardPage.services(application).each(function(service) {
+        dashboardPage.editServiceBtn(service).click();
+        editServicePage.verify();
       });
     });
 
@@ -193,13 +191,12 @@ describe('Labs Workbench Dashboard View', function() {
 
     // Test order should not affect success
     xit('should allow the user to remove the application', function() {
-      dashboardPage.applications.each(function(application) {
-        application.click();
-        var deleteBtn = dashboardPage.deleteBtn(application);
-        browser.wait(EC.elementToBeClickable(deleteBtn), WAIT_TIME_APPLICATION_STARTUP);
-        deleteBtn.click();
-        dashboardPage.confirmBtn.click();
-      });
+      var application = dashboardPage.firstApplication
+      application.click();
+      var deleteBtn = dashboardPage.deleteBtn(application);
+      browser.wait(EC.elementToBeClickable(deleteBtn), WAIT_TIME_APPLICATION_STARTUP);
+      deleteBtn.click();
+      dashboardPage.confirmBtn.click();
 
       // Reinstall the application to reset test state
       catalogPage.get(true);
@@ -209,28 +206,26 @@ describe('Labs Workbench Dashboard View', function() {
     }, WAIT_TIME_APPLICATION_REMOVE);
 
     // After starting an application
-    xdescribe('Running', function() {
+    describe('Running', function() {
       beforeAll(function(done) {
         // Start the Application
-        dashboardPage.applications.each(function(application) {
+        var application = dashboardPage.firstApplication
           dashboardPage.launchApplication(application);
           done();
-        });
       }, WAIT_TIME_APPLICATION_STARTUP);
 
       afterAll(function(done) {
         // Stop the application
-        dashboardPage.applications.each(function(application) {
+        var application = dashboardPage.firstApplication
           dashboardPage.shutdownApplication(application);
           done();
-        });
       }, WAIT_TIME_APPLICATION_SHUTDOWN);
 
       it('should link to available endpoints on the service', function(done) {
-        dashboardPage.applications.each(function(application) {
+        var application = dashboardPage.firstApplication
           application.click();
 
-          dashboardPage.services(application).each(function(service) {
+          var service = dashboardPage.firstService(application)
             expect(dashboardPage.endpointLinks(service).count()).toBe(1);
 
             dashboardPage.serviceIdText(service).getText().then(function(serviceId) {
@@ -242,11 +237,9 @@ describe('Labs Workbench Dashboard View', function() {
               // TODO: How to handle basic auth?
               // For now, auth manually when prompted.. later test runs should then pass
             });
-          });
-        });
       }, TIMEOUT_EXPECT_NEW_TAB);
 
-      it('should allow the user to change the label of an application', function() {
+      xit('should allow the user to change the label of an application', function() {
         dashboardPage.applications.each(function(application) {
           dashboardPage.applicationLabel(application).getText().then(function(oldLabel) {
             // Rename an application
@@ -283,7 +276,7 @@ describe('Labs Workbench Dashboard View', function() {
         });
       });
 
-      it('should allow the user to view the console of a running application', function(done) {
+      xit('should allow the user to view the console of a running application', function(done) {
         dashboardPage.applications.each(function(application) {
           application.click();
           dashboardPage.services(application).each(function(service) {
@@ -299,7 +292,7 @@ describe('Labs Workbench Dashboard View', function() {
         });
       }, TIMEOUT_EXPECT_NEW_TAB);
 
-      it('should allow the user to view the config of a running application', function() {
+      xit('should allow the user to view the config of a running application', function() {
         dashboardPage.applications.each(function(application) {
           application.click();
           dashboardPage.services(application).each(function(service) {
@@ -316,7 +309,7 @@ describe('Labs Workbench Dashboard View', function() {
         });
       });
 
-      it('should allow the user to view logs of a running application', function() {
+      xit('should allow the user to view logs of a running application', function() {
         dashboardPage.applications.each(function(application) {
           application.click();
           dashboardPage.services(application).each(function(service) {
@@ -333,7 +326,7 @@ describe('Labs Workbench Dashboard View', function() {
         });
       });
 
-      it('should link to the application\'s help documentation', function() {
+      xit('should link to the application\'s help documentation', function() {
         dashboardPage.applications.each(function(application) {
           application.click();
           dashboardPage.services(application).each(function(service) {
@@ -344,7 +337,7 @@ describe('Labs Workbench Dashboard View', function() {
         });
       });
 
-      it('should allow the user to shutdown a running application', function() {
+      xit('should allow the user to shutdown a running application', function() {
         dashboardPage.applications.each(function(application) {
           dashboardPage.shutdownApplication(application);
 
