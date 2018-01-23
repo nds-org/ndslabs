@@ -1,0 +1,1604 @@
+{
+	"info": {
+		"name": "Workbench",
+		"_postman_id": "b18647a8-5cad-d8f1-e4f6-c723029b73da",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Accounts",
+			"description": "",
+			"item": [
+				{
+					"name": "Admin login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "bbef9fba-3785-4c54-a66c-c52cdf3375e5",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Get token\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.environment.set(\"admin_token\", jsonData.token);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"{{admin_username}}\", \"password\": \"{{admin_password}}\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/authenticate",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "80e76211-7a8b-452b-80f8-5afe7d39b69c",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Account ID\", function () {",
+									"    pm.expect(jsonData.id).to.eql(pm.environment.get(\"username\"));",
+									"    pm.expect(jsonData.status).to.eql(\"unverified\");",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"{{username}}\",\n    \"name\": \"Test User\",\n    \"description\": \"Automated test account\",\n    \"namespace\": \"{{username}}\",\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/register",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a8ee1d36-7c33-4116-83fe-7cdaa558190d",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"u\": \"{{username}}\",\n    \"t\": \"{{verify_token}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/register/verify",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"register",
+								"verify"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin get account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "84803720-81c4-4fb0-813b-98f946dd9d57",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"GetAccount ID\", function () {",
+									"    pm.expect(jsonData.id).to.eql(pm.environment.get(\"username\"));",
+									"    pm.expect(jsonData.status).to.eql(\"approved\");",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"willis8\", \"password\": \"test123\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/accounts/{{username}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"{{username}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin post account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "5208cf0c-895a-46f6-aee6-bc71f6dff67b",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.expect(jsonData.id).to.eql(\"testpost\");",
+									"    pm.expect(jsonData.name).to.eql(\"Test Post User\");",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"testpost\",\n    \"name\": \"Test Post User\",\n    \"description\": \"Automated test account\",\n    \"namespace\": \"testpost\",\n    \"email\": \"devnull@ncsa.illinois.edu\",\n    \"password\": \"\",\n    \"resourceLimits\": {\n        \"cpuMax\": 0,\n        \"cpuDefault\": 0,\n        \"memMax\": 0,\n        \"memDefault\": 0,\n        \"storageQuota\": 0\n    },\n    \"resourceUsage\": {\n        \"cpu\": \"0\",\n        \"memory\": \"0\",\n        \"storage\": \"\",\n        \"cpuPct\": \"0.000000\",\n        \"memPct\": \"0.000000\"\n    },\n    \"status\": \"approved\",\n    \"token\": \"\",\n    \"organization\": \"\",\n    \"created\": 0,\n    \"lastLogin\": 0,\n    \"inactiveTimeout\": 480,\n    \"nexturl\": \"\"\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/accounts",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"accounts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin export account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "5757c938-f763-4d90-8891-35c533da3652",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.expect(jsonData.account.id).to.eql(\"testpost\");",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"willis8\", \"password\": \"test123\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/export/testpost",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"export",
+								"testpost"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin put account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "17e38f49-52d0-4e97-ab47-482256b858d2",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.expect(jsonData.id).to.eql(\"testpost\");",
+									"    pm.expect(jsonData.name).to.eql(\"Test Put User\");",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"testpost\",\n    \"name\": \"Test Put User\",\n    \"description\": \"Automated test account\",\n    \"namespace\": \"testpost\",\n    \"email\": \"devnull@ncsa.illinois.edu\",\n    \"password\": \"\",\n    \"resourceLimits\": {\n        \"cpuMax\": 0,\n        \"cpuDefault\": 0,\n        \"memMax\": 0,\n        \"memDefault\": 0,\n        \"storageQuota\": 0\n    },\n    \"resourceUsage\": {\n        \"cpu\": \"0\",\n        \"memory\": \"0\",\n        \"storage\": \"\",\n        \"cpuPct\": \"0.000000\",\n        \"memPct\": \"0.000000\"\n    },\n    \"status\": \"approved\",\n    \"token\": \"\",\n    \"organization\": \"\",\n    \"created\": 0,\n    \"lastLogin\": 0,\n    \"inactiveTimeout\": 480,\n    \"nexturl\": \"\"\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/accounts/testpost",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"testpost"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b1be56c6-e749-462f-9304-b978966b99cb",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://{{host}}/api/accounts/testpost",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"testpost"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin import account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "35c3fc15-2148-448a-874b-f9b2405b03ef",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.expect(jsonData.id).to.eql(\"testimport\");",
+									"    pm.expect(jsonData.status).to.eql(\"approved\");",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"account\": {\n        \"id\": \"testimport\",\n        \"name\": \"Test Import User\",\n        \"description\": \"Automated test account\",\n        \"namespace\": \"testimport\",\n        \"email\": \"devnull@ncsa.illinois.edu\",\n        \"password\": \"$apr1$5Ptm546b$Ed3dnlPVJkt1mQQRboT4a0\",\n        \"resourceLimits\": {\n            \"cpuMax\": 0,\n            \"cpuDefault\": 0,\n            \"memMax\": 0,\n            \"memDefault\": 0,\n            \"storageQuota\": 0\n        },\n        \"resourceUsage\": {\n            \"cpu\": \"\",\n            \"memory\": \"\",\n            \"storage\": \"\",\n            \"cpuPct\": \"\",\n            \"memPct\": \"\"\n        },\n        \"status\": \"approved\",\n        \"token\": \"\",\n        \"organization\": \"\",\n        \"created\": 0,\n        \"lastLogin\": 0,\n        \"inactiveTimeout\": 480,\n        \"nexturl\": \"\"\n    }\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/import/testimport",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"import",
+								"testimport"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin get imported account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "5ec7f0c2-6512-41e0-816c-6d26629a1c15",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"GetAccount ID\", function () {",
+									"    pm.expect(jsonData.id).to.eql(\"testimport\");",
+									"    pm.expect(jsonData.status).to.eql(\"approved\");",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"willis8\", \"password\": \"test123\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/accounts/testimport",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"testimport"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete imported account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b1be56c6-e749-462f-9304-b978966b99cb",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://{{host}}/api/accounts/testimport",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"testimport"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin get all accounts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "bf68782b-fd39-4c94-bfc3-0794727957e0",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.expect(jsonData.length).to.eql(2);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"willis8\", \"password\": \"test123\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/accounts",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"accounts"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"description": "",
+			"item": [
+				{
+					"name": "Invalid login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d971b9a5-a29c-470c-bb99-a0c74a9e9d0b",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"invaliduser\", \"password\": \"invalidpassword\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/authenticate",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Valid login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Check token\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.environment.set(\"token\", jsonData.token);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/authenticate",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check token host forbidden",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "18b21c2c-2fa9-4fe9-a7e5-0e37716f3ed0",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"willis8\", \"password\": \"test123\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/check_token?host=test",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"check_token"
+							],
+							"query": [
+								{
+									"key": "host",
+									"value": "test",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "49f2b3d8-c657-4a0d-8dc4-7e43e70ef668",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"willis8\", \"password\": \"test123\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/check_token",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"check_token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "44c314d5-3f1c-45ec-a5d3-d209ebde9ce2",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Check token\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.environment.set(\"token\", jsonData.token);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"willis8\", \"password\": \"test123\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/refresh_token",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"refresh_token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1da197b0-49b5-49a4-ab6a-731ae82676b3",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"password\": \"changed_password\"\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/change_password",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"change_password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login changed password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Check token\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.environment.set(\"token\", jsonData.token);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"{{username}}\", \"password\": \"changed_password\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/authenticate",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change password back",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "5f6dc2db-cfbf-4f52-8651-c60589ae0f34",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"password\": \"{{password}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/change_password",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"change_password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Valid login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Check token\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.environment.set(\"token\", jsonData.token);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/authenticate",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1da197b0-49b5-49a4-ab6a-731ae82676b3",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://{{host}}/api/reset/{{username}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"reset",
+								"{{username}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset password invalid user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "ea296743-aa8a-4c06-90ef-362885829dd8",
+								"type": "text/javascript",
+								"exec": [
+									"// Return 200 regardless",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://{{host}}/api/reset/invalid",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"reset",
+								"invalid"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "31a14d71-a021-4b5f-8766-02eeb0449503",
+								"type": "text/javascript",
+								"exec": [
+									"// Currently does nothing",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://{{host}}/api/authenticate",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cleanup",
+			"description": "",
+			"item": [
+				{
+					"name": "Admin login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d4a4ffdb-2996-48e9-b8f5-ae83b9d56d8b",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Check token\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.environment.set(\"admin_token\", jsonData.token);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"{{admin_username}}\", \"password\": \"{{admin_password}}\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/authenticate",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b1be56c6-e749-462f-9304-b978966b99cb",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://{{host}}/api/accounts/{{username}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"{{username}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin get account not found",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4ab26398-cf16-41be-aac2-ac067fe12efc",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"willis8\", \"password\": \"test123\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/accounts/{{username}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"{{username}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
