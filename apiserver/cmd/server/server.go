@@ -2093,8 +2093,18 @@ func (s *Server) QuickstartStack(w rest.ResponseWriter, r *rest.Request) {
 			Secure: true,
 		}
 
+		stackService := api.StackService{
+			Service: sid,
+			ResourceLimits: api.ResourceLimits{
+				CPUMax:        spec.ResourceLimits.CPUMax,
+				CPUDefault:    spec.ResourceLimits.CPUDefault,
+				MemoryMax:     spec.ResourceLimits.MemoryMax,
+				MemoryDefault: spec.ResourceLimits.MemoryDefault,
+			},
+		}
+
 		// Add the default service
-		stack.Services = append(stack.Services, api.StackService{Service: sid})
+		stack.Services = append(stack.Services, stackService)
 
 		stack, err = s.addStack(userId, stack)
 		if err != nil {
@@ -2301,7 +2311,14 @@ func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, erro
 					stackService.Endpoints = append(stackService.Endpoints, endpoint)
 				}
 			}
+		}
 
+		// NDS-1154
+		if stackService.ResourceLimits == (api.ResourceLimits{}) {
+			stackService.ResourceLimits.CPUMax = spec.ResourceLimits.CPUMax
+			stackService.ResourceLimits.MemoryMax = spec.ResourceLimits.MemoryMax
+			stackService.ResourceLimits.CPUDefault = spec.ResourceLimits.CPUDefault
+			stackService.ResourceLimits.MemoryDefault = spec.ResourceLimits.MemoryDefault
 		}
 	}
 
