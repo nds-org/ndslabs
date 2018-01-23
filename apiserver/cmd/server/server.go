@@ -1124,6 +1124,7 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 	if !ok {
 		glog.Warningf("Cannot add service, dependency %s missing\n", dep)
 		rest.Error(w, fmt.Sprintf("Missing dependency %s", dep), http.StatusNotFound)
+                return
 	}
 
 	cf, ok := s.checkConfigs(userId, &service)
@@ -1189,6 +1190,7 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 	if !ok {
 		glog.Warningf("Cannot add service, dependency %s missing\n", dep)
 		rest.Error(w, fmt.Sprintf("Missing dependency %s", dep), http.StatusNotFound)
+                return
 	}
 	cf, ok := s.checkConfigs(userId, &service)
 	if !ok {
