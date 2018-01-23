@@ -18,7 +18,7 @@ var CatalogPage = function() {
   "use strict";
 
   // Search Header
-  this.searchFilter = element(by.id('filterTagsInput'));
+  this.searchFilter = element(by.model('newTag.text'));
   this.removeTagBtn = element(by.css('[ng-click="$removeTag()"]'));
   this.toggleCardsBtn = element(by.id('toggleCardsBtn'));
   this.viewAsIcon = element(by.id('viewAsIcon'));
