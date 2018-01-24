@@ -101,23 +101,25 @@ describe('Labs Workbench Catalog View', function() {
     addSpecPage.verify();
   });
   
-  // FIXME: Directive error?
-  /*it('should allow the user to filter using a search query', function() {
-    //catalogPage.applyFilter('clowder');
-    //expect(catalogPage.cards.count()).toBe(2);
-    
-    // TODO: Expect Clowder + pyCharm for Clowder
-  });
-  
-  // FIXME: Directive error?
-  it('should allow the user to filter using tags', function() {
-    //catalogPage.applyTag('Archive');
-    //expect(catalogPage.cards.count()).toBe(1);
-    
-    // TODO: Expect Dataverse
-  });*/
-  
   describe('As Cards', function() {
+    it('should allow the user to filter using a search query', function() {
+        catalogPage.applyFilter('clowder');
+
+        // FIXME: Add some actual expectations
+        //expect(catalogPage.cards.count()).toBe(2);
+
+        // TODO: Expect Clowder + pyCharm for Clowder
+    });
+
+    it('should allow the user to filter using tags', function() {
+        catalogPage.applyTag('Archive');
+
+        // FIXME: Add some actual expectations
+        //expect(catalogPage.cards.count()).toBe(1);
+
+        // TODO: Expect Dataverse
+    });
+
     it('should allow the user to install an application', function() {
       catalogPage.installApplication('toolmanager').then(function() {
         dashboardPage.get(true);
@@ -198,6 +200,24 @@ describe('Labs Workbench Catalog View', function() {
     beforeEach(function() {
       // Toggle to view as table
       catalogPage.toggleCardsBtn.click();
+    });
+
+    it('should allow the user to filter using a search query', function() {
+        catalogPage.applyFilter('clowder');
+
+        // FIXME: Add some actual expectations
+        //expect(catalogPage.table.count()).toBe(2);
+        
+        // TODO: Expect Clowder + pyCharm for Clowder
+    });
+
+    it('should allow the user to filter using tags', function() {
+        catalogPage.applyTag('Archive');
+
+        // FIXME: Add some actual expectations
+        //expect(catalogPage.table.count()).toBe(1);
+
+        // TODO: Expect Dataverse
     });
     
     // TODO: Clone error (duplicate key)

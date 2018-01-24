@@ -16,8 +16,12 @@ exports.config = {
    */
   multiCapabilities:[
     // Working on Windows and OSX
-    { 'browserName': 'chrome' },
-
+    { 'browserName': 'chrome',
+      'chromeOptions': {
+         args: [  "--disable-gpu", "--window-size=1280x1024" ]
+       }
+    },
+    
     // Firefox: 46.0.1 and below supposedly work, latest does not
     // See http://stackoverflow.com/questions/38644703/org-openqa-selenium-firefox-notconnectedexception-when-running-selenium-from-com
     //{ 'browserName': 'firefox' },
