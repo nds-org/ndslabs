@@ -174,8 +174,13 @@ EOF
 	echo $ADMIN_PASSWORD > /password.txt
 	umask 0
 
-	apiserver -conf /apiserver.json --logtostderr=true -v=1 -passwd $ADMIN_PASSWORD 
-
+	if [ -z "$TEST" ]; then
+		apiserver -conf /apiserver.json --logtostderr=true -v=1 -passwd $ADMIN_PASSWORD 
+        else
+                echo "Running binary with test/coverage instrumentation"
+                echo "Writing output to $VOLUME_PATH/coverage.out"
+		apiserver -test.coverprofile=$VOLUME_PATH/coverage.out -test.v -test.run=TestRunMain 
+	fi 
 else
     exec "$@"
 fi
