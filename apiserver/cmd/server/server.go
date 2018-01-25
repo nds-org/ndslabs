@@ -3,6 +3,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -10,8 +11,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	config "github.com/ndslabs/apiserver/pkg/config"
@@ -356,11 +359,25 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 	go s.kube.WatchPods(s)
 	go s.shutdownInactiveServices()
 
-	http.Handle(s.prefix, api.MakeHandler())
-	http.HandleFunc(s.prefix+"download", s.DownloadClient)
+	httpsrv := &http.Server{
+		Addr:    ":" + cfg.Port,
+		Handler: api.MakeHandler(),
+	}
 
 	glog.Infof("Listening on %s", cfg.Port)
-	glog.Fatal(http.ListenAndServe(":"+cfg.Port, nil))
+
+	stop := make(chan os.Signal, 2)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		httpsrv.ListenAndServe()
+	}()
+	<-stop
+
+	// Handle shutdown
+	fmt.Println("Shutting down apiserver")
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	httpsrv.Shutdown(ctx)
+	fmt.Println("Apiserver stopped")
 }
 
 func (s *Server) CheckConsole(w rest.ResponseWriter, r *rest.Request) {
@@ -1107,6 +1124,7 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 	if !ok {
 		glog.Warningf("Cannot add service, dependency %s missing\n", dep)
 		rest.Error(w, fmt.Sprintf("Missing dependency %s", dep), http.StatusNotFound)
+                return
 	}
 
 	cf, ok := s.checkConfigs(userId, &service)
@@ -1172,6 +1190,7 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 	if !ok {
 		glog.Warningf("Cannot add service, dependency %s missing\n", dep)
 		rest.Error(w, fmt.Sprintf("Missing dependency %s", dep), http.StatusNotFound)
+                return
 	}
 	cf, ok := s.checkConfigs(userId, &service)
 	if !ok {

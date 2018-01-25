@@ -64,3 +64,8 @@ import:
   subpackages:
   - proto
 - package: github.com/golang/protobuf
+- package: github.com/sirupsen/logrus
+  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
+- package: github.com/Sirupsen/logrus
+  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
+  repo: https://github.com/sirupsen/logrus.git
