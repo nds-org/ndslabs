@@ -31,10 +31,10 @@ var WAIT_TIME_APPLICATION_REMOVE = 30000;
 
 var TIMEOUT_EXPECT_NEW_TAB = 30000;
 
-var TEST_SPEC_KEY = 'toolmanager';
+var TEST_SPEC_KEY = 'cloudcmd';
 
 // dashboard.e2e.js
-describe('Labs Workbench Dashboard View', function() {
+  describe('Labs Workbench Dashboard View', function() {
   "use strict";
 
   var navbar = new Navbar();
@@ -50,7 +50,7 @@ describe('Labs Workbench Dashboard View', function() {
 
     // Login and shutdown / remove any existing applications
     dashboardPage.get();
-    dashboardPage.shutdownAndRemoveAllApplications();
+    // dashboardPage.shutdownAndRemoveAllApplications();
   });
 
   beforeEach(function() {
@@ -71,7 +71,7 @@ describe('Labs Workbench Dashboard View', function() {
   });
 
   // How to set up for test? Is it safe to simply delete all existing applications?
-  it('should link to the catalog page if no applications are present', function() {
+  xit('should link to the catalog page if no applications are present', function() {
     dashboardPage.catalogLink.click();
     catalogPage.verify();
   });
@@ -94,46 +94,46 @@ describe('Labs Workbench Dashboard View', function() {
     afterAll(function(done) {
       // Save the application's ID 
       // CAUTION: Value is volatile - it can change mid-test
-      dashboardPage.applications.then(function(applications) {
-        dashboardPage.removeApplication(applications[0]);
+      let application = dashboardPage.firstApplication
+        dashboardPage.removeApplication(application);
         done();
-      });
     }, WAIT_TIME_APPLICATION_REMOVE);
 
     xit('should allow the user to change the label of an application', function() {
-      let application = dashboardPage.firstApplication
-      dashboardPage.applicationLabel(application).getText().then(function(oldLabel) {
-        // Rename an application
-        browser.wait(EC.elementToBeClickable(dashboardPage.renameBtn(application)), WAIT_TIME_ELEMENT_CLICKABLE);
-        dashboardPage.renameBtn(application).click();
+      var application = dashboardPage.firstApplication
+        dashboardPage.applicationLabel(application).getText().then(function (oldLabel) {
 
-        // Expect previous label to be the default value
-        browser.wait(EC.visibilityOf(dashboardPage.stackRenameModal), WAIT_TIME_ELEMENT_CLICKABLE);
-        browser.wait(EC.visibilityOf(dashboardPage.nameInput), WAIT_TIME_ELEMENT_CLICKABLE);
-        expect(dashboardPage.nameInput.getAttribute('value')).toBe(oldLabel);
+          // Rename an application
+          browser.wait(EC.elementToBeClickable(dashboardPage.renameBtn(application)), WAIT_TIME_ELEMENT_CLICKABLE);
+          dashboardPage.renameBtn(application).click();
 
-        // Input new application label
-        dashboardPage.nameInput.clear();
-        dashboardPage.nameInput.sendKeys(TEST_NEW_APPLICATION_NAME);
-        dashboardPage.confirmBtn.click();
+          // Expect previous label to be the default value
+          browser.wait(EC.visibilityOf(dashboardPage.stackRenameModal), WAIT_TIME_ELEMENT_CLICKABLE);
+          browser.wait(EC.visibilityOf(dashboardPage.nameInput), WAIT_TIME_ELEMENT_CLICKABLE);
+          expect(dashboardPage.nameInput.getAttribute('value')).toBe(oldLabel);
 
-        // Ensure that the name changed as expected
-        browser.wait(EC.textToBePresentInElement(dashboardPage.applicationLabel(application), TEST_NEW_APPLICATION_NAME), WAIT_TIME_ELEMENT_CLICKABLE);
-        expect(dashboardPage.applicationLabel(application).getText()).toBe(TEST_NEW_APPLICATION_NAME);
+          // Input new application label
+          dashboardPage.nameInput.clear();
+          dashboardPage.nameInput.sendKeys(TEST_NEW_APPLICATION_NAME);
+          dashboardPage.confirmBtn.click();
 
-        // Revert label back to reset test state
-        browser.wait(EC.elementToBeClickable(dashboardPage.renameBtn(application)), WAIT_TIME_ELEMENT_CLICKABLE);
-        dashboardPage.renameBtn(application).click();
-        browser.wait(EC.visibilityOf(dashboardPage.stackRenameModal), WAIT_TIME_ELEMENT_CLICKABLE);
-        browser.wait(EC.visibilityOf(dashboardPage.nameInput), WAIT_TIME_ELEMENT_CLICKABLE);
-        dashboardPage.nameInput.clear();
-        dashboardPage.nameInput.sendKeys(oldLabel);
-        dashboardPage.confirmBtn.click();
+          // Ensure that the name changed as expected
+          browser.wait(EC.textToBePresentInElement(dashboardPage.applicationLabel(application), TEST_NEW_APPLICATION_NAME), WAIT_TIME_ELEMENT_CLICKABLE);
+          expect(dashboardPage.applicationLabel(application).getText()).toBe(TEST_NEW_APPLICATION_NAME);
 
-        // Ensure that the name reverted as expected
-        browser.wait(EC.textToBePresentInElement(dashboardPage.applicationLabel(application), oldLabel), WAIT_TIME_ELEMENT_CLICKABLE);
-        expect(dashboardPage.applicationLabel(application).getText()).toBe(oldLabel);
-      });
+          // Revert label back to reset test state
+          browser.wait(EC.elementToBeClickable(dashboardPage.renameBtn(application)), WAIT_TIME_ELEMENT_CLICKABLE);
+          dashboardPage.renameBtn(application).click();
+          browser.wait(EC.visibilityOf(dashboardPage.stackRenameModal), WAIT_TIME_ELEMENT_CLICKABLE);
+          browser.wait(EC.visibilityOf(dashboardPage.nameInput), WAIT_TIME_ELEMENT_CLICKABLE);
+          dashboardPage.nameInput.clear();
+          dashboardPage.nameInput.sendKeys(oldLabel);
+          dashboardPage.confirmBtn.click();
+
+          // Ensure that the name reverted as expected
+          browser.wait(EC.textToBePresentInElement(dashboardPage.applicationLabel(application), oldLabel), WAIT_TIME_ELEMENT_CLICKABLE);
+          expect(dashboardPage.applicationLabel(application).getText()).toBe(oldLabel);
+        });
     });
 
     xit('should allow basic auth toggle on select system applications', function() {
@@ -209,16 +209,14 @@ describe('Labs Workbench Dashboard View', function() {
     describe('Running', function() {
       beforeAll(function(done) {
         // Start the Application
-        var application = dashboardPage.firstApplication
-          dashboardPage.launchApplication(application);
+          dashboardPage.launchApplication(dashboardPage.firstApplication);
           done();
       }, WAIT_TIME_APPLICATION_STARTUP);
 
       afterAll(function(done) {
         // Stop the application
-        var application = dashboardPage.firstApplication
-          dashboardPage.shutdownApplication(application);
-          done();
+        dashboardPage.shutdownApplication(dashboardPage.firstApplication);
+        done();
       }, WAIT_TIME_APPLICATION_SHUTDOWN);
 
       it('should link to available endpoints on the service', function(done) {

@@ -1,7 +1,9 @@
 var config = require("./protractor.auth.json");
+var failFast = require('protractor-fail-fast');
 
 // e2e.conf.js
 exports.config = {
+  allScriptsTimeout: 20000,
   framework: 'jasmine',
   seleniumAddress: 'http://localhost:4444/wd/hub',
   //chromeOnly: true,
@@ -9,6 +11,18 @@ exports.config = {
   jasmineNodeOpts: {
     defaultTimeoutInterval: 30000,
     realtimeFailure: true
+  },
+
+  plugins: [{
+    package: 'protractor-fail-fast'
+  }],
+
+  onPrepare: function() {
+    jasmine.getEnv().addReporter(failFast.init());
+  },
+
+  afterLaunch: function() {
+    failFast.clean();
   },
 
   /*

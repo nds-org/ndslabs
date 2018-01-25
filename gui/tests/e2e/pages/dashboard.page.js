@@ -22,8 +22,7 @@ var DashboardPage = function() {
   this.catalogLink = element(by.id('catalogLink'));
 
   // Repeaters
-  this.firstApplication = element.all(by.repeater("stack in configuredStacks | orderBy:['name','id'] track by stack.id")).first();
-
+  this.firstApplication = element.all(by.repeater("stack in configuredStacks | orderBy:['name','id'] track by stack.id")).first()
   this.applications = element.all(by.repeater("stack in configuredStacks | orderBy:['name','id'] track by stack.id"));
   this.services = function(app) {  return app.all(by.repeater("svc in stack.services track by svc.id")); };
   this.firstService = function(app) {  return app.all(by.repeater("svc in stack.services track by svc.id")).first(); };
@@ -199,17 +198,19 @@ DashboardPage.prototype.shutdownAndRemoveAllApplications = function() {
 
   // Shutdown and remove all applications
   return this.applications.then(function(applications) {
+    console.log("Removing applications "+applications)
     for (let i = 0; i < applications.length; i++) {
       let application = applications[i];
+      this.applicationLabel(application).getText().then(function(oldLabel) {
+        console.log("On a page "+oldLabel);
+        browser.wait(EC.elementToBeClickable(application), 120000);
+        //console.log("Expanding: " + i);
+        application.click();
 
-      browser.wait(EC.elementToBeClickable(application), 120000);
-      //console.log("Expanding: " + i);
-      application.click();
-
-      // Success == running => we need to shut it down
-      helpers.hasClass(application, 'panel-danger').then(shutdownAndRemove(application));
+        // Success == running => we need to shut it down
+        helpers.hasClass(application, 'panel-danger').then(shutdownAndRemove(application));
+      });
     }
-
     return true;
   });
 };

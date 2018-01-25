@@ -100,6 +100,7 @@ module.exports.hasClass = function (ele, clazz) {
   "use strict";
 
   return ele.getAttribute('class').then(function (classes) {
+      console.log("Looking for "+clazz+" -> "+classes)
       return classes.split(' ').indexOf(clazz) !== -1;
   });
 };
