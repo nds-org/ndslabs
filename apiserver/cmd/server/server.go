@@ -2,7 +2,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"flag"
@@ -331,8 +330,8 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 		rest.Post(s.prefix+"import/:userId", s.ImportAccount),
 		rest.Get(s.prefix+"export/:userId", s.ExportAccount),
 		rest.Get(s.prefix+"stop_all", s.StopAllStacks),
-		rest.Put(s.prefix+"mount/:sid", s.PutDataset),
 		rest.Put(s.prefix+"log_level/:level", s.PutLogLevel),
+		rest.Get(s.prefix+"download", s.DownloadClient),
 	)
 
 	router, err := rest.MakeRouter(routes...)
@@ -575,23 +574,12 @@ func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 	account, err := s.etcd.GetAccount(userId)
 	if err != nil {
 		rest.NotFound(w, r)
+		return
 	} else {
-		glog.V(4).Infof("Getting quotas for %s\n", userId)
-		quota, err := s.kube.GetResourceQuota(userId)
-		if err != nil {
-			glog.Error(err)
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-		} else {
-			glog.V(4).Infof("Usage: %d %d \n", quota.Items[0].Status.Used.Memory().Value(), quota.Items[0].Status.Hard.Memory().Value())
-			account.ResourceUsage = api.ResourceUsage{
-				CPU:       quota.Items[0].Status.Used.Cpu().String(),
-				Memory:    quota.Items[0].Status.Used.Memory().String(),
-				CPUPct:    fmt.Sprintf("%f", float64(quota.Items[0].Status.Used.Cpu().Value())/float64(quota.Items[0].Status.Hard.Cpu().Value())),
-				MemoryPct: fmt.Sprintf("%f", float64(quota.Items[0].Status.Used.Memory().Value())/float64(quota.Items[0].Status.Hard.Memory().Value())),
-			}
-		}
 		account.Password = ""
-		account.Token = ""
+		if !(s.IsAdmin(r)) {
+			account.Token = ""
+		}
 		w.WriteJson(account)
 	}
 }
@@ -1124,7 +1112,7 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 	if !ok {
 		glog.Warningf("Cannot add service, dependency %s missing\n", dep)
 		rest.Error(w, fmt.Sprintf("Missing dependency %s", dep), http.StatusNotFound)
-                return
+		return
 	}
 
 	cf, ok := s.checkConfigs(userId, &service)
@@ -1190,7 +1178,7 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 	if !ok {
 		glog.Warningf("Cannot add service, dependency %s missing\n", dep)
 		rest.Error(w, fmt.Sprintf("Missing dependency %s", dep), http.StatusNotFound)
-                return
+		return
 	}
 	cf, ok := s.checkConfigs(userId, &service)
 	if !ok {
@@ -1374,35 +1362,6 @@ func (s *Server) getStackByServiceId(userId string, sid string) (*api.Stack, err
 	return stack, nil
 }
 
-func (s *Server) isStackStopped(userId string, ssid string) bool {
-	sid := ssid[0:strings.LastIndex(ssid, "-")]
-	stack, _ := s.etcd.GetStack(userId, sid)
-
-	if stack != nil && stack.Status == stackStatus[Stopped] {
-		return true
-	} else {
-		return false
-	}
-}
-
-func (s *Server) getStackService(userId string, ssid string) *api.StackService {
-	if strings.Index(ssid, "-") < 0 {
-		return nil
-	}
-	sid := ssid[0:strings.LastIndex(ssid, "-")]
-	stack, _ := s.etcd.GetStack(userId, sid)
-	if stack == nil {
-		return nil
-	}
-
-	for _, stackService := range stack.Services {
-		if ssid == stackService.Id {
-			return &stackService
-		}
-	}
-	return nil
-}
-
 func (s *Server) accountExists(userId string) bool {
 	accounts, _ := s.etcd.GetAccounts()
 	if accounts == nil {
@@ -1448,22 +1407,6 @@ func (s *Server) stackServiceExists(userId string, id string) bool {
 				exists = true
 				break
 			}
-		}
-	}
-	return exists
-}
-
-func (s *Server) stackExists(userId string, name string) bool {
-	stacks, _ := s.getStacks(userId)
-	if stacks == nil {
-		return false
-	}
-
-	exists := false
-	for _, stack := range *stacks {
-		if stack.Name == name {
-			exists = true
-			break
 		}
 	}
 	return exists
@@ -2133,11 +2076,7 @@ func (s *Server) QuickstartStack(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	if stack.Status != "starting" && stack.Status != "started" {
-		stack, err = s.startStack(userId, stack)
-		if err != nil {
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		go s.startStack(userId, stack)
 	}
 	w.WriteJson(stack)
 }
@@ -2161,12 +2100,9 @@ func (s *Server) StartStack(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	stack, err := s.startStack(userId, stack)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteJson(&stack)
+	go s.startStack(userId, stack)
+
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error) {
@@ -2368,14 +2304,9 @@ func (s *Server) StopStack(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	stack, err = s.stopStack(userId, sid)
-	if err == nil {
-		glog.V(4).Infof("Stack %s stopped \n", sid)
-		w.WriteJson(&stack)
-	} else {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	go s.stopStack(userId, sid)
+
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
@@ -2895,14 +2826,15 @@ func (s *Server) createAdminUser(password string) error {
 	return nil
 }
 
-func (s *Server) DownloadClient(w http.ResponseWriter, r *http.Request) {
+//func (s *Server) DownloadClient(w http.ResponseWriter, r *http.Request) {
+func (s *Server) DownloadClient(w rest.ResponseWriter, r *rest.Request) {
 	ops := r.URL.Query().Get("os")
 	if ops != "darwin" && ops != "linux" {
 		html := "<html><body>" +
 			"<a href=\"download?os=darwin\">ndslabsctl-darwin-amd64</a><br/>" +
 			"<a href=\"download?os=linux\">ndslabsctl-linux-amd64</a><br/>" +
 			"</body></html>"
-		w.Write([]byte(html))
+		w.(http.ResponseWriter).Write([]byte(html))
 	} else {
 		w.Header().Set("Content-Disposition", "attachment; filename=ndslabsctl")
 		w.Header().Set("Content-Type", r.Header.Get("Content-Type"))
@@ -2914,7 +2846,7 @@ func (s *Server) DownloadClient(w http.ResponseWriter, r *http.Request) {
 		}
 
 		defer reader.Close()
-		io.Copy(w, reader)
+		io.Copy(w.(http.ResponseWriter), reader)
 	}
 }
 
@@ -3124,98 +3056,6 @@ func readConfig(path string) (*config.Config, error) {
 		return nil, err
 	}
 	return &config, nil
-}
-
-// Mount data into the user's home directory. Delegate actual work to data-mounting service
-func (s *Server) PutDataset(w rest.ResponseWriter, r *rest.Request) {
-	userId := s.getUser(r)
-	sid := r.PathParam("sid")
-
-	dataset := api.Dataset{}
-	err := r.DecodeJsonPayload(&dataset)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	stack, err := s.etcd.GetStack(userId, sid)
-	if stack == nil {
-		glog.Errorf("Stack %s not found for user %s", sid, userId)
-		rest.NotFound(w, r)
-		return
-	}
-
-	if len(stack.Services) > 1 {
-		rest.Error(w, "Cannot mount data into multi-service stack", http.StatusConflict)
-		return
-	}
-
-	// Get sole stack service
-	stackService := stack.Services[0]
-
-	// Get the default mount path from spec
-	servicePath := ""
-	spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
-	if spec != nil {
-		for _, mount := range spec.VolumeMounts {
-			for vpath, value := range stackService.VolumeMounts {
-				if value == mount.MountPath {
-					if len(spec.VolumeMounts) == 1 || mount.Default {
-						servicePath = vpath
-					}
-				}
-			}
-		}
-	}
-
-	// Get the path in the user's home directory where dataset will be
-	// mounted/copied
-	dataPath := s.getHomeVolume().Path + "/" + userId + "/" + servicePath + "/data"
-	err = os.MkdirAll(dataPath, 0777)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Delegate the mount request
-	dataset.LocalPath = dataPath
-	err = s.mountData(&dataset)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-	} else {
-		w.WriteHeader(http.StatusOK)
-	}
-}
-
-// Delegate mount/fetch request to data-provider service
-func (s *Server) mountData(dataset *api.Dataset) error {
-
-	if s.Config.DataProviderURL != "" {
-		client := http.Client{}
-		data, err := json.Marshal(dataset)
-		request, err := http.NewRequest("POST",
-			s.Config.DataProviderURL+"/mount", bytes.NewBuffer([]byte(data)))
-		if err != nil {
-			return err
-		}
-		request.Header.Set("Content-Type", "application/json")
-		resp, err := client.Do(request)
-		if err != nil {
-			return err
-		} else {
-			if resp.StatusCode == http.StatusOK {
-				return nil
-			} else {
-				return fmt.Errorf("Error from data provider: %d", resp.StatusCode)
-			}
-		}
-	} else {
-		glog.Error("MountData called with empty dataProviderURL")
-	}
-	return nil
 }
 
 func (s *Server) shutdownInactiveServices() {

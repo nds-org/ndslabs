@@ -400,14 +400,6 @@ func (k *KubeHelper) StartService(pid string, spec *api.Service) (*api.Service, 
 	return nil, nil
 }
 
-func (k *KubeHelper) ServiceExists(pid string, name string) bool {
-	service, _ := k.GetService(pid, name)
-	if service != nil {
-		return true
-	} else {
-		return false
-	}
-}
 func (k *KubeHelper) GetService(pid string, name string) (*api.Service, error) {
 
 	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services/" + name
@@ -666,21 +658,6 @@ func (k *KubeHelper) GetLog(pid string, podName string, tailLines int) (string, 
 	return "", err
 }
 
-func (k *KubeHelper) GetPodsStatus(pid string, selector string) (*map[string]string, error) {
-
-	// Get the pods for this stack
-	podStatus := make(map[string]string)
-	pods, _ := k.GetPods(pid, "rc", selector)
-	for _, pod := range pods {
-		label := pod.Labels["name"]
-		glog.V(4).Infof("Pod %s %d\n", label, len(pod.Status.Conditions))
-		if len(pod.Status.Conditions) > 0 {
-			podStatus[label] = string(pod.Status.Phase)
-		}
-	}
-	return &podStatus, nil
-}
-
 func (k *KubeHelper) GetServiceEndpoints(pid string, stackKey string) (*map[string]string, error) {
 
 	k8services, _ := k.GetServices(pid, stackKey)
@@ -693,10 +670,6 @@ func (k *KubeHelper) GetServiceEndpoints(pid string, stackKey string) (*map[stri
 		}
 	}
 	return &endpoints, nil
-}
-
-func (k *KubeHelper) generateStackName(stack string, service string, randomLength int) string {
-	return fmt.Sprintf("%s-%s-%s", stack, service, utilrand.String(randomLength))
 }
 
 func (k *KubeHelper) RandomString(randomLength int) string {
