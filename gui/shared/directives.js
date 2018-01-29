@@ -3,7 +3,7 @@
 angular.module('ndslabs-directives', [])
 
 .directive('terminal', [ '$log', '$window', '$timeout', '$location', 'AuthInfo', 'ApiUri', 'NdsLabsApi', 'DashboardAppPath', 'HomePathSuffix',
-        function($log, $window, $timeout, $location, AuthInfo, ApiUri, NdsLabsApi, DashboardAppRoute, HomePathSuffix) {
+        function($log, $window, $timeout, $location, AuthInfo, ApiUri, NdsLabsApi, DashboardAppPath, HomePathSuffix) {
   "use strict";
 
     return {
@@ -55,7 +55,7 @@ angular.module('ndslabs-directives', [])
                 
                 // Debounce the token check ~300ms
                 timeout = $timeout(function() {
-                    NdsLabsApi.getRefreshToken().then(function() { 
+                    NdsLabsApi.getRefresh_token().then(function() { 
                         $log.debug('Token refreshed!'); 
                     }, function() {
                         ws.close();
