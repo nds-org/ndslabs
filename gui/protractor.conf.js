@@ -17,10 +17,6 @@ exports.config = {
     package: 'protractor-fail-fast'
   }],
 
-  onPrepare: function() {
-    jasmine.getEnv().addReporter(failFast.init());
-  },
-
   afterLaunch: function() {
     failFast.clean();
   },
@@ -54,9 +50,10 @@ exports.config = {
   onPrepare: function() {
     /* global angular: false, browser: false, jasmine: false */
     'use strict';
-
-    /*var jasmineEnv = jasmine.getEnv();
-     waitPlugin.setOnComplete(report);
+    
+    var jasmineEnv = jasmine.getEnv();
+    jasmineEnv.addReporter(failFast.init());
+    /*waitPlugin.setOnComplete(report);
      browser.driver.manage().window().maximize();
      browser.get(config.hostname);
 
