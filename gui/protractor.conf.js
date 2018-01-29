@@ -1,37 +1,33 @@
 var config = require("./protractor.auth.json");
 var failFast = require('protractor-fail-fast');
+var HtmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
+
+var screenshotReporter = new HtmlScreenshotReporter({
+    dest: 'tests/reports/screenshots',
+    filename: 'my-report.html'
+});
 
 // e2e.conf.js
 exports.config = {
-  allScriptsTimeout: 20000,
+  allScriptsTimeout: 600000,
   framework: 'jasmine',
   seleniumAddress: 'http://localhost:4444/wd/hub',
   //chromeOnly: true,
   params: config,
   jasmineNodeOpts: {
-    defaultTimeoutInterval: 30000,
+    defaultTimeoutInterval: 600000,
     realtimeFailure: true
   },
 
-  plugins: [{
-    package: 'protractor-fail-fast'
-  }],
-
-  afterLaunch: function() {
-    failFast.clean();
-  },
-
-  /*
-   * Specify the parameters of the browsers to test
-   */
+  /* Specify the parameters of the browsers to test */
   multiCapabilities:[
     // Working on Windows and OSX
     { 'browserName': 'chrome',
-      'chromeOptions': {
-         args: [  "--disable-gpu", "--window-size=1280x1024" ]
-       }
+        'chromeOptions': {
+            args: [  "--disable-gpu", "--window-size=1280x1024", /*"--headless", "--allow-insecure-localhost"*/ ]
+        }
     },
-    
+
     // Firefox: 46.0.1 and below supposedly work, latest does not
     // See http://stackoverflow.com/questions/38644703/org-openqa-selenium-firefox-notconnectedexception-when-running-selenium-from-com
     //{ 'browserName': 'firefox' },
@@ -46,40 +42,63 @@ exports.config = {
     // { 'browserName': 'internet explorer', 'version': '11' },
   ],
 
-  // Disable animations for testing
+  plugins: [{
+    package: 'protractor-fail-fast'
+  }],
+
+  // Setup the report before any tests start
+  beforeLaunch: function() {
+      return new Promise(function(resolve){
+          screenshotReporter.beforeLaunch(resolve);
+      });
+  },
+
+  // Close the report after all tests finish
+  afterLaunch: function(exitCode) {
+    failFast.clean();
+
+    return new Promise(function(resolve){
+        screenshotReporter.afterLaunch(resolve.bind(this, exitCode));
+    });
+  },
+
+  // Assign the test reporter to each running instance
   onPrepare: function() {
     /* global angular: false, browser: false, jasmine: false */
     'use strict';
-    
+
     var jasmineEnv = jasmine.getEnv();
     jasmineEnv.addReporter(failFast.init());
-    /*waitPlugin.setOnComplete(report);
-     browser.driver.manage().window().maximize();
-     browser.get(config.hostname);
+    jasmineEnv.addReporter(screenshotReporter);
+    /*
+       waitPlugin.setOnComplete(report);
+       browser.driver.manage().window().maximize();
+       browser.get(config.hostname);
 
-     jasmineEnv.addReporter(new function () {
-       this.specDone = function (spec) {
-         if (spec.status !== 'failed') {
-           var name = spec.fullName.replace(/ /g, '_');
-           var reportfile = 'coverage/integration/json/' + name;
-           reporter = new istanbul.Reporter(undefined, reportfile);
-           var promise = browser.driver.executeScript('return __coverage__;')
-                   .then(function (coverageResults) {
-                     collector.add(coverageResults);
-                   });
-           waitPlugin.waitList.push(promise);
-         }
-       };
-     });*/
+       jasmineEnv.addReporter(new function () {
+         this.specDone = function (spec) {
+           if (spec.status !== 'failed') {
+             var name = spec.fullName.replace(/ /g, '_');
+             var reportfile = 'coverage/integration/json/' + name;
+             reporter = new istanbul.Reporter(undefined, reportfile);
+             var promise = browser.driver.executeScript('return __coverage__;')
+                     .then(function (coverageResults) {
+                       collector.add(coverageResults);
+                     });
+             waitPlugin.waitList.push(promise);
+           }
+         };
+       });*/
 
 
-    // Disable animations
+    // Disable animations for testing
     var disableNgAnimate = function() {
       angular.module('disableNgAnimate', []).run(['$animate', function($animate) {
         $animate.enabled(false);
       }]);
     };
 
+    // Disable animations for testing
     var disableCssAnimate = function() {
       angular
         .module('disableCssAnimate', [])
@@ -105,8 +124,7 @@ exports.config = {
         });
     };
 
-
-
+    // Disable animations for testing
     browser.addMockModule('disableNgAnimate', disableNgAnimate);
     browser.addMockModule('disableCssAnimate', disableCssAnimate);
   },

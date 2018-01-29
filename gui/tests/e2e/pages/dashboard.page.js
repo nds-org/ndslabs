@@ -7,6 +7,7 @@ var LandingPage = require('./landing.page.js');
 var LoginPage = require('./login.page.js');
 var Navbar = require('./navbar.page.js');
 
+var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 var TEST_USERNAME = shared.config.TEST_USERNAME;
 var TEST_PASSWORD = shared.config.TEST_PASSWORD;
 
@@ -80,7 +81,11 @@ DashboardPage.prototype.get = function(loggedIn) {
   var landingPage = new LandingPage();
   var loginPage = new LoginPage();
 
+  // Attempt to navigate to the dashboard
+
+  // Log in, if redirected to login
   if (loggedIn) {
+    //browser.get(TEST_HOSTNAME + '/dashboard/home/');
     landingPage.get();
     navbar.clickApplicationsNav();
   } else {
@@ -176,7 +181,9 @@ DashboardPage.prototype.removeApplication = function(application) {
 
   browser.wait(EC.elementToBeClickable(deleteBtn), 120000);
   deleteBtn.click();
+  browser.wait(EC.elementToBeClickable(this.confirmBtn), 5000);
   this.confirmBtn.click();
+  browser.wait(EC.invisibilityOf(application), 5000);
 };
 
 DashboardPage.prototype.shutdownAndRemoveAllApplications = function() {
@@ -198,19 +205,21 @@ DashboardPage.prototype.shutdownAndRemoveAllApplications = function() {
 
   // Shutdown and remove all applications
   return this.applications.then(function(applications) {
-    console.log("Removing applications "+applications)
     for (let i = 0; i < applications.length; i++) {
       let application = applications[i];
-      this.applicationLabel(application).getText().then(function(oldLabel) {
-        console.log("On a page "+oldLabel);
-        browser.wait(EC.elementToBeClickable(application), 120000);
-        //console.log("Expanding: " + i);
-        application.click();
 
-        // Success == running => we need to shut it down
-        helpers.hasClass(application, 'panel-danger').then(shutdownAndRemove(application));
-      });
+      browser.wait(EC.elementToBeClickable(application), 5000);
+      //console.log("Expanding: " + i);
+      application.click();
+
+      // Success == running => we need to shut it down
+      helpers.hasClass(application, 'panel-danger').then(shutdownAndRemove(application));
     }
+
+    browser.waitForAngular();
+    expect(self.applications.count()).toBe(0);
+
+    //console.log("Done with shutdownAndRemoveAllApplications");
     return true;
   });
 };

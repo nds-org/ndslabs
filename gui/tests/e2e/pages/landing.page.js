@@ -29,7 +29,7 @@ var LandingPage = function() {
 LandingPage.prototype.get = function() {
   "use strict";
 
-  browser.get(TEST_HOSTNAME);
+  browser.get(TEST_HOSTNAME + '/landing/');
   this.verify();
 };
 

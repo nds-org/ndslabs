@@ -6,7 +6,7 @@ var shared = require('./shared.page.js');
 var DashboardPage = require('./dashboard.page.js');
 
 var PAGE_TITLE = /Console: .*/;
-var PAGE_ROUTE = /https?\:\/\/.*\/dashboard\/\#?\/?home\/.*\/console/;
+var PAGE_ROUTE = /https?\:\/\/.*\/dashboard\/\#?\/?home\/s.*\/console\/.*/;
 
 var EC = protractor.ExpectedConditions;
 
@@ -15,6 +15,8 @@ var ConsolePage = function() {
 
   this.console = element(by.id('console'));
 };
+
+ConsolePage.prototype.PAGE_ROUTE = PAGE_ROUTE;
 
 // Navigate to the Console view
 // TODO: How to handle parameters here?
@@ -64,6 +66,9 @@ ConsolePage.prototype.getServiceConsole = function(application, serviceId) {
 // Ensure that we are on the correct page
 ConsolePage.prototype.verify = function() { 
   "use strict";
+
+  // Race condition: sometimes PAGE_TITLE not yet defined when we go to assert on it
+  browser.waitForAngular();
 
   expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toMatch(PAGE_TITLE);

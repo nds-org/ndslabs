@@ -28,9 +28,9 @@ LoginPage.prototype.get = function() {
   var landingPage = new LandingPage();
   var navbar = new Navbar();
   
-  landingPage.get();
-  navbar.clickSignIn();
-  //browser.get(TEST_HOSTNAME + '/login');
+  //landingPage.get();
+  //navbar.clickSignIn();
+  browser.get(TEST_HOSTNAME + '/login/');
   this.verify();
 };
 
