@@ -42,7 +42,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
       backdrop: backdrop,
       delay: delay,
       minDuration: minDuration,
-      templateUrl: 'app/shared/loading.html'
+      templateUrl: '../shared/loading.html'
     };
     return promise;
   };
