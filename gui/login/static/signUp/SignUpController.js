@@ -8,8 +8,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('SignUpController', [ '$scope', '$log', '$rootScope', '$routeParams', '$location', '_', 'NdsLabsApi', 'Project', 'ProductName', 'AuthInfo', 'HomeRoute', 'HelpLinks', 'ReturnRoute', 
-    function($scope, $log, $rootScope, $routeParams, $location, _, NdsLabsApi, Project, ProductName, AuthInfo, HomeRoute, HelpLinks, ReturnRoute) {
+.controller('SignUpController', [ '$scope', '$log', '$rootScope', '$routeParams', '$location', '_', 'NdsLabsApi', 'Project', 'ProductName', 'AuthInfo', 'HelpLinks', 'ReturnRoute', 
+    function($scope, $log, $rootScope, $routeParams, $location, _, NdsLabsApi, Project, ProductName, AuthInfo, HelpLinks, ReturnRoute) {
   "use strict";
 
   $rootScope.rd = '';
