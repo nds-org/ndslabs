@@ -56,8 +56,7 @@ describe('Labs Workbench Reset Password View', function() {
   };
   
   it('should accept a valid username to reset their password', function() {
-    var usernameInput = resetPasswordPage.usernameInput;
-    usernameInput.sendKeys(TEST_VALID_USERNAME);
+    resetPasswordPage.usernameInput.sendKeys(TEST_VALID_USERNAME);
     
     var submitBtn = resetPasswordPage.submitUsernameBtn;
     expectBtn(submitBtn, true);
@@ -69,8 +68,7 @@ describe('Labs Workbench Reset Password View', function() {
   });
   
   it('should accept an invalid username', function() {
-    var usernameInput = resetPasswordPage.usernameInput;
-    usernameInput.sendKeys(TEST_INVALID_USERNAME);
+    resetPasswordPage.usernameInput.sendKeys(TEST_INVALID_USERNAME);
     
     var submitBtn = resetPasswordPage.submitUsernameBtn;
     expectBtn(submitBtn, true);
@@ -107,17 +105,14 @@ describe('Labs Workbench Reset Password View', function() {
     });
     
     it('should accept passwords matching the confirmation', function() {
-      var newPasswordInput = resetPasswordPage.newPasswordInput;
-      var newPasswordConfirmationInput = resetPasswordPage.newPasswordConfirmationInput;
       var submitBtn = resetPasswordPage.submitPasswordBtn;
-      
       var passwordChangedHelperText = resetPasswordPage.passwordChangedHelperText;
       
       // Expect passwords to match
       expectBtn(submitBtn, false);
-      newPasswordInput.sendKeys(TEST_NEW_PASSWORD);
+      resetPasswordPage.newPasswordInput.sendKeys(TEST_NEW_PASSWORD);
       expectBtn(submitBtn, false);
-      newPasswordConfirmationInput.sendKeys(TEST_NEW_PASSWORD);
+      resetPasswordPage.newPasswordConfirmationInput.sendKeys(TEST_NEW_PASSWORD);
       
       // Click the submit button
       expectBtn(submitBtn, true).click();
@@ -137,34 +132,39 @@ describe('Labs Workbench Reset Password View', function() {
       loginPage.loginBtn.click();
       dashboardPage.verify();
       
-      // Reset the view (hide the confirmation banner, if it is displayed)
-      browser.driver.navigate().refresh();
-      
       // Ensure we are on the ResetPassword view
       resetPasswordPage.get(true);
       
       // Change password back to original to reset test state
       resetPasswordPage.newPasswordInput.sendKeys(TEST_ORIGINAL_PASSWORD);
       resetPasswordPage.newPasswordConfirmationInput.sendKeys(TEST_ORIGINAL_PASSWORD);
-      resetPasswordPage.submitPasswordBtn.click();
+      submitBtn.click();
       
       // We should see our confirmation banner
       expect(passwordChangedHelperText.isPresent()).toBe(true);
       expect(passwordChangedHelperText.isDisplayed()).toBe(true);
+
+      // Log out to reset test state
+      navbar.accountDropdown.click();
+      navbar.logoutBtn.click();
+      loginPage.verify();
+
+      // Log in again to ensure password actually changed
+      loginPage.usernameInput.sendKeys(TEST_VALID_USERNAME);
+      loginPage.passwordInput.sendKeys(TEST_ORIGINAL_PASSWORD);
+      loginPage.loginBtn.click();
+      dashboardPage.verify();
     });
     
     it('should prohibit passwords less than 6 characters', function() {
-      var newPasswordInput = resetPasswordPage.newPasswordInput;
-      var newPasswordConfirmationInput = resetPasswordPage.newPasswordConfirmationInput;
       var submitBtn = resetPasswordPage.submitPasswordBtn;
-      
       var passwordChangedHelperText = resetPasswordPage.passwordChangedHelperText;
       
       // Expect passwords to be too short
       expectBtn(submitBtn, false);
-      newPasswordInput.sendKeys(TEST_INVALID_PASSWORD_TOOSHORT);
+      resetPasswordPage.newPasswordInput.sendKeys(TEST_INVALID_PASSWORD_TOOSHORT);
       expectBtn(submitBtn, false);
-      newPasswordConfirmationInput.sendKeys(TEST_INVALID_PASSWORD_TOOSHORT);
+      resetPasswordPage.newPasswordConfirmationInput.sendKeys(TEST_INVALID_PASSWORD_TOOSHORT);
       expectBtn(submitBtn, false);
       
       // We should not see our confirmation banner
@@ -173,17 +173,14 @@ describe('Labs Workbench Reset Password View', function() {
     });
     
     it('should prohibit mismatched passwords', function() {
-      var newPasswordInput = resetPasswordPage.newPasswordInput;
-      var newPasswordConfirmationInput = resetPasswordPage.newPasswordConfirmationInput;
       var submitBtn = resetPasswordPage.submitPasswordBtn;
-      
       var passwordChangedHelperText = resetPasswordPage.passwordChangedHelperText;
       
       // Expect passwords to be mismatched
       expectBtn(submitBtn, false);
-      newPasswordInput.sendKeys(TEST_NEW_PASSWORD);
+      resetPasswordPage.newPasswordInput.sendKeys(TEST_NEW_PASSWORD);
       expectBtn(submitBtn, false);
-      newPasswordConfirmationInput.sendKeys(TEST_INVALID_PASSWORD_MISMATCH);
+      resetPasswordPage.newPasswordConfirmationInput.sendKeys(TEST_INVALID_PASSWORD_MISMATCH);
       expectBtn(submitBtn, false);
       
       // We should not see our confirmation banner
