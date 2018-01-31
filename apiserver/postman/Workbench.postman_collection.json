@@ -68,6 +68,113 @@
 					"response": []
 				},
 				{
+					"name": "Delete account if present",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "86864787-7661-4b38-bfdc-e1a57b89419f",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://{{host}}/api/accounts/{{username}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"{{username}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin log level",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a57af2dc-16c0-4278-8ccb-090785606bcc",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "https://{{host}}/api/log_level/4",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"log_level",
+								"4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Register account",
 					"event": [
 						{
@@ -126,7 +233,77 @@
 					"response": []
 				},
 				{
-					"name": "Verify account",
+					"name": "Get verify token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "ebf0e9da-b0b0-41f7-8731-07b6ecfa3701",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    // Only admin and test account should exist at this point",
+									"    pm.expect(jsonData.length).to.eql(2);",
+									"",
+									"    for(i=0; i<jsonData.length; i++){",
+									"        if (jsonData[i].id == pm.environment.get(\"username\")) {",
+									"            pm.expect(jsonData[i].status).to.eql(\"unverified\");",
+									"            pm.environment.set(\"verify_token\", jsonData[i].token);",
+									"        }",
+									"    }    ",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"willis8\", \"password\": \"test123\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/accounts",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"accounts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify account email address",
 					"event": [
 						{
 							"listen": "test",
@@ -171,6 +348,586 @@
 								"api",
 								"register",
 								"verify"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin get all accounts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "8e6e6490-c630-4004-bdbe-c91706e5b3e3",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    // Only admin and test account should exist at this point",
+									"    pm.expect(jsonData.length).to.eql(2);",
+									"",
+									"    for(i=0; i<jsonData.length; i++){",
+									"        if (jsonData[i].id == pm.environment.get(\"username\")) {",
+									"            pm.expect(jsonData[i].status).to.eql(\"unapproved\");",
+									"            pm.environment.set(\"account_token\", jsonData[i].token);",
+									"        }",
+									"    }    ",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"willis8\", \"password\": \"test123\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/accounts",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"accounts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deny account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e6421c7e-1f85-4275-b96f-a992ad3b9f74",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"willis8\", \"password\": \"test123\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/register/deny?u={{username}}&t={{account_token}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"register",
+								"deny"
+							],
+							"query": [
+								{
+									"key": "u",
+									"value": "{{username}}",
+									"equals": true
+								},
+								{
+									"key": "t",
+									"value": "{{account_token}}",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin confirm denied",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "0c98c057-a00c-42c3-88db-2b7567189936",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    // Only admin and test account should exist at this point",
+									"    pm.expect(jsonData.length).to.eql(2);",
+									"    ",
+									"    for(i=0; i<jsonData.length; i++){",
+									"        if (jsonData[i].id == pm.environment.get(\"username\")) {",
+									"            pm.expect(jsonData[i].status).to.eql(\"denied\");",
+									"            pm.environment.set(\"account_token\", jsonData[i].token);",
+									"        }",
+									"    }",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"willis8\", \"password\": \"test123\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/accounts",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"accounts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b1be56c6-e749-462f-9304-b978966b99cb",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://{{host}}/api/accounts/{{username}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"accounts",
+								"{{username}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "80e76211-7a8b-452b-80f8-5afe7d39b69c",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Account ID\", function () {",
+									"    pm.expect(jsonData.id).to.eql(pm.environment.get(\"username\"));",
+									"    pm.expect(jsonData.status).to.eql(\"unverified\");",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"{{username}}\",\n    \"name\": \"Test User\",\n    \"description\": \"Automated test account\",\n    \"namespace\": \"{{username}}\",\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/register",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify account email address",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a8ee1d36-7c33-4116-83fe-7cdaa558190d",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"u\": \"{{username}}\",\n    \"t\": \"{{verify_token}}\"\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/register/verify",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"register",
+								"verify"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin get all accounts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "791021c3-39d3-4538-a9f2-8eb4abc9a5c4",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    // Only admin and test account should exist at this point",
+									"    pm.expect(jsonData.length).to.eql(2);",
+									"    for(i=0; i<jsonData.length; i++){",
+									"        if (jsonData[i].id == pm.environment.get(\"username\")) {",
+									"            pm.expect(jsonData[i].status).to.eql(\"unapproved\");",
+									"            pm.environment.set(\"account_token\", jsonData[i].token);",
+									"        }",
+									"    }",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"willis8\", \"password\": \"test123\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/accounts",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"accounts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approve account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "fad97748-0a9e-4e1a-a8a5-d58a93fd902f",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"willis8\", \"password\": \"test123\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/register/approve?u={{username}}&t={{account_token}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"register",
+								"approve"
+							],
+							"query": [
+								{
+									"key": "u",
+									"value": "{{username}}",
+									"equals": true
+								},
+								{
+									"key": "t",
+									"value": "{{account_token}}",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin confirm approved",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "17513fc8-40a6-4740-aef2-d79d723fe6da",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    // Only admin and test account should exist at this point",
+									"    pm.expect(jsonData.length).to.eql(2);",
+									"    for(i=0; i<jsonData.length; i++){",
+									"        if (jsonData[i].id == pm.environment.get(\"username\")) {",
+									"            pm.expect(jsonData[i].status).to.eql(\"approved\");",
+									"        }",
+									"    }",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"willis8\", \"password\": \"test123\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/accounts",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"accounts"
 							]
 						}
 					},
@@ -259,6 +1016,62 @@
 									"pm.test(\"JSON response\", function () {",
 									"    pm.expect(jsonData.id).to.eql(\"testpost\");",
 									"    pm.expect(jsonData.name).to.eql(\"Test Post User\");",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"testpost\",\n    \"name\": \"Test Post User\",\n    \"description\": \"Automated test account\",\n    \"namespace\": \"testpost\",\n    \"email\": \"devnull@ncsa.illinois.edu\",\n    \"password\": \"\",\n    \"resourceLimits\": {\n        \"cpuMax\": 0,\n        \"cpuDefault\": 0,\n        \"memMax\": 0,\n        \"memDefault\": 0,\n        \"storageQuota\": 0\n    },\n    \"resourceUsage\": {\n        \"cpu\": \"0\",\n        \"memory\": \"0\",\n        \"storage\": \"\",\n        \"cpuPct\": \"0.000000\",\n        \"memPct\": \"0.000000\"\n    },\n    \"status\": \"approved\",\n    \"token\": \"\",\n    \"organization\": \"\",\n    \"created\": 0,\n    \"lastLogin\": 0,\n    \"inactiveTimeout\": 480,\n    \"nexturl\": \"\"\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/accounts",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"accounts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin post account existing",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "be130786-184f-4e8e-ae18-adc8bd648fa0",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(409);",
 									"});",
 									""
 								]
@@ -673,23 +1486,131 @@
 					"response": []
 				},
 				{
-					"name": "Admin get all accounts",
+					"name": "Login non-admin",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "bf68782b-fd39-4c94-bfc3-0794727957e0",
+								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
 								"type": "text/javascript",
 								"exec": [
-									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
 									"var jsonData = pm.response.json();",
 									"",
-									"pm.test(\"JSON response\", function () {",
-									"    pm.expect(jsonData.length).to.eql(2);",
+									"pm.test(\"Check token\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.environment.set(\"token\", jsonData.token);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/authenticate",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Non-admin post account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "54c6c1e3-3705-4f46-a1e2-1bcc4bd0254f",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"testpost\",\n    \"name\": \"Test Post User\",\n    \"description\": \"Automated test account\",\n    \"namespace\": \"testpost\",\n    \"email\": \"devnull@ncsa.illinois.edu\",\n    \"password\": \"\",\n    \"resourceLimits\": {\n        \"cpuMax\": 0,\n        \"cpuDefault\": 0,\n        \"memMax\": 0,\n        \"memDefault\": 0,\n        \"storageQuota\": 0\n    },\n    \"resourceUsage\": {\n        \"cpu\": \"0\",\n        \"memory\": \"0\",\n        \"storage\": \"\",\n        \"cpuPct\": \"0.000000\",\n        \"memPct\": \"0.000000\"\n    },\n    \"status\": \"approved\",\n    \"token\": \"\",\n    \"organization\": \"\",\n    \"created\": 0,\n    \"lastLogin\": 0,\n    \"inactiveTimeout\": 480,\n    \"nexturl\": \"\"\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/accounts",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"accounts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Non-admin get all accounts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "9c476f1e-69af-4b80-bd52-9bdaab9afa10",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(403);",
 									"});",
 									""
 								]
@@ -713,7 +1634,7 @@
 							},
 							{
 								"key": "Authorization",
-								"value": "Bearer {{admin_token}}"
+								"value": "Bearer {{token}}"
 							}
 						],
 						"body": {
@@ -792,7 +1713,7 @@
 					"response": []
 				},
 				{
-					"name": "Valid login",
+					"name": "Valid login username",
 					"event": [
 						{
 							"listen": "test",
@@ -834,6 +1755,64 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/authenticate",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Valid login email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Check token\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.environment.set(\"token\", jsonData.token);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"{{email}}\", \"password\": \"{{password}}\"}"
 						},
 						"url": {
 							"raw": "https://{{host}}/api/authenticate",
@@ -1416,6 +2395,2928 @@
 							"path": [
 								"api",
 								"authenticate"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Services",
+			"description": "",
+			"item": [
+				{
+					"name": "Admin login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "172ac3f1-bddd-439f-bd6a-969392b893f4",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.environment.set(\"admin_token\", jsonData.token);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"{{admin_username}}\", \"password\": \"{{admin_password}}\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/authenticate",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post invalid JSON",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "40cdc37b-0855-4a96-9f87-bdfd7c5e474f",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(500);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/services?catalog=system",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"services"
+							],
+							"query": [
+								{
+									"key": "catalog",
+									"value": "system",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post invalid spec",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4cabd350-bb55-4065-96f2-7bb2bb60e39b",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\"\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/services?catalog=system",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"services"
+							],
+							"query": [
+								{
+									"key": "catalog",
+									"value": "system",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin post system service success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "44f1a522-57fd-4517-bba0-ea3d11b3740f",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  }\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/services?catalog=system",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"services"
+							],
+							"query": [
+								{
+									"key": "catalog",
+									"value": "system",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin put system service success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b83839ca-3ac3-4e65-af74-f24ca63fa524",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.expect(jsonData.label).to.eql(\"nginxput\");",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginxput\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  }\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/services/nginx?catalog=system",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"services",
+								"nginx"
+							],
+							"query": [
+								{
+									"key": "catalog",
+									"value": "system",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin post existing",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1476660d-3e50-4ff8-881c-f607ae575f17",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(409);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  }\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/services?catalog=system",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"services"
+							],
+							"query": [
+								{
+									"key": "catalog",
+									"value": "system",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin post missing dependency",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "8802833d-0379-4afe-8a6d-a630607ec77c",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"missingdep\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n    \"depends\": [\n        {\n            \"key\": \"missing\",\n            \"required\": false,\n            \"shareConfig\": false\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/services?catalog=system",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"services"
+							],
+							"query": [
+								{
+									"key": "catalog",
+									"value": "system",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Check token\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.environment.set(\"token\", jsonData.token);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/authenticate",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post user service",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "0a756445-53d6-4268-9897-f052fc27ac45",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"usernginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/services?catalog=user",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"services"
+							],
+							"query": [
+								{
+									"key": "catalog",
+									"value": "user",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put user service",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "17b93574-7aa1-4a5e-ac52-177879d21884",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.expect(jsonData.label).to.eql(\"nginxput\");",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"usernginx\",\n  \"label\": \"nginxput\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/services/usernginx?catalog=user",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"services",
+								"usernginx"
+							],
+							"query": [
+								{
+									"key": "catalog",
+									"value": "user",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post user service missing dependency",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4c5ea647-1295-4ddb-9f02-07925da18ee0",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"missingdep\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n    \"depends\": [\n        {\n            \"key\": \"missing\",\n            \"required\": false,\n            \"shareConfig\": false\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/services?catalog=user",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"services"
+							],
+							"query": [
+								{
+									"key": "catalog",
+									"value": "user",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get user service",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "de192048-b984-40f6-965e-d7f6ba40bc55",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.expect(jsonData.privileged).to.eql(false);",
+									"    pm.expect(jsonData.authRequired).to.eql(true);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/services/usernginx?catalog=user",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"services",
+								"usernginx"
+							],
+							"query": [
+								{
+									"key": "catalog",
+									"value": "user",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get user service not found",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "52b0d6ce-cedf-4ead-9b9d-91bd9f742ee9",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/services/notfound?catalog=user",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"services",
+								"notfound"
+							],
+							"query": [
+								{
+									"key": "catalog",
+									"value": "user",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get system service",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "54b1f2e0-1069-4bdf-9692-c3768ddad574",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.response.to.be.json",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/services/nginx?catalog=system",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"services",
+								"nginx"
+							],
+							"query": [
+								{
+									"key": "catalog",
+									"value": "system",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get system service not found copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "0329e422-e3d7-4813-8acb-d246e643804c",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/services/notfound?catalog=system",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"services",
+								"notfound"
+							],
+							"query": [
+								{
+									"key": "catalog",
+									"value": "system",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all user services",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "35cb0e08-4e70-46d9-ab6e-36f029d97040",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    // Only admin and test account should exist at this point",
+									"    pm.expect(jsonData.length).to.eql(1);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/services?catalog=user",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"services"
+							],
+							"query": [
+								{
+									"key": "catalog",
+									"value": "user",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete user service",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b1be56c6-e749-462f-9304-b978966b99cb",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://{{host}}/api/services/usernginx?catalog=user",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"services",
+								"usernginx"
+							],
+							"query": [
+								{
+									"key": "catalog",
+									"value": "user",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete user service not found",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a670d11a-f7ad-42db-bbb6-3dcf9b13f2ea",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://{{host}}/api/services/notfound?catalog=user",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"services",
+								"notfound"
+							],
+							"query": [
+								{
+									"key": "catalog",
+									"value": "user",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin delete system service",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b1be56c6-e749-462f-9304-b978966b99cb",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://{{host}}/api/services/nginx?catalog=system",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"services",
+								"nginx"
+							],
+							"query": [
+								{
+									"key": "catalog",
+									"value": "system",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all system services",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "9122026e-0fbb-435c-bcce-6eb80afda5d4",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.response.to.be.json",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/services?catalog=system",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"services"
+							],
+							"query": [
+								{
+									"key": "catalog",
+									"value": "system",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all services",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "9122026e-0fbb-435c-bcce-6eb80afda5d4",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.response.to.be.json",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/services?catalog=all",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"services"
+							],
+							"query": [
+								{
+									"key": "catalog",
+									"value": "all",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Stacks",
+			"description": "",
+			"item": [
+				{
+					"name": "User login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Check token\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.environment.set(\"token\", jsonData.token);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/authenticate",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post stack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "de67e65e-457c-4171-b3ed-dcdc07efc207",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.expect(jsonData.name).to.eql(\"My File Manager\");",
+									"    pm.expect(jsonData.status).to.eql(\"stopped\");",
+									"    pm.environment.set(\"stack_sid\", jsonData.id);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"key\": \"cloudcmd\",\n    \"name\": \"My File Manager\",\n    \"services\": [\n        {\n            \"service\": \"cloudcmd\"\n        }\n    ],\n    \"secure\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/stacks",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stacks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get stack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "fa052fb1-6ed0-4b86-9f0b-9a6b7b866b45",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.expect(jsonData.key).to.eql(\"cloudcmd\");",
+									"    pm.expect(jsonData.status).to.eql(\"stopped\");",
+									"    pm.environment.set(\"stack_sid\", jsonData.id);    ",
+									"    pm.environment.set(\"stack_ssid\", jsonData.services[0].id);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stacks",
+								"{{stack_sid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Start stack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "399d5eb3-bd8b-49aa-a20f-d12f500ae400",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(202);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/start/{{stack_sid}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"start",
+								"{{stack_sid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for stack start",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "cf7deef1-26db-4c4e-8638-388aab72ff88",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"if (jsonData.status !== \"started\") {",
+									"  postman.setNextRequest(\"Wait for stack start\");",
+									"  setTimeout(function() {}, 10000);",
+									"} else {",
+									"  postman.setNextRequest(\"Get stack logs\");",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stacks",
+								"{{stack_sid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get stack logs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "12fc5ff4-60cd-475e-a765-241ea5aa4796",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/logs/{{stack_ssid}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"logs",
+								"{{stack_ssid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Stop stack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d64e0295-db10-4f1c-ba0d-583c951124d5",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(202);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://{{host}}/api/stop/{{stack_sid}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stop",
+								"{{stack_sid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for stack stop",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "521dc444-b0c8-46a1-afac-59818e716fcf",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"if (jsonData.status !== \"stopped\") {",
+									"  postman.setNextRequest(\"Wait for stack stop\");",
+									"  setTimeout(function() {}, 20000);",
+									"} else {",
+									"  postman.setNextRequest(\"Put stack\");",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stacks",
+								"{{stack_sid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put stack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f5553b62-53d0-4ad8-851e-2d81a6b471b4",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.expect(jsonData.name).to.eql(\"Your File Manager\");",
+									"    pm.expect(jsonData.status).to.eql(\"stopped\");",
+									"    pm.environment.set(\"stack_sid\", jsonData.id);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"{{stack_sid}}\",\n    \"key\": \"cloudcmd\",\n    \"name\": \"Your File Manager\",\n    \"services\": [\n        {\n            \"id\": \"{{stack_sid}}-cloudcmd\",\n            \"service\": \"cloudcmd\"\n        }\n    ],\n    \"secure\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stacks",
+								"{{stack_sid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put rename stack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "eb9798f1-df4a-4501-bf04-be08427e93a3",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.expect(jsonData.name).to.eql(\"New name\");",
+									"    pm.expect(jsonData.status).to.eql(\"stopped\");",
+									"    pm.environment.set(\"stack_sid\", jsonData.id);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"New name\"\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/stacks/{{stack_sid}}/rename",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stacks",
+								"{{stack_sid}}",
+								"rename"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete stack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "35a7bebd-03c8-41c0-95cd-b9e589b99e55",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stacks",
+								"{{stack_sid}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Misc",
+			"description": "",
+			"item": [
+				{
+					"name": "Get healthz",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "6054548d-b167-43eb-8965-aee59331366e",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/healthz",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"healthz"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get version",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "6054548d-b167-43eb-8965-aee59331366e",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/version",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"version"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get paths",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "6054548d-b167-43eb-8965-aee59331366e",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get contact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "6054548d-b167-43eb-8965-aee59331366e",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/contact",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"contact"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Download client",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "6054548d-b167-43eb-8965-aee59331366e",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/html"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/download",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"download"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get vocabulary",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "6054548d-b167-43eb-8965-aee59331366e",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/vocabulary/tags",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"vocabulary",
+								"tags"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post support",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "6054548d-b167-43eb-8965-aee59331366e",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"type\": \"help\", \n\t\"message\": \"test\",\n\t\"anonymous\": false\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/support",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"support"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Quickstart",
+			"description": "",
+			"item": [
+				{
+					"name": "User login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Check token\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.environment.set(\"token\", jsonData.token);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/authenticate",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Quickstart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7c26b000-3a37-49f5-8b31-515f70165253",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"usernginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/start?key=cloudcmd",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"start"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "cloudcmd",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get quickstart stack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.environment.set(\"quickstart_sid\", jsonData[0].id);",
+									"    pm.environment.set(\"quickstart_ssid\", jsonData[0].services[0].id);",
+									"});",
+									""
+								],
+								"id": "21ce7f63-c0c0-4c8b-9096-7e2750ded554",
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"willis8\", \"password\": \"test123\"}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/stacks",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stacks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for quickstart stack start",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "105fc17d-da64-4a2a-9441-bd09384eeb38",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"if (jsonData.status !== \"started\") {",
+									"  postman.setNextRequest(\"Wait for quickstart stack start\");",
+									"  setTimeout(function() {}, 10000);",
+									"} else {",
+									"  postman.setNextRequest(\"Get quickstart check console\");",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/stacks/{{quickstart_sid}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stacks",
+								"{{quickstart_sid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get quickstart check console",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "ff987575-3d2e-47eb-bfcb-79e0e1f8e03d",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://{{host}}/api/check_console?namespace={{username}}&ssid={{quickstart_ssid}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"check_console"
+							],
+							"query": [
+								{
+									"key": "namespace",
+									"value": "{{username}}",
+									"equals": true
+								},
+								{
+									"key": "ssid",
+									"value": "{{quickstart_ssid}}",
+									"equals": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Stop quickstart stack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d64e0295-db10-4f1c-ba0d-583c951124d5",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(202);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://{{host}}/api/stop/{{quickstart_sid}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stop",
+								"{{quickstart_sid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for quickstart stack stop",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"if (jsonData.status !== \"stopped\") {",
+									"  postman.setNextRequest(\"Wait for quickstart stack stop\");",
+									"  setTimeout(function() {}, 20000);",
+									"} else {",
+									"  postman.setNextRequest(\"Delete quickstart stack\");",
+									"}"
+								],
+								"id": "c70d2b97-08c7-4a1c-9c0e-d541ac74a872",
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "https://{{host}}/api/stacks/{{quickstart_sid}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stacks",
+								"{{quickstart_sid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete quickstart stack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "35a7bebd-03c8-41c0-95cd-b9e589b99e55",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "https://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://{{host}}/api/stacks/{{quickstart_sid}}",
+							"protocol": "https",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stacks",
+								"{{quickstart_sid}}"
 							]
 						}
 					},
