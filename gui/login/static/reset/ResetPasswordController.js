@@ -14,6 +14,10 @@ angular
 
   $scope.token = $routeParams.t;
   
+  if (!$scope.token) {
+    $scope.token = $cookies.get('token', CookieOptions);
+  }
+  
   if ($scope.token) {
     $cookies.put('token', $scope.token, CookieOptions);
   }
