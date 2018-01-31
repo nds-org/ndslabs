@@ -5,6 +5,9 @@ var helpers = require("./helpers.e2e.js");
 var shared = require("./pages/shared.page.js");
 
 var Navbar = require('./pages/navbar.page.js');
+var ContactUsPage = require('./pages/help.page.js');
+var SwaggerUiPage = require('./pages/swagger.page.js');
+
 var LandingPage = require("./pages/landing.page.js");
 var LoginPage = require("./pages/login.page.js");
 var SignUpPage = require("./pages/signup.page.js");
@@ -26,6 +29,8 @@ describe('Labs Workbench Landing Page View', function() {
   var dashboardPage = new DashboardPage();
   var catalogPage = new CatalogPage();
   var addSpecPage = new AddSpecPage();
+  var contactUsPage = new ContactUsPage();
+  var swaggerUiPage = new SwaggerUiPage();
   
   beforeAll(function() { helpers.beforeAll(); });
   beforeEach(function() { 
@@ -93,13 +98,15 @@ describe('Labs Workbench Landing Page View', function() {
   
   it('should link user to the "Swagger UI" view', function() { 
     landingPage.clickApiLink(function() {
-      expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/swagger');
+      //expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/swagger');
+      swaggerUiPage.verify();
     });
   });
   
   it('should link user to the "Contact Us" view', function() { 
     landingPage.clickContactUsLink(function() {
-      expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/contact');
+      //expect(browser.getCurrentUrl()).toBe(shared.config.TEST_HOSTNAME + '/contact');
+      contactUsPage.verify();
     });
   });
   
