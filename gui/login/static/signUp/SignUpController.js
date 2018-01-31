@@ -28,9 +28,13 @@ angular
   $scope.progressMessage = '';
   $scope.showVerify = false;
   
-  // To handle special caharacters in passwords, we must escape them in the validation regex pattern
+  // To handle special characters in passwords, we must escape them in the validation regex pattern
   // See https://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript/3561711#3561711
   $scope.escapeRegex = function(pattern) {
+    if (!pattern) {
+      return '';
+    }
+    
     return pattern.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
   };
   
