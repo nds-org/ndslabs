@@ -32,7 +32,7 @@ docker pull postman/newman_alpine33
 ```
 
 ```
-docker run -v `pwd`:/etc/newman -t  postman/newman_alpine33  --insecure --collection=Workbench.postman_collection.json --environment=workbench.postman_environment.json
+docker run -v `pwd`:/etc/newman -t  postman/newman_alpine33  --insecure --collection=Workbench.postman_collection.json --environment=workbench.postman_environment.json --delay-request=1000
 ```
 
 
