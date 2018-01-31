@@ -34,10 +34,11 @@ var SignUpPage = function() {
 SignUpPage.prototype.get = function() {
   "use strict";
 
-  var loginPage = new LoginPage();
-  
-  loginPage.get();
-  loginPage.clickRequestAccessLink();
+  //var loginPage = new LoginPage();
+  //loginPage.get();
+  //loginPage.clickRequestAccessLink();
+
+  browser.get(TEST_HOSTNAME + '/login/register');
   
   this.verify();
 };
