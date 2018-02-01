@@ -118,7 +118,7 @@ describe('Labs Workbench Landing Page View', function() {
     afterAll(function() {
       navbar.expandAccountDropdown();
       navbar.clickSignOut();
-      landingPage.verify();
+      loginPage.verify();
     });
       
     it('should link user to dashboard', function() {
