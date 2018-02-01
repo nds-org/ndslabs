@@ -1124,7 +1124,7 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 	if !ok {
 		glog.Warningf("Cannot add service, dependency %s missing\n", dep)
 		rest.Error(w, fmt.Sprintf("Missing dependency %s", dep), http.StatusNotFound)
-                return
+		return
 	}
 
 	cf, ok := s.checkConfigs(userId, &service)
@@ -1190,7 +1190,7 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 	if !ok {
 		glog.Warningf("Cannot add service, dependency %s missing\n", dep)
 		rest.Error(w, fmt.Sprintf("Missing dependency %s", dep), http.StatusNotFound)
-                return
+		return
 	}
 	cf, ok := s.checkConfigs(userId, &service)
 	if !ok {
@@ -2090,6 +2090,7 @@ func (s *Server) QuickstartStack(w rest.ResponseWriter, r *rest.Request) {
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	if stack == nil {
@@ -2102,7 +2103,7 @@ func (s *Server) QuickstartStack(w rest.ResponseWriter, r *rest.Request) {
 
 		// Restrict to single service specs (i.e., no dependencies)
 		if len(spec.Dependencies) > 0 {
-			rest.Error(w, err.Error(), 422) // unprocessable
+			rest.Error(w, err.Error(), http.StatusUnprocessableEntity) // unprocessable
 			return
 		}
 
