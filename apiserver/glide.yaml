@@ -13,7 +13,7 @@ import:
   subpackages:
   - rest
 - package: github.com/coreos/etcd
-  version: ^3.0.7
+  version: 3.0.14
   subpackages:
   - client
 - package: github.com/docker/docker
