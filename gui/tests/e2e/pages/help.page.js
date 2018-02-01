@@ -4,11 +4,14 @@ module.exports = {};
 
 // Load other modules
 var helpers = require('../helpers.e2e.js');
+var shared = require('./shared.page.js')
 
 var LandingPage = require('./landing.page.js');
 
-var PAGE_TITLE = 'Contact Labs Workbench Support';
-var PAGE_ROUTE = /https?\:\/\/.+\/\#\/contact/;
+var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
+
+var PAGE_TITLE = 'Labs Workbench'; //'Contact Labs Workbench Support';
+var PAGE_ROUTE = /https?\:\/\/.+\/landing\/\#?\/?contact/;
 
 
 // 
@@ -36,10 +39,11 @@ var ContactUsPage = function() {
 ContactUsPage.prototype.get = function() {
   "use strict";
 
-  var landingPage = new LandingPage();
-  
-  landingPage.get();
-  landingPage.clickContactUsLink();
+  //var landingPage = new LandingPage();
+  //landingPage.get();
+  //landingPage.clickContactUsLink();
+
+  browser.get(TEST_HOSTNAME + '/landing/contact/');
   
   this.verify();
 };

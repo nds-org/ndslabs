@@ -5,10 +5,11 @@ var helpers = require("./helpers.e2e.js");
 
 var Navbar = require('./pages/navbar.page.js');
 var DashboardPage = require('./pages/dashboard.page.js');
-var LandingPage = require('./pages/landing.page.js');
+var LoginPage = require('./pages/login.page.js');
 var CatalogPage = require('./pages/catalog.page.js');
 var AddEditServicePage = require('./pages/addEditService.page.js');
 
+// Choose a spec with at least one optional dependency
 var TEST_SPEC_KEY = 'clowder';
 
 var TEST_VALID_CFG_MSG = 'New variable is valid!';
@@ -29,7 +30,7 @@ describe('Labs Workbench Edit Application Service View', function() {
   "use strict";
 
   var navbar = new Navbar();
-  var landingPage = new LandingPage();
+  var loginPage = new LoginPage();
   var dashboardPage = new DashboardPage();
   var catalogPage = new CatalogPage();
   var editServicePage = new AddEditServicePage();
@@ -114,7 +115,9 @@ describe('Labs Workbench Edit Application Service View', function() {
     // Retrieve added service key from the URL
     browser.getCurrentUrl().then(function(url) {
       var fragments = url.split('/');
-      serviceKey = fragments[fragments.length - 1];
+      // Last fragment is empty (routes now end with /)
+      // Save second-to-last fragment as serviceKey
+      serviceKey = fragments[fragments.length - 2];
       return serviceKey;
     });
   });
@@ -131,7 +134,7 @@ describe('Labs Workbench Edit Application Service View', function() {
     dashboardPage.shutdownAndRemoveAllApplications();
     navbar.expandAccountDropdown();
     navbar.clickSignOut();
-    landingPage.verify();
+    loginPage.verify();
     done();
   });
   

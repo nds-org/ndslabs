@@ -12,7 +12,7 @@ var ResetPasswordPage = require('./pages/reset.page.js');
 var SignUpPage = require('./pages/signup.page.js');
 
 var TEST_USERNAME = shared.config.TEST_USERNAME;
-var TEST_PASSWORD = shared.config.TEST_PASSWORD;
+var TEST_VALID_PASSWORD = shared.config.TEST_PASSWORD;
 var TEST_INVALID_PASSWORD_MISMATCH = shared.config.TEST_INVALID_PASSWORD_MISMATCH;
 
 // login.e2e.js
@@ -51,7 +51,7 @@ describe('Labs Workbench Login View', function() {
   it('should accept valid login', function() {
     // Attempt to sign in with valid credentials
     loginPage.enterUsername(TEST_USERNAME);
-    loginPage.enterPassword(TEST_PASSWORD);
+    loginPage.enterPassword(TEST_VALID_PASSWORD);
     loginPage.clickLogin();
     
     // We should be taken to the Dashboard View
@@ -60,7 +60,7 @@ describe('Labs Workbench Login View', function() {
     // Log out to reset test state
     navbar.expandAccountDropdown();
     navbar.clickSignOut();
-    landingPage.verify();
+    loginPage.verify();
   });
   
   it('should link to the Reset Password view', function() {

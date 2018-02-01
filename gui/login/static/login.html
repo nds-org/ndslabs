@@ -6,7 +6,7 @@
       <h3><i class="fa fa-fw fa-unlock-alt"></i> Sign Into {{ productName }}</h3>
       
       <ol class="breadcrumb">
-        <li><a ng-href="/landing/#/{{ rd ? '?rd=' + rd : '' }}">{{ productName }}</a></li> 
+        <li><a ng-href="/landing/{{ rd ? '?rd=' + rd : '' }}">{{ productName }}</a></li> 
         <li class="active">Sign In</li>
       </ol>
     </div>
@@ -15,7 +15,7 @@
   <!-- Main Panel -->
   <div class="panel panel-primary" id="loginPanel">
     <div class="panel-heading">
-      <small class="pull-right"><a class="btn btn-xs" ng-style="{ color: hover ? 'blue' : 'white' }" id="forgotPasswordLink" ng-mouseenter="hover=true" ng-mouseleave="hover=false" ng-href="/login/#/recovery{{ rd ? '?rd=' + rd : '' }}">Forgot your password?</a></small>
+      <small class="pull-right"><a class="btn btn-xs" ng-style="{ color: hover ? 'blue' : 'white' }" id="forgotPasswordLink" ng-mouseenter="hover=true" ng-mouseleave="hover=false" ng-href="/login/recover{{ rd ? '?rd=' + rd : '' }}">Forgot your password?</a></small>
       <h3 class="panel-title"><i class="fa fa-fw fa-unlock-alt"></i> Sign In</h3>
     </div>
     
@@ -50,7 +50,7 @@
         <div class="row">
           <div class="col-xs-12 text-center">
             <small>
-              <a ng-href="/login/#/register{{ rd ? '?rd=' + rd : '' }}" id="requestAccessLink"><i class="fa fa-fw fa-user-plus"></i> Don't have an account yet? Request access here!</a>
+              <a ng-href="/login/register{{ rd ? '?rd=' + rd : '' }}" id="requestAccessLink"><i class="fa fa-fw fa-user-plus"></i> Don't have an account yet? Request access here!</a>
             </small>
           </div>
         </div>

@@ -50,6 +50,7 @@ describe('Labs Workbench Navbar', function() {
     navbar.expandHelpDropdown();
     navbar.clickHelpLink(0);
     helpers.expectNewTabOpen(shared.config.FEATURE_OVERVIEW_LINK).then(function() {
+      landingPage.verify();
       done();
     });
   }, TIMEOUT_EXPECT_NEW_TAB);
@@ -58,6 +59,7 @@ describe('Labs Workbench Navbar', function() {
     navbar.expandHelpDropdown();
     navbar.clickHelpLink(1);
     helpers.expectNewTabOpen(shared.config.FAQ_LINK).then(function() {
+      landingPage.verify();
       done();
     });
   }, TIMEOUT_EXPECT_NEW_TAB);
@@ -66,6 +68,7 @@ describe('Labs Workbench Navbar', function() {
     navbar.expandHelpDropdown();
     navbar.clickHelpLink(2);
     helpers.expectNewTabOpen(shared.config.USER_GUIDE_LINK).then(function() {
+      landingPage.verify();
       done();
     });
   }, TIMEOUT_EXPECT_NEW_TAB);
@@ -74,6 +77,7 @@ describe('Labs Workbench Navbar', function() {
     navbar.expandHelpDropdown();
     navbar.clickHelpLink(3);
     helpers.expectNewTabOpen(shared.config.DEV_GUIDE_LINK).then(function() {
+      landingPage.verify();
       done();
     });
   }, TIMEOUT_EXPECT_NEW_TAB);
@@ -82,6 +86,7 @@ describe('Labs Workbench Navbar', function() {
     navbar.expandHelpDropdown();
     navbar.clickHelpLink(4);
     helpers.expectNewTabOpen(shared.config.USE_POLICY_LINK).then(function() {
+      landingPage.verify();
       done();
     });
   }, TIMEOUT_EXPECT_NEW_TAB);
@@ -116,12 +121,13 @@ describe('Labs Workbench Navbar', function() {
     afterAll(function() {
       navbar.expandAccountDropdown();
       navbar.clickSignOut();
-      landingPage.verify();
+      loginPage.verify();
     });
     
     it('should link back to the landing page', function() {
       dashboardPage.get(true);
       navbar.clickBrandNav();
+      //browser.waitForAngular();
       landingPage.verify();
     });
   
@@ -129,6 +135,7 @@ describe('Labs Workbench Navbar', function() {
       navbar.expandHelpDropdown();
       navbar.clickHelpLink(0);
       helpers.expectNewTabOpen(shared.config.FEATURE_OVERVIEW_LINK).then(function() {
+        landingPage.verify();
         done();
       });
     }, TIMEOUT_EXPECT_NEW_TAB);
@@ -137,6 +144,7 @@ describe('Labs Workbench Navbar', function() {
       navbar.expandHelpDropdown();
       navbar.clickHelpLink(1);
       helpers.expectNewTabOpen(shared.config.FAQ_LINK).then(function() {
+        landingPage.verify();
         done();
       });
     }, TIMEOUT_EXPECT_NEW_TAB);
@@ -145,6 +153,7 @@ describe('Labs Workbench Navbar', function() {
       navbar.expandHelpDropdown();
       navbar.clickHelpLink(2);
       helpers.expectNewTabOpen(shared.config.USER_GUIDE_LINK).then(function() {
+        landingPage.verify();
         done();
       });
     }, TIMEOUT_EXPECT_NEW_TAB);
@@ -153,6 +162,7 @@ describe('Labs Workbench Navbar', function() {
       navbar.expandHelpDropdown();
       navbar.clickHelpLink(3);
       helpers.expectNewTabOpen(shared.config.DEV_GUIDE_LINK).then(function() {
+        landingPage.verify();
         done();
       });
     }, TIMEOUT_EXPECT_NEW_TAB);
@@ -161,6 +171,7 @@ describe('Labs Workbench Navbar', function() {
       navbar.expandHelpDropdown();
       navbar.clickHelpLink(4);
       helpers.expectNewTabOpen(shared.config.USE_POLICY_LINK).then(function() {
+        landingPage.verify();
         done();
       });
     }, TIMEOUT_EXPECT_NEW_TAB);
@@ -204,7 +215,7 @@ describe('Labs Workbench Navbar', function() {
     it('should allow the user to sign out', function() {
       navbar.expandAccountDropdown();
       navbar.clickSignOut();
-      landingPage.verify();
+      loginPage.verify();
       
       // Log back in to reset test state
       dashboardPage.get();

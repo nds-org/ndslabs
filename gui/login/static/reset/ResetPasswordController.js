@@ -8,11 +8,15 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('ResetPasswordController', [ '$scope', '$rootScope', '$location', '$cookies', '$routeParams', '$log', 'HomeRoute', 'LandingRoute', 'NdsLabsApi', 'ProductName', 'AuthInfo', 'ReturnRoute', 'CookieOptions', 
-    function($scope, $rootScope, $location, $cookies, $routeParams, $log, HomeRoute, LandingRoute, NdsLabsApi, ProductName, AuthInfo, ReturnRoute, CookieOptions) {
+.controller('ResetPasswordController', [ '$scope', '$rootScope', '$location', '$cookies', '$routeParams', '$log', 'NdsLabsApi', 'ProductName', 'AuthInfo', 'ReturnRoute', 'CookieOptions', 
+    function($scope, $rootScope, $location, $cookies, $routeParams, $log, NdsLabsApi, ProductName, AuthInfo, ReturnRoute, CookieOptions) {
   "use strict";
 
   $scope.token = $routeParams.t;
+  
+  if (!$scope.token) {
+    $scope.token = $cookies.get('token', CookieOptions);
+  }
   
   if ($scope.token) {
     $cookies.put('token', $scope.token, CookieOptions);

@@ -4,28 +4,29 @@
 var helpers = require("./helpers.e2e.js");
 
 var Navbar = require('./pages/navbar.page.js');
-var LandingPage = require('./pages/landing.page.js');
+var LoginPage = require('./pages/login.page.js');
 var DashboardPage = require('./pages/dashboard.page.js');
 var CatalogPage = require('./pages/catalog.page.js');
 var AddEditSpecPage = require('./pages/addEditSpec.page.js');
 
 var EC = protractor.ExpectedConditions;
 
-var TEST_HELP_LINK_TARGET = /https\:\/\/nationaldataservice\.atlassian\.net\/wiki\/display\/NDSC\/.+/;
+var TEST_HELP_LINK_TARGET = /https\:\/\/nationaldataservice\.atlassian\.net\/wiki\/spaces\/NDSC\/.+/;
 
 var specKey = 'cloud9cpp';
 var cloneKey = 'clonedspec';
 
 var TIMEOUT_EXPECT_NEW_TAB = 30000;
+var TIMEOUT_REMOVE_APPLICATION = 30000;
 
 // catalog.e2e.js
-describe('Labs Workbench Catalog View', function() {  
+describe('Labs Workbench Catalog View', function() {
   "use strict";
 
   var navbar = new Navbar();
   var catalogPage = new CatalogPage();
   var dashboardPage = new DashboardPage();
-  var landingPage = new LandingPage();
+  var loginPage = new LoginPage();
   var addSpecPage = new AddEditSpecPage();
   var editSpecPage = new AddEditSpecPage();
   
@@ -64,7 +65,7 @@ describe('Labs Workbench Catalog View', function() {
     helpers.afterAll();
     navbar.expandAccountDropdown();
     navbar.clickSignOut();
-    landingPage.verify();
+    loginPage.verify();
   });
   
   it('should offer main services that we expect to see', function() {
@@ -101,29 +102,32 @@ describe('Labs Workbench Catalog View', function() {
     addSpecPage.verify();
   });
   
-  // FIXME: Directive error?
-  /*it('should allow the user to filter using a search query', function() {
-    //catalogPage.applyFilter('clowder');
-    //expect(catalogPage.cards.count()).toBe(2);
-    
-    // TODO: Expect Clowder + pyCharm for Clowder
-  });
-  
-  // FIXME: Directive error?
-  it('should allow the user to filter using tags', function() {
-    //catalogPage.applyTag('Archive');
-    //expect(catalogPage.cards.count()).toBe(1);
-    
-    // TODO: Expect Dataverse
-  });*/
-  
   describe('As Cards', function() {
-    it('should allow the user to install an application', function() {
+    it('should allow the user to filter using a search query', function() {
+        catalogPage.applyFilter('clowder');
+
+        // FIXME: Add some actual expectations
+        //expect(catalogPage.cards.count()).toBe(2);
+
+        // TODO: Expect Clowder + pyCharm for Clowder
+    });
+
+    it('should allow the user to filter using tags', function() {
+        catalogPage.applyTag('Archive');
+
+        // FIXME: Add some actual expectations
+        //expect(catalogPage.cards.count()).toBe(1);
+
+        // TODO: Expect Dataverse
+    });
+
+    it('should allow the user to install an application', function(done) {
       catalogPage.installApplication('toolmanager').then(function() {
         dashboardPage.get(true);
         dashboardPage.shutdownAndRemoveAllApplications();
+        done();
       });
-    });
+    }, TIMEOUT_REMOVE_APPLICATION);
     
     // TODO: Clone error (duplicate key)
     it('should allow the user to clone a spec', function() {
@@ -199,6 +203,24 @@ describe('Labs Workbench Catalog View', function() {
       // Toggle to view as table
       catalogPage.toggleCardsBtn.click();
     });
+
+    it('should allow the user to filter using a search query', function() {
+        catalogPage.applyFilter('clowder');
+
+        // FIXME: Add some actual expectations
+        //expect(catalogPage.table.count()).toBe(2);
+        
+        // TODO: Expect Clowder + pyCharm for Clowder
+    });
+
+    it('should allow the user to filter using tags', function() {
+        catalogPage.applyTag('Archive');
+
+        // FIXME: Add some actual expectations
+        //expect(catalogPage.table.count()).toBe(1);
+
+        // TODO: Expect Dataverse
+    });
     
     // TODO: Clone error (duplicate key)
     it('should allow the user to clone a spec', function() {
@@ -238,6 +260,7 @@ describe('Labs Workbench Catalog View', function() {
         
         // NOTE: This is done in the "Cards" view, since the page just reloaded
         catalogPage.cloneSpec(specKey, cloneKey).then(function() {
+          catalogPage.verify();
           done();
         });
       }, 12000);
@@ -247,6 +270,7 @@ describe('Labs Workbench Catalog View', function() {
         
         // NOTE: This is done in the "Cards" view, since the page just reloaded
         catalogPage.deleteSpec(cloneKey).then(function() {
+          catalogPage.verify();
           done();
         });
       }, 12000);

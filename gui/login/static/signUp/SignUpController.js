@@ -8,8 +8,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('SignUpController', [ '$scope', '$log', '$rootScope', '$routeParams', '$location', '_', 'NdsLabsApi', 'Project', 'ProductName', 'AuthInfo', 'HomeRoute', 'HelpLinks', 'ReturnRoute', 
-    function($scope, $log, $rootScope, $routeParams, $location, _, NdsLabsApi, Project, ProductName, AuthInfo, HomeRoute, HelpLinks, ReturnRoute) {
+.controller('SignUpController', [ '$scope', '$log', '$rootScope', '$routeParams', '$location', '_', 'NdsLabsApi', 'Project', 'ProductName', 'AuthInfo', 'HelpLinks', 'ReturnRoute', 
+    function($scope, $log, $rootScope, $routeParams, $location, _, NdsLabsApi, Project, ProductName, AuthInfo, HelpLinks, ReturnRoute) {
   "use strict";
 
   $rootScope.rd = '';
@@ -28,9 +28,13 @@ angular
   $scope.progressMessage = '';
   $scope.showVerify = false;
   
-  // To handle special caharacters in passwords, we must escape them in the validation regex pattern
+  // To handle special characters in passwords, we must escape them in the validation regex pattern
   // See https://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript/3561711#3561711
   $scope.escapeRegex = function(pattern) {
+    if (!pattern) {
+      return '';
+    }
+    
     return pattern.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
   };
   
