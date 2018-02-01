@@ -35,13 +35,15 @@ ResetPasswordPage.prototype.get = function(loggedIn) {
 
   var navbar = new Navbar();
   var loginPage = new LoginPage();
-  
+
+  browser.get(TEST_HOSTNAME + '/login/recover/');
+
   if (loggedIn) {
-    navbar.accountDropdown.click();
-    navbar.changePasswordNav.click();
+    //navbar.accountDropdown.click();
+    //navbar.changePasswordNav.click();
   } else {
-    loginPage.get();
-    loginPage.forgotPasswordLink.click();
+    //loginPage.get();
+    //loginPage.forgotPasswordLink.click();
   }
     
   this.verify();

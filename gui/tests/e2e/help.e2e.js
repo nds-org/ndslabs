@@ -99,7 +99,7 @@ describe('Labs Workbench Contact Us View', function() {
     });
   
   // FIXME: 'Send Feedback' form is currently malfunctioning
-/*    it('should allow the user to send a help request', function() {
+    it('should allow the user to send a help request', function() {
       var submitBtn = contactUsPage.feedbackSubmitBtn;
       expect(submitBtn.isDisplayed()).toBe(true);
       expect(submitBtn.isEnabled()).toBe(false);
@@ -257,6 +257,6 @@ describe('Labs Workbench Contact Us View', function() {
       
       // TODO: How to verify support e-mails?
       //help.feedbackSubmitBtn.click();
-    });*/
+    });
   });
 });

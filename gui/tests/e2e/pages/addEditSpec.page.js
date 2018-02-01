@@ -141,7 +141,7 @@ AddSpecPage.prototype.get = function(options) {
     promise = catalogPage.createBtn.click();
   }
 	
-	return promise.then(function() {
+  return promise.then(function() {
     self.verify();
   });
 };
@@ -172,9 +172,9 @@ AddSpecPage.prototype.addConfig = function(type, fields) {
     // TODO: useFrom dropdown
   } else if (type === 'setTo') {
     // TODO: setTo dropdown
-    this.newCfgValueField.sendKeys(fields);
+    this.newCfgValueField.clear().sendKeys(fields.value);
   } else {
-    this.newCfgValueField.sendKeys(fields);
+    this.newCfgValueField.sendKeys(fields.value);
   }
   
   // Click the Add button

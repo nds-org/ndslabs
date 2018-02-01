@@ -28,12 +28,13 @@ var SwaggerUiPage = function() {
 SwaggerUiPage.prototype.get = function() {
   "use strict";
 
-  var landingPage = new LandingPage();
+  browser.get(TEST_HOSTNAME + '/landing/swagger/');
+  /*var landingPage = new LandingPage();
   var navbar = new Navbar();
   landingPage.get();
   
   navbar.expandHelpDropdown();
-  navbar.clickApiReferenceNav();
+  navbar.clickApiReferenceNav();*/
 	
   this.verify();
 };

@@ -21,6 +21,8 @@ var TEST_INVALID_USERNAME_REGISTERED = shared.config.TEST_USERNAME;   // Usernam
 var TEST_INVALID_PASSWORD_TOOSHORT = shared.config.TEST_INVALID_PASSWORD_TOOSHORT; // Password is too short
 var TEST_INVALID_PASSWORD_MISMATCH = shared.config.TEST_INVALID_PASSWORD_MISMATCH; // Password is incorrect
 
+var WAIT_TIME_NEW_TAB_OPEN = 30000;
+
 // signUpPage.e2e.js
 describe('Labs Workbench Sign Up View', function() {
   "use strict";
@@ -53,12 +55,15 @@ describe('Labs Workbench Sign Up View', function() {
     expect(submitBtn.isEnabled()).toBe(enabled ? true : false);  // Handles null / undefined / etc
   };
   
-  it('should link to the "Acceptable Use Policy" wiki page', function(){ 
+  it('should link to the "Acceptable Use Policy" wiki page', function(done) {
     helpers.scrollToAndThen(0, 10000, function() {
       signUpPage.clickUsePolicyLink();
-      helpers.expectNewTabOpen(shared.config.USE_POLICY_LINK);
+      helpers.expectNewTabOpen(shared.config.USE_POLICY_LINK).then(function() {
+        signUpPage.verify();
+        done();
+      });
     });
-  });
+  }, WAIT_TIME_NEW_TAB_OPEN);
   
   it('should allow submission with valid information', function() {
     // All fields are required
@@ -70,7 +75,7 @@ describe('Labs Workbench Sign Up View', function() {
     // Scroll down to the second half of the form
     helpers.scrollIntoView(signUpPage.submitBtn);
     signUpPage.enterUsername(TEST_NEW_USERNAME);
-    
+
     // Passwords must match
     signUpPage.enterPassword(TEST_NEW_PASSWORD);
     signUpPage.enterPasswordConfirmation(TEST_NEW_PASSWORD);

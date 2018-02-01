@@ -35,7 +35,7 @@ var TIMEOUT_EXPECT_NEW_TAB = 30000;
 var TEST_SPEC_KEY = 'cloudcmd';
 
 // dashboard.e2e.js
-  describe('Labs Workbench Dashboard View', function() {
+describe('Labs Workbench Dashboard View', function() {
   "use strict";
 
   var navbar = new Navbar();

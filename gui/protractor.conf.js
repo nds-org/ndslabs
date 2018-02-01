@@ -4,18 +4,25 @@ var HtmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter');
 
 var screenshotReporter = new HtmlScreenshotReporter({
     dest: 'tests/reports/screenshots',
-    filename: 'my-report.html'
+    filename: 'my-report.html',
+    cleanDestination: true,
+    showSummary: false,
+    showConfiguration: false,
+    reportTitle: null,
+    captureOnlyFailedSpecs: true,
+    ignoreSkippedSpecs: true
 });
 
 // e2e.conf.js
 exports.config = {
-  allScriptsTimeout: 600000,
+  allScriptsTimeout: 120000,
   framework: 'jasmine',
-  seleniumAddress: 'http://localhost:4444/wd/hub',
-  //chromeOnly: true,
+  //seleniumAddress: 'http://localhost:4444/wd/hub',
+  chromeOnly: true,
   params: config,
+  directConnect: true,
   jasmineNodeOpts: {
-    defaultTimeoutInterval: 600000,
+    defaultTimeoutInterval: 120000,
     realtimeFailure: true
   },
 
@@ -24,7 +31,7 @@ exports.config = {
     // Working on Windows and OSX
     { 'browserName': 'chrome',
         'chromeOptions': {
-            args: [  "--disable-gpu", "--window-size=1280x1024", /*"--headless", "--allow-insecure-localhost"*/ ]
+            args: [  "--disable-gpu", "--window-size=1280x1024", ] // "--headless", "--allow-insecure-localhost" ]
         }
     },
 
@@ -42,9 +49,9 @@ exports.config = {
     // { 'browserName': 'internet explorer', 'version': '11' },
   ],
 
-  plugins: [{
-    package: 'protractor-fail-fast'
-  }],
+  plugins: [
+      failFast.init(),
+  ],
 
   // Setup the report before any tests start
   beforeLaunch: function() {
