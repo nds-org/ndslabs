@@ -73,6 +73,7 @@ describe('Labs Workbench Catalog View', function() {
     expectSpec('cloud9cpp');
     expectSpec('clowder');
     expectSpec('dataverse');
+    expectSpec('cloudcmd');
     
     // TODO: How to scroll to expected cards
   });
@@ -165,6 +166,8 @@ describe('Labs Workbench Catalog View', function() {
       beforeAll(function(done) {
         catalogPage.get(true);
         catalogPage.cloneSpec(specKey, cloneKey).then(function() {
+          catalogPage.verify();
+          expectSpec(cloneKey);
           done();
         });
       }, 12000);
@@ -172,6 +175,8 @@ describe('Labs Workbench Catalog View', function() {
       afterAll(function(done) {
         catalogPage.get(true);
         catalogPage.deleteSpec(cloneKey).then(function() {
+          browser.waitForAngular();
+          catalogPage.verify();
           done();
         });
       }, 12000);
@@ -191,7 +196,7 @@ describe('Labs Workbench Catalog View', function() {
         
         // Recreate the clone to reset test state
         catalogPage.cloneSpec(specKey, cloneKey);
-        
+
         browser.waitForAngular();
         done();
       }, 12000);
@@ -261,6 +266,7 @@ describe('Labs Workbench Catalog View', function() {
         // NOTE: This is done in the "Cards" view, since the page just reloaded
         catalogPage.cloneSpec(specKey, cloneKey).then(function() {
           catalogPage.verify();
+          expectSpec(cloneKey);
           done();
         });
       }, 12000);
@@ -270,6 +276,7 @@ describe('Labs Workbench Catalog View', function() {
         
         // NOTE: This is done in the "Cards" view, since the page just reloaded
         catalogPage.deleteSpec(cloneKey).then(function() {
+          browser.waitForAngular();
           catalogPage.verify();
           done();
         });

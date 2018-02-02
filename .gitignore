@@ -1,6 +1,7 @@
 **/nds-build
 **/*.swp
 **/.c9/
+**/.idea/
 **/node_modules/
 **/bower_components/
 **/build/
