@@ -2033,6 +2033,7 @@ func (s *Server) QuickstartStack(w rest.ResponseWriter, r *rest.Request) {
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	if stack == nil {
@@ -2044,8 +2045,8 @@ func (s *Server) QuickstartStack(w rest.ResponseWriter, r *rest.Request) {
 		}
 
 		// Restrict to single service specs (i.e., no dependencies)
-		if len(spec.Dependencies) > 0 {
-			rest.Error(w, err.Error(), 422) // unprocessable
+		if s.hasRequiredDependencies(spec) {
+			rest.Error(w, "Cannot quickstart services with required dependencies", http.StatusUnprocessableEntity) // unprocessable
 			return
 		}
 
@@ -2899,6 +2900,15 @@ func (s *Server) checkDependencies(uid string, service *api.ServiceSpec) (string
 		}
 	}
 	return "", true
+}
+
+func (s *Server) hasRequiredDependencies(service *api.ServiceSpec) bool {
+	for _, dep := range service.Dependencies {
+		if dep.Required {
+			return true
+		}
+	}
+	return false
 }
 
 // Make sure that conig.useFrom dependencies exist
