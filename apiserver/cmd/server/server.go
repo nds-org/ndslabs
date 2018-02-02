@@ -735,7 +735,7 @@ func (s *Server) RegisterAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	verifyUrl := s.origin + "/#/?t=" + account.Token + "&u=" + account.Namespace
+	verifyUrl := s.origin + "/landing/?t=" + account.Token + "&u=" + account.Namespace
 	err = s.email.SendVerificationEmail(account.Name, account.EmailAddress, verifyUrl)
 	if err != nil {
 		glog.Error(err)
@@ -2741,10 +2741,10 @@ func (s *Server) ResetPassword(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	if account.Status == api.AccountStatusUnverified {
-		verifyUrl := s.origin + "/#/?t=" + account.Token + "&u=" + account.Namespace
+		verifyUrl := s.origin + "/landing/?t=" + account.Token + "&u=" + account.Namespace
 		err = s.email.SendVerificationEmail(account.Name, account.EmailAddress, verifyUrl)
 	} else {
-		resetUrl := s.origin + "/#/recover?t=" + token
+		resetUrl := s.origin + "/login/recover?t=" + token
 		err = s.email.SendRecoveryEmail(account.Name, account.EmailAddress, resetUrl, (account.Status == api.AccountStatusUnapproved))
 	}
 
