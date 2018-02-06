@@ -180,27 +180,21 @@ describe('Labs Workbench Dashboard View', function() {
 
     it('should link to each application service\'s help documentation', function() {
       var application = dashboardPage.firstApplication;
-      //dashboardPage.applications.then(function(applications) {
-        //let application = applications[0];
       application.click();
       dashboardPage.services(application).then(function(services) {
           expect(dashboardPage.helpLink(services[0]).isPresent()).toBe(true);
 
           // TODO: Verify destination
       });
-      //});
     });
 
     it('should allow the user to edit an application service', function() {
       var application = dashboardPage.firstApplication;
-      //dashboardPage.applications.then(function(applications) {
-      //let application = applications[0];
       application.click();
       dashboardPage.services(application).then(function(services) {
           dashboardPage.editServiceBtn(services[0]).click();
           editServicePage.verify();
       });
-      //});
     });
 
     /*it('should allow the user to add optional services to their application', function() {
@@ -268,131 +262,115 @@ describe('Labs Workbench Dashboard View', function() {
       }, TIMEOUT_EXPECT_NEW_TAB);
 
       it('should allow the user to change the label of an application', function() {
-        //dashboardPage.applications.each(function(application) {
-          var application = dashboardPage.firstApplication;
-          dashboardPage.applicationLabel(application).getText().then(function(oldLabel) {
-            // Rename an application
-            browser.wait(EC.elementToBeClickable(dashboardPage.renameBtn(application)), WAIT_TIME_ELEMENT_CLICKABLE);
-            dashboardPage.renameBtn(application).click();
+        var application = dashboardPage.firstApplication;
+        dashboardPage.applicationLabel(application).getText().then(function(oldLabel) {
+          // Rename an application
+          browser.wait(EC.elementToBeClickable(dashboardPage.renameBtn(application)), WAIT_TIME_ELEMENT_CLICKABLE);
+          dashboardPage.renameBtn(application).click();
 
-            // Expect previous label to be the default value
-            browser.wait(EC.visibilityOf(dashboardPage.stackRenameModal), WAIT_TIME_ELEMENT_CLICKABLE);
-            browser.wait(EC.visibilityOf(dashboardPage.nameInput), WAIT_TIME_ELEMENT_CLICKABLE);
-            expect(dashboardPage.nameInput.getAttribute('value')).toBe(oldLabel);
+          // Expect previous label to be the default value
+          browser.wait(EC.visibilityOf(dashboardPage.stackRenameModal), WAIT_TIME_ELEMENT_CLICKABLE);
+          browser.wait(EC.visibilityOf(dashboardPage.nameInput), WAIT_TIME_ELEMENT_CLICKABLE);
+          expect(dashboardPage.nameInput.getAttribute('value')).toBe(oldLabel);
 
-            // Input new application label
-            dashboardPage.nameInput.clear();
-            dashboardPage.nameInput.sendKeys(TEST_NEW_APPLICATION_NAME);
-            dashboardPage.confirmBtn.click();
-            browser.waitForAngular();
+          // Input new application label
+          dashboardPage.nameInput.clear();
+          dashboardPage.nameInput.sendKeys(TEST_NEW_APPLICATION_NAME);
+          dashboardPage.confirmBtn.click();
+          browser.waitForAngular();
 
-            // Ensure that the name changed as expected
-            browser.wait(EC.textToBePresentInElement(dashboardPage.applicationLabel(application), TEST_NEW_APPLICATION_NAME), WAIT_TIME_ELEMENT_CLICKABLE);
-            expect(dashboardPage.applicationLabel(application).getText()).toBe(TEST_NEW_APPLICATION_NAME);
+          // Ensure that the name changed as expected
+          browser.wait(EC.textToBePresentInElement(dashboardPage.applicationLabel(application), TEST_NEW_APPLICATION_NAME), WAIT_TIME_ELEMENT_CLICKABLE);
+          expect(dashboardPage.applicationLabel(application).getText()).toBe(TEST_NEW_APPLICATION_NAME);
 
-            // Revert label back to reset test state
-            browser.wait(EC.elementToBeClickable(dashboardPage.renameBtn(application)), WAIT_TIME_ELEMENT_CLICKABLE);
-            dashboardPage.renameBtn(application).click();
-            browser.wait(EC.visibilityOf(dashboardPage.stackRenameModal), WAIT_TIME_ELEMENT_CLICKABLE);
-            browser.wait(EC.visibilityOf(dashboardPage.nameInput), WAIT_TIME_ELEMENT_CLICKABLE);
-            dashboardPage.nameInput.clear();
-            dashboardPage.nameInput.sendKeys(oldLabel);
-            dashboardPage.confirmBtn.click();
-            browser.waitForAngular();
+          // Revert label back to reset test state
+          browser.wait(EC.elementToBeClickable(dashboardPage.renameBtn(application)), WAIT_TIME_ELEMENT_CLICKABLE);
+          dashboardPage.renameBtn(application).click();
+          browser.wait(EC.visibilityOf(dashboardPage.stackRenameModal), WAIT_TIME_ELEMENT_CLICKABLE);
+          browser.wait(EC.visibilityOf(dashboardPage.nameInput), WAIT_TIME_ELEMENT_CLICKABLE);
+          dashboardPage.nameInput.clear();
+          dashboardPage.nameInput.sendKeys(oldLabel);
+          dashboardPage.confirmBtn.click();
+          browser.waitForAngular();
 
-            // Ensure that the name reverted as expected
-            browser.wait(EC.textToBePresentInElement(dashboardPage.applicationLabel(application), oldLabel), WAIT_TIME_ELEMENT_CLICKABLE);
-            expect(dashboardPage.applicationLabel(application).getText()).toBe(oldLabel);
-          });
-        //});
+          // Ensure that the name reverted as expected
+          browser.wait(EC.textToBePresentInElement(dashboardPage.applicationLabel(application), oldLabel), WAIT_TIME_ELEMENT_CLICKABLE);
+          expect(dashboardPage.applicationLabel(application).getText()).toBe(oldLabel);
+        });
       });
 
       it('should allow the user to view the console of a running application', function(done) {
-        //dashboardPage.applications.each(function(application) {
-          let application = dashboardPage.firstApplication;
-          application.click().then(function() {
-            let service = dashboardPage.firstService(application);
-            browser.wait(EC.elementToBeClickable(dashboardPage.consoleBtn(service)), WAIT_TIME_APPLICATION_STARTUP);
-            dashboardPage.consoleBtn(service).click();
-            helpers.expectNewTabOpen(consolePage.PAGE_ROUTE).then(function() {
-                browser.waitForAngular();
-                done();
-            });
+        let application = dashboardPage.firstApplication;
+        application.click().then(function() {
+          let service = dashboardPage.firstService(application);
+          browser.wait(EC.elementToBeClickable(dashboardPage.consoleBtn(service)), WAIT_TIME_APPLICATION_STARTUP);
+          dashboardPage.consoleBtn(service).click();
+          helpers.expectNewTabOpen(consolePage.PAGE_ROUTE).then(function() {
+              browser.waitForAngular();
+              dashboardPage.verify();
+              done();
           });
-          //dashboardPage.services(application).then(function(services) {
-          //  let service = services[0];
-
-            // TODO: Verify basic console functionality
-          //});
-        //});
+        });
       }, TIMEOUT_EXPECT_NEW_TAB);
 
       it('should allow the user to view the config of a running application', function() {
-        //dashboardPage.applications.each(function(application) {
-          var application = dashboardPage.firstApplication;
-          application.click();
+        var application = dashboardPage.firstApplication;
+        application.click();
+        browser.waitForAngular();
+        dashboardPage.services(application).then(function(services) {
+          let service = services[0];
+          browser.wait(EC.elementToBeClickable(dashboardPage.viewConfigBtn(application)), WAIT_TIME_ELEMENT_CLICKABLE);
+          dashboardPage.viewConfigBtn(service).click();
+
+          // Expect the viewConfigModal to pop up
+          expect(dashboardPage.viewConfigModal.isPresent()).toBe(true);
+          expect(dashboardPage.viewConfigModal.isDisplayed()).toBe(true);
+
+          // Dismiss the modal
+          dashboardPage.cancelBtn.click();
           browser.waitForAngular();
-          dashboardPage.services(application).then(function(services) {
-            let service = services[0];
-            browser.wait(EC.elementToBeClickable(dashboardPage.viewConfigBtn(application)), WAIT_TIME_ELEMENT_CLICKABLE);
-            dashboardPage.viewConfigBtn(service).click();
-
-            // Expect the viewConfigModal to pop up
-            expect(dashboardPage.viewConfigModal.isPresent()).toBe(true);
-            expect(dashboardPage.viewConfigModal.isDisplayed()).toBe(true);
-
-            // Dismiss the modal
-            dashboardPage.cancelBtn.click();
-            browser.waitForAngular();
-          });
-        //});
+        });
       });
 
       it('should allow the user to view logs of a running application', function() {
-        //dashboardPage.applications.each(function(application) {
-          var application = dashboardPage.firstApplication;
-          application.click();
-          dashboardPage.services(application).then(function(services) {
-            let service = services[0];
-            browser.wait(EC.elementToBeClickable(dashboardPage.viewLogsBtn(application)), WAIT_TIME_ELEMENT_CLICKABLE);
-            dashboardPage.viewLogsBtn(service).click();
+        var application = dashboardPage.firstApplication;
+        application.click();
+        dashboardPage.services(application).then(function(services) {
+          let service = services[0];
+          browser.wait(EC.elementToBeClickable(dashboardPage.viewLogsBtn(application)), WAIT_TIME_ELEMENT_CLICKABLE);
+          dashboardPage.viewLogsBtn(service).click();
 
-            // Expect the viewLogsModal to pop up
-            expect(dashboardPage.viewLogsModal.isPresent()).toBe(true);
-            expect(dashboardPage.viewLogsModal.isDisplayed()).toBe(true);
+          // Expect the viewLogsModal to pop up
+          expect(dashboardPage.viewLogsModal.isPresent()).toBe(true);
+          expect(dashboardPage.viewLogsModal.isDisplayed()).toBe(true);
 
-            // Dismiss the modal
-            dashboardPage.cancelBtn.click();
-            browser.waitForAngular();
-          });
-        //});
+          // Dismiss the modal
+          dashboardPage.cancelBtn.click();
+          browser.waitForAngular();
+        });
       });
 
       it('should link to the application\'s help documentation', function() {
-        //dashboardPage.applications.each(function(application) {
-          var application = dashboardPage.firstApplication;
-          application.click();
-          dashboardPage.services(application).then(function(services) {
-            let service = services[0];
-            expect(dashboardPage.helpLink(service).isPresent()).toBe(true);
+        var application = dashboardPage.firstApplication;
+        application.click();
+        dashboardPage.services(application).then(function(services) {
+          let service = services[0];
+          expect(dashboardPage.helpLink(service).isPresent()).toBe(true);
 
-            // TODO: Verify destination
-          });
-        //});
+          // TODO: Verify destination
+        });
       });
 
       it('should allow the user to shutdown a running application', function(done) {
-        //dashboardPage.applications.each(function(application) {
-          var application = dashboardPage.firstApplication;
-          dashboardPage.shutdownApplication(application);
+        var application = dashboardPage.firstApplication;
+        dashboardPage.shutdownApplication(application);
 
-          browser.wait(EC.elementToBeClickable(dashboardPage.launchBtn(application)), WAIT_TIME_APPLICATION_SHUTDOWN);
-          dashboardPage.launchApplication(application);
+        browser.wait(EC.elementToBeClickable(dashboardPage.launchBtn(application)), WAIT_TIME_APPLICATION_SHUTDOWN);
+        dashboardPage.launchApplication(application);
 
-          browser.wait(EC.elementToBeClickable(dashboardPage.shutdownBtn(application)), WAIT_TIME_APPLICATION_STARTUP);
-          browser.waitForAngular();
-          done();
-        //});
+        browser.wait(EC.elementToBeClickable(dashboardPage.shutdownBtn(application)), WAIT_TIME_APPLICATION_STARTUP);
+        browser.waitForAngular();
+        done();
       }, WAIT_TIME_APPLICATION_SHUTDOWN + WAIT_TIME_APPLICATION_STARTUP);
     });
   });
