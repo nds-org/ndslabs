@@ -73,10 +73,12 @@ exports.config = {
   onPrepare: function() {
     /* global angular: false, browser: false, jasmine: false */
     'use strict';
+    var SpecReporter = require('jasmine-spec-reporter').SpecReporter;
 
     var jasmineEnv = jasmine.getEnv();
     jasmineEnv.addReporter(failFast.init());
     jasmineEnv.addReporter(screenshotReporter);
+    jasmineEnv.addReporter(new SpecReporter({displayStacktrace: 'all'}));
     /*
        waitPlugin.setOnComplete(report);
        browser.driver.manage().window().maximize();
