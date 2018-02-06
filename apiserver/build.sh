@@ -19,6 +19,7 @@ if [ "$1" == "local" ] || [ "$1" == "docker" ]; then
     
     glide install --strip-vendor 
     
+    COVERPKG=./cmd/server,./pkg/crypto,./pkg/etcd,./pkg/config,./pkg/email,./pkg/events,./pkg/kube,./pkg/middleware,./pkg/types,./pkg/validate
 	if [ "$1" == "local" ]; then 
         UNAME=$(uname)
         if [ "$UNAME" == "Darwin" ]; then
@@ -35,14 +36,15 @@ if [ "$1" == "local" ] || [ "$1" == "docker" ]; then
 
 	if [ "$2" == "test" ]; then
            echo Building test apiserver-$OS-amd64
-           GOOS=$OS GOARCH=amd64 go test -coverpkg=./cmd/...,./pkg/... -c -o build/bin/apiserver-$OS-amd64 ./cmd/server 
+
+           GOOS=$OS GOARCH=amd64 go test -coverpkg=$COVERPKG -c -o build/bin/apiserver-$OS-amd64 ./cmd/server 
         fi
 
 	elif [ "$1" == "docker" ]; then 	
         
  	  if [ "$2" == "test" ]; then
             echo Building test apiserver-linux-amd64
-            GOOS=linux GOARCH=amd64 go test -coverpkg=./cmd/...,./pkg/... -c -o build/bin/apiserver-linux-amd64 ./cmd/server 
+            GOOS=linux GOARCH=amd64 go test -coverpkg=$COVERPKG -c -o build/bin/apiserver-linux-amd64 ./cmd/server 
           else 
             echo Building apiserver-linux-amd64
             GOOS=linux GOARCH=amd64 go build -o build/bin/apiserver-linux-amd64 ./cmd/server

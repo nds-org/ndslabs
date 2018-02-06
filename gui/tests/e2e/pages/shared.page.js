@@ -21,11 +21,11 @@
     
     PRODUCT_NAME: 'Labs Workbench',
     
-    FEATURE_OVERVIEW_LINK: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Feature+Overview',
-    FAQ_LINK: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Frequently+Asked+Questions',
-    USER_GUIDE_LINK: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/User%27s+Guide',
-    DEV_GUIDE_LINK: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Developer%27s+Guide',
-    USE_POLICY_LINK: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Acceptable+Use+Policy',
+    FEATURE_OVERVIEW_LINK: 'https://nationaldataservice.atlassian.net/wiki/spaces/NDSC/pages/16187394/Feature+Overview', //'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Feature+Overview',
+    FAQ_LINK: 'https://nationaldataservice.atlassian.net/wiki/spaces/NDSC/pages/18448399/Frequently+Asked+Questions', //'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Frequently+Asked+Questions',
+    USER_GUIDE_LINK: 'https://nationaldataservice.atlassian.net/wiki/spaces/NDSC/pages/17170463/User+s+Guide', //'https://nationaldataservice.atlassian.net/wiki/display/NDSC/User%27s+Guide',
+    DEV_GUIDE_LINK: 'https://nationaldataservice.atlassian.net/wiki/spaces/NDSC/pages/17170535/Developer+s+Guide', //'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Developer%27s+Guide',
+    USE_POLICY_LINK: 'https://nationaldataservice.atlassian.net/wiki/spaces/NDSC/pages/19791879/Acceptable+Use+Policy', //'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Acceptable+Use+Policy',
     
     FORUM_LINK: 'https://groups.google.com/forum/#!forum/ndslabs',
     CHAT_LINK: 'https://gitter.im/nds-org/ndslabs',
