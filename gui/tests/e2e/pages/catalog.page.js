@@ -80,12 +80,15 @@ CatalogPage.prototype.get = function(loggedIn) {
     //navbar.clickCatalogNav();
 
     browser.get(TEST_HOSTNAME + '/dashboard/store');
+    browser.waitForAngular();
     browser.getCurrentUrl().then(function(url) {
         if (url.indexOf('login') !== -1) {
             loginPage.verify();
+            browser.waitForAngular();
             loginPage.enterUsername(TEST_USERNAME);
             loginPage.enterPassword(TEST_PASSWORD);
             loginPage.clickLogin();
+            browser.waitForAngular();
         }
 
         self.verify();
@@ -96,6 +99,7 @@ CatalogPage.prototype.get = function(loggedIn) {
 CatalogPage.prototype.verify = function() {
     "use strict";
 
+    browser.waitForAngular();
     expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
     expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
@@ -110,6 +114,7 @@ CatalogPage.prototype.applyTag = function(tagName) {
     this.autocompleteSuggestions.then(function(suggestions) {
         expect(suggestions.length).toBe(1);
         suggestions[0].click();
+        browser.waitForAngular();
     });
 };
 
@@ -121,6 +126,7 @@ CatalogPage.prototype.applyFilter = function(text) {
 
     // Press the Enter key
     browser.actions().sendKeys(protractor.Key.ENTER).perform();
+    browser.waitForAngular();
 };
 
 // setTo === true => enable cards view
@@ -130,11 +136,12 @@ CatalogPage.prototype.toggleCardsView = function(setTo) {
     "use strict";
 
     var self = this;
+    browser.waitForAngular();
     return helpers.hasClass(this.viewAsIcon, 'fa-table').then(function(showCards) {
         if ((showCards && setTo !== true) || (!showCards && setTo !== false)) {
             // We are currently in the cards view
             self.toggleCardsBtn.click();
-            console.log("Toggling view...");
+            browser.waitForAngular();
         }
     });
 };
@@ -143,6 +150,7 @@ CatalogPage.prototype.installApplication = function(specKey, viewAsTable) {
     "use strict";
 
     var self = this;
+    browser.waitForAngular();
     return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) {
             return key === specKey; // How to know we've found our match
         },
@@ -153,7 +161,7 @@ CatalogPage.prototype.installApplication = function(specKey, viewAsTable) {
             var addBtn = self.addBtn(match);
             browser.wait(EC.elementToBeClickable(addBtn), 5000);
             addBtn.click();
-
+            browser.waitForAngular();
             return match;
         });
 };
@@ -162,6 +170,7 @@ CatalogPage.prototype.viewApplicationOnDashboard = function(specKey, viewAsTable
     "use strict";
 
     var self = this;
+    browser.waitForAngular();
     return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) {
             return key === specKey; // How to know we've found our match
         },
@@ -170,7 +179,7 @@ CatalogPage.prototype.viewApplicationOnDashboard = function(specKey, viewAsTable
             var viewBtn = self.viewBtn(match);
             browser.wait(EC.elementToBeClickable(viewBtn), 5000);
             viewBtn.click();
-
+            browser.waitForAngular();
             return match;
         });
 };
@@ -182,6 +191,7 @@ CatalogPage.prototype.importSpec = function(specJson) {
     var importBtn = this.importBtn;
     browser.wait(EC.elementToBeClickable(importBtn), 5000);
     importBtn.click();
+    browser.waitForAngular();
 
     // Wait for the modal to popup
     browser.wait(EC.visibilityOf(this.importSpecModal), 5000);
@@ -195,12 +205,14 @@ CatalogPage.prototype.importSpec = function(specJson) {
     var confirmBtn = this.confirmBtn;
     browser.wait(EC.elementToBeClickable(confirmBtn), 5000);
     confirmBtn.click();
+    browser.waitForAngular();
 };
 
 CatalogPage.prototype.viewJsonModal = function(specKey, viewAsTable) {
     "use strict";
 
     var self = this;
+    browser.waitForAngular();
     return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) {
             return key === specKey; // How to know we've found our match
         },
@@ -212,6 +224,7 @@ CatalogPage.prototype.viewJsonModal = function(specKey, viewAsTable) {
             browser.wait(EC.elementToBeClickable(self.viewJsonBtn(match)), 5000);
             self.viewJsonBtn(match).click();
 
+            browser.waitForAngular();
             return match;
         });
 };
@@ -220,6 +233,7 @@ CatalogPage.prototype.copySpecToClipboard = function(specKey, viewAsTable) {
     "use strict";
 
     var self = this;
+    browser.waitForAngular();
     return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) {
             return key === specKey; // How to know we've found our match
         },
@@ -232,6 +246,7 @@ CatalogPage.prototype.copySpecToClipboard = function(specKey, viewAsTable) {
             browser.wait(EC.elementToBeClickable(copyToClipboardBtn), 5000);
             copyToClipboardBtn.click();
 
+            browser.waitForAngular();
             return match;
         });
 };
@@ -240,6 +255,7 @@ CatalogPage.prototype.cloneSpec = function(oldKey, newKey, viewAsTable) {
     "use strict";
 
     var self = this;
+    browser.waitForAngular();
     return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) {
             return key === oldKey; // How to know we've found our match
         },
@@ -268,6 +284,7 @@ CatalogPage.prototype.cloneSpec = function(oldKey, newKey, viewAsTable) {
             browser.wait(EC.elementToBeClickable(confirmBtn), 5000);
             confirmBtn.click();
 
+            browser.waitForAngular();
             return match;
         });
 };
@@ -276,10 +293,12 @@ CatalogPage.prototype.editSpec = function(specKey, viewAsTable) {
     "use strict";
 
     var self = this;
+    browser.waitForAngular();
     return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) {
             return key === specKey; // How to know we've found our match
         },
         function(match) {  // What to do with our match
+            browser.waitForAngular();
             var moreActionsDropdown = self.moreActionsDropdown(match);
             browser.wait(EC.elementToBeClickable(moreActionsDropdown), 5000);
             moreActionsDropdown.click();
@@ -288,6 +307,7 @@ CatalogPage.prototype.editSpec = function(specKey, viewAsTable) {
             browser.wait(EC.elementToBeClickable(editBtn), 5000);
             editBtn.click();
 
+            browser.waitForAngular();
             return match;
         });
 };
@@ -296,10 +316,12 @@ CatalogPage.prototype.deleteSpec = function(specKey, viewAsTable) {
     "use strict";
 
     var self = this;
+    browser.waitForAngular();
     return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) {
             return key === specKey; // How to know we've found our match
         },
         function(match) {  // What to do with our match
+            browser.waitForAngular();
             var moreActionsDropdown = self.moreActionsDropdown(match);
             browser.wait(EC.elementToBeClickable(moreActionsDropdown), 5000);
             moreActionsDropdown.click();
@@ -314,6 +336,7 @@ CatalogPage.prototype.deleteSpec = function(specKey, viewAsTable) {
             browser.wait(EC.elementToBeClickable(confirmBtn), 5000);
             confirmBtn.click();
 
+            browser.waitForAngular();
             return match;
         });
 };
@@ -322,10 +345,12 @@ CatalogPage.prototype.clickViewDocumentation = function(specKey, viewAsTable) {
     "use strict";
 
     var self = this;
+    browser.waitForAngular();
     return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) {
             return key === specKey; // How to know we've found our match
         },
         function(match) {  // What to do with our match
+            browser.waitForAngular();
             var moreActionsDropdown = self.moreActionsDropdown(match);
             browser.wait(EC.elementToBeClickable(moreActionsDropdown), 5000);
             moreActionsDropdown.click();
@@ -334,6 +359,7 @@ CatalogPage.prototype.clickViewDocumentation = function(specKey, viewAsTable) {
             browser.wait(EC.elementToBeClickable(viewDocsBtn), 5000);
             viewDocsBtn.click();
 
+            browser.waitForAngular();
             return match;
         });
 };
@@ -342,14 +368,17 @@ CatalogPage.prototype.clickHelpLink = function(specKey, viewAsTable) {
     "use strict";
 
     var self = this;
+    browser.waitForAngular();
     return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) {
             return key === specKey; // How to know we've found our match
         },
         function(match) {  // What to do with our match
+            browser.waitForAngular();
             var helpLink = self.helpLink(match);
             browser.wait(EC.elementToBeClickable(helpLink), 5000);
             helpLink.click();
 
+            browser.waitForAngular();
             return match;
         });
 };
@@ -359,17 +388,20 @@ plication = function(specKey, viewAsTable) {
   "use strict";
 
   var self = this;
+    browser.waitForAngular();
   return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
+    browser.waitForAngular();
     //helpers.scrollIntoViewAndClick(self.addBtn(card));
     helpers.scrollIntoView(match);
     
     var addBtn = self.addBtn(match);
     browser.wait(EC.elementToBeClickable(addBtn), 5000);
     addBtn.click();
-  
+
+    browser.waitForAngular();
     return match;
   });
 };
@@ -378,10 +410,12 @@ CatalogPage.prototype.viewApplicationOnDashboard = function(specKey, viewAsTable
   "use strict";
 
   var self = this;
+  browser.waitForAngular();
   return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
+    browser.waitForAngular();
     //helpers.scrollIntoViewAndClick(self.addBtn(card));
     var viewBtn = self.viewBtn(match);
     browser.wait(EC.elementToBeClickable(viewBtn), 5000);
@@ -411,22 +445,26 @@ CatalogPage.prototype.importSpec = function(specJson) {
   var confirmBtn = this.confirmBtn;
   browser.wait(EC.elementToBeClickable(confirmBtn), 5000);
   confirmBtn.click();
+  browser.waitForAngular();
 };
 
 CatalogPage.prototype.viewJsonModal = function(specKey, viewAsTable) {
   "use strict";
 
   var self = this;
+  browser.waitForAngular();
   return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
+    browser.waitForAngular();
     var moreActionsDropdown = self.moreActionsDropdown(match); 
     browser.wait(EC.elementToBeClickable(moreActionsDropdown), 5000);
     moreActionsDropdown.click();
     
     browser.wait(EC.elementToBeClickable(self.viewJsonBtn(match)), 5000);
     self.viewJsonBtn(match).click();
+    browser.waitForAngular();
     
     return match;
   });
@@ -436,6 +474,7 @@ CatalogPage.prototype.copySpecToClipboard = function(specKey, viewAsTable) {
   "use strict";
 
   var self = this;
+  browser.waitForAngular();
   return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
   }, 
@@ -456,10 +495,12 @@ CatalogPage.prototype.cloneSpec = function(oldKey, newKey, viewAsTable) {
   "use strict";
 
   var self = this;
+  browser.waitForAngular();
   return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === oldKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
+    browser.waitForAngular();
     var moreActionsDropdown = self.moreActionsDropdown(match); 
     browser.wait(EC.elementToBeClickable(moreActionsDropdown), 5000);
     moreActionsDropdown.click();
@@ -467,6 +508,7 @@ CatalogPage.prototype.cloneSpec = function(oldKey, newKey, viewAsTable) {
     var cloneBtn = self.cloneBtn(match);
     browser.wait(EC.elementToBeClickable(cloneBtn), 5000);
     cloneBtn.click();
+    browser.waitForAngular();
     
     browser.wait(EC.visibilityOf(self.cloneSpecModal), 5000);
     browser.wait(EC.visibilityOf(self.cloneKeyInput), 5000);
@@ -479,10 +521,12 @@ CatalogPage.prototype.cloneSpec = function(oldKey, newKey, viewAsTable) {
     // Enter a new key
     cloneKeyInput.clear();
     cloneKeyInput.sendKeys(newKey);
+    browser.waitForAngular();
     
     var confirmBtn = self.confirmBtn;
     browser.wait(EC.elementToBeClickable(confirmBtn), 5000);
     confirmBtn.click();
+    browser.waitForAngular();
     
     return match;
   });
@@ -492,10 +536,12 @@ CatalogPage.prototype.editSpec = function(specKey, viewAsTable) {
   "use strict";
 
   var self = this;
+  browser.waitForAngular();
   return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
+    browser.waitForAngular();
     var moreActionsDropdown = self.moreActionsDropdown(match); 
     browser.wait(EC.elementToBeClickable(moreActionsDropdown), 5000);
     moreActionsDropdown.click();
@@ -503,6 +549,7 @@ CatalogPage.prototype.editSpec = function(specKey, viewAsTable) {
     var editBtn = self.editBtn(match);
     browser.wait(EC.elementToBeClickable(editBtn), 5000);
     editBtn.click();
+    browser.waitForAngular();
     
     return match;
   });
@@ -512,10 +559,12 @@ CatalogPage.prototype.deleteSpec = function(specKey, viewAsTable) {
   "use strict";
 
   var self = this;
+  browser.waitForAngular();
   return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
+    browser.waitForAngular();
     var moreActionsDropdown = self.moreActionsDropdown(match); 
     browser.wait(EC.elementToBeClickable(moreActionsDropdown), 5000);
     moreActionsDropdown.click();
@@ -523,12 +572,14 @@ CatalogPage.prototype.deleteSpec = function(specKey, viewAsTable) {
     var deleteBtn = self.deleteBtn(match);
     browser.wait(EC.elementToBeClickable(deleteBtn), 5000);
     deleteBtn.click();
+    browser.waitForAngular();
     
     browser.wait(EC.visibilityOf(self.deleteSpecModal), 5000);
     
     var confirmBtn = self.confirmBtn;
     browser.wait(EC.elementToBeClickable(confirmBtn), 5000);
     confirmBtn.click();
+    browser.waitForAngular();
     
     return match;
   });
@@ -538,10 +589,12 @@ CatalogPage.prototype.clickViewDocumentation = function(specKey, viewAsTable) {
   "use strict";
 
   var self = this;
+  browser.waitForAngular();
   return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
+    browser.waitForAngular();
     var moreActionsDropdown = self.moreActionsDropdown(match); 
     browser.wait(EC.elementToBeClickable(moreActionsDropdown), 5000);
     moreActionsDropdown.click();
@@ -549,6 +602,7 @@ CatalogPage.prototype.clickViewDocumentation = function(specKey, viewAsTable) {
     var viewDocsBtn = self.viewDocsBtn(match);
     browser.wait(EC.elementToBeClickable(viewDocsBtn), 5000);
     viewDocsBtn.click();
+    browser.waitForAngular();
     
     return match;
   });
@@ -558,14 +612,17 @@ CatalogPage.prototype.clickHelpLink = function(specKey, viewAsTable) {
   "use strict";
 
   var self = this;
+  browser.waitForAngular();
   return helpers.selectByModel(viewAsTable ? self.table : self.cards, "spec.key", function(key) { 
     return key === specKey; // How to know we've found our match
   }, 
   function(match) {  // What to do with our match
+    browser.waitForAngular();
     var helpLink = self.helpLink(match); 
     browser.wait(EC.elementToBeClickable(helpLink), 5000);
     helpLink.click();
-    
+
+    browser.waitForAngular();
     return match;
   });
 };

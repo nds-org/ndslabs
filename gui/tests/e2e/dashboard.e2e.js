@@ -91,25 +91,26 @@ describe('Labs Workbench Dashboard View', function() {
       catalogPage.viewApplicationOnDashboard(authNotRequiredSpec);
       dashboardPage.verify();
 
-      var application = dashboardPage.firstApplication;
         // Expand first application header
-        //var application = applications[0];
-        application.click();
-        browser.wait(EC.textToBePresentInElement(dashboardPage.toggleAuthBtn(application), 'Disabled'), WAIT_TIME_ELEMENT_CLICKABLE);
-        expect(dashboardPage.toggleAuthBtn(application).getText()).toBe(TEXT_BASIC_AUTH_DISABLED);
+      var application = dashboardPage.firstApplication;
+      application.click();
+      browser.waitForAngular();
+      browser.wait(EC.textToBePresentInElement(dashboardPage.toggleAuthBtn(application), 'Disabled'), WAIT_TIME_ELEMENT_CLICKABLE);
+      expect(dashboardPage.toggleAuthBtn(application).getText()).toBe(TEXT_BASIC_AUTH_DISABLED);
 
-        // Enable basic auth
-        dashboardPage.toggleAuthBtn(application).click();
-        browser.wait(EC.textToBePresentInElement(dashboardPage.toggleAuthBtn(application), 'Enabled'), WAIT_TIME_ELEMENT_CLICKABLE);
-        expect(dashboardPage.toggleAuthBtn(application).getText()).toBe(TEXT_BASIC_AUTH_ENABLED);
+      // Enable basic auth
+      dashboardPage.toggleAuthBtn(application).click();
+      browser.waitForAngular();
+      browser.wait(EC.textToBePresentInElement(dashboardPage.toggleAuthBtn(application), 'Enabled'), WAIT_TIME_ELEMENT_CLICKABLE);
+      expect(dashboardPage.toggleAuthBtn(application).getText()).toBe(TEXT_BASIC_AUTH_ENABLED);
 
-        // Disable auth again to reset test state
-        dashboardPage.toggleAuthBtn(application).click();
-        browser.wait(EC.textToBePresentInElement(dashboardPage.toggleAuthBtn(application), 'Disabled'), WAIT_TIME_ELEMENT_CLICKABLE);
-        expect(dashboardPage.toggleAuthBtn(application).getText()).toBe(TEXT_BASIC_AUTH_DISABLED);
+      // Disable auth again to reset test state
+      dashboardPage.toggleAuthBtn(application).click();
+      browser.waitForAngular();
+      browser.wait(EC.textToBePresentInElement(dashboardPage.toggleAuthBtn(application), 'Disabled'), WAIT_TIME_ELEMENT_CLICKABLE);
+      expect(dashboardPage.toggleAuthBtn(application).getText()).toBe(TEXT_BASIC_AUTH_DISABLED);
 
-        dashboardPage.removeApplication(application);
-      //});
+      dashboardPage.removeApplication(application);
     });
   });
 
@@ -218,6 +219,7 @@ describe('Labs Workbench Dashboard View', function() {
       browser.wait(EC.elementToBeClickable(deleteBtn), WAIT_TIME_APPLICATION_STARTUP);
       deleteBtn.click();
       dashboardPage.confirmBtn.click();
+      browser.waitForAngular();
 
       // Reinstall the application to reset test state
       catalogPage.get(true);
@@ -282,6 +284,7 @@ describe('Labs Workbench Dashboard View', function() {
             dashboardPage.nameInput.clear();
             dashboardPage.nameInput.sendKeys(TEST_NEW_APPLICATION_NAME);
             dashboardPage.confirmBtn.click();
+            browser.waitForAngular();
 
             // Ensure that the name changed as expected
             browser.wait(EC.textToBePresentInElement(dashboardPage.applicationLabel(application), TEST_NEW_APPLICATION_NAME), WAIT_TIME_ELEMENT_CLICKABLE);
@@ -295,6 +298,7 @@ describe('Labs Workbench Dashboard View', function() {
             dashboardPage.nameInput.clear();
             dashboardPage.nameInput.sendKeys(oldLabel);
             dashboardPage.confirmBtn.click();
+            browser.waitForAngular();
 
             // Ensure that the name reverted as expected
             browser.wait(EC.textToBePresentInElement(dashboardPage.applicationLabel(application), oldLabel), WAIT_TIME_ELEMENT_CLICKABLE);
@@ -311,6 +315,7 @@ describe('Labs Workbench Dashboard View', function() {
             browser.wait(EC.elementToBeClickable(dashboardPage.consoleBtn(service)), WAIT_TIME_APPLICATION_STARTUP);
             dashboardPage.consoleBtn(service).click();
             helpers.expectNewTabOpen(consolePage.PAGE_ROUTE).then(function() {
+                browser.waitForAngular();
                 done();
             });
           });
@@ -326,6 +331,7 @@ describe('Labs Workbench Dashboard View', function() {
         //dashboardPage.applications.each(function(application) {
           var application = dashboardPage.firstApplication;
           application.click();
+          browser.waitForAngular();
           dashboardPage.services(application).then(function(services) {
             let service = services[0];
             browser.wait(EC.elementToBeClickable(dashboardPage.viewConfigBtn(application)), WAIT_TIME_ELEMENT_CLICKABLE);
@@ -337,6 +343,7 @@ describe('Labs Workbench Dashboard View', function() {
 
             // Dismiss the modal
             dashboardPage.cancelBtn.click();
+            browser.waitForAngular();
           });
         //});
       });
@@ -356,6 +363,7 @@ describe('Labs Workbench Dashboard View', function() {
 
             // Dismiss the modal
             dashboardPage.cancelBtn.click();
+            browser.waitForAngular();
           });
         //});
       });
@@ -382,6 +390,7 @@ describe('Labs Workbench Dashboard View', function() {
           dashboardPage.launchApplication(application);
 
           browser.wait(EC.elementToBeClickable(dashboardPage.shutdownBtn(application)), WAIT_TIME_APPLICATION_STARTUP);
+          browser.waitForAngular();
           done();
         //});
       }, WAIT_TIME_APPLICATION_SHUTDOWN + WAIT_TIME_APPLICATION_STARTUP);

@@ -116,6 +116,7 @@ describe('Labs Workbench Reset Password View', function() {
       
       // Click the submit button
       expectBtn(submitBtn, true).click();
+      browser.waitForAngular();
       
       // We should see our confirmation banner
       expect(passwordChangedHelperText.isPresent()).toBe(true);
@@ -139,6 +140,7 @@ describe('Labs Workbench Reset Password View', function() {
       resetPasswordPage.newPasswordInput.sendKeys(TEST_ORIGINAL_PASSWORD);
       resetPasswordPage.newPasswordConfirmationInput.sendKeys(TEST_ORIGINAL_PASSWORD);
       submitBtn.click();
+      browser.waitForAngular();
       
       // We should see our confirmation banner
       expect(passwordChangedHelperText.isPresent()).toBe(true);
@@ -147,12 +149,14 @@ describe('Labs Workbench Reset Password View', function() {
       // Log out to reset test state
       navbar.accountDropdown.click();
       navbar.logoutBtn.click();
+      browser.waitForAngular();
       loginPage.verify();
 
       // Log in again to ensure password actually changed
       loginPage.usernameInput.sendKeys(TEST_VALID_USERNAME);
       loginPage.passwordInput.sendKeys(TEST_ORIGINAL_PASSWORD);
       loginPage.loginBtn.click();
+      browser.waitForAngular();
       dashboardPage.verify();
     });
     

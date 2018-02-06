@@ -95,6 +95,7 @@ DashboardPage.prototype.get = function(loggedIn) {
     loginPage.loginBtn.click();
   }
 
+  browser.waitForAngular();
   this.verify();
 };
 
@@ -102,6 +103,7 @@ DashboardPage.prototype.get = function(loggedIn) {
 DashboardPage.prototype.verify = function() {
   "use strict";
 
+  browser.waitForAngular();
   expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
@@ -117,6 +119,7 @@ DashboardPage.prototype.selectServiceToAdd = function(application, index) {
   browser.wait(EC.elementToBeClickable(addServiceDropdown), 5000);
   addServiceDropdown.click();
 
+  browser.waitForAngular();
   // Select (click) an option by index
   return this.addServiceDropdownOptions(application).then(function(options) {
     var selection = options[index];
@@ -129,68 +132,73 @@ DashboardPage.prototype.launchApplication = function(application) {
   "use strict";
 
   var launchBtn = this.launchBtn(application);
-  launchBtn.isDisplayed().then(function(isDisplayed) {
+  return launchBtn.isDisplayed().then(function(isDisplayed) {
     if (!isDisplayed) {
       application.click();
+
     }
+
+    browser.waitForAngular();
+    // Wait for the shutdown button to be clickable
+    browser.wait(EC.elementToBeClickable(launchBtn), 120000);
+    launchBtn.click();
+
+    browser.wait(function() {
+        return helpers.hasClass(application, 'panel-success');
+    }, 120000);
+    expect(helpers.hasClass(application, 'panel-success')).toBe(true);
+
   });
-
-  // Wait for the shutdown button to be clickable
-  browser.wait(EC.elementToBeClickable(launchBtn), 120000);
-  launchBtn.click();
-
-  browser.wait(function() {
-    return helpers.hasClass(application, 'panel-success');
-  }, 120000);
-  expect(helpers.hasClass(application, 'panel-success')).toBe(true);
 };
 
 DashboardPage.prototype.shutdownApplication = function(application) {
   "use strict";
 
+  var self = this;
   var shutdownBtn = this.shutdownBtn(application);
   shutdownBtn.isDisplayed().then(function(isDisplayed) {
     if (!isDisplayed) {
       application.click();
     }
+
+    browser.waitForAngular();
+    // Wait for the shutdown button to be clickable
+    browser.wait(EC.elementToBeClickable(shutdownBtn), 120000);
+    shutdownBtn.click();
+
+    browser.wait(EC.elementToBeClickable(self.confirmBtn), 5000);
+    self.confirmBtn.click();
+
+    // Wait for the application to shut down before returning
+    browser.wait(function() {
+        return helpers.hasClass(application, 'panel-danger');
+    }, 120000);
+    expect(helpers.hasClass(application, 'panel-danger')).toBe(true);
   });
-
-  // Wait for the shutdown button to be clickable
-  browser.wait(EC.elementToBeClickable(shutdownBtn), 120000);
-  shutdownBtn.click();
-
-  browser.wait(EC.elementToBeClickable(this.confirmBtn), 5000);
-  this.confirmBtn.click();
-
-  // Wait for the application to shut down before returning
-  browser.wait(function() {
-    return helpers.hasClass(application, 'panel-danger');
-  }, 120000);
-  expect(helpers.hasClass(application, 'panel-danger')).toBe(true);
 };
 
 DashboardPage.prototype.removeApplication = function(application) {
   "use strict";
 
+  var self = this;
   var deleteBtn = this.deleteBtn(application);
   deleteBtn.isDisplayed().then(function(isDisplayed) {
     if (!isDisplayed) {
       application.click();
     }
-  });
 
-  browser.wait(EC.elementToBeClickable(deleteBtn), 120000);
-  deleteBtn.click();
-  browser.wait(EC.elementToBeClickable(this.confirmBtn), 5000);
-  this.confirmBtn.click();
-  browser.wait(EC.invisibilityOf(application), 5000);
+    browser.wait(EC.elementToBeClickable(deleteBtn), 120000);
+    deleteBtn.click();
+    browser.wait(EC.elementToBeClickable(self.confirmBtn), 5000);
+    self.confirmBtn.click();
+    browser.wait(EC.invisibilityOf(application), 5000);
+  });
 };
 
 DashboardPage.prototype.shutdownAndRemoveAllApplications = function() {
   "use strict";
 
   var self = this;
-
   var shutdownAndRemove = function(application) {
     return function(hasClass) {
       if (!hasClass) {
@@ -204,6 +212,7 @@ DashboardPage.prototype.shutdownAndRemoveAllApplications = function() {
   };
 
   // Shutdown and remove all applications
+  browser.waitForAngular();
   return this.applications.then(function(applications) {
     for (let i = 0; i < applications.length; i++) {
       let application = applications[i];

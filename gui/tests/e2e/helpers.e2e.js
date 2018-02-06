@@ -207,6 +207,7 @@ module.exports.afterEach = function() {
   browser.waitForAngular();
   browser.ignoreSynchronization = false;
   browser.waitForAngularEnabled(true);
+  module.exports.sleep(1000);
 };
 
 // Misc shared setup to run after ALL test cases
