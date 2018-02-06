@@ -193,6 +193,7 @@ describe('Labs Workbench Catalog View', function() {
       
       it('should allow the user to delete a custom spec', function(done) {
         catalogPage.deleteSpec(cloneKey);
+        browser.waitForAngular();
         
         // Recreate the clone to reset test state
         catalogPage.cloneSpec(specKey, cloneKey);
@@ -265,6 +266,7 @@ describe('Labs Workbench Catalog View', function() {
         
         // NOTE: This is done in the "Cards" view, since the page just reloaded
         catalogPage.cloneSpec(specKey, cloneKey).then(function() {
+          browser.waitForAngular();
           catalogPage.verify();
           expectSpec(cloneKey);
           done();
@@ -286,7 +288,7 @@ describe('Labs Workbench Catalog View', function() {
       // TODO: Delete (error due to existing instance)
       
       it('should allow the user to edit a custom spec', function(done) {
-        
+
         catalogPage.editSpec(cloneKey, true).then(function() {
           editSpecPage.verify();
           done();
@@ -295,11 +297,12 @@ describe('Labs Workbench Catalog View', function() {
       
       it('should allow the user to delete a custom spec', function(done) {
         catalogPage.deleteSpec(cloneKey, true);
-        
+        browser.waitForAngular();
+
         // Recreate the clone to reset test state
         catalogPage.cloneSpec(specKey, cloneKey, true);
-        
         browser.waitForAngular();
+
         done();
       }, 12000);
     });

@@ -23,7 +23,8 @@ exports.config = {
   directConnect: true,
   jasmineNodeOpts: {
     defaultTimeoutInterval: 120000,
-    realtimeFailure: true
+    realtimeFailure: true,
+    print: function() {}   // Replaces the default "dot reporter" with a noop
   },
 
   /* Specify the parameters of the browsers to test */
@@ -73,10 +74,18 @@ exports.config = {
   onPrepare: function() {
     /* global angular: false, browser: false, jasmine: false */
     'use strict';
+    var SpecReporter = require('jasmine-spec-reporter').SpecReporter;
 
     var jasmineEnv = jasmine.getEnv();
     jasmineEnv.addReporter(failFast.init());
     jasmineEnv.addReporter(screenshotReporter);
+    jasmineEnv.addReporter(new SpecReporter({
+        spec: {
+            displayErrorMessages: true,
+            displayStacktrace: true,
+            displayDuration: true
+        }
+    }));
     /*
        waitPlugin.setOnComplete(report);
        browser.driver.manage().window().maximize();

@@ -57,6 +57,7 @@ ConsolePage.prototype.getServiceConsole = function(application, serviceId) {
     // Click the "Edit" button next to the first service
     consoleBtn.click();
     helpers.expectNewTabOpen(PAGE_ROUTE, true);
+    browser.waitForAngular();
     self.verify();
     
     return svcMatch;
