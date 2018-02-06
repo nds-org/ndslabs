@@ -1,18 +1,13 @@
 /* global angular:false */
 
 angular
-.module('ndslabs-landing', [ 'ngRoute', 'ngCookies', 'navbar', 'footer', 'ndslabs-config', 'ndslabs-api', 'angular-google-analytics', 'swaggerUi' ])
-
-.constant('LandingAppRoute', '/landing/#')
-.constant('LandingPathSuffix', '/')
-.constant('ContactUsPathSuffix', '/contact/')
-.constant('ApiRefPathSuffix', '/swagger/')
+.module('ndslabs-landing', [ 'ngRoute', 'ngMessages', 'ngCookies', 'navbar', 'footer', 'ndslabs-config', 'ndslabs-api', 'angular-google-analytics', 'swaggerUi' ])
 
 /**
- * Configure routes / HTTP for our app using the services defined above
+ * Configure routes / HTTP for our app
  */
-.config([ '$routeProvider', 'ProductName', 'LandingAppRoute', 'LandingPathSuffix', 'ContactUsPathSuffix', 'ApiRefPathSuffix',
-    function($routeProvider, ProductName, LandingAppRoute, LandingPathSuffix, ContactUsPathSuffix, ApiRefPathSuffix) {
+.config([ '$routeProvider', 'ProductName', 'LandingAppPath', 'LandingPathSuffix', 'ContactUsPathSuffix', 'ApiRefPathSuffix',
+    function($routeProvider, ProductName, LandingAppPath, LandingPathSuffix, ContactUsPathSuffix, ApiRefPathSuffix) {
   "use strict";
       
   $routeProvider
@@ -20,19 +15,19 @@ angular
       title: ProductName + ' Landing Page',
       controller: 'LandingController',
       templateUrl: 'landing.html',
-      pageTrack: LandingAppRoute + LandingPathSuffix
+      pageTrack: LandingAppPath + LandingPathSuffix
     })
     .when(ContactUsPathSuffix, {
       title: 'Contact ' + ProductName + ' Support',
       controller: 'HelpController',
       templateUrl: 'help/help.html',
-      pageTrack: LandingAppRoute + ContactUsPathSuffix
+      pageTrack: LandingAppPath + ContactUsPathSuffix
     })
     .when(ApiRefPathSuffix, {
       title: ProductName + ' API Reference',
       controller: 'SwaggerController',
       templateUrl: 'swagger/swagger.html',
-      pageTrack: LandingAppRoute + ApiRefPathSuffix
+      pageTrack: LandingAppPath + ApiRefPathSuffix
     }).otherwise(LandingPathSuffix);
 }])
 
@@ -42,12 +37,12 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('LandingController', [ '$scope', '$rootScope', '$location', '$routeParams', '$log', '_', 'AuthInfo', 'OrgName', 'ProductName', 'ProductUrl', 'NdsLabsApi', 'HelpLinks', 'ReturnRoute',
-    function($scope, $rootScope, $location, $routeParams, $log, _, AuthInfo, OrgName, ProductName, ProductUrl, NdsLabsApi, HelpLinks, ReturnRoute) {
+.controller('LandingController', [ '$scope', '$rootScope', '$location', '$routeParams', '$log', '_', 'AuthInfo', 'OrgName', 'ProductName', 'ProductUrl', 'NdsLabsApi', 'HelpLinks', 'ReturnRoute', 'LoginAppPath', 'RecoveryPathSuffix',
+    function($scope, $rootScope, $location, $routeParams, $log, _, AuthInfo, OrgName, ProductName, ProductUrl, NdsLabsApi, HelpLinks, ReturnRoute, LoginAppPath, RecoveryPathSuffix) {
   "use strict";
 
   if ($routeParams.t && !$routeParams.u) {
-    //$location.path(ResetPasswordRoute);
+    $location.path(LoginAppPath + RecoveryPathSuffix);
     return;
   }
   

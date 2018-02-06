@@ -7,22 +7,11 @@
 angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-filters', 'ndslabs-directives',  'ndslabs-api', 'ngGrid', 'ngTagsInput', 'cgBusy', 
     'ngRoute', 'ngCookies', 'ngMessages', 'ui.bootstrap', 'ngPasswordStrength', 'angular-clipboard', 'ui.pwgen', 'ui.gravatar', 'angular-google-analytics' ])
 
-.constant('DashboardAppPath', '/dashboard/#')
-
-.constant('HomePathSuffix', '/home/')
-.constant('AddServicePathSuffix', '/home/:stackId/add/:service/')
-.constant('EditServicePathSuffix', '/home/:stackId/edit/:service/')
-.constant('ServiceConsolePathSuffix', '/home/:stackId/console/:service/')
-
-.constant('AppStorePathSuffix', '/store/')
-.constant('AddSpecPathSuffix', '/store/add/')
-.constant('EditSpecPathSuffix', '/store/edit/:specKey/')
-
 /**
- * Configure routes / HTTP for our app using the services defined above
+ * Configure routes / HTTP for our app
  */
-.config([ '$provide', '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'DashboardAppPath', 'AppStorePathSuffix', 'HomePathSuffix', 'ServiceConsolePathSuffix', 'AddServicePathSuffix', 'EditServicePathSuffix', 'AddSpecPathSuffix', 'EditSpecPathSuffix', 'ProductName', 'GaAccount', 'AnalyticsProvider', 'LandingRoute', 'LoginRoute', 
-    function($provide, $routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, DashboardAppPath, AppStorePathSuffix, HomePathSuffix, ServiceConsolePathSuffix, AddServicePathSuffix, EditServicePathSuffix, AddSpecPathSuffix, EditSpecPathSuffix, ProductName, GaAccount, AnalyticsProvider, LandingRoute, LoginRoute) {
+.config([ '$provide', '$routeProvider', '$httpProvider', '$logProvider', 'DEBUG', 'AuthInfoProvider', 'DashboardAppPath', 'AppStorePathSuffix', 'HomePathSuffix', 'ServiceConsolePathSuffix', 'AddServicePathSuffix', 'EditServicePathSuffix', 'AddSpecPathSuffix', 'EditSpecPathSuffix', 'ProductName', 'GaAccount', 'AnalyticsProvider', 
+    function($provide, $routeProvider, $httpProvider, $logProvider, DEBUG, authInfo, DashboardAppPath, AppStorePathSuffix, HomePathSuffix, ServiceConsolePathSuffix, AddServicePathSuffix, EditServicePathSuffix, AddSpecPathSuffix, EditSpecPathSuffix, ProductName, GaAccount, AnalyticsProvider) {
   "use strict";
 
   // Squelch debug-level log messages
@@ -91,8 +80,8 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
 /**
  * Once configured, run this section of code to finish bootstrapping our app
  */
-.run([ '$rootScope', '$window', '$location', '$routeParams', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', '_', 'AuthInfo', 'LoginRoute', 'AppStoreRoute', 'HomeRoute', 'NdsLabsApi', 'AutoRefresh', 'ServerData', 'Loading', 'LandingRoute', 'VerifyAccountRoute', 'Analytics', 'CookieOptions',
-    function($rootScope, $window, $location, $routeParams, $log, $interval, $cookies, $uibModalStack, Stacks, _, authInfo, LoginRoute, AppStoreRoute, HomeRoute, NdsLabsApi, AutoRefresh, ServerData, Loading, LandingRoute, VerifyAccountRoute, Analytics, CookieOptions) {
+.run([ '$rootScope', '$window', '$location', '$routeParams', '$log', '$interval', '$cookies', '$uibModalStack', 'Stacks', '_', 'AuthInfo', 'NdsLabsApi', 'AutoRefresh', 'ServerData', 'Loading', 'Analytics', 'CookieOptions', 'LoginAppPath',
+    function($rootScope, $window, $location, $routeParams, $log, $interval, $cookies, $uibModalStack, Stacks, _, authInfo, NdsLabsApi, AutoRefresh, ServerData, Loading, Analytics, CookieOptions, LoginAppPath) {
   "use strict";
 
   // Make _ bindable in partial views
@@ -134,7 +123,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       }
     }
     
-    window.location.href = '/login/';
+    window.location.href = LoginAppPath;
   };
   
   $log.debug('Starting token checker...');
