@@ -4,7 +4,7 @@
 var helpers = require("./helpers.e2e.js");
 
 var Navbar = require('./pages/navbar.page.js');
-var LandingPage = require('./pages/landing.page.js');
+var LoginPage = require('./pages/login.page.js');
 var DashboardPage = require('./pages/dashboard.page.js');
 var CatalogPage = require('./pages/catalog.page.js');
 var AddEditSpecPage = require('./pages/addEditSpec.page.js');
@@ -14,7 +14,7 @@ describe('Labs Workbench Edit Application Spec View', function() {
   "use strict";
 
   var navbar = new Navbar();
-  var landingPage = new LandingPage();
+  var loginPage = new LoginPage();
   var catalogPage = new CatalogPage();
   var dashboardPage = new DashboardPage();
   var editSpecPage = new AddEditSpecPage();
@@ -45,7 +45,7 @@ describe('Labs Workbench Edit Application Spec View', function() {
   beforeEach(function() {
     helpers.beforeEach();
     catalogPage.editSpec(cloneKey);
-    //editSpecPage.get({ loggedIn: true, editId: cloneKey });
+    editSpecPage.get({ loggedIn: true, editId: cloneKey });
   });
   
   afterEach(function() { 
@@ -53,12 +53,14 @@ describe('Labs Workbench Edit Application Spec View', function() {
   });
   
   afterAll(function() { 
-    helpers.afterAll();catalogPage.get(true);
+    helpers.afterAll();
+    
+    catalogPage.get(true);
     catalogPage.deleteSpec(cloneKey);
     
     navbar.expandAccountDropdown();
     navbar.clickSignOut();
-    landingPage.verify();
+    loginPage.verify();
   });
   
   var expectBtn = function(enabled) {

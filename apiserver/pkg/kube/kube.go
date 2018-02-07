@@ -400,14 +400,6 @@ func (k *KubeHelper) StartService(pid string, spec *api.Service) (*api.Service, 
 	return nil, nil
 }
 
-func (k *KubeHelper) ServiceExists(pid string, name string) bool {
-	service, _ := k.GetService(pid, name)
-	if service != nil {
-		return true
-	} else {
-		return false
-	}
-}
 func (k *KubeHelper) GetService(pid string, name string) (*api.Service, error) {
 
 	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services/" + name
@@ -436,36 +428,6 @@ func (k *KubeHelper) GetService(pid string, name string) (*api.Service, error) {
 	return nil, nil
 }
 
-func (k *KubeHelper) GetServices(pid string, stack string) ([]api.Service, error) {
-
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services?labelSelector=stack%3D" + stack
-	request, _ := http.NewRequest("GET", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	resp, err := k.client.Do(request)
-	if err != nil {
-		glog.Error(err)
-		return nil, err
-	} else {
-		if resp.StatusCode == http.StatusOK {
-			data, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			serviceList := api.ServiceList{}
-			services := make([]api.Service, len(serviceList.Items))
-			json.Unmarshal(data, &serviceList)
-			for _, service := range serviceList.Items {
-				services = append(services, service)
-			}
-			return services, nil
-		} else {
-			glog.Warningf("Failed to get Kubernetes services: %s %d", resp.Status, resp.StatusCode)
-		}
-	}
-	return nil, nil
-}
 func (k *KubeHelper) GetReplicationControllers(pid string, label string, value string) ([]api.ReplicationController, error) {
 
 	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers?labelSelector=" + label + "%3D" + value
@@ -664,39 +626,6 @@ func (k *KubeHelper) GetLog(pid string, podName string, tailLines int) (string, 
 		}
 	}
 	return "", err
-}
-
-func (k *KubeHelper) GetPodsStatus(pid string, selector string) (*map[string]string, error) {
-
-	// Get the pods for this stack
-	podStatus := make(map[string]string)
-	pods, _ := k.GetPods(pid, "rc", selector)
-	for _, pod := range pods {
-		label := pod.Labels["name"]
-		glog.V(4).Infof("Pod %s %d\n", label, len(pod.Status.Conditions))
-		if len(pod.Status.Conditions) > 0 {
-			podStatus[label] = string(pod.Status.Phase)
-		}
-	}
-	return &podStatus, nil
-}
-
-func (k *KubeHelper) GetServiceEndpoints(pid string, stackKey string) (*map[string]string, error) {
-
-	k8services, _ := k.GetServices(pid, stackKey)
-	endpoints := make(map[string]string)
-	for _, k8service := range k8services {
-		glog.V(4).Infof("Service : %s %s\n", k8service.Name, k8service.Spec.Type)
-		if k8service.Spec.Type == "NodePort" {
-			glog.V(4).Infof("NodePort : %d\n", k8service.Spec.Ports[0].NodePort)
-			endpoints[k8service.GetName()] = fmt.Sprintf("%d", k8service.Spec.Ports[0].NodePort)
-		}
-	}
-	return &endpoints, nil
-}
-
-func (k *KubeHelper) generateStackName(stack string, service string, randomLength int) string {
-	return fmt.Sprintf("%s-%s-%s", stack, service, utilrand.String(randomLength))
 }
 
 func (k *KubeHelper) RandomString(randomLength int) string {
@@ -1493,34 +1422,6 @@ func (k *KubeHelper) GetSecret(pid string, secretName string) (*api.Secret, erro
 			return &secret, nil
 		} else {
 			return nil, fmt.Errorf("Error getting secret %s for account %s: %s\n", secretName, pid, httpresp.Status)
-		}
-	}
-	return nil, nil
-}
-
-func (k *KubeHelper) GetResourceQuota(pid string) (*api.ResourceQuotaList, error) {
-
-	url := k.kubeBase + apiBase + "/namespaces/" + pid + "/resourcequotas/"
-	glog.V(4).Infoln(url)
-	request, _ := http.NewRequest("GET", url, nil)
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", k.getAuthHeader())
-	httpresp, httperr := k.client.Do(request)
-	if httperr != nil {
-		glog.Error(httperr)
-		return nil, httperr
-	} else {
-		if httpresp.StatusCode == http.StatusOK {
-			data, err := ioutil.ReadAll(httpresp.Body)
-			if err != nil {
-				return nil, err
-			}
-
-			quota := api.ResourceQuotaList{}
-			json.Unmarshal(data, &quota)
-			return &quota, nil
-		} else {
-			return nil, fmt.Errorf("Error getting quota for account %s: %s\n", pid, httpresp.Status)
 		}
 	}
 	return nil, nil

@@ -5,7 +5,7 @@
       <h3><i class="fa fa-fw fa-support"></i> Contact Us</h3>
       
       <ol class="breadcrumb">
-        <li><a href="/landing/#/{{ rd ? '?rd=' + rd : '' }}">{{ productName }}</a></li>
+        <li><a href="/landing/{{ rd ? '?rd=' + rd : '' }}">{{ productName }}</a></li>
         <li class="active">Contact Us</li>
       </ol>
     </div>
@@ -34,8 +34,7 @@
   
   <hr>
   
-  <!-- FIXME: Form validation appears broken for "Request Help" -->
-  <!--<div class="row" ng-show="auth.token">
+  <div class="row" ng-show="auth.token">
       <div class="col-sm-12" ng-controller="HelpController">
           <h4>Feedback and Support</h4>
           <p>Please include as much detail as possible when submitting your request.</p>
@@ -82,5 +81,5 @@
             </button>
           </form>
       </div>
-  </div>-->
+  </div>
 </section>

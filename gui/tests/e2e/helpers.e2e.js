@@ -48,7 +48,7 @@ module.exports.selectByModel = function(src, binding, matcher, predicate) {
     }
     
     if (matches.length > 1) {
-      console.log("WARNING: more than one element found for given matcher - executing pedicate on the first match: " + matcher.toString());
+      console.log("WARNING: more than one element found for given matcher - executing predicate on the first match: " + matcher.toString());
     }
     
     //console.log("Executing predicate: " + predicate.toString());
@@ -56,7 +56,7 @@ module.exports.selectByModel = function(src, binding, matcher, predicate) {
       //console.log("Match: " + matches[0].toString());
       return predicate(matches[0]);
     } else {
-      console.log("WARNING: no elements found for given matcher - executing pedicate without arguments: " + matcher.toString());
+      console.log("WARNING: no elements found for given matcher - executing predicate without arguments: " + matcher.toString());
       return predicate();
     }
   });
@@ -92,14 +92,15 @@ module.exports.scrollIntoView = function(ele) {
   "use strict";
 
   //return browser.actions().mouseMove(ele).perform();
-  //return browser.executeScript('arguments[0].scrollIntoView()', ele.getWebElement());
-  return browser.executeScript("arguments[0].scrollIntoView(false);", ele.getWebElement());
+  return browser.executeScript('arguments[0].scrollIntoView()', ele.getWebElement());
+  //return browser.executeScript("arguments[0].scrollIntoView(false);", ele.getWebElement());
 };
 
 module.exports.hasClass = function (ele, clazz) {
   "use strict";
 
   return ele.getAttribute('class').then(function (classes) {
+      //console.log("Looking for "+clazz+" -> "+classes)
       return classes.split(' ').indexOf(clazz) !== -1;
   });
 };
@@ -180,7 +181,7 @@ module.exports.beforeAll = function() {
 
   // Clear all cookies - this will ensure we are logged out at the start of our tests
   // TODO: I haven't had any fail for this reason, but it seems like an edge case we should watch for
-  // browser.driver.manage().deleteAllCookies();
+  browser.driver.manage().deleteAllCookies();
   
   // XXX: Maximizing the window does not resolve the "Element is not clickable at point (x,y)" issue for OSX
   //browser.driver.manage().window().maximize();
@@ -203,7 +204,10 @@ module.exports.beforeEach = function() {
 module.exports.afterEach = function() {
   "use strict";
 
+  browser.waitForAngular();
   browser.ignoreSynchronization = false;
+  browser.waitForAngularEnabled(true);
+  module.exports.sleep(1000);
 };
 
 // Misc shared setup to run after ALL test cases

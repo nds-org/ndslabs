@@ -23,76 +23,31 @@ angular
  */
 .constant('SupportEmail', 'ndslabs-support@nationaldataservice.org')
 
+// Landing App Routes
+.constant('LandingAppPath', '/landing')
+.constant('LandingPathSuffix', '/')
+.constant('ContactUsPathSuffix', '/contact/')
+.constant('ApiRefPathSuffix', '/swagger/')
 
-/**
- * The route to our "Landing Page" View
- */
-.constant('LandingRoute', '/landing/#/')
+// Login App Routes
+.constant('LoginAppPath', '/login')
+.constant('SigninPathSuffix', '/')
+.constant('SignupPathSuffix', '/register/')
+.constant('RecoveryPathSuffix', '/recover/')
 
-/**
- * The route to our "Login" View
- */
-.constant('LoginRoute', '/login/#/')
-
-/**
- * The route to the "Contact Us" view
- */
-.constant('ContactUsRoute', '/landing/#/contact')
-
-/**
- * The route to our "Request Access" View
- */
-.constant('SignUpRoute', '/login/#/register')
-
-/**
- * The route to our "Verify Account" View
- */
-.constant('VerifyAccountRoute', '/login/#/register/verify')
-
-/**
- * The route to our "Recover Password" View
- */
-.constant('ResetPasswordRoute', '/login/#/recover')
-
-/**
- * The route to the "AppStore" view
- */
-.constant('AppStoreRoute', '/dashboard/#/store')
-
-/**
- * The route to the "Add Application Spec" view
- */
-.constant('AddSpecRoute', '/dashboard/#/store/add')
-
-/**
- * The route to the "Edit Application Spec" view
- */
-.constant('EditSpecRoute', '/dashboard/#/store/edit/:specKey')
-
-/**
- * The route to our "Dashboard" View
- */
-.constant('HomeRoute', '/dashboard/#/home')
-
-/**
- * The route to the "Add Application Service" view
- */
-.constant('AddServiceRoute', '/dashboard/#/home/:stackId/add/:service')
-
-/**
- * The route to the "Edit Application Service" view
- */
-.constant('EditServiceRoute', '/dashboard/#/home/:stackId/edit/:service')
-
-/**
- * The route to the "Application Service Console" view
- */
-.constant('ConsoleRoute', '/dashboard/#/home/:stackId/console/:service')
+// Dashboard App Routes
+.constant('DashboardAppPath', '/dashboard')
+.constant('HomePathSuffix', '/home/')
+.constant('AddServicePathSuffix', '/home/:stackId/add/:service/')
+.constant('EditServicePathSuffix', '/home/:stackId/edit/:service/')
+.constant('ServiceConsolePathSuffix', '/home/:stackId/console/:service/')
+.constant('AppStorePathSuffix', '/store/')
+.constant('AddSpecPathSuffix', '/store/add/')
+.constant('EditSpecPathSuffix', '/store/edit/:specKey/')
 
 /**
  * The name of the product to display in the UI and the URL to link to when clicked
  */
- 
 .constant('OrgName', 'NDS')
 .constant('ProductName', 'Labs Workbench')
 .constant('ProductUrl', 'http://www.nationaldataservice.org/projects/labs.html')

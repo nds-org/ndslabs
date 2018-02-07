@@ -11,8 +11,8 @@ var LoginPage = require('./login.page.js');
 
 var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 
-var PAGE_TITLE = 'Reset Password';
-var PAGE_ROUTE = /^https?\:\/\/.*\/\#\/recover(\?t=.+)?$/;
+var PAGE_TITLE = 'Labs Workbench'; //'Reset Password';
+var PAGE_ROUTE = /https?\:\/\/.*\/login\/\#?\/?recover(\?t=.+)?/;
 
 var ResetPasswordPage = function() {
   "use strict";
@@ -35,13 +35,15 @@ ResetPasswordPage.prototype.get = function(loggedIn) {
 
   var navbar = new Navbar();
   var loginPage = new LoginPage();
-  
+
+  browser.get(TEST_HOSTNAME + '/login/recover/');
+
   if (loggedIn) {
-    navbar.accountDropdown.click();
-    navbar.changePasswordNav.click();
+    //navbar.accountDropdown.click();
+    //navbar.changePasswordNav.click();
   } else {
-    loginPage.get();
-    loginPage.forgotPasswordLink.click();
+    //loginPage.get();
+    //loginPage.forgotPasswordLink.click();
   }
     
   this.verify();

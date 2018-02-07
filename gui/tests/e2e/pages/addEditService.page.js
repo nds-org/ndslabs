@@ -12,13 +12,14 @@ var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 // TODO: How to handle "service name" in title?
 // TODO: How to handle "stackServiceId" in url?
 var PAGE_TITLE = /(Add|Edit) Application Service(\: .*)?/;
-var PAGE_ROUTE = /https?\:\/\/.+\/\#\/home\/.+\/(add|edit)\/?.*/;
+var PAGE_ROUTE = /https?\:\/\/.+\/dashboard\/\#?\/?home\/.+\/(add|edit)\/?.*/;
 
 var EC = protractor.ExpectedConditions;
 
 var AddServicePage = function() {
   "use strict";
 
+  // Environment Tab
   this.environmentTab = element(by.id('environmentTab'));
   this.configs = element.all(by.repeater("cfg in configs | orderBy:['spec.canOverride', 'spec.isPassword'] track by cfg.name"));
   this.cfgBadge = element(by.id('cfgBadge'));
@@ -36,6 +37,7 @@ var AddServicePage = function() {
   this.newCfgValidText = element(by.id('newCfgValidText'));
   this.cfgAddBtn = element(by.id('cfgAddBtn'));
   
+  // DAta Tab
   this.dataTab = element(by.id('dataTab'));
   this.volumes = element.all(by.repeater("volume in volumes | orderBy:'canEdit':true"));
   this.volumeBadge = element(by.id('volumeBadge'));
@@ -46,12 +48,21 @@ var AddServicePage = function() {
   this.newVolumeTo = element(by.id('newVolumeTo'));
   this.volumeAddBtn = element(by.id('volumeAddBtn'));
   
+  // Docker Tab
   this.dockerTab = element(by.id('dockerTab'));
   this.dockerTags = element.all(by.repeater('tag in spec.image.tags track by tag'));
   this.dockerImageRegistryText = element(by.id('dockerImageRegistryText'));
   this.dockerImageNameText = element(by.id('dockerImageNameText'));
   this.dockerImageTagSelect = element(by.id('dockerImageTagSelect'));
   
+  // Resource Limits Tab
+  this.resourceLimitsTab = element(by.id('resourceLimitsTab'));
+  this.limitCpuDefaultField = element(by.id('limitCpuDefaultField'));
+  this.limitCpuMaxField = element(by.id('limitCpuMaxField'));
+  this.limitMemDefaultField = element(by.id('limitMemDefaultField'));
+  this.limitMemMaxField = element(by.id('limitMemMaxField'));
+  
+  // Save / Cancel buttons
   this.saveBtn = element(by.id('saveBtn'));
   this.cancelBtn = element(by.id('cancelBtn'));
 };

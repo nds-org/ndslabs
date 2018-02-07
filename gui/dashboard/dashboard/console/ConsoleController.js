@@ -9,13 +9,8 @@ angular
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
  
-.controller('ConsoleController', [ '$scope', '$routeParams', '$location', '$window', '_', 'Stacks', 'AuthInfo', 'LandingRoute', 'ProductName', function($scope, $routeParams, $location, $window, _, Stacks, AuthInfo, LandingRoute, ProductName) {
+.controller('ConsoleController', [ '$scope', '$routeParams', '$location', '$window', '_', 'Stacks', 'AuthInfo', 'ProductName', function($scope, $routeParams, $location, $window, _, Stacks, AuthInfo, ProductName) {
   "use strict";
-  
-  /*if (!AuthInfo.get().token) {
-    $location.path(LandingRoute);
-    return;
-  }*/
   
   $scope.productName = ProductName;
   
