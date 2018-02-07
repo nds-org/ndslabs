@@ -9,8 +9,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('LoginController', [ '$scope', '$rootScope', '$cookies', '$routeParams', '$location', '$window', '$log', '$uibModal', 'AuthInfo', 'Project', 'NdsLabsApi', 'LoginRoute', 'HomeRoute', 'CookieOptions', '$uibModalStack', 'ServerData', 'ProductName', 'ReturnRoute',
-    function($scope, $rootScope, $cookies, $routeParams, $location, $window, $log, $uibModal, authInfo, Project, NdsLabsApi, LoginRoute, HomeRoute, CookieOptions, $uibModalStack, ServerData, ProductName, ReturnRoute) {
+.controller('LoginController', [ '$scope', '$rootScope', '$cookies', '$routeParams', '$location', '$window', '$log', '$uibModal', 'AuthInfo', 'Project', 'NdsLabsApi', 'DashboardAppPath', 'HomePathSuffix', 'CookieOptions', '$uibModalStack', 'ServerData', 'ProductName', 'ReturnRoute',
+    function($scope, $rootScope, $cookies, $routeParams, $location, $window, $log, $uibModal, authInfo, Project, NdsLabsApi, DashboardAppPath, HomePathSuffix, CookieOptions, $uibModalStack, ServerData, ProductName, ReturnRoute) {
   "use strict";
 
   $rootScope.rd = '';
@@ -54,15 +54,10 @@ angular
       // HACK: this pattern does not scale very well
       // If we were given an "rd" parameter, redirect to it on successful login
       var rd = $routeParams.rd;
-      if (rd && rd.indexOf('#') !== -1) {
-        // rd contains hash, so it should be routable
-        window.location.href = rd;
-      } else if (rd && rd.indexOf('#') === -1) {
-        // rd does not contain hash, so we artifically inject one
-        var newRd = rd.replace('/dashboard/', '/dashboard/#/');
-        window.location.href = newRd;
+      if (rd) {
+        $window.location.href = rd;
       } else {
-        $window.location.href = HomeRoute;
+        $window.location.href = DashboardAppPath + HomePathSuffix;
       }
     }, function(response) {
       var body = response.body || { 'Error': 'Something went wrong. Is the server running?' };
@@ -92,12 +87,4 @@ angular
     }).finally(function() {*/
     //});
   };
-  
-  var path = $location.path();
-  
-  // If we found a token, the user should be sent to the HomePage to check its validity;
-  if (path === LoginRoute && authInfo.get().token) {
-    $log.debug("Found token on an unauth view... routing Home");
-    $location.path(HomeRoute);
-  }
 }]);
