@@ -6,13 +6,13 @@
       <h3><i class="fa fa-fw fa-lock"></i> Reset Your Password</h3>
       
       <ol class="breadcrumb" ng-if="token">
-        <li><a href="/dashboard/#/">{{ productName }}</a></li>
+        <li><a href="/dashboard/">{{ productName }}</a></li>
         <li class="active">Change Password</li>
       </ol>
   
       <ol class="breadcrumb" ng-if="!token">
-        <li><a ng-href="/landing/#/">{{ productName }}</a></li>
-        <li><a ng-href="/login/#/{{ rd ? '?rd=' + rd : '' }}">Sign In</a></li>
+        <li><a ng-href="/landing/">{{ productName }}</a></li>
+        <li><a ng-href="/login/{{ rd ? '?rd=' + rd : '' }}">Sign In</a></li>
         <li class="active">Forgot Password</li>
       </ol>
     </div>

@@ -3,13 +3,8 @@
 angular
 .module('ndslabs-login', [ 'ngRoute', 'ngCookies', 'ngMessages', 'navbar', 'footer', 'ndslabs-services', 'ndslabs-config', 'ndslabs-api', 'angular-google-analytics',  'ui.bootstrap' ])
 
-.constant('LoginAppPath', '/login/#')
-.constant('SigninPathSuffix', '/')
-.constant('SignupPathSuffix', '/register')
-.constant('RecoveryPathSuffix', '/recovery')
-
 /**
- * Configure routes / HTTP for our app using the services defined above
+ * Configure routes / HTTP for our app
  */
 .config([ '$routeProvider', '$httpProvider', 'ProductName', 'GaAccount', 'AnalyticsProvider', 'LoginAppPath', 'SigninPathSuffix', 'SignupPathSuffix', 'RecoveryPathSuffix',
     function($routeProvider, $httpProvider, ProductName, GaAccount, AnalyticsProvider, LoginAppPath, SigninPathSuffix, SignupPathSuffix, RecoveryPathSuffix) {

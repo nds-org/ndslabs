@@ -2,8 +2,8 @@
 
 angular.module('ndslabs-directives', [])
 
-.directive('terminal', [ '$log', '$window', '$timeout', '$location', 'AuthInfo', 'ApiUri', 'HomeRoute', 'NdsLabsApi', 
-        function($log, $window, $timeout, $location, AuthInfo, ApiUri, HomeRoute, NdsLabsApi) {
+.directive('terminal', [ '$log', '$window', '$timeout', '$location', 'AuthInfo', 'ApiUri', 'NdsLabsApi', 'DashboardAppPath', 'HomePathSuffix',
+        function($log, $window, $timeout, $location, AuthInfo, ApiUri, NdsLabsApi, DashboardAppPath, HomePathSuffix) {
   "use strict";
 
     return {
@@ -36,7 +36,7 @@ angular.module('ndslabs-directives', [])
                 //term.destroy();
                 term.write('Session has been terminated. You may now close this tab.');
                 
-                $location.path(HomeRoute);
+                $location.path(DashboardAppPath + HomePathSuffix);
                 $window.close();
             };
         
@@ -55,7 +55,7 @@ angular.module('ndslabs-directives', [])
                 
                 // Debounce the token check ~300ms
                 timeout = $timeout(function() {
-                    NdsLabsApi.getRefreshToken().then(function() { 
+                    NdsLabsApi.getRefresh_token().then(function() { 
                         $log.debug('Token refreshed!'); 
                     }, function() {
                         ws.close();

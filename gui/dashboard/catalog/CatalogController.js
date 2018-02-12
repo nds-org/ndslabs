@@ -23,15 +23,9 @@ angular
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
 .controller('CatalogController', [ '$scope', '$filter', '$interval', '$uibModal', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stack', 'Stacks', 
-    'StackService', 'Specs', 'clipboard', 'Vocabulary', 'RandomPassword', 'AuthInfo', 'LandingRoute', 'ProductName',
-    function($scope, $filter, $interval, $uibModal, $location, $log, _, NdsLabsApi, Project, Stack, Stacks, StackService, Specs, clipboard, Vocabulary, RandomPassword, AuthInfo, LandingRoute, ProductName) {
+    'StackService', 'Specs', 'clipboard', 'Vocabulary', 'RandomPassword', 'AuthInfo', 'ProductName', 'ApiUri', 'DashboardAppPath', 'HomePathSuffix',
+    function($scope, $filter, $interval, $uibModal, $location, $log, _, NdsLabsApi, Project, Stack, Stacks, StackService, Specs, clipboard, Vocabulary, RandomPassword, AuthInfo, ProductName, ApiUri, DashboardAppPath, HomePathSuffix) {
   "use strict";
-      
-  
-  /*if (!AuthInfo.get().token) {
-    $location.path(LandingRoute);
-    return;
-  } */   
   
   $scope.productName = ProductName;
       
@@ -135,6 +129,34 @@ angular
     })(specCopy); // jshint ignore:line
     
     clipboard.copyText(JSON.stringify(specCopy, null, 4));
+  };
+  
+  var getQuickStartUrl = function(spec) { 
+    var base = ApiUri.api.split('/api')[0];
+    return base + DashboardAppPath + HomePathSuffix + '?quickstart=' + spec.key;
+  };
+  
+  $scope.shareLink = function(spec) {
+    if (!clipboard.supported) {
+      alert('Sorry, copy to clipboard is not supported');
+      return;
+    }
+    
+    var quickstartUrl = getQuickStartUrl(spec);
+    console.log("Copying to clipboard:", quickstartUrl);
+    clipboard.copyText(quickstartUrl);
+  };
+  
+  $scope.shareEmbed = function(spec) {
+    if (!clipboard.supported) {
+      alert('Sorry, copy to clipboard is not supported');
+      return;
+    }
+    
+    var quickstartUrl = getQuickStartUrl(spec);
+    var htmlString = '<a href="' + quickstartUrl + '">Try ' + spec.label + '</a>';
+    console.log("Copying to clipboard:", htmlString);
+    clipboard.copyText(htmlString);
   };
   
   $scope.cloneSpec = function(spec) {

@@ -6,8 +6,8 @@
       
       <ol class="breadcrumb">
         <!-- <li><a ng-href="{{ productUrl }}">{{ productName }}</a></li> -->
-        <li><a href="/landing/#/">{{ productName }}</a></li>
-        <li><a href="/dashboard/#/home">Applications</a></li>
+        <li><a href="/landing/">{{ productName }}</a></li>
+        <li><a href="/dashboard/home">Applications</a></li>
         <li class="active">Catalog</li>
       </ol>
         
@@ -39,7 +39,7 @@
           </button>
         </div>
         <div class="input-group-btn">
-          <a id="createApplicationBtn" type="button" class="btn btn-primary" href="/dashboard/#/store/add">
+          <a id="createApplicationBtn" type="button" class="btn btn-primary" href="/dashboard/store/add">
             <i class="fa fa-fw fa-plus"></i> Create
           </a>
         </div>
@@ -111,7 +111,7 @@
                   </span>
                 </button>
                 
-                <a id="viewBtn" type="button" class="btn btn-xs btn-primary" ng-href="/dashboard/#/home?expand={{ spec.key }}" ng-if="installs[spec.key].count > 0">
+                <a id="viewBtn" type="button" class="btn btn-xs btn-primary" ng-href="/dashboard/home?expand={{ spec.key }}" ng-if="installs[spec.key].count > 0">
                   <i class="fa fa-fw fa-eye"></i> View
                 </a>
                 
@@ -125,9 +125,11 @@
                   <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu aria-labelledby="simple-dropdown">
                     <li><a id="cloneBtn" href ng-click="cloneSpec(spec)" ng-if="!spec.privileged"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
                     <li><a id="copyToClipboardBtn" href ng-click="copyToClipboard(spec)"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</a></li>
+                    <li><a id="qsLinkBtn" href ng-click="shareLink(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt"></i> Generate QuickStart Link</a></li>
+                    <li><a id="embedLinkBtn" href ng-click="shareEmbed(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt-square"></i> Generate QuickStart HTML Snippet</a></li>
                     <li><a id="viewJsonBtn" href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> View JSON</a></li>
                     <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}" target="_blank"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
-                    <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="editBtn" ng-href="/dashboard/#/store/edit/{{ spec.key }}" ><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
+                    <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="editBtn" ng-href="/dashboard/store/edit/{{ spec.key }}" ><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
                     <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="deleteBtn" href ng-click="openDelete(spec)"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
                   </ul>
                 </span>
@@ -194,7 +196,7 @@
                 <div class="col-xs-10">
                   
                   <!-- View Instance(s) -->
-                  <a id="viewBtn" class="btn btn-xs btn-link" ng-if="installs[spec.key].count > 0" ng-href="/dashboard/#/home?expand={{ spec.key }}" style="margin:7px;">
+                  <a id="viewBtn" class="btn btn-xs btn-link" ng-if="installs[spec.key].count > 0" ng-href="/dashboard/home?expand={{ spec.key }}" style="margin:7px;">
                     View <span class="badge" style="margin-left:4px" ng-if="installs[spec.key].count > 0">{{ installs[spec.key].count }}</span>
                   </a>
                   
@@ -216,9 +218,11 @@
                     <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu aria-labelledby="simple-dropdown">
                       <li><a id="cloneBtn" href ng-click="cloneSpec(spec)" ng-if="!spec.privileged"><i class="fa fa-fw fa-clone"></i> Clone</a></li>
                       <li><a id="copyToClipboardBtn" href ng-click="copyToClipboard(spec)"><i class="fa fa-fw fa-clipboard"></i> Copy to Clipboard</a></li>
+                      <li><a id="qsLinkBtn" href ng-click="shareLink(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt"></i> Generate QuickStart Link</a></li>
+                      <li><a id="embedLinkBtn" href ng-click="shareEmbed(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt-square"></i> Generate QuickStart HTML Snippet</a></li>
                       <li><a id="viewJsonBtn" href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> View JSON</a></li>
                       <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}" target="_blank"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
-                      <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="editBtn" ng-href="/dashboard/#/store/edit/{{ spec.key }}" ><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
+                      <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="editBtn" ng-href="/dashboard/store/edit/{{ spec.key }}" ><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
                       <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="deleteBtn" href ng-click="openDelete(spec)"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
                     </ul>
                   </span>
