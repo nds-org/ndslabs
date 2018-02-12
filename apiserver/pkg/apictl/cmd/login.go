@@ -12,6 +12,10 @@ import (
 	"syscall"
 )
 
+var (
+	passwd string
+)
+
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
 	Use:    "login [username]",
@@ -25,7 +29,12 @@ var loginCmd = &cobra.Command{
 		}
 
 		username := strings.TrimSpace(args[0])
-		password := credentials("")
+		password := ""
+		if passwd == "" {
+			password = credentials("")
+		} else {
+			password = passwd
+		}
 
 		token, err := client.Login(username, password)
 		if err != nil {
@@ -59,6 +68,8 @@ func credentials(prompt string) string {
 }
 
 func init() {
+	loginCmd.Flags().StringVarP(&passwd, "password", "p", "", "Password to use for login (for scripting)")
+
 	RootCmd.AddCommand(loginCmd)
 
 	// Here you will define your flags and configuration settings.
