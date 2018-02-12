@@ -1,6 +1,7 @@
 **/nds-build
 **/*.swp
 **/.c9/
+**/.idea/
 **/node_modules/
 **/bower_components/
 **/build/
@@ -11,4 +12,5 @@
 gui/tests/reports/*
 gui/shared/ndslabs-api.js
 gui/app/shared/ndslabs-api.js
-gui/protractor.auth.json
+gui/*.auth.json
+**/.protractor-fail-fast

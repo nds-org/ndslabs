@@ -4,7 +4,7 @@
 var helpers = require("./helpers.e2e.js");
 
 var Navbar = require('./pages/navbar.page.js');
-var LandingPage = require('./pages/landing.page.js');
+var LoginPage = require('./pages/login.page.js');
 var DashboardPage = require('./pages/dashboard.page.js');
 var CatalogPage = require('./pages/catalog.page.js');
 var AddEditSpecPage = require('./pages/addEditSpec.page.js');
@@ -40,7 +40,7 @@ describe('Labs Workbench Add Application Spec View', function() {
   "use strict";
 
   var navbar = new Navbar();
-  var landingPage = new LandingPage();
+  var loginPage = new LoginPage();
   var dashboardPage = new DashboardPage();
   var catalogPage = new CatalogPage();
   var addSpecPage = new AddEditSpecPage();
@@ -63,7 +63,7 @@ describe('Labs Workbench Add Application Spec View', function() {
     helpers.afterAll();
     navbar.expandAccountDropdown();
     navbar.clickSignOut();
-    landingPage.verify();
+    loginPage.verify();
   });
   
   // FIXME: Test browser should scroll to card

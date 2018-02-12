@@ -38,8 +38,12 @@ if (apiPath) { apiBase += apiPath }
 app.use(compression());
 
 // Configure HTTP parser middleware (only log HTTP errors)
-app.use(morgan('combined', {
-  skip: function (req, res) { return res.statusCode < 400 }
+app.use(morgan('short', {
+  skip: function (req, res) { return res.statusCode < 400 }, stream: process.stderr
+}));
+
+app.use(morgan('short', {
+  skip: function (req, res) { return res.statusCode >= 400 }, stream: process.stdout
 }));
 
 // Configure bodyParser middleware
@@ -77,7 +81,12 @@ app.use(bodyParser.json());
 
 const logger = new (winston.Logger)({
   transports: [
-    new (winston.transports.Console)({ level: 'warn' }),
+    new (winston.transports.Console)({ 
+      level: process.env.LOG_LEVEL || 'info',
+      timestamp: function () {
+          return (new Date()).toISOString();
+      },
+    }),
     
     // TODO: Log to file if we ever find a reason to do so
     /*new (winston.transports.File)({
@@ -107,22 +116,24 @@ app.post('/logs', function (req, res) {
   const timestamp = req.body.time;
   const level = req.body.type.toLowerCase();
   const username = req.body.token.namespace || "No Session";
-
-  // Retrieve log message body / stacktrace
-  const logBody = JSON.parse(req.body.message);
-  const message = logBody.message || logBody;
-  const stack = logBody.stack || '';
   
-  // For debug purposes:
-  if (!message) {
-    logger.log(level, 'Received messageless logBody: ', req.body);
-  }
+  req.body.message.split('\n').forEach((jsonMessage) => {
+    // Retrieve log message body / stacktrace
+    const logBody = JSON.parse(jsonMessage);
+    const message = logBody.message || logBody;
+    const stack = logBody.stack || '';
     
-  // TODO: Is there a more compelling transformation for the POST body?
-  logger.log(level, timestamp + " | " + ip + " (" + username + ") -", message);
-  if (stack) {
-    logger.log(level, stack);
-  }
+    // For debug purposes:
+    if (!message) {
+      logger.log('warn', 'WARNING: Received messageless logBody: ', req.body);
+    }
+      
+    // TODO: Is there a more compelling transformation for the POST body?
+    logger.log(level, ip + " (" + username + ") -", message);
+    if (stack) {
+      logger.log(level, stack);
+    }
+  });
 
   // Return success
   res.status(201).send("Successfully POSTed to server logs!\n");
@@ -170,24 +181,21 @@ app.post('/cauth/login', bodyParser.urlencoded({ extended: false }), function (r
    
   // Generic error handler for this request
   req.on('error', function (err) {
-    console.log('ERROR: failed to send login request -', err);
+    logger.log('error', 'Failed to send login request -', err);
   });
   
   // Send login request
   request(postOptions, function (error, response, responseBody) {
-    console.log("ERROR: ", error);
-    console.log("RESPONSE: ", response);
-    console.log("RESPONSE BODY: ", responseBody);
-
     let status = response && response.statusCode ? response.statusCode : 500;
     
     if (error || status >= 400) {
-      console.log('ERROR: Failed to login -', status, error); // Print the error if one occurred 
+      logger.log('error', `Failed to login - ${status}: ${error}`); // Print the error if one occurred 
+      logger.log('error', `   Details: ${responseBody}`); // Print the error if one occurred 
       res.sendStatus(status);
     } else {
       let body = JSON.parse(responseBody);
       let tokenString = body.token;
-      logger.log('info', `Logged in as ${username}: ${tokenString}`);
+      //logger.log('info', `Logged in as ${username}: ${tokenString}`);
       
       if (tokenString) {
           // Attach token to response as a cookie
@@ -203,8 +211,6 @@ app.post('/cauth/login', bodyParser.urlencoded({ extended: false }), function (r
 
 // Serve our static login page
 app.get('/cauth/sign_in', function (req, res) {
-  //logger.log('info', "", "User was redirected to /cauth/sign_in.");
-  console.log("User redirected to sign-in.");
   res.sendFile(path.join(__dirname + '/login/'));
 });
 
@@ -214,8 +220,7 @@ app.get('/cauth/sign_in', function (req, res) {
 app.get('/cauth/auth', function(req, res) {
   // No token? Denied.
   let token = req.cookies['token'];
-  //logger.log('info', "", "Checking user session: " + token);
-  logger.log("info", "Checking user session: " + token);
+  logger.log("debug", "Checking user session: " + token);
   
   let requestedUrl = req.headers['x-original-url'];
   let prefix = secureCookie ? 'https://www' : 'http://www';
@@ -228,7 +233,7 @@ app.get('/cauth/auth', function(req, res) {
      // if request starts with an arbitrary host (e.g. not 'www.'), 
      //    we need to check authorization
     checkHost = requestedUrl.replace(/https?:\/\//, '').replace(/\/.*$/, '');
-    console.log(`Checking token's access to ${checkHost}`);
+    //logger.log("debug", `Checking token's access to ${checkHost}`);
   }
 
   // If token was given, check that it's valid
@@ -251,7 +256,7 @@ app.get('/cauth/auth', function(req, res) {
                         `Status Code: ${statusCode}`);
     }
     if (error) {
-      console.error(error.message);
+      logger.log('error', error.message);
       // consume response data to free up memory
       resp.resume();
       res.sendStatus(statusCode);
@@ -263,15 +268,15 @@ app.get('/cauth/auth', function(req, res) {
     resp.on('data', (chunk) => { rawData += chunk; });
     resp.on('end', () => {
       try {
-        console.log(rawData);
+        logger.log('debug', rawData);
         res.sendStatus(200);
       } catch (e) {
-        console.error(e.message);
+        logger.log('error', e.message);
         res.sendStatus(statusCode);
       }
     });
   }).on('error', (e) => {
-    console.error(`Got error: ${e.message}`);
+    logger.log('error', e.message);
     res.sendStatus(401);
   });
 });
@@ -294,6 +299,6 @@ app.get('/dashboard/*', function(req, res) { res.sendFile('dashboard/index.html'
 
 // Start up our server
 app.listen(port, function () {
-  console.log('Workbench Login API listening on port', port);
-  console.log('Connecting to Workbench API server at ' + apiBase);
+  logger.log('info', 'Workbench Login API listening on port', port);
+  logger.log('info', 'Connecting to Workbench API server at ' + apiBase);
 });
