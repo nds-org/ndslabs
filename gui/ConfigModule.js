@@ -66,7 +66,7 @@ angular
 /**
  * The version/revision of this GUI
  */
-.constant('BuildVersion', '1.0.13-devel')
+.constant('BuildVersion', '1.1.0')
 .constant('BuildDate', '')
 
 /**
