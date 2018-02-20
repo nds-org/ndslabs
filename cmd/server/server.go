@@ -2098,7 +2098,7 @@ func (s *Server) StartStack(w rest.ResponseWriter, r *rest.Request) {
 	glog.V(4).Infof("Starting stack %s", stack.Id)
 
 	glog.V(4).Infof("Stack status %s\n", stack.Status)
-	if stack.Status != stackStatus[Stopped] {
+	if stack.Status != stackStatus[Stopped] && stack.Status != stackStatus[Starting] {
 		// Can't start a stopping or started service
 		glog.V(4).Infof("Can't start a service with status %s\n", stack.Status)
 		w.WriteHeader(http.StatusConflict)
