@@ -1574,6 +1574,10 @@ func (s *Server) createKubernetesService(userId string, stack *api.Stack, spec *
 
 func (s *Server) createIngressRule(userId string, svc *k8api.Service, stack *api.Stack) error {
 
+	_, delErr := s.kube.DeleteIngress(userId, svc.Name+"-ingress")
+	if delErr != nil {
+		glog.Warning(delErr)
+	}
 	_, err := s.kube.CreateIngress(userId, s.domain, svc.Name,
 		svc.Spec.Ports, stack.Secure)
 	if err != nil {
