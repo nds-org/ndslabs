@@ -56,6 +56,7 @@ angular
  * Helpful links to include in the landing page / navbar
  */
 .value('HelpLinks', [
+   { name: "Tutorials",           icon: 'fa-book',               url: 'https://github.com/datadrivenag' },
   { name: "Feature Overview",       icon: 'fa-info-circle',        url: 'http://www.nationaldataservice.org/platform/workbench.html' },
   { name: "User's Guide",           icon: 'fa-book',               url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/User%27s+Guide' },
 //  { name: "F.A.Q.",                 icon: 'fa-question-circle',    url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Frequently+Asked+Questions'},
