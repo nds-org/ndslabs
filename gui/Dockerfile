@@ -12,17 +12,17 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     NODE_ENV="production" \
     BASEDIR="/home"
 
-# Copy in the manifests and the app source
+# Copy package.json
 WORKDIR $BASEDIR
-VOLUME $BASEDIR
 COPY . $BASEDIR/
 
 # Update build date / version number and enable backports
 RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${version}')#" "$BASEDIR/ConfigModule.js" && \
     /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('$(date)'))#" "$BASEDIR/ConfigModule.js" && \ 
-    npm install && \
-    bower install --allow-root --non-interactive && \
     echo 'deb http://http.debian.net/debian jessie-backports main' >> /etc/apt/sources.list
+
+# Install dependencies
+RUN npm install
 
 # Set up some default environment variable
 ENV APISERVER_HOST="localhost" \

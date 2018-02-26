@@ -7,6 +7,7 @@ RUN apt-get -qq update && \
       git \
       sudo \
       vim \
+      npm \
       curl && \
     curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash - && \
     apt-get -qq install nodejs && \
@@ -18,5 +19,4 @@ RUN apt-get -qq update && \
 WORKDIR /root
 
 # Install Grunt + Bower + Protractor
-RUN npm install -g bower grunt-cli gulp-cli && \
-    npm cache clean
+RUN npm install -g bower grunt-cli gulp-cli
