@@ -1,4 +1,4 @@
-FROM debian:jessie
+FROM ubuntu:xenial
 
 # Install NodeJS and friends
 RUN apt-get -qq update && \
@@ -8,9 +8,11 @@ RUN apt-get -qq update && \
       sudo \
       vim \
       npm \
+      wget \
       curl && \
     curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash - && \
     apt-get -qq install nodejs && \
+    apt-get -qq remove sudo && \
     apt-get -qq autoremove && \
     apt-get -qq autoclean && \
     apt-get -qq clean all && \

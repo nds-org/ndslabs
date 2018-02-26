@@ -21,8 +21,9 @@ RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion'
     /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('$(date)'))#" "$BASEDIR/ConfigModule.js" && \ 
     echo 'deb http://http.debian.net/debian jessie-backports main' >> /etc/apt/sources.list
 
-# Install dependencies
-RUN npm install
+# Install app dependencies
+RUN npm install && \
+    grunt swagger-js-codegen
 
 # Set up some default environment variable
 ENV APISERVER_HOST="localhost" \
