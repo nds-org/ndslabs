@@ -28,7 +28,8 @@ describe('Labs Workbench Swagger UI View', function() {
     helpers.afterAll();
   });
   
-  it('should verify page', function() {
-    
+  it('should offer a swagger-ui component', function() {
+    expect(swaggerUiPage.swaggerUi.isPresent).toBe(true);
+    expect(swaggerUiPage.swaggerUi.isDisplayed).toBe(true);
   });
 });

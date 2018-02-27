@@ -22,6 +22,7 @@ var SwaggerUiPage = function() {
   /**
    * Insert public Getters here for page elements
    */
+  this.console = element(by.id('swaggerUi'));
 };
 
 // Naviagte to Swagger UI view
