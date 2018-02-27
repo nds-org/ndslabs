@@ -1,0 +1,19 @@
+# Run workbench in minikube
+sudo: required
+
+env:
+- CHANGE_MINIKUBE_NONE_USER=true
+
+before_script:
+  - git clone https://github.com/nds-org/ndslabs-deploy-tools.git
+  - cd ndslabs-deploy-tools
+  - git checkout travis_test
+  - cd ..
+
+
+script:
+  - cd apiserver; docker build -t apiserver .
+  - docker images
+  - cd ../ndslabs-deploy-tools
+  - make terraform
+  
