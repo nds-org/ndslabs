@@ -209,9 +209,9 @@
             
             <!-- The Stack's "Button Bar" -->
             <div class="pull-right" role="group" aria-label="...">
-              <span uib-tooltip="{{ (((stack.key | specProperty:'catalog') === 'user' || (stack.key | specProperty:'authRequired') == true) ? 'Authentication can only be disabled on select system applications' : (stack.status !== 'stopped' ? 'Authentication can only be toggled when this application is stopped' : 'Click here to ' + (stack.secure === true ? 'Disable' : 'Enable') + ' Basic Authentication')) }}" tooltip-placement="left">
+              <span uib-tooltip="{{ (((stack.key | specProperty:'catalog') === 'user' || (stack.key | specProperty:'authRequired') == true) ? 'Authentication can only be disabled on select system applications' : (stack.status !== 'stopped' ? 'Authentication can only be toggled when this application is stopped' : 'Click here to ' + (stack.secure === true ? 'Disable' : 'Enable') + ' Authentication')) }}" tooltip-placement="left">
                 <button id="toggleAuthBtn" class="btn btn-sm btn-default" ng-click="toggleSecure(stack)" ng-disabled="stack.status !== 'stopped' || starting[stack.id] || ((stack.key | specProperty:'authRequired') === true) || ((stack.key | specProperty:'catalog') === 'user')">
-                  <i class="fa fa-fw" ng-class="{ 'fa-lock': stack.secure, 'fa-unlock': !stack.secure }"></i> <small ng-class="{ 'text-success': stack.secure, 'text-danger': !stack.secure }">HTTP Basic Authentication {{ stack.secure === true ? 'Enabled' : 'Disabled' }}</small>
+                  <i class="fa fa-fw" ng-class="{ 'fa-lock': stack.secure, 'fa-unlock': !stack.secure }"></i> <small ng-class="{ 'text-success': stack.secure, 'text-danger': !stack.secure }">Authentication {{ stack.secure === true ? 'Enabled' : 'Disabled' }}</small>
                 </button>
               </span>
           
