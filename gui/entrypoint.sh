@@ -14,4 +14,4 @@
 /bin/sed -i -e "s#^\.constant('GaAccount', .*)#.constant('GaAccount', '${ANALYTICS_ACCOUNT}')#" "$BASEDIR/ConfigModule.js"
 
 # Start ExpressJS
-grunt
+node server.js

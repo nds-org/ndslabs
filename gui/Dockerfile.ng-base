@@ -12,7 +12,6 @@ RUN apt-get -qq update && \
       curl && \
     curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash - && \
     apt-get -qq install nodejs && \
-    apt-get -qq remove sudo && \
     apt-get -qq autoremove && \
     apt-get -qq autoclean && \
     apt-get -qq clean all && \
@@ -20,5 +19,5 @@ RUN apt-get -qq update && \
 
 WORKDIR /root
 
-# Install Grunt + Bower + Protractor
-RUN npm install -g bower grunt-cli gulp-cli
+# Install Grunt + Protractor
+RUN npm install -g grunt-cli gulp-cli
