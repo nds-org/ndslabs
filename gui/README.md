@@ -39,16 +39,6 @@ docker run --name ndslabs-webui -it -d \
 
 NOTE: You may need to adjust the **CORS_ORIGIN_ADDR** of your API server in order to access it from this client, depending on your configuration.
 
-### Customizing the UI
-If you want to customize any part of the UI, feel free to fork this repo and set up the following parameters
-```bash
-# Setting these variables will clone the target repo over the top of the current UI source
-GIT_DROPIN_REPO=https://github.com/nds-org/ndslabs
-GIT_DROPIN_BRANCH=terra
-```
-
-An example of a typical set of UI customizations for http://www.terraref.ndslabs.org/#/ can be seen [here](https://github.com/nds-org/ndslabs/compare/terra).
-
 ## Running the Development Environment
 For a cloud-based Node.js developer environment, you can run the following commands:
 ```bash
