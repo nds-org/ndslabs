@@ -19,5 +19,5 @@ RUN apt-get -qq update && \
 
 WORKDIR /root
 
-# Install Grunt + Protractor
+# Install Grunt + Gulp
 RUN npm install -g grunt-cli gulp-cli

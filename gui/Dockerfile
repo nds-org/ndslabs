@@ -12,7 +12,7 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     NODE_ENV="production" \
     BASEDIR="/home"
 
-# Copy package.json
+# Copy in our app source
 WORKDIR $BASEDIR
 COPY . $BASEDIR/
 
