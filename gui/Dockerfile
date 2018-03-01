@@ -18,8 +18,7 @@ COPY . $BASEDIR/
 
 # Update build date / version number and enable backports
 RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion', '${version}')#" "$BASEDIR/ConfigModule.js" && \
-    /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('$(date)'))#" "$BASEDIR/ConfigModule.js" && \ 
-    echo 'deb http://http.debian.net/debian jessie-backports main' >> /etc/apt/sources.list
+    /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('$(date)'))#" "$BASEDIR/ConfigModule.js"
 
 # Install app dependencies
 RUN npm install && \
