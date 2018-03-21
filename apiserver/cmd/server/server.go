@@ -358,17 +358,27 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 	go s.kube.WatchPods(s)
 	go s.shutdownInactiveServices()
 
+	// primary rest api server
 	httpsrv := &http.Server{
 		Addr:    ":" + cfg.Port,
 		Handler: api.MakeHandler(),
 	}
-
 	glog.Infof("Listening on %s", cfg.Port)
+
+	// internal admin server, currently only handling oauth registration
+	adminsrv := &http.Server{
+		Addr:    ":" + cfg.AdminPort,
+		Handler: http.HandlerFunc(s.RegisterUserOauth),
+	}
+	glog.Infof("Admin server listening on %s", cfg.AdminPort)
 
 	stop := make(chan os.Signal, 2)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		httpsrv.ListenAndServe()
+	}()
+	go func() {
+		adminsrv.ListenAndServe()
 	}()
 	<-stop
 
@@ -2768,12 +2778,12 @@ func (s *Server) getTemporaryToken(userId string) (string, error) {
 
 	token.Claims["id"] = userId
 	token.Claims["exp"] = time.Now().Add(time.Minute * 30).Unix()
+	token.Claims["orig_iat"] = time.Now().Unix()
 	tokenString, err := token.SignedString(s.jwt.Key)
 	if err != nil {
 		return "", err
 	}
 	return tokenString, nil
-
 }
 
 func (s *Server) createAdminUser(password string) error {
@@ -3162,4 +3172,115 @@ func (s *Server) checkIngress(uid string, host string) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+// Write the oauth2 payload to the users home directory for access from applications
+func (s *Server) writeAuthPayload(userId string, tokens map[string]string) error {
+	path := s.getHomeVolume().Path + "/" + userId + "/.globus"
+	os.MkdirAll(path, 0777)
+
+	json, err := json.MarshalIndent(tokens, "", "   ")
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(path+"/oauth2.json", json, 0777)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Register a user via oauth
+func (s *Server) RegisterUserOauth(w http.ResponseWriter, r *http.Request) {
+
+	rd := r.FormValue("rd")
+	if rd == "" {
+		rd = "https://www." + s.domain + "/dashboard"
+	}
+
+	accessToken := r.Header.Get("X-Forwarded-Access-Token")
+	otherTokenStr := r.Header.Get("X-Forwarded-Other-Tokens")
+	email := r.Header.Get("X-Forwarded-Email")
+	user := r.Header.Get("X-Forwarded-User")
+
+	if accessToken == "" || email == "" || user == "" {
+		glog.Warning("No oauth header found")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	tokens := make(map[string]string)
+	otherTokens := strings.Split(otherTokenStr, " ")
+	for _, kvpair := range otherTokens {
+		kv := strings.Split(kvpair, "=")
+		tokens[kv[0]] = kv[1]
+	}
+
+	err := s.writeAuthPayload(user, tokens)
+	if err != nil {
+		glog.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	glog.Infof("Creating/updating account for %s %s %s\n", user, email, accessToken)
+	glog.Infof("Other tokens %s\n", otherTokens)
+
+	account := s.getAccountByEmail(email)
+	if account == nil {
+		act := api.Account{
+			Name:         user,
+			Description:  "Oauth shadow account",
+			Namespace:    user,
+			EmailAddress: email,
+			Password:     s.kube.RandomString(10),
+			Organization: "",
+			Created:      time.Now().Unix(),
+			LastLogin:    time.Now().Unix(),
+			NextURL:      rd,
+		}
+		act.Status = api.AccountStatusApproved
+
+		err := s.etcd.PutAccount(act.Namespace, &act, true)
+		if err != nil {
+			glog.Error(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		err = s.setupAccount(&act)
+		if err != nil {
+			glog.Error(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+	} else {
+		account.LastLogin = time.Now().Unix()
+		account.NextURL = rd
+
+		err := s.etcd.PutAccount(account.Namespace, account, true)
+		if err != nil {
+			glog.Error(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+	}
+
+	token, err := s.getTemporaryToken(user)
+	if err != nil {
+		glog.Error(err)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	glog.Infof("Setting Cookie\n")
+	//expiration := time.Now().Add(365 * 24 * time.Hour)
+	http.SetCookie(w, &http.Cookie{Name: "token", Value: token, Domain: s.domain, Path: "/"})
+	http.SetCookie(w, &http.Cookie{Name: "namespace", Value: user, Domain: s.domain, Path: "/"})
+
+	glog.Infof("Redirecting to %s\n", rd)
+	http.Redirect(w, r, rd, 301)
+	return
 }
