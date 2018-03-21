@@ -96,6 +96,14 @@ if [ "$1" = 'apiserver' ]; then
 		TOKEN_PATH="/run/secrets/kubernetes.io/serviceaccount/token"
 	fi
 
+	if [ -z "$SIGNIN_URL" ]; then 
+    		SIGNIN_URL="$CORS_ORIGIN_ADDR/login/#/",
+	fi
+        
+	if [ -z "$AUTH_URL" ]; then 
+    		AUTH_URL="$CORS_ORIGIN_ADDR/cauth/auth"
+	fi
+
 cat << EOF > /apiserver.json
 {
     "port": "30001",
@@ -111,8 +119,8 @@ cat << EOF > /apiserver.json
     "homeVolume": "$VOLUME_NAME",
     "name": "$WORKBENCH_NAME",
     "dataProviderURL": "$DATA_PROVIDER_URL",
-    "authSignInURL": "$CORS_ORIGIN_ADDR/login/#/",
-    "authURL": "$CORS_ORIGIN_ADDR/cauth/auth",
+    "authSignInURL": "$SIGNIN_URL",
+    "authURL": "$AUTH_URL",
     "support": {
         "email": "$SUPPORT_EMAIL",
         "forum": "$SUPPORT_FORUM",
