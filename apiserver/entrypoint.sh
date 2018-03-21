@@ -99,6 +99,7 @@ if [ "$1" = 'apiserver' ]; then
 cat << EOF > /apiserver.json
 {
     "port": "30001",
+    "adminPort": "30002",
     "origin": "$CORS_ORIGIN_ADDR",
     "timeout": $TIMEOUT,
     "requireApproval": $REQUIRE_APPROVAL,
