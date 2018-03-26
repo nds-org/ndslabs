@@ -148,14 +148,14 @@ describe('Labs Workbench Add Application Spec View', function() {
     });
     
     it('should allow the user to add docker image tags', function() {
-      helpers.scrollIntoView(addSpecPage.newDockerTagNameField);
+      //helpers.scrollIntoView(addSpecPage.newDockerTagNameField);
       
       // Enter the port number
       addSpecPage.newDockerTagNameField.sendKeys(TEST_DOCKER_IMAGE_TAG);
       
       // Click the Add button
       var addBtn = addSpecPage.addDockerTagBtn;
-      helpers.scrollIntoView(addBtn);
+      //helpers.scrollIntoView(addBtn);
       expect(addBtn.isEnabled()).toBe(true);
       addBtn.click();
     });
