@@ -4,6 +4,7 @@ package config
 type Config struct {
 	Name            string        `json:"name"`
 	Port            string        `json:"port"`
+	AdminPort       string        `json:"adminPort"`
 	Origin          string        `json:"origin"`
 	Timeout         int           `json:"timeout"`
 	Prefix          string        `json:"prefix"`
