@@ -491,7 +491,7 @@
                                                         <!-- Add new volume -->
                                                         <tr>
                                                             <td>
-                                                                <input class="form-control" ng-model="newVolPath" id="volPathField" name="volPathField" placeholder="Enter a container mount path..." ng-pattern="/^\/[-\/.a-z0-9A-Z]+$/" />
+                                                                <input class="form-control" ng-model="newVolPath" id="volPathField" name="volPathField" placeholder="Enter a container mount path..." ng-pattern="/^(\/[^\/ ]*)+\/?$/" />
                                                                 <ng-messages class="text-danger" role="alert" for="modifySpec.volPathField.$error">
                                                                     <ng-message when="pattern">This field must be an absolute path (i.e. <i>/volume/path</i>)</li>
                                                                 </ng-messages>
