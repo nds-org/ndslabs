@@ -9,8 +9,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('LoginController', [ '$scope', '$rootScope', '$cookies', '$routeParams', '$location', '$window', '$log', '$uibModal', 'AuthInfo', 'Project', 'NdsLabsApi', 'DashboardAppPath', 'HomePathSuffix', 'CookieOptions', '$uibModalStack', 'ServerData', 'ProductName', 'ReturnRoute',
-    function($scope, $rootScope, $cookies, $routeParams, $location, $window, $log, $uibModal, authInfo, Project, NdsLabsApi, DashboardAppPath, HomePathSuffix, CookieOptions, $uibModalStack, ServerData, ProductName, ReturnRoute) {
+.controller('LoginController', [ '$scope', '$rootScope', '$cookies', '$routeParams', '$location', '$window', '$log', '$uibModal', 'AuthInfo', 'Project', 'NdsLabsApi', 'DashboardAppPath', 'HomePathSuffix', 'CookieOptions', '$uibModalStack', 'ServerData', 'ProductName', 'ReturnRoute', 'SigninUrl',
+    function($scope, $rootScope, $cookies, $routeParams, $location, $window, $log, $uibModal, authInfo, Project, NdsLabsApi, DashboardAppPath, HomePathSuffix, CookieOptions, $uibModalStack, ServerData, ProductName, ReturnRoute, SigninUrl) {
   "use strict";
 
   $rootScope.rd = '';
@@ -25,6 +25,26 @@ angular
   $scope.settings = authInfo.get();
   
   $scope.$watch(function() { return Project.project; }, function(newValue, oldValue) { $scope.project = newValue; });
+  
+  $scope.enableOAuth = SigninUrl.indexOf("/oauth2/") !== -1;
+  $scope.signinLink = $scope.enableOAuth ? SigninUrl : '/login/' + ($rootScope.rd ? 'rd=' : '');
+  
+  // User should not be here if OAuth is enabled...
+  // Navigate them to the correct place
+  if ($scope.enableOAuth) {
+    $window.location.href = $scope.signinLink;
+    return;
+  };
+  
+  $scope.clickCreateAccountLink = function() {
+    if ($scope.enableOAuth) { return false; }
+    $window.location.href = '/login/register' + ($rootScope.rd ? '?rd=' + $rootScope.rd : '')
+  };
+  
+  $scope.clickForgotPasswordLink = function() {
+    if ($scope.enableOAuth) { return false; }
+    $window.location.href = '/login/recover' + ($rootScope.rd ? '?rd=' + $rootScope.rd : '')
+  };
   
   /**
    * Start a local session by asking the server for a token
