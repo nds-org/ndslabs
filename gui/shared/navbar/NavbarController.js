@@ -29,8 +29,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('NavbarController', [ '$scope', '$rootScope', '$window', '$location', '$cookies', 'Project', 'AuthInfo', 'ProductName', 'ProductUrl', 'HelpLinks', 'FileManager', 'AutoRefresh', 'ReturnRoute', 'CookieOptions',
-    function($scope, $rootScope, $window, $location, $cookies, Project, AuthInfo, ProductName, ProductUrl, HelpLinks, FileManager, AutoRefresh, ReturnRoute, CookieOptions) {
+.controller('NavbarController', [ '$scope', '$rootScope', '$window', '$location', '$cookies', 'Project', 'AuthInfo', 'ProductName', 'ProductUrl', 'HelpLinks', 'FileManager', 'AutoRefresh', 'ReturnRoute', 'CookieOptions', 'SigninUrl',
+    function($scope, $rootScope, $window, $location, $cookies, Project, AuthInfo, ProductName, ProductUrl, HelpLinks, FileManager, AutoRefresh, ReturnRoute, CookieOptions, SigninUrl) {
   "use strict"
   
   // Enable JS dropdowns on the navbar
@@ -55,6 +55,8 @@ angular
   // FIXME: Grab user's e-mail, limits, settings, etc
   // Project.populate($scope.auth.namespace);
   
+  $scope.enableOAuth = SigninUrl.indexOf("/oauth2/") !== -1;
+  $scope.signinLink = $scope.enableOAuth ? SigninUrl : '/login/' + ($rootScope.rd ? 'rd=' : '');
   $scope.helpLinks = HelpLinks;
   
   $scope.fileManager = FileManager;
@@ -76,7 +78,7 @@ angular
     $cookies.remove('namespace', CookieOptions);
     
     // TODO: Can we avoid hard-coding this URL?
-    $window.location.href = '/login/';
+    $window.location.href = '/landing/';
   };
   
   $scope.brand = 

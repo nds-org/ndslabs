@@ -37,8 +37,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('LandingController', [ '$scope', '$rootScope', '$location', '$routeParams', '$log', '_', 'AuthInfo', 'OrgName', 'ProductName', 'ProductUrl', 'NdsLabsApi', 'HelpLinks', 'ReturnRoute', 'LoginAppPath', 'RecoveryPathSuffix',
-    function($scope, $rootScope, $location, $routeParams, $log, _, AuthInfo, OrgName, ProductName, ProductUrl, NdsLabsApi, HelpLinks, ReturnRoute, LoginAppPath, RecoveryPathSuffix) {
+.controller('LandingController', [ '$scope', '$rootScope', '$location', '$routeParams', '$log', '_', 'AuthInfo', 'OrgName', 'ProductName', 'ProductUrl', 'NdsLabsApi', 'HelpLinks', 'ReturnRoute', 'LoginAppPath', 'RecoveryPathSuffix', 'SigninUrl',
+    function($scope, $rootScope, $location, $routeParams, $log, _, AuthInfo, OrgName, ProductName, ProductUrl, NdsLabsApi, HelpLinks, ReturnRoute, LoginAppPath, RecoveryPathSuffix, SigninUrl) {
   "use strict";
 
   if ($routeParams.t && !$routeParams.u) {
@@ -59,6 +59,8 @@ angular
   
   $scope.auth = AuthInfo.get();
   
+  $scope.enableOAuth = SigninUrl.indexOf("/oauth2/") !== -1;
+  $scope.signinLink = $scope.enableOAuth ? SigninUrl : '/login/' + ($rootScope.rd ? 'rd=' : '');
   $scope.featureLink = _.find($scope.helpLinks, [ 'name', 'Feature Overview' ]);
   
   $scope.token = $routeParams.t;

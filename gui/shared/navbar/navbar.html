@@ -54,8 +54,8 @@
           </li>
           
           <!-- Then draw our register / login links -->
-          <li ng-show="!auth.token"><a id="signupNav" ng-href="/login/register{{ rd ? '?rd=' + rd : '' }}">Sign Up</a></li>
-          <li ng-show="!auth.token"><a id="signinNav" ng-href="/login/{{ rd ? '?rd=' + rd : '' }}">Sign In</a></li>
+          <li ng-show="!auth.token && !enableOAuth"><a id="signupNav" ng-href="/login/register{{ rd ? '?rd=' + rd : '' }}">Sign Up</a></li>
+          <li ng-show="!auth.token"><a id="signinNav" ng-href="{{ signinLink }}">Sign In</a></li>
           
 	        <!-- Or, draw our account settings button -->
           <li ng-show="auth.token">

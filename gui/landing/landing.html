@@ -25,7 +25,7 @@
   <div class="row">
     <!-- Request Access Panel -->
     <div class="col-sm-5" ng-if="!auth.token">
-      <div class="panel panel-primary">
+      <div class="panel panel-primary" ng-if="!enableOAuth">
         <div class="panel-heading">
           <h3 class="panel-title">Request Access to {{ productName }}</h3>
         </div>
@@ -44,7 +44,7 @@
         </div>
         <div class="panel-body">
           <p>Start using {{ productName }}!</p>
-          <a id="signInBtn" class="btn btn-default" ng-href="/login/{{ rd ? '?rd=' + rd : '' }}">Sign in here <i class="fa fa-fw fa-caret-right"></i></a>
+          <a id="signInBtn" class="btn btn-default" ng-href="{{ signinLink }}">Sign in here <i class="fa fa-fw fa-caret-right"></i></a>
         </div>
       </div>
     </div>
