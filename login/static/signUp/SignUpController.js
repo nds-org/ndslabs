@@ -8,8 +8,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('SignUpController', [ '$scope', '$log', '$rootScope', '$routeParams', '$location', '_', 'NdsLabsApi', 'Project', 'ProductName', 'AuthInfo', 'HelpLinks', 'ReturnRoute', 
-    function($scope, $log, $rootScope, $routeParams, $location, _, NdsLabsApi, Project, ProductName, AuthInfo, HelpLinks, ReturnRoute) {
+.controller('SignUpController', [ '$scope', '$window', '$log', '$rootScope', '$routeParams', '$location', '_', 'NdsLabsApi', 'Project', 'ProductName', 'AuthInfo', 'HelpLinks', 'ReturnRoute', 'SigninUrl',
+    function($scope, $window, $log, $rootScope, $routeParams, $location, _, NdsLabsApi, Project, ProductName, AuthInfo, HelpLinks, ReturnRoute, SigninUrl) {
   "use strict";
 
   $rootScope.rd = '';
@@ -27,6 +27,16 @@ angular
   $scope.newProject = Project.create();
   $scope.progressMessage = '';
   $scope.showVerify = false;
+  
+  $scope.enableOAuth = SigninUrl.indexOf("/oauth2/") !== -1;
+  $scope.signinLink = $scope.enableOAuth ? SigninUrl : '/login/' + ($rootScope.rd ? 'rd=' : '');
+  
+  // User should not be here if OAuth is enabled...
+  // Navigate them to the correct place
+  if ($scope.enableOAuth) {
+    $window.location.href = $scope.signinLink;
+    return;
+  };
   
   // To handle special characters in passwords, we must escape them in the validation regex pattern
   // See https://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript/3561711#3561711

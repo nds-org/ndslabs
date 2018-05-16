@@ -1,4 +1,4 @@
-FROM debian:jessie
+FROM ubuntu:xenial
 
 # Install NodeJS and friends
 RUN apt-get -qq update && \
@@ -7,12 +7,11 @@ RUN apt-get -qq update && \
       git \
       sudo \
       vim \
-      curl \
-      npm && \
-    curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash - && \
-    apt-get -qq update && \
+      npm \
+      wget \
+      curl && \
+    curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash - && \
     apt-get -qq install nodejs && \
-    ln -s /usr/local/bin/node /usr/local/bin/nodejs && \
     apt-get -qq autoremove && \
     apt-get -qq autoclean && \
     apt-get -qq clean all && \
@@ -20,6 +19,5 @@ RUN apt-get -qq update && \
 
 WORKDIR /root
 
-# Install Grunt + Bower + Protractor
-RUN npm install -g bower grunt-cli && \
-    npm cache clean
+# Install Grunt + Gulp
+RUN npm install -g grunt-cli gulp-cli

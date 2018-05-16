@@ -22,6 +22,8 @@ var SwaggerUiPage = function() {
   /**
    * Insert public Getters here for page elements
    */
+  this.swaggerUi = element(by.css('.swagger-ui'));
+  this.apiTitle = element(by.binding('ui.infos.title'));
 };
 
 // Naviagte to Swagger UI view

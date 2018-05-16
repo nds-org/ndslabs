@@ -55,11 +55,11 @@ ConsolePage.prototype.getServiceConsole = function(application, serviceId) {
     var consoleBtn = dashboardPage.consoleBtn(svcMatch);
     browser.wait(EC.elementToBeClickable(consoleBtn), 5000);
     // Click the "Edit" button next to the first service
-    consoleBtn.click();
-    helpers.expectNewTabOpen(PAGE_ROUTE, true);
-    browser.waitForAngular();
-    self.verify();
-    
+    consoleBtn.click().then(function() {
+      helpers.expectNewTabOpen(PAGE_ROUTE, true);
+      browser.waitForAngular();
+      self.verify();
+    });
     return svcMatch;
   });
 };
@@ -67,9 +67,6 @@ ConsolePage.prototype.getServiceConsole = function(application, serviceId) {
 // Ensure that we are on the correct page
 ConsolePage.prototype.verify = function() { 
   "use strict";
-
-  // Race condition: sometimes PAGE_TITLE not yet defined when we go to assert on it
-  browser.waitForAngular();
 
   expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toMatch(PAGE_TITLE);

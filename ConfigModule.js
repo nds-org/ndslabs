@@ -45,6 +45,9 @@ angular
 .constant('AddSpecPathSuffix', '/store/add/')
 .constant('EditSpecPathSuffix', '/store/edit/:specKey/')
 
+// Navigate here when clicking "Sign In"
+.constant('SigninUrl', 'https://www.local.ndslabs.org/oauth2/authorize')
+
 /**
  * The name of the product to display in the UI and the URL to link to when clicked
  */
@@ -216,18 +219,12 @@ angular
           
           // Handle HTTP 401: Not Authorized - User needs to provide credentials
           if (status == 401) {
-            // TODO: If we want to intercept the route to redirect them after a successful login
-            //window.location = "/account/login?redirectUrl=" + Base64.encode(document.URL);
-            
             // Purge current session data
             AuthInfo.get().token = null;
-            //$cookies.remove('token', CookieOptions);
-            //$cookies.remove('namespace', CookieOptions);
             $cookies.remove('token', CookieOptions);
             $cookies.remove('namespace', CookieOptions);
             
             $log.debug("Routing to login...");
-            //window.location.href = LoginRoute;
             
             return $q.reject(rejection);
           }
