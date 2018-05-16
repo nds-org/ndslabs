@@ -51,7 +51,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // AngularJS app dependencies
-app.use('/bower_components', express.static('bower_components'));
+app.use('/node_modules', express.static('node_modules'));
 
 // Our AngularJS apps/assets
 app.use('/app', express.static('app'));

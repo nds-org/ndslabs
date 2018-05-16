@@ -5,6 +5,8 @@ var helpers = require("./helpers.e2e.js");
 
 var SwaggerUiPage = require('./pages/swagger.page.js');
 
+var EXPECTED_API_TITLE = "NDS Labs Workbench";
+
 // swagger.e2e.js
 describe('Labs Workbench Swagger UI View', function() {
   "use strict";
@@ -28,7 +30,9 @@ describe('Labs Workbench Swagger UI View', function() {
     helpers.afterAll();
   });
   
-  it('should verify page', function() {
-    
+  it('should offer a Workbench API reference', function() {
+    expect(swaggerUiPage.apiTitle.isPresent()).toBe(true);
+    expect(swaggerUiPage.apiTitle.isDisplayed()).toBe(true);
+    expect(swaggerUiPage.apiTitle.getText()).toBe(EXPECTED_API_TITLE);
   });
 });

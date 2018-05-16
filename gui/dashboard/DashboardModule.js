@@ -123,7 +123,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       }
     }
     
-    window.location.href = LoginAppPath;
+    window.location.href = '/landing/';
   };
   
   $log.debug('Starting token checker...');
