@@ -30,6 +30,8 @@ ENV APISERVER_HOST="localhost" \
     ANALYTICS_ACCOUNT="" \
     SUPPORT_EMAIL="ndslabs-support@nationaldataservice.org"
 
+RUN npm install -g bower 
+
 # Expose port 3000 for ExpressJS
 EXPOSE 3000
 
