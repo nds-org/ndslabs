@@ -222,7 +222,7 @@ app.get('/cauth/auth', function(req, res) {
   let token = req.cookies['token'];
   logger.log("debug", "Checking user session: " + token);
   
-  let requestedUrl = req.headers['x-original-url'];
+  let requestedUrl = req.headers['x-original-url'] || '';
   let prefix = secureCookie ? 'https://www' : 'http://www';
   let checkHost = '';
   
