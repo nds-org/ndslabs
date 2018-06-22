@@ -8,7 +8,7 @@ This is the main repository for the [National Data Service](http://www.nationald
 
 Labs Workbench is an experimental space for evaluating, developing, and exploring interoperability between research data management services. This is achieved through the use of applications containerized with [Docker](https://www.docker.com/what-docker), [Kubernetes](http://kubernetes.io/docs/whatisk8s/) for container orchestration, deployed on an [OpenStack](https://www.openstack.org/) cluster.
 
-For more information, see the [architecture documentation](https://github.com/nds-org/ndslabs/tree/master/docs/architecture).
+For more information, see the [architecture documentation](https://opensource.ncsa.illinois.edu/confluence/display/NDS/Workbench+Architecture).
 
 On top of this foundation, NDS Labs provides a user interface, command line interface, and an API server used to manage the configuration and deployment of containerized services. This repository includes the following:
 
