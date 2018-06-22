@@ -1584,6 +1584,10 @@ func (s *Server) createKubernetesService(userId string, stack *api.Stack, spec *
 
 func (s *Server) createIngressRule(userId string, svc *k8api.Service, stack *api.Stack) error {
 
+	_, delErr := s.kube.DeleteIngress(userId, svc.Name+"-ingress")
+	if delErr != nil {
+		glog.Warning(delErr)
+	}
 	_, err := s.kube.CreateIngress(userId, s.domain, svc.Name,
 		svc.Spec.Ports, stack.Secure)
 	if err != nil {
@@ -2104,7 +2108,7 @@ func (s *Server) StartStack(w rest.ResponseWriter, r *rest.Request) {
 	glog.V(4).Infof("Starting stack %s", stack.Id)
 
 	glog.V(4).Infof("Stack status %s\n", stack.Status)
-	if stack.Status != stackStatus[Stopped] {
+	if stack.Status != stackStatus[Stopped] && stack.Status != stackStatus[Starting] {
 		// Can't start a stopping or started service
 		glog.V(4).Infof("Can't start a service with status %s\n", stack.Status)
 		w.WriteHeader(http.StatusConflict)
