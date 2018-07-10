@@ -12,28 +12,35 @@ import:
   - rest
 - package: github.com/coreos/etcd
   version: ^3.0.7
+#  version: 8a37349097a592db79ba3087f3cae9cd4b0af21c
   subpackages:
   - client
-- package: github.com/sirupsen/logrus
-  version: 33a34430d1c3dc71777fdd677864928e5b5812bc
 # Git Account name changed and broke old dependencies
 # https://github.com/sirupsen/logrus/issues/553#issuecomment-306591437
+- package: github.com/sirupsen/logrus
+  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
 - package: github.com/Sirupsen/logrus
-  repo: https://github.com/sirupsen/logrus.git
+  repo: git@github.com:/sirupsen/logrus
   vcs: git
-  version: 33a34430d1c3dc71777fdd677864928e5b5812bc
+  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
+#- package: github.com/sirupsen/logrus
+#  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
+#- package: github.com/Sirupsen/logrus
+#  repo: https://github.com/sirupsen/logrus.git
+#  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
 - package: github.com/docker/docker
   version: ^1.12.1
   subpackages:
   - pkg/term
 - package: github.com/golang/glog
 - package: github.com/spf13/pflag
-  version: 103ce5cd2042f2fe629c1957abb64ab3e7f50235
+  version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
 - package: github.com/spf13/cobra
   version: f62e98d28ab7ad31d707ba837a966378465c7b57
 - package: github.com/spf13/viper
   version: ed0a9674c6ef3646e218d8bb70708d250e94354b
 - package: github.com/xeipuuv/gojsonschema
+  version: 83a7f6369d552cba07cdeea7dc622f1161a07deb
 - package: golang.org/x/crypto
   subpackages:
   - ssh/terminal
@@ -46,7 +53,7 @@ import:
 - package: gopkg.in/gcfg.v1
   version: ^1.2.0
 - package: k8s.io/kubernetes
-  version: "1.5"
+  version: "1.8"
   subpackages:
   - pkg/api
   - pkg/api/resource
@@ -56,7 +63,7 @@ import:
 #  - pkg/client/unversioned/remotecommand
   - pkg/kubelet/server/remotecommand
   - pkg/util/intstr
-  - pkg/util/rand
+#  - pkg/util/rand
   - pkg/watch
   - pkg/watch/json
 - package: golang.org/x/crypto
@@ -66,9 +73,11 @@ import:
   subpackages:
   - user/crypt/apr1_crypt
 - package: k8s.io/client-go
-  version: 2.0
+  version: 5.0
 - package: github.com/gogo/protobuf
   version: v0.3
   subpackages:
   - proto
 - package: github.com/golang/protobuf
+- package: github.com/ugorji/go
+  version: 8c0409fcbb70099c748d71f714529204975f6c3f
