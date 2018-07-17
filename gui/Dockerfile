@@ -1,7 +1,7 @@
 #
 # Build: docker build -t ndslabs/angular-ui .
 #
-FROM ndslabs/ng-base:latest
+FROM ndslabs/ng-base:1.0.12
 
 # Set build information here before building (or at build time with --build-args version=X.X.X)
 ARG version="1.0.10"
