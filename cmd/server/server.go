@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -9,8 +10,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/ndslabs/apiserver/pkg/config"
@@ -144,7 +147,7 @@ func main() {
 	}
 
 	kube, err := kube.NewKubeHelper(cfg.Kubernetes.Address,
-		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath, kConfig)
+		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath, kConfig, cfg.AuthSignInURL, cfg.AuthURL)
 	if err != nil {
 		glog.Errorf("Kubernetes API server not available\n")
 		glog.Fatal(err)
@@ -232,7 +235,7 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 	glog.Infof("ingress %s", cfg.Ingress)
 
 	jwt := &jwt.JWTMiddleware{
-		Key:        []byte(s.hostname),
+		Key:        []byte(adminPasswd),
 		Realm:      "ndslabs",
 		Timeout:    timeout,
 		MaxRefresh: time.Hour * 24,
@@ -356,6 +359,7 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 		rest.Get(s.prefix+"export/:userId", s.ExportAccount),
 		rest.Get(s.prefix+"stop_all", s.StopAllStacks),
 		rest.Put(s.prefix+"log_level/:level", s.PutLogLevel),
+		rest.Get(s.prefix+"download", s.DownloadClient),
 	)
 
 	router, err := rest.MakeRouter(routes...)
@@ -383,11 +387,35 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 	go s.kube.WatchPods(s)
 	go s.shutdownInactiveServices()
 
-	http.Handle(s.prefix, api.MakeHandler())
-	http.HandleFunc(s.prefix+"download", s.DownloadClient)
-
+	// primary rest api server
+	httpsrv := &http.Server{
+		Addr:    ":" + cfg.Port,
+		Handler: api.MakeHandler(),
+	}
 	glog.Infof("Listening on %s", cfg.Port)
-	glog.Fatal(http.ListenAndServe(":"+cfg.Port, nil))
+
+	// internal admin server, currently only handling oauth registration
+	adminsrv := &http.Server{
+		Addr:    ":" + cfg.AdminPort,
+		Handler: http.HandlerFunc(s.RegisterUserOauth),
+	}
+	glog.Infof("Admin server listening on %s", cfg.AdminPort)
+
+	stop := make(chan os.Signal, 2)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		httpsrv.ListenAndServe()
+	}()
+	go func() {
+		adminsrv.ListenAndServe()
+	}()
+	<-stop
+
+	// Handle shutdown
+	fmt.Println("Shutting down apiserver")
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	httpsrv.Shutdown(ctx)
+	fmt.Println("Apiserver stopped")
 }
 
 func (s *Server) CheckConsole(w rest.ResponseWriter, r *rest.Request) {
@@ -494,13 +522,33 @@ func Version(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) CheckToken(w rest.ResponseWriter, r *rest.Request) {
+	// Basic token validation is handled by jwt middleware
 	userId := s.getUser(r)
+	host := r.Request.FormValue("host")
+
+	// Log last activity for user
 	account, err := s.etcd.GetAccount(userId)
 	if err == nil {
 		account.LastLogin = time.Now().Unix()
 		s.etcd.PutAccount(account.Namespace, account, false)
 	}
-	w.WriteHeader(http.StatusOK)
+
+	// If host specified, see if it belongs to this namespace
+	if len(host) > 0 {
+		ok, err := (s.checkIngress(userId, host))
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+		} else {
+			if ok || s.IsAdmin(r) {
+				w.WriteHeader(http.StatusOK)
+			} else {
+				w.WriteHeader(http.StatusForbidden)
+			}
+		}
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
 }
 
 func (s *Server) Logout(w rest.ResponseWriter, r *rest.Request) {
@@ -565,6 +613,7 @@ func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 	account, err := s.etcd.GetAccount(userId)
 	if err != nil {
 		rest.NotFound(w, r)
+		return
 	} else {
 		glog.V(4).Infof("Getting quotas for %s\n", userId)
 		quota, err := s.kube.GetResourceQuota(userId)
@@ -589,7 +638,9 @@ func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 			}
 		}
 		account.Password = ""
-		account.Token = ""
+		if !(s.IsAdmin(r)) {
+			account.Token = ""
+		}
 		w.WriteJson(account)
 	}
 }
@@ -628,35 +679,7 @@ func (s *Server) PostAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	err = s.createBasicAuthSecret(account.Namespace)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	w.WriteJson(&account)
-}
-
-func (s *Server) createBasicAuthSecret(uid string) error {
-	account, err := s.etcd.GetAccount(uid)
-	if err != nil {
-		glog.Error(err)
-		return err
-	}
-
-	_, err = s.kube.CreateBasicAuthSecret(account.Namespace, account.Namespace, account.EmailAddress, account.Password)
-	if err != nil {
-		glog.Error(err)
-		return err
-	}
-
-	err = s.updateIngress(uid)
-	if err != nil {
-		glog.Error(err)
-		return err
-	}
-	return nil
 }
 
 func (s *Server) updateIngress(uid string) error {
@@ -733,24 +756,11 @@ func (s *Server) setupAccount(account *api.Account) error {
 		return err
 	}
 
-	secret, err := s.kube.GetSecret("default", "ndslabs-tls-secret")
-	if secret != nil {
-		secretName := fmt.Sprintf("%s-tls-secret", account.Namespace)
-		_, err := s.kube.CreateTLSSecret(account.Namespace, secretName, secret.Data["tls.crt"], secret.Data["tls.key"])
-		if err != nil {
-			return err
-		}
-	}
-
 	_, err = s.updateStorageQuota(account)
 	if err != nil {
 		return err
 	}
 
-	err = s.createBasicAuthSecret(account.Namespace)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -786,7 +796,7 @@ func (s *Server) RegisterAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	verifyUrl := s.origin + "/#/?t=" + account.Token + "&u=" + account.Namespace
+	verifyUrl := s.origin + "/landing/?t=" + account.Token + "&u=" + account.Namespace
 	err = s.email.SendVerificationEmail(account.Name, account.EmailAddress, verifyUrl)
 	if err != nil {
 		glog.Error(err)
@@ -1021,13 +1031,6 @@ func (s *Server) PutAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	err = s.createBasicAuthSecret(userId)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	w.WriteJson(&account)
 }
 
@@ -1172,6 +1175,7 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 	if !ok {
 		glog.Warningf("Cannot add service, dependency %s missing\n", dep)
 		rest.Error(w, fmt.Sprintf("Missing dependency %s", dep), http.StatusNotFound)
+		return
 	}
 
 	cf, ok := s.checkConfigs(userId, &service)
@@ -1237,6 +1241,7 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 	if !ok {
 		glog.Warningf("Cannot add service, dependency %s missing\n", dep)
 		rest.Error(w, fmt.Sprintf("Missing dependency %s", dep), http.StatusNotFound)
+		return
 	}
 	cf, ok := s.checkConfigs(userId, &service)
 	if !ok {
@@ -1420,35 +1425,6 @@ func (s *Server) getStackByServiceId(userId string, sid string) (*api.Stack, err
 	return stack, nil
 }
 
-func (s *Server) isStackStopped(userId string, ssid string) bool {
-	sid := ssid[0:strings.LastIndex(ssid, "-")]
-	stack, _ := s.etcd.GetStack(userId, sid)
-
-	if stack != nil && stack.Status == stackStatus[Stopped] {
-		return true
-	} else {
-		return false
-	}
-}
-
-func (s *Server) getStackService(userId string, ssid string) *api.StackService {
-	if strings.Index(ssid, "-") < 0 {
-		return nil
-	}
-	sid := ssid[0:strings.LastIndex(ssid, "-")]
-	stack, _ := s.etcd.GetStack(userId, sid)
-	if stack == nil {
-		return nil
-	}
-
-	for _, stackService := range stack.Services {
-		if ssid == stackService.Id {
-			return &stackService
-		}
-	}
-	return nil
-}
-
 func (s *Server) accountExists(userId string) bool {
 	accounts, _ := s.etcd.GetAccounts()
 	if accounts == nil {
@@ -1494,22 +1470,6 @@ func (s *Server) stackServiceExists(userId string, id string) bool {
 				exists = true
 				break
 			}
-		}
-	}
-	return exists
-}
-
-func (s *Server) stackExists(userId string, name string) bool {
-	stacks, _ := s.getStacks(userId)
-	if stacks == nil {
-		return false
-	}
-
-	exists := false
-	for _, stack := range *stacks {
-		if stack.Name == name {
-			exists = true
-			break
 		}
 	}
 	return exists
@@ -1678,6 +1638,10 @@ func (s *Server) createKubernetesService(userId string, stack *api.Stack, spec *
 
 func (s *Server) createIngressRule(userId string, svc *v1.Service, stack *api.Stack) error {
 
+	delErr := s.kube.DeleteIngress(userId, svc.Name+"-ingress")
+	if delErr != nil {
+		glog.Warning(delErr)
+	}
 	_, err := s.kube.CreateIngress(userId, s.domain, svc.Name,
 		svc.Spec.Ports, stack.Secure)
 	if err != nil {
@@ -2137,6 +2101,7 @@ func (s *Server) QuickstartStack(w rest.ResponseWriter, r *rest.Request) {
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	if stack == nil {
@@ -2148,8 +2113,8 @@ func (s *Server) QuickstartStack(w rest.ResponseWriter, r *rest.Request) {
 		}
 
 		// Restrict to single service specs (i.e., no dependencies)
-		if len(spec.Dependencies) > 0 {
-			rest.Error(w, err.Error(), 422) // unprocessable
+		if s.hasRequiredDependencies(spec) {
+			rest.Error(w, "Cannot quickstart services with required dependencies", http.StatusUnprocessableEntity) // unprocessable
 			return
 		}
 
@@ -2159,8 +2124,18 @@ func (s *Server) QuickstartStack(w rest.ResponseWriter, r *rest.Request) {
 			Secure: true,
 		}
 
+		stackService := api.StackService{
+			Service: sid,
+			ResourceLimits: api.ResourceLimits{
+				CPUMax:        spec.ResourceLimits.CPUMax,
+				CPUDefault:    spec.ResourceLimits.CPUDefault,
+				MemoryMax:     spec.ResourceLimits.MemoryMax,
+				MemoryDefault: spec.ResourceLimits.MemoryDefault,
+			},
+		}
+
 		// Add the default service
-		stack.Services = append(stack.Services, api.StackService{Service: sid})
+		stack.Services = append(stack.Services, stackService)
 
 		stack, err = s.addStack(userId, stack)
 		if err != nil {
@@ -2170,11 +2145,7 @@ func (s *Server) QuickstartStack(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	if stack.Status != "starting" && stack.Status != "started" {
-		stack, err = s.startStack(userId, stack)
-		if err != nil {
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		go s.startStack(userId, stack)
 	}
 	w.WriteJson(stack)
 }
@@ -2191,19 +2162,16 @@ func (s *Server) StartStack(w rest.ResponseWriter, r *rest.Request) {
 	glog.V(4).Infof("Starting stack %s", stack.Id)
 
 	glog.V(4).Infof("Stack status %s\n", stack.Status)
-	if stack.Status != stackStatus[Stopped] {
+	if stack.Status != stackStatus[Stopped] && stack.Status != stackStatus[Starting] {
 		// Can't start a stopping or started service
 		glog.V(4).Infof("Can't start a service with status %s\n", stack.Status)
 		w.WriteHeader(http.StatusConflict)
 		return
 	}
 
-	stack, err := s.startStack(userId, stack)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteJson(&stack)
+	go s.startStack(userId, stack)
+
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error) {
@@ -2367,7 +2335,14 @@ func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, erro
 					stackService.Endpoints = append(stackService.Endpoints, endpoint)
 				}
 			}
+		}
 
+		// NDS-1154
+		if stackService.ResourceLimits == (api.ResourceLimits{}) {
+			stackService.ResourceLimits.CPUMax = spec.ResourceLimits.CPUMax
+			stackService.ResourceLimits.MemoryMax = spec.ResourceLimits.MemoryMax
+			stackService.ResourceLimits.CPUDefault = spec.ResourceLimits.CPUDefault
+			stackService.ResourceLimits.MemoryDefault = spec.ResourceLimits.MemoryDefault
 		}
 	}
 
@@ -2398,14 +2373,9 @@ func (s *Server) StopStack(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	stack, err = s.stopStack(userId, sid)
-	if err == nil {
-		glog.V(4).Infof("Stack %s stopped \n", sid)
-		w.WriteJson(&stack)
-	} else {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	go s.stopStack(userId, sid)
+
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
@@ -2781,19 +2751,17 @@ func (s *Server) ChangePassword(w rest.ResponseWriter, r *rest.Request) {
 
 	data := make(map[string]string)
 	err := r.DecodeJsonPayload(&data)
-	ok, err := s.etcd.ChangePassword(userId, data["password"])
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	if ok {
-		err = s.createBasicAuthSecret(userId)
-		if err != nil {
-			glog.Error(err)
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+	_, err = s.etcd.ChangePassword(userId, data["password"])
+	if err != nil {
+		glog.Error(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -2824,10 +2792,10 @@ func (s *Server) ResetPassword(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	if account.Status == api.AccountStatusUnverified {
-		verifyUrl := s.origin + "/#/?t=" + account.Token + "&u=" + account.Namespace
+		verifyUrl := s.origin + "/landing/?t=" + account.Token + "&u=" + account.Namespace
 		err = s.email.SendVerificationEmail(account.Name, account.EmailAddress, verifyUrl)
 	} else {
-		resetUrl := s.origin + "/#/recover?t=" + token
+		resetUrl := s.origin + "/login/recover?t=" + token
 		err = s.email.SendRecoveryEmail(account.Name, account.EmailAddress, resetUrl, (account.Status == api.AccountStatusUnapproved))
 	}
 
@@ -2851,12 +2819,12 @@ func (s *Server) getTemporaryToken(userId string) (string, error) {
 
 	token.Claims["id"] = userId
 	token.Claims["exp"] = time.Now().Add(time.Minute * 30).Unix()
+	token.Claims["orig_iat"] = time.Now().Unix()
 	tokenString, err := token.SignedString(s.jwt.Key)
 	if err != nil {
 		return "", err
 	}
 	return tokenString, nil
-
 }
 
 func (s *Server) createAdminUser(password string) error {
@@ -2910,14 +2878,15 @@ func (s *Server) createAdminUser(password string) error {
 	return nil
 }
 
-func (s *Server) DownloadClient(w http.ResponseWriter, r *http.Request) {
+//func (s *Server) DownloadClient(w http.ResponseWriter, r *http.Request) {
+func (s *Server) DownloadClient(w rest.ResponseWriter, r *rest.Request) {
 	ops := r.URL.Query().Get("os")
 	if ops != "darwin" && ops != "linux" {
 		html := "<html><body>" +
 			"<a href=\"download?os=darwin\">ndslabsctl-darwin-amd64</a><br/>" +
 			"<a href=\"download?os=linux\">ndslabsctl-linux-amd64</a><br/>" +
 			"</body></html>"
-		w.Write([]byte(html))
+		w.(http.ResponseWriter).Write([]byte(html))
 	} else {
 		w.Header().Set("Content-Disposition", "attachment; filename=ndslabsctl")
 		w.Header().Set("Content-Type", r.Header.Get("Content-Type"))
@@ -2929,7 +2898,7 @@ func (s *Server) DownloadClient(w http.ResponseWriter, r *http.Request) {
 		}
 
 		defer reader.Close()
-		io.Copy(w, reader)
+		io.Copy(w.(http.ResponseWriter), reader)
 	}
 }
 
@@ -2982,6 +2951,15 @@ func (s *Server) checkDependencies(uid string, service *api.ServiceSpec) (string
 		}
 	}
 	return "", true
+}
+
+func (s *Server) hasRequiredDependencies(service *api.ServiceSpec) bool {
+	for _, dep := range service.Dependencies {
+		if dep.Required {
+			return true
+		}
+	}
+	return false
 }
 
 // Make sure that conig.useFrom dependencies exist
@@ -3060,13 +3038,6 @@ func (s *Server) ImportAccount(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	err = s.setupAccount(&account)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	err = s.createBasicAuthSecret(account.Namespace)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -3222,4 +3193,135 @@ func (s *Server) getVolPath(mount *api.VolumeMount, ssid string) string {
 	} else {
 		return mount.DefaultPath
 	}
+}
+
+// Check if host exists in ingresses for namespace
+func (s *Server) checkIngress(uid string, host string) (bool, error) {
+
+	glog.V(4).Infof("Checking ingress for %s %s", uid, host)
+	ingresses, err := s.kube.GetIngresses(uid)
+	if err != nil {
+		glog.Error(err)
+		return false, err
+	}
+	if ingresses != nil {
+		for _, ingress := range ingresses.Items {
+			if ingress.Spec.Rules[0].Host == host {
+				glog.V(4).Infof("Found ingress with host %s", ingress.Spec.Rules[0].Host)
+				return true, nil
+			}
+		}
+	}
+	return false, nil
+}
+
+// Write the oauth2 payload to the users home directory for access from applications
+func (s *Server) writeAuthPayload(userId string, tokens map[string]string) error {
+	path := s.getHomeVolume().Path + "/" + userId + "/.globus"
+	os.MkdirAll(path, 0777)
+
+	json, err := json.MarshalIndent(tokens, "", "   ")
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(path+"/oauth2.json", json, 0777)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Register a user via oauth
+func (s *Server) RegisterUserOauth(w http.ResponseWriter, r *http.Request) {
+
+	rd := r.FormValue("rd")
+	if rd == "" {
+		rd = "https://www." + s.domain + "/dashboard"
+	}
+
+	accessToken := r.Header.Get("X-Forwarded-Access-Token")
+	otherTokenStr := r.Header.Get("X-Forwarded-Other-Tokens")
+	email := r.Header.Get("X-Forwarded-Email")
+	user := r.Header.Get("X-Forwarded-User")
+
+	if accessToken == "" || email == "" || user == "" {
+		glog.Warning("No oauth header found")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	tokens := make(map[string]string)
+	otherTokens := strings.Split(otherTokenStr, " ")
+	for _, kvpair := range otherTokens {
+		kv := strings.Split(kvpair, "=")
+		tokens[kv[0]] = kv[1]
+	}
+
+	err := s.writeAuthPayload(user, tokens)
+	if err != nil {
+		glog.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	glog.Infof("Creating/updating account for %s %s %s\n", user, email, accessToken)
+	glog.Infof("Other tokens %s\n", otherTokens)
+
+	account := s.getAccountByEmail(email)
+	if account == nil {
+		act := api.Account{
+			Name:         user,
+			Description:  "Oauth shadow account",
+			Namespace:    user,
+			EmailAddress: email,
+			Password:     s.kube.RandomString(10),
+			Organization: "",
+			Created:      time.Now().Unix(),
+			LastLogin:    time.Now().Unix(),
+			NextURL:      rd,
+		}
+		act.Status = api.AccountStatusApproved
+
+		err := s.etcd.PutAccount(act.Namespace, &act, true)
+		if err != nil {
+			glog.Error(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		err = s.setupAccount(&act)
+		if err != nil {
+			glog.Error(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+	} else {
+		account.LastLogin = time.Now().Unix()
+		account.NextURL = rd
+
+		err := s.etcd.PutAccount(account.Namespace, account, true)
+		if err != nil {
+			glog.Error(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+	}
+
+	token, err := s.getTemporaryToken(user)
+	if err != nil {
+		glog.Error(err)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	glog.Infof("Setting Cookie\n")
+	//expiration := time.Now().Add(365 * 24 * time.Hour)
+	http.SetCookie(w, &http.Cookie{Name: "token", Value: token, Domain: s.domain, Path: "/"})
+	http.SetCookie(w, &http.Cookie{Name: "namespace", Value: user, Domain: s.domain, Path: "/"})
+
+	glog.Infof("Redirecting to %s\n", rd)
+	http.Redirect(w, r, rd, 301)
+	return
 }
