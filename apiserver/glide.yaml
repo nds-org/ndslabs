@@ -12,29 +12,21 @@ import:
   - rest
 - package: github.com/coreos/etcd
   version: ^3.0.7
-#  version: 8a37349097a592db79ba3087f3cae9cd4b0af21c
   subpackages:
   - client
 # Git Account name changed and broke old dependencies
 # https://github.com/sirupsen/logrus/issues/553#issuecomment-306591437
 - package: github.com/sirupsen/logrus
-  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
+  version: v1.0.3
 - package: github.com/Sirupsen/logrus
-  repo: git@github.com:/sirupsen/logrus
-  vcs: git
-  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
-#- package: github.com/sirupsen/logrus
-#  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
-#- package: github.com/Sirupsen/logrus
-#  repo: https://github.com/sirupsen/logrus.git
-#  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
+  repo: https://github.com/sirupsen/logrus.git
+  version: master
 - package: github.com/docker/docker
   version: ^1.12.1
   subpackages:
   - pkg/term
 - package: github.com/golang/glog
 - package: github.com/spf13/pflag
-  version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
 - package: github.com/spf13/cobra
   version: f62e98d28ab7ad31d707ba837a966378465c7b57
 - package: github.com/spf13/viper
@@ -49,21 +41,17 @@ import:
   - context
   - websocket
 - package: golang.org/x/sys
-  version: bf42f188b9bc6f2cf5b8ee5a912ef1aedd0eba4c
 - package: gopkg.in/gcfg.v1
   version: ^1.2.0
 - package: k8s.io/kubernetes
-  version: "1.8"
+  version: "1.10"
   subpackages:
   - pkg/api
   - pkg/api/resource
   - pkg/api/unversioned
   - pkg/apis/extensions
-#  - pkg/client/restclient
-#  - pkg/client/unversioned/remotecommand
   - pkg/kubelet/server/remotecommand
   - pkg/util/intstr
-#  - pkg/util/rand
   - pkg/watch
   - pkg/watch/json
 - package: golang.org/x/crypto
@@ -73,11 +61,9 @@ import:
   subpackages:
   - user/crypt/apr1_crypt
 - package: k8s.io/client-go
-  version: 5.0
+  version: 7.0
 - package: github.com/gogo/protobuf
-  version: v0.3
+  #  version: v0.3
   subpackages:
   - proto
 - package: github.com/golang/protobuf
-- package: github.com/ugorji/go
-  version: 8c0409fcbb70099c748d71f714529204975f6c3f

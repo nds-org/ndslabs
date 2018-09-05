@@ -24,7 +24,6 @@ import (
 	api "github.com/ndslabs/apiserver/pkg/types"
 	"github.com/ndslabs/apiserver/pkg/validate"
 	"github.com/ndslabs/apiserver/pkg/version"
-	k8api "k8s.io/kubernetes/pkg/api"
 
 	"github.com/StephanDollberg/go-json-rest-middleware-jwt"
 	"github.com/ant0ine/go-json-rest/rest"
@@ -32,7 +31,7 @@ import (
 	"github.com/golang/glog"
 	"path/filepath"
 
-	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/api/core/v1"
 	kuberest "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -2667,7 +2666,7 @@ func (s *Server) HandlePodEvent(eventType string, pod *v1.Pod) {
 	}
 }
 
-func (s *Server) HandleReplicationControllerEvent(eventType string, event *k8api.Event, rc *k8api.ReplicationController) {
+func (s *Server) HandleReplicationControllerEvent(eventType string, event *v1.Event, rc *v1.ReplicationController) {
 
 	if rc.Namespace != "default" && rc.Namespace != systemNamespace {
 		glog.V(4).Infof("HandleReplicationControllerEvent %s", eventType)
