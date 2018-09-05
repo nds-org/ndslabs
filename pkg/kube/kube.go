@@ -9,28 +9,30 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 	"time"
+
+	// Used by exec
+	//"net/url"
+	//restclient "k8s.io/client-go/rest"
+	//"k8s.io/apimachinery/pkg/util/remotecommand"
+	//remotecommandserver "k8s.io/kubernetes/pkg/kubelet/server/remotecommand"
 
 	"github.com/golang/glog"
 	"github.com/ndslabs/apiserver/pkg/config"
 	"github.com/ndslabs/apiserver/pkg/events"
 	ndsapi "github.com/ndslabs/apiserver/pkg/types"
 	"golang.org/x/net/websocket"
-	"k8s.io/kubernetes/pkg/client/restclient"
-	"k8s.io/kubernetes/pkg/client/unversioned/remotecommand"
-	remotecommandserver "k8s.io/kubernetes/pkg/kubelet/server/remotecommand"
-	utilrand "k8s.io/kubernetes/pkg/util/rand"
+	utilrand "k8s.io/apimachinery/pkg/util/rand"
 
+	"k8s.io/api/core/v1"
+	"k8s.io/api/extensions/v1beta1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/resource"
-	"k8s.io/client-go/pkg/api/unversioned"
-	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
-	"k8s.io/client-go/pkg/fields"
-	"k8s.io/client-go/pkg/util/intstr"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 )
@@ -126,7 +128,7 @@ func (k *KubeHelper) CreateNamespace(pid string) (*v1.Namespace, error) {
 
 func (k *KubeHelper) CreateResourceQuota(pid string, cpu int, mem int) (*v1.ResourceQuota, error) {
 	resourceQuota := v1.ResourceQuota{
-		ObjectMeta: v1.ObjectMeta{Name: "quota"},
+		ObjectMeta: metav1.ObjectMeta{Name: "quota"},
 		Spec: v1.ResourceQuotaSpec{
 			Hard: v1.ResourceList{
 				v1.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", cpu)),
@@ -158,7 +160,7 @@ func (k *KubeHelper) CreateLimitRange(pid string, cpu int, mem int) (*v1.LimitRa
 }
 
 func (k *KubeHelper) GetNamespace(pid string) (*v1.Namespace, error) {
-	return k.kubeGo.CoreV1().Namespaces().Get(pid)
+	return k.kubeGo.CoreV1().Namespaces().Get(pid, metav1.GetOptions{})
 }
 
 func (k *KubeHelper) NamespaceExists(pid string) bool {
@@ -167,7 +169,7 @@ func (k *KubeHelper) NamespaceExists(pid string) bool {
 }
 
 func (k *KubeHelper) DeleteNamespace(pid string) error {
-	deleteOptions := v1.DeleteOptions{}
+	deleteOptions := metav1.DeleteOptions{}
 	return k.kubeGo.CoreV1().Namespaces().Delete(pid, &deleteOptions)
 }
 
@@ -197,11 +199,11 @@ func (k *KubeHelper) ServiceExists(pid string, name string) bool {
 }
 
 func (k *KubeHelper) GetService(pid string, name string) (*v1.Service, error) {
-	return k.kubeGo.CoreV1().Services(pid).Get(name)
+	return k.kubeGo.CoreV1().Services(pid).Get(name, metav1.GetOptions{})
 }
 
 func (k *KubeHelper) GetServices(pid string, stack string) (*v1.ServiceList, error) {
-	listOptions := v1.ListOptions{
+	listOptions := metav1.ListOptions{
 		LabelSelector: "stack=" + stack,
 	}
 
@@ -209,7 +211,7 @@ func (k *KubeHelper) GetServices(pid string, stack string) (*v1.ServiceList, err
 }
 
 func (k *KubeHelper) GetReplicationControllers(pid string, label string, value string) (*v1.ReplicationControllerList, error) {
-	listOptions := v1.ListOptions{
+	listOptions := metav1.ListOptions{
 		LabelSelector: label + "=" + value,
 	}
 
@@ -218,7 +220,7 @@ func (k *KubeHelper) GetReplicationControllers(pid string, label string, value s
 
 func (k *KubeHelper) GetPods(pid string, label string, value string) (*v1.PodList, error) {
 
-	listOptions := v1.ListOptions{
+	listOptions := metav1.ListOptions{
 		LabelSelector: label + "=" + value,
 	}
 
@@ -227,12 +229,12 @@ func (k *KubeHelper) GetPods(pid string, label string, value string) (*v1.PodLis
 
 func (k *KubeHelper) StopService(pid string, name string) error {
 
-	deleteOptions := v1.DeleteOptions{}
+	deleteOptions := metav1.DeleteOptions{}
 	return k.kubeGo.CoreV1().Services(pid).Delete(name, &deleteOptions)
 }
 
 func (k *KubeHelper) StopController(pid string, name string) error {
-	deleteOptions := v1.DeleteOptions{}
+	deleteOptions := metav1.DeleteOptions{}
 	rcDeleteErr := k.kubeGo.CoreV1().ReplicationControllers(pid).Delete(name, &deleteOptions)
 
 	if rcDeleteErr != nil {
@@ -288,7 +290,7 @@ func (k *KubeHelper) StopController(pid string, name string) error {
 func (k *KubeHelper) stopPod(pid string, podName string) error {
 	glog.V(4).Infof("Stopping pod %s\n", podName)
 
-	deleteOptions := v1.DeleteOptions{}
+	deleteOptions := metav1.DeleteOptions{}
 
 	return k.kubeGo.CoreV1().Pods(pid).Delete(podName, &deleteOptions)
 }
@@ -356,11 +358,11 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 
 	// Create the Kubernetes service definition
 	k8svc := v1.Service{
-		TypeMeta: unversioned.TypeMeta{
+		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
 			Kind:       "Service",
 		},
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 			Labels: map[string]string{
 				"name":    name,
@@ -513,7 +515,7 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 		tag = "latest"
 	}
 	k8template := v1.PodTemplateSpec{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
 				"name":    name,
 				"stack":   stack,
@@ -744,7 +746,7 @@ func (k *KubeHelper) CreateIngress(pid string, domain string, service string, po
 		update = false
 
 		ingress = &v1beta1.Ingress{
-			ObjectMeta: v1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: pid,
 			},
@@ -817,17 +819,17 @@ func (k *KubeHelper) CreateUpdateIngress(pid string, ingress *v1beta1.Ingress, u
 }
 
 func (k *KubeHelper) GetIngress(pid string, ingressName string) (*v1beta1.Ingress, error) {
-	return k.kubeGo.ExtensionsV1beta1().Ingresses(pid).Get(ingressName)
+	return k.kubeGo.ExtensionsV1beta1().Ingresses(pid).Get(ingressName, metav1.GetOptions{})
 }
 
 func (k *KubeHelper) GetIngresses(pid string) (*v1beta1.IngressList, error) {
-	listOptions := v1.ListOptions{}
+	listOptions := metav1.ListOptions{}
 	return k.kubeGo.ExtensionsV1beta1().Ingresses(pid).List(listOptions)
 }
 
 //http://kubernetes.io/docs/api-reference/extensions/v1beta1/operations/
 func (k *KubeHelper) DeleteIngress(pid string, name string) error {
-	deleteOptions := v1.DeleteOptions{}
+	deleteOptions := metav1.DeleteOptions{}
 	return k.kubeGo.ExtensionsV1beta1().Ingresses(pid).Delete(name, &deleteOptions)
 }
 
@@ -838,7 +840,7 @@ func (k *KubeHelper) CreateBasicAuthSecret(pid string, username string, email st
 	}
 
 	secret = &v1.Secret{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "basic-auth",
 			Namespace: pid,
 		},
@@ -852,7 +854,7 @@ func (k *KubeHelper) CreateBasicAuthSecret(pid string, username string, email st
 func (k *KubeHelper) CreateTLSSecret(pid string, secretName string, tlsCert []byte, tlsKey []byte) (*v1.Secret, error) {
 
 	secret := v1.Secret{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      secretName,
 			Namespace: pid,
 		},
@@ -870,55 +872,58 @@ func (k *KubeHelper) CreateSecret(pid string, secret *v1.Secret) (*v1.Secret, er
 
 func (k *KubeHelper) DeleteSecret(pid string, name string) error {
 
-	deleteOptions := v1.DeleteOptions{}
+	deleteOptions := metav1.DeleteOptions{}
 	return k.kubeGo.CoreV1().Secrets(pid).Delete(name, &deleteOptions)
 }
 
 func (k *KubeHelper) GetSecret(pid string, secretName string) (*v1.Secret, error) {
-	return k.kubeGo.CoreV1().Secrets(pid).Get(secretName)
+	return k.kubeGo.CoreV1().Secrets(pid).Get(secretName, metav1.GetOptions{})
 }
 
 func (k *KubeHelper) GetResourceQuota(pid string) (*v1.ResourceQuotaList, error) {
 
-	resourceListOptions := v1.ListOptions{}
+	resourceListOptions := metav1.ListOptions{}
 	return k.kubeGo.CoreV1().ResourceQuotas(pid).List(resourceListOptions)
 }
 
 // Execute an arbitrary command in the specified pod and return stdout
 func (k *KubeHelper) ExecCommand(pid string, pod string, command []string) (string, error) {
 
-	urlStr := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + pod +
-		"/exec?&stderr=false&stdin=false&stdout=true&tty=false"
-	for _, arg := range command {
-		urlStr += "&command=" + url.QueryEscape(arg)
-	}
-	u, err := url.Parse(urlStr)
-	if err != nil {
-		glog.Warning(err)
-	}
-	fmt.Println(u.String())
+	/*
+		urlStr := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + pod +
+			"/exec?&stderr=false&stdin=false&stdout=true&tty=false"
+		for _, arg := range command {
+			urlStr += "&command=" + url.QueryEscape(arg)
+		}
+		u, err := url.Parse(urlStr)
+		if err != nil {
+			glog.Warning(err)
+		}
+		fmt.Println(u.String())
 
-	conf := &restclient.Config{
-		Host:     k.kubeBase,
-		Insecure: true,
-	}
+		conf := &restclient.Config{
+			Host:     k.kubeBase,
+			Insecure: true,
+		}
 
-	if len(k.token) > 0 {
-		conf.BearerToken = string(k.token)
-	} else {
-		conf.Username = k.username
-		conf.Password = k.password
-	}
+		if len(k.token) > 0 {
+			conf.BearerToken = string(k.token)
+		} else {
+			conf.Username = k.username
+			conf.Password = k.password
+		}
 
-	e, err := remotecommand.NewExecutor(conf, "POST", u)
-	if err != nil {
-		glog.Warning(err)
-	}
+		e, err := remotecommand.NewExecutor(conf, "POST", u)
+		if err != nil {
+			glog.Warning(err)
+		}
 
-	localOut := &bytes.Buffer{}
-	localErr := &bytes.Buffer{}
-	err = e.Stream(remotecommandserver.SupportedStreamingProtocols, nil, localOut, localErr, false)
-	return localOut.String(), err
+		localOut := &bytes.Buffer{}
+		localErr := &bytes.Buffer{}
+		err = e.Stream(remotecommandserver.SupportedStreamingProtocols, nil, localOut, localErr, false)
+		return localOut.String(), err
+	*/
+	return "", nil
 }
 
 func (k *KubeHelper) createHttpProbe(path string, port int, initialDelay int32, threshold int32) *v1.Probe {

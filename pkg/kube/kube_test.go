@@ -6,9 +6,10 @@ import (
 	ndsapi "github.com/ndslabs/apiserver/pkg/types"
 	"io/ioutil"
 	"testing"
-	"k8s.io/client-go/pkg/api/v1"
+	//"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/fake"
-	)
+)
 
 func TestCreateServiceSpec(t *testing.T) {
 
@@ -23,7 +24,7 @@ func TestCreateServiceSpec(t *testing.T) {
 	spec := ndsapi.ServiceSpec{}
 	json.Unmarshal(data, &spec)
 
-	testKube  := KubeHelper{
+	testKube := KubeHelper{
 		"",
 		nil,
 		"",
@@ -32,8 +33,7 @@ func TestCreateServiceSpec(t *testing.T) {
 		clientSet,
 	}
 
-
-	name := testKube.GenerateName( 5)
+	name := testKube.GenerateName(5)
 	fmt.Print(name)
 
 	//template := testKube.CreateServiceTemplate(name, stack, spec)
