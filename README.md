@@ -1,103 +1,112 @@
 
 # NDS Labs API Server
 
-## Latest release
-The latest release has been pushed to Dockerhub ndslabs/apiserver:latest. You can run the server via Docker:
+This document describes how to run the Labs Workbench API server for
+development.
 
+
+## Install and Configure Minikube
+
+Install and start Minikube based on the [official documentation](https://kubernetes.io/docs/tasks/tools/install-minikube/) for your operating system.
+
+Start your minikube instance:
 ```
-docker pull ndslabs/apiserver:latest
-```
-
-## Running
-
-Prerequisites:
-* Etcd
-* Kubernetes
-
-```
-docker run -e ETCD_ADDR=localhost:4001 -e KUBERNETES_ADDR=http://localhost:8080 -e CORS_ORIGIN_ADDR="http://localhost" -e HOST_ADDR=PUBLIC_IP_ADDR -e SPEC_GIT_REPO=https://github.com/nds-org/ndslabs-specs -e SPEC_GIT_BRANCH=master
+minikube start
 ```
 
-Configuration options:
-* ETCD_ADDR: address of Etcd (defaults to localhost:4001)
-* KUBERNETES_ADDR: URL for Kubernetes API (Defaults to http://localhost:8080)
-* CORS_ORIGIN_ADDR: URL of GUI (defaults to http://localhost)
-* HOST_ADDR: Public IP address of host
-* SPEC_GIT_REPO: URL to spec repo (defaults to https://github.com/nds-org/ndslabs-specs)
-* SPEC_GIT_BRANCH: Git repository branch (defaults to master)
-
-## Building 
-
-Prerequisites:
-* For now, running on OS X with Docker Toolbox
-* Go 1.5
-
-To simply compile the go code:
-```
-go build
-```
-
-To build the apiserver binary for multiple architectures (output in build/bin/)
-```
-./build.sh
-```
-
-To tag and push images to dockerhub:
-```
-./build.sh <dev, test, release>
-```
-
-### Configuration
-
-The apiserver.conf is the primary configuration file. If running the apiserver outside of Docker, you will need to manually configure the following settings:
+Workbench relies on labeled nodes. Label the node:
 
 ```
-[Server]
-Port=30001
-Origin=http://<CORS origin host>
-VolDir=/home/core/apiserver/volumes
-Host=<your host ip>
-VolumeSource=local
-SpecsDir=<optional path to local specs directory>
-
-[Etcd]
-Address=localhost:4001
-
-[Kubernetes]
-Address=localhost:8080
-
+kubectl label nodes minikube  ndslabs-role-compute=true
 ```
 
-If VolumeSource is "local", a local directory is used for hostPath volumes in Kubernetes. 
+## Install and Configure Etcd
 
+Workbench requires `etcd`. For development purposes you can install it
+locally via Docker:
 
-### Running the server
-
-The server requires etcd and Kubernetes. You can either run a separate etcd or use the Kubernetes instance.
-
-To run
 ```
-./apiserver -v <log verbosity 1-4> -logtostderr --conf <path to apiserver.conf> --passwd <admin password>
-```
-
-## Find URL of Minikube Kubernetes
-`minikube ip`
-
-Add a NodePort setting to etcd running inside Kubernetes so we can get an external URL for this service:
-
-`minikube service ndslabs-etcd --url`
-
-Set the `address` property of `etcd` object in apiserver.json to the ip address and port
-```
-  "etcd": {
-    "address": "192.168.64.2:32600",
-    "maxMessages": 100
-  },
+docker run --rm -p 4001:4001 -d ndslabs/etcd:2.2.5  /usr/local/bin/etcd \
+         --bind-addr=0.0.0.0:4001 \
+         --advertise-client-urls=http://127.0.0.1:4001 
 ```
 
-## Debugging locally
+## Setup your Go environment
 
-It is possible to run the Workbench API server outside of the cluster. This has been tested with minikube via VirtualBox on MacOS.
+Install Go for development (assumes Mac OS)
+
+```
+brew install go --cross-compile-common
+```
+
+Setup your paths:
+```
+mkdir $HOME/go
+```
+
+Edit `$HOME/.bash_profile`:
+```
+export GOPATH=$HOME/go
+export PATH=$PATH:$GOPATH/bin
+```
+
+## Clone and build the API server
+
+Clone this repo:
+```
+mkdir -p $GOPATH/src/github.com/
+cd $GOPATH/src/github.com/
+git clone https://github.com/nds-org/ndslabs 
+```	
+
+Build local binaries:
+```
+./build.sh local
+```
+
+## Configure API server
+
+Clone the `ndslabs-specs` repo:
+```
+git clone https://github.com/nds-org/ndslabs-specs
+```
+
+Modify the `apiserver.json` to reflect your local configuration. At a minimum,
+set the `supportEmail` to your email address, `kubernetes.address` to 
+`https://minikube-ip:8443` and the `specs.path` to the location of the cloned repo above.
+
+
+## Run the API server
+
+Assuming `minikube` and `etcd` are running, you can simply run the apiserver
+binary:
+
+```
+./build/bin/apiserver-darwin-amd64
+```
+
+## Running integration tests
+
+Install `newman`:
+```
+npm install -g newman
+```
+
+To configure the postman environment, edit `workbench.postman_environment.json`
+and set the `host` value to `localhost:30001` and `email` value to your email
+address.
+
+Because the API server is running insecure, you'll need to edit `Workbench.postman_collection.json` 
+and replace all instances of `https` with `http`.
+
+Run the tests:
+```
+newman run --insecure  --environment=workbench.postman_environment.json --delay-request=1000 Workbench.postman_collection.json
+```
+
+## Running as an external service
+
+It is also possible to run the Workbench API server outside of the cluster. This has been tested with minikube via VirtualBox on MacOS.
 
 Create a file `external-apiserver.yaml` with the following. Note that 10.0.2.2 is the internal address of your minikube VM. You can confirm this via `minikube ssh` and `netstat -rn`:
 ```
@@ -124,7 +133,9 @@ subsets:
 
 Delete the in-cluster API server and create this external service/endpoint:
 ```
-kubectl delete svc,rc ndslabs-apiserver
+kubectl delete svc ndslabs-apiserver
 kubectl create -f external-apiserver.yaml
 ```
+
+
 
