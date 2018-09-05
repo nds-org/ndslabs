@@ -96,9 +96,18 @@ if [ "$1" = 'apiserver' ]; then
 		TOKEN_PATH="/run/secrets/kubernetes.io/serviceaccount/token"
 	fi
 
+	if [ -z "$SIGNIN_URL" ]; then 
+    		SIGNIN_URL="$CORS_ORIGIN_ADDR/login/#/",
+	fi
+        
+	if [ -z "$AUTH_URL" ]; then 
+    		AUTH_URL="$CORS_ORIGIN_ADDR/cauth/auth"
+	fi
+
 cat << EOF > /apiserver.json
 {
     "port": "30001",
+    "adminPort": "30002",
     "origin": "$CORS_ORIGIN_ADDR",
     "timeout": $TIMEOUT,
     "requireApproval": $REQUIRE_APPROVAL,
@@ -110,6 +119,8 @@ cat << EOF > /apiserver.json
     "homeVolume": "$VOLUME_NAME",
     "name": "$WORKBENCH_NAME",
     "dataProviderURL": "$DATA_PROVIDER_URL",
+    "authSignInURL": "$SIGNIN_URL",
+    "authURL": "$AUTH_URL",
     "support": {
         "email": "$SUPPORT_EMAIL",
         "forum": "$SUPPORT_FORUM",
@@ -172,8 +183,13 @@ EOF
 	echo $ADMIN_PASSWORD > /password.txt
 	umask 0
 
-	apiserver -conf /apiserver.json --logtostderr=true -v=1 -passwd $ADMIN_PASSWORD 
-
+	if [ -z "$TEST" ]; then
+		apiserver -conf /apiserver.json --logtostderr=true -v=1 -passwd $ADMIN_PASSWORD 
+        else
+                echo "Running binary with test/coverage instrumentation"
+                echo "Writing output to $VOLUME_PATH/coverage.out"
+		apiserver -test.coverprofile=$VOLUME_PATH/coverage.out -test.v -test.run=TestRunMain 
+	fi 
 else
     exec "$@"
 fi

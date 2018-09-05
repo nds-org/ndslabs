@@ -247,6 +247,11 @@ func (s *EmailHelper) sendEmail(to string, subject string, body string) (bool, e
 	subject = "Subject: " + subject + "\n"
 	msg := []byte(from + subject + mime + "\n" + body)
 
+	if len(s.Server) == 0 {
+		glog.V(4).Infof("No email server configured")
+		return true, nil
+	}
+
 	glog.V(4).Infof("Sending email to %s %s\n%s", to, subject, body)
 
 	c, err := smtp.Dial(fmt.Sprintf("%s:%d", s.Server, s.port))

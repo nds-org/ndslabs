@@ -5,9 +5,11 @@ module.exports = {};
 // Load other pages
 var Navbar = require('./navbar.page.js');
 var LandingPage = require('./landing.page.js');
+var shared = require('./shared.page.js');
 
-var PAGE_TITLE = 'Sign In to Labs Workbench';
-var PAGE_ROUTE = /\/\#\/login/;
+var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
+var PAGE_TITLE = /*'Sign In to */ 'Labs Workbench';
+var PAGE_ROUTE = /https?\:\/\/.+\/login\/\#?\/?/;
 
 var LoginPage = function() {
   "use strict";
@@ -26,8 +28,9 @@ LoginPage.prototype.get = function() {
   var landingPage = new LandingPage();
   var navbar = new Navbar();
   
-  landingPage.get();
-  navbar.clickSignIn();
+  //landingPage.get();
+  //navbar.clickSignIn();
+  browser.get(TEST_HOSTNAME + '/login/');
   this.verify();
 };
 

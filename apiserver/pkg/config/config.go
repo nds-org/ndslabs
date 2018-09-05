@@ -4,6 +4,7 @@ package config
 type Config struct {
 	Name            string        `json:"name"`
 	Port            string        `json:"port"`
+	AdminPort       string        `json:"adminPort"`
 	Origin          string        `json:"origin"`
 	Timeout         int           `json:"timeout"`
 	Prefix          string        `json:"prefix"`
@@ -18,6 +19,8 @@ type Config struct {
 	HomeVolume      string        `json:"homeVolume"`
 	Volumes         []Volume      `json:"volumes"`
 	Support         SupportLinks  `json:"support"`
+	AuthURL         string        `json:"authURL"`
+	AuthSignInURL   string        `json:"authSignInURL"`
 }
 
 type SupportLinks struct {

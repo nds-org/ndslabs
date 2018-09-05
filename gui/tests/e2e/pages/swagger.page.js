@@ -13,8 +13,8 @@ var TEST_HOSTNAME = shared.config.TEST_HOSTNAME;
 
 // TODO: How to handle "service name" in title?
 // TODO: How to handle "stackServiceId" in url?
-var PAGE_TITLE = 'Swagger UI';
-var PAGE_ROUTE = TEST_HOSTNAME + '/swagger';
+var PAGE_TITLE = 'Labs Workbench'; //'Swagger UI';
+var PAGE_ROUTE = /https?\:\/\/.+\/landing\/\#?\/?swagger/;;
 
 var SwaggerUiPage = function() {
   "use strict";
@@ -22,18 +22,21 @@ var SwaggerUiPage = function() {
   /**
    * Insert public Getters here for page elements
    */
+  this.swaggerUi = element(by.css('.swagger-ui'));
+  this.apiTitle = element(by.binding('ui.infos.title'));
 };
 
 // Naviagte to Swagger UI view
 SwaggerUiPage.prototype.get = function() {
   "use strict";
 
-  var landingPage = new LandingPage();
+  browser.get(TEST_HOSTNAME + '/landing/swagger/');
+  /*var landingPage = new LandingPage();
   var navbar = new Navbar();
   landingPage.get();
   
   navbar.expandHelpDropdown();
-  navbar.clickApiReferenceNav();
+  navbar.clickApiReferenceNav();*/
 	
   this.verify();
 };
@@ -42,7 +45,7 @@ SwaggerUiPage.prototype.get = function() {
 SwaggerUiPage.prototype.verify = function() { 
   "use strict";
 
-  expect(browser.getCurrentUrl()).toBe(PAGE_ROUTE);
+  expect(browser.getCurrentUrl()).toMatch(PAGE_ROUTE);
   expect(browser.getTitle()).toEqual(PAGE_TITLE);
 };
 

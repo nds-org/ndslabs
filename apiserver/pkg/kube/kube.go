@@ -47,15 +47,18 @@ type ServiceAddrPort struct {
 }
 
 type KubeHelper struct {
-	kubeBase string
-	client   *http.Client
-	username string
-	password string
-	token    string
-	kubeGo   kubernetes.Interface
+	kubeBase      string
+	client        *http.Client
+	username      string
+	password      string
+	token         string
+	kubeGo        kubernetes.Interface
+	authSignInURL string
+	authURL       string
 }
 
-func NewKubeHelper(kubeBase string, username string, password string, tokenPath string, kConfig *rest.Config) (*KubeHelper, error) {
+func NewKubeHelper(kubeBase string, username string, password string, tokenPath string, kConfig *rest.Config,
+	authSignInURL string, authURL string) (*KubeHelper, error) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -81,8 +84,10 @@ func NewKubeHelper(kubeBase string, username string, password string, tokenPath 
 		kubeHelper.token = string(token)
 	} else {
 		kubeHelper.username = username
-		kubeHelper.username = username
+		kubeHelper.password = password
 	}
+	kubeHelper.authSignInURL = authSignInURL
+	kubeHelper.authURL = authURL
 
 	err := kubeHelper.isRunning()
 
@@ -321,8 +326,8 @@ func (k *KubeHelper) GetNamespace(pid string) (*v1.Namespace, error) {
 }
 
 func (k *KubeHelper) NamespaceExists(pid string) bool {
-	ns, _ := k.GetNamespace(pid)
-	return ns != nil
+	ns, err := k.GetNamespace(pid)
+	return (ns != nil && err == nil)
 }
 
 func (k *KubeHelper) DeleteNamespace(pid string) error {
@@ -1029,7 +1034,6 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 				handler.HandlePodEvent("UPDATED", newObj.(*v1.Pod))
 				data, _ := json.MarshalIndent(newObj.(*v1.Pod), "", "    ")
 				fmt.Println(string(data))
-
 			},
 		},
 	)
@@ -1315,7 +1319,7 @@ func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHe
 	return nil
 }
 
-func (k *KubeHelper) CreateIngress(pid string, domain string, service string, ports []v1.ServicePort, basicAuth bool) (*v1beta1.Ingress, error) {
+func (k *KubeHelper) CreateIngress(pid string, domain string, service string, ports []v1.ServicePort, enableAuth bool) (*v1beta1.Ingress, error) {
 
 	name := service + "-ingress"
 	update := true
@@ -1348,25 +1352,17 @@ func (k *KubeHelper) CreateIngress(pid string, domain string, service string, po
 	}
 
 	annotations := map[string]string{}
-	if !basicAuth {
-		glog.V(4).Info("Removing basic-auth annotations for " + ingress.Name)
-	}
-	if basicAuth {
-		annotations["ingress.kubernetes.io/auth-type"] = "basic"
-		annotations["ingress.kubernetes.io/auth-secret"] = "basic-auth"
-		annotations["ingress.kubernetes.io/auth-realm"] = "Workbench Credentials Required"
+	if enableAuth {
+		annotations["nginx.ingress.kubernetes.io/auth-signin"] = k.authSignInURL
+		annotations["nginx.ingress.kubernetes.io/auth-url"] = k.authURL
+	} else {
+		glog.V(4).Info("Removing auth annotations for " + ingress.Name)
 	}
 	ingress.Annotations = annotations
-
-	tlsSecretName := fmt.Sprintf("%s-tls-secret", pid)
-	secret, _ := k.GetSecret(pid, tlsSecretName)
-	if secret != nil {
-		ingress.Spec.TLS = []v1beta1.IngressTLS{
-			v1beta1.IngressTLS{
-				Hosts:      hosts,
-				SecretName: tlsSecretName,
-			},
-		}
+	ingress.Spec.TLS = []v1beta1.IngressTLS{
+		v1beta1.IngressTLS{
+			Hosts: hosts,
+		},
 	}
 
 	return k.CreateUpdateIngress(pid, ingress, update)

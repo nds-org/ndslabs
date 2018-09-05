@@ -5,7 +5,7 @@ var helpers = require("./helpers.e2e.js");
 
 var Navbar = require('./pages/navbar.page.js');
 var DashboardPage = require('./pages/dashboard.page.js');
-var LandingPage = require('./pages/landing.page.js');
+var LoginPage = require('./pages/login.page.js');
 var CatalogPage = require('./pages/catalog.page.js');
 var ConsolePage = require('./pages/console.page.js');
 
@@ -16,14 +16,15 @@ var WAIT_TIME_APPLICATION_SHUTDOWN = 120000;
 
 var TEST_CONSOLE_CMD = 'ls -al /home/$NAMESPACE';
 
-var TEST_SPEC_KEY = 'toolmanager';
+// Choose a spec with at least one volume mount
+var TEST_SPEC_KEY = 'mongo';
 
 // dashboard.e2e.js
 describe('Labs Workbench Application Service Console View', function() {
   "use strict";
 
   var navbar = new Navbar();
-  var landingPage = new LandingPage();
+  var loginPage = new LoginPage();
   var dashboardPage = new DashboardPage();
   var catalogPage = new CatalogPage();
   var consolePage = new ConsolePage();
@@ -80,7 +81,7 @@ describe('Labs Workbench Application Service Console View', function() {
     dashboardPage.shutdownAndRemoveAllApplications();
     navbar.expandAccountDropdown();
     navbar.clickSignOut();
-    landingPage.verify();
+    loginPage.verify();
     done();
   }, WAIT_TIME_APPLICATION_SHUTDOWN);
   
@@ -88,8 +89,8 @@ describe('Labs Workbench Application Service Console View', function() {
   // (i.e. automate a simple Clowder or Dataverse use-case)
   
   it('should ensure that user\'s home folder is mounted via console', function() {
-    // Wait for console (WebSokcet) to connect
-    browser.wait(EC.textToBePresentInElement(consolePage.console, '#'), 3000);
+    // Wait for console (WebSocket) to connect
+    browser.wait(EC.textToBePresentInElement(consolePage.console, '#'), 5000);
   
     // Send a test command to the console: "ls -al /home/$NAMESPACE"
     // NOTE: We can't call .sendKeys on a <div> element, 
@@ -100,7 +101,7 @@ describe('Labs Workbench Application Service Console View', function() {
     browser.actions().sendKeys(protractor.Key.ENTER).perform();
     
     // Wait for expected results
-    browser.wait(EC.textToBePresentInElement(consolePage.console, TEST_CONSOLE_CMD), 3000);
-    browser.wait(EC.textToBePresentInElement(consolePage.console, 'AppData'), 3000);
+    browser.wait(EC.textToBePresentInElement(consolePage.console, TEST_CONSOLE_CMD), 5000);
+    browser.wait(EC.textToBePresentInElement(consolePage.console, 'AppData'), 5000);
   });
 });

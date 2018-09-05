@@ -2,7 +2,7 @@
 
 BUILD_DATE=`date +%Y-%m-%d\ %H:%M`
 VERSIONFILE="pkg/version/version.go"
-VERSION="1.0.13"
+VERSION="1.1.0"
 
 
 if [ "$1" == "local" ] || [ "$1" == "docker" ]; then
@@ -18,7 +18,8 @@ if [ "$1" == "local" ] || [ "$1" == "docker" ]; then
     echo ")" >> $VERSIONFILE
     
     glide install --strip-vendor
-
+    
+    COVERPKG=./cmd/server,./pkg/crypto,./pkg/etcd,./pkg/config,./pkg/email,./pkg/events,./pkg/kube,./pkg/middleware,./pkg/types,./pkg/validate
 	if [ "$1" == "local" ]; then 
         UNAME=$(uname)
         if [ "$UNAME" == "Darwin" ]; then
@@ -29,20 +30,31 @@ if [ "$1" == "local" ] || [ "$1" == "docker" ]; then
         
         echo Building apiserver-$OS-amd64
         GOOS=$OS GOARCH=amd64 go build -o build/bin/apiserver-$OS-amd64 ./cmd/server
-        
+
         echo Building apictl-$OS-amd64
         GOOS=$OS GOARCH=amd64 go build -o build/bin/ndslabsctl-$OS-amd64 ./cmd/apictl
 
+	if [ "$2" == "test" ]; then
+           echo Building test apiserver-$OS-amd64
+
+           GOOS=$OS GOARCH=amd64 go test -coverpkg=$COVERPKG -c -o build/bin/apiserver-$OS-amd64 ./cmd/server 
+        fi
+
 	elif [ "$1" == "docker" ]; then 	
-
-        echo Building apiserver-linux-amd64
-        GOOS=linux GOARCH=amd64 go build -o build/bin/apiserver-linux-amd64 ./cmd/server
         
-        echo Building ndslabsctl-linux-amd64
-        GOOS=linux GOARCH=amd64 go build -o build/bin/ndslabsctl-linux-amd64 ./cmd/apictl
+ 	  if [ "$2" == "test" ]; then
+            echo Building test apiserver-linux-amd64
+            GOOS=linux GOARCH=amd64 go test -coverpkg=$COVERPKG -c -o build/bin/apiserver-linux-amd64 ./cmd/server 
+          else 
+            echo Building apiserver-linux-amd64
+            GOOS=linux GOARCH=amd64 go build -o build/bin/apiserver-linux-amd64 ./cmd/server
+	  fi 
 
-        echo Building ndslabsctl-darwin-amd64
-        GOOS=darwin GOARCH=amd64 go build -o build/bin/ndslabsctl-darwin-amd64 ./cmd/apictl
+          echo Building ndslabsctl-linux-amd64
+          GOOS=linux GOARCH=amd64 go build -o build/bin/ndslabsctl-linux-amd64 ./cmd/apictl
+
+          echo Building ndslabsctl-darwin-amd64
+          GOOS=darwin GOARCH=amd64 go build -o build/bin/ndslabsctl-darwin-amd64 ./cmd/apictl
     fi
     
 elif [ "$1" == "clean" ]; then

@@ -1,4 +1,4 @@
-FROM golang:1.7-jessie as gobuild
+FROM golang:1.8-jessie as gobuild
 COPY . /go/src/github.com/ndslabs/apiserver
 
 RUN apt-get -qq update && \
@@ -18,7 +18,7 @@ RUN apt-get -qq update && \
     apt-get -qq autoclean && \
     apt-get -qq clean all && \
     rm -rf /var/cache/apk/* /tmp/* /var/lib/apt/lists/* && \
-    ln -s /ndslabsctl/ndslabsctl-linux-amd6 /usr/local/bin/ndslabsctl 
+    ln -s /ndslabsctl/ndslabsctl-linux-amd64 /usr/local/bin/ndslabsctl 
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["apiserver"]
