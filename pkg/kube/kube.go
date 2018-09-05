@@ -122,42 +122,6 @@ func (k *KubeHelper) CreateNamespace(pid string) (*v1.Namespace, error) {
 	ns.SetName(pid)
 
 	return k.kubeGo.CoreV1().Namespaces().Create(&ns)
-
-	//// Create the K8 namespace
-	//ns := api.Namespace{}
-	//ns.SetName(pid)
-	//
-	//data, err := json.Marshal(ns)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//url := k.kubeBase + apiBase + "/namespaces"
-	//glog.V(4).Infoln(url)
-	//request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//httpresp, httperr := k.client.Do(request)
-	//if httperr != nil {
-	//	glog.Error(httperr)
-	//	return nil, httperr
-	//} else {
-	//	if httpresp.StatusCode == http.StatusCreated {
-	//		glog.V(2).Infof("Added namespace %s\n", pid)
-	//		data, err := ioutil.ReadAll(httpresp.Body)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//
-	//		json.Unmarshal(data, &ns)
-	//		return &ns, nil
-	//	} else if httpresp.StatusCode == http.StatusConflict {
-	//		return nil, fmt.Errorf("Namespace exists for account %s: %s\n", pid, httpresp.Status)
-	//	} else {
-	//		return nil, fmt.Errorf("Error adding namespace for account %s: %s\n", pid, httpresp.Status)
-	//	}
-	//}
-	//return nil, nil
 }
 
 func (k *KubeHelper) CreateResourceQuota(pid string, cpu int, mem int) (*v1.ResourceQuota, error) {
@@ -172,54 +136,6 @@ func (k *KubeHelper) CreateResourceQuota(pid string, cpu int, mem int) (*v1.Reso
 	}
 
 	return k.kubeGo.CoreV1().ResourceQuotas(pid).Create(&resourceQuota)
-
-	//glog.V(4).Infof("Creating resource quota for %s: %s, %s\n", pid, cpu, mem)
-	//rq := api.ResourceQuota{
-	//	TypeMeta: unversioned.TypeMeta{
-	//		APIVersion: "v1",
-	//		Kind:       "ResourceQuota",
-	//	},
-	//	ObjectMeta: api.ObjectMeta{Name: "quota"},
-	//	Spec: api.ResourceQuotaSpec{
-	//		Hard: api.ResourceList{
-	//			api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", cpu)),
-	//			api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", mem)),
-	//		},
-	//	},
-	//}
-	//
-	//data, err := json.MarshalIndent(rq, "", "    ")
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//fmt.Println(string(data))
-	//
-	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/resourcequotas"
-	//request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//httpresp, httperr := k.client.Do(request)
-	//if httperr != nil {
-	//	glog.Error(httperr)
-	//	return nil, httperr
-	//} else {
-	//	if httpresp.StatusCode == http.StatusCreated {
-	//		glog.V(2).Infof("Added quota %s\n", pid)
-	//		data, err := ioutil.ReadAll(httpresp.Body)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//
-	//		json.Unmarshal(data, &rq)
-	//		return &rq, nil
-	//	} else if httpresp.StatusCode == http.StatusConflict {
-	//		return nil, fmt.Errorf("Quota exists for account %s: %s\n", pid, httpresp.Status)
-	//	} else {
-	//		return nil, fmt.Errorf("Error adding quota for account %s: %s\n", pid, httpresp.Status)
-	//	}
-	//}
-	//return nil, nil
 }
 
 func (k *KubeHelper) CreateLimitRange(pid string, cpu int, mem int) (*v1.LimitRange, error) {
@@ -239,90 +155,10 @@ func (k *KubeHelper) CreateLimitRange(pid string, cpu int, mem int) (*v1.LimitRa
 	}
 
 	return k.kubeGo.CoreV1().LimitRanges(pid).Create(&limitRange)
-
-	//
-	//lr := &api.LimitRange{
-	//	TypeMeta: unversioned.TypeMeta{
-	//		APIVersion: "v1",
-	//		Kind:       "LimitRange",
-	//	},
-	//	ObjectMeta: api.ObjectMeta{
-	//		Name: "limits",
-	//	},
-	//	Spec: api.LimitRangeSpec{
-	//		Limits: []api.LimitRangeItem{
-	//			{
-	//				Type: api.LimitTypeContainer,
-	//				Default: api.ResourceList{
-	//					api.ResourceCPU:    resource.MustParse(fmt.Sprintf("%dm", cpu)),
-	//					api.ResourceMemory: resource.MustParse(fmt.Sprintf("%dM", mem)),
-	//				},
-	//			},
-	//		},
-	//	},
-	//}
-	//
-	//data, err := json.MarshalIndent(lr, "", "    ")
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//fmt.Println(string(data))
-	//
-	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/limitranges"
-	//request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//httpresp, httperr := k.client.Do(request)
-	//if httperr != nil {
-	//	glog.Error(httperr)
-	//	return nil, httperr
-	//} else {
-	//	if httpresp.StatusCode == http.StatusCreated {
-	//		glog.V(2).Infof("Added limit range %s\n", pid)
-	//		data, err := ioutil.ReadAll(httpresp.Body)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//
-	//		json.Unmarshal(data, &lr)
-	//		return lr, nil
-	//	} else if httpresp.StatusCode == http.StatusConflict {
-	//		return nil, fmt.Errorf("Quota exists for account %s: %s\n", pid, httpresp.Status)
-	//	} else {
-	//		return nil, fmt.Errorf("Error adding limit range for account %s: %s\n", pid, httpresp.Status)
-	//	}
-	//}
-	//return nil, nil
 }
 
 func (k *KubeHelper) GetNamespace(pid string) (*v1.Namespace, error) {
 	return k.kubeGo.CoreV1().Namespaces().Get(pid)
-
-	//url := k.kubeBase + apiBase + "/namespaces/" + pid
-	////glog.V(4).Infoln(url)
-	//request, _ := http.NewRequest("GET", url, nil)
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//httpresp, httperr := k.client.Do(request)
-	//if httperr != nil {
-	//	glog.Error(httperr)
-	//	return nil, httperr
-	//} else {
-	//	if httpresp.StatusCode == http.StatusOK {
-	//		data, err := ioutil.ReadAll(httpresp.Body)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//
-	//		ns := api.Namespace{}
-	//		json.Unmarshal(data, &ns)
-	//		return &ns, nil
-	//	} else {
-	//		return nil, fmt.Errorf("Error getting namespace for account %s: %s\n", pid, httpresp.Status)
-	//	}
-	//}
-	//return nil, nil
 }
 
 func (k *KubeHelper) NamespaceExists(pid string) bool {
@@ -333,32 +169,6 @@ func (k *KubeHelper) NamespaceExists(pid string) bool {
 func (k *KubeHelper) DeleteNamespace(pid string) error {
 	deleteOptions := v1.DeleteOptions{}
 	return k.kubeGo.CoreV1().Namespaces().Delete(pid, &deleteOptions)
-
-	//url := k.kubeBase + apiBase + "/namespaces/" + pid
-	//glog.V(4).Infoln(url)
-	//request, _ := http.NewRequest("DELETE", url, nil)
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//httpresp, httperr := k.client.Do(request)
-	//if httperr != nil {
-	//	glog.Error(httperr)
-	//	return nil, httperr
-	//} else {
-	//	if httpresp.StatusCode == http.StatusOK {
-	//		glog.V(2).Infof("Deleted namespace %s\n", pid)
-	//		data, err := ioutil.ReadAll(httpresp.Body)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//
-	//		ns := api.Namespace{}
-	//		json.Unmarshal(data, &ns)
-	//		return &ns, nil
-	//	} else {
-	//		return nil, fmt.Errorf("Error deleting namespace for account %s: %s\n", pid, httpresp.Status)
-	//	}
-	//}
-	//return nil, nil
 }
 
 // Start the specified replication controller
@@ -371,83 +181,10 @@ func (k *KubeHelper) StartController(pid string, spec *v1.ReplicationController)
 	time.Sleep(time.Second * 5)
 
 	return rslt != nil, err
-
-	//// Get ReplicationController spec
-	//data, err := json.MarshalIndent(spec, "", "    ")
-	//if err != nil {
-	//	return false, err
-	//}
-	//
-	//fmt.Println(string(data))
-	//
-	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers"
-	//request, _ := http.NewRequest("POST", url, bytes.NewBuffer([]byte(data)))
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//httpresp, httperr := k.client.Do(request)
-	//if httperr != nil {
-	//	glog.Error(httperr)
-	//	return true, httperr
-	//} else {
-	//	if httpresp.StatusCode == http.StatusCreated {
-	//		glog.V(4).Infof("Created controller " + name)
-	//	} else {
-	//		glog.Errorf("Error starting controller (%d)\n", httpresp.StatusCode)
-	//	}
-	//}
-
-	// Give Kubernetes time to create the pods for the RC
-	//time.Sleep(time.Second * 5)
-	//
-	//return true, nil
 }
 
 func (k *KubeHelper) StartService(pid string, spec *v1.Service) (*v1.Service, error) {
 	return k.kubeGo.CoreV1().Services(pid).Create(spec)
-
-	//name := spec.Name
-	//
-	//data, err := json.MarshalIndent(spec, "", "    ")
-	//if err != nil {
-	//	return nil, err
-	//}
-	//fmt.Println(string(data))
-	//
-	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services"
-	//request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//httpresp, httperr := k.client.Do(request)
-	//if httperr != nil {
-	//	glog.Error(httperr)
-	//	return nil, httperr
-	//} else {
-	//	if httpresp.StatusCode == http.StatusCreated {
-	//		glog.V(4).Infof("Created Kubernetes service " + name)
-	//
-	//		data, err := ioutil.ReadAll(httpresp.Body)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//
-	//		service := api.Service{}
-	//		json.Unmarshal(data, &service)
-	//
-	//		return &service, nil
-	//	} else {
-	//		if httpresp.StatusCode == 409 {
-	//			service, err := k.GetService(pid, name)
-	//			if err != nil {
-	//				return nil, err
-	//			}
-	//			return service, nil
-	//		} else {
-	//			glog.Warningf("Error starting Kubernetes service (%d): %s\n", httpresp.StatusCode, httpresp.Status)
-	//		}
-	//	}
-	//}
-	//
-	//return nil, nil
 }
 
 func (k *KubeHelper) ServiceExists(pid string, name string) bool {
@@ -458,33 +195,9 @@ func (k *KubeHelper) ServiceExists(pid string, name string) bool {
 		return false
 	}
 }
+
 func (k *KubeHelper) GetService(pid string, name string) (*v1.Service, error) {
 	return k.kubeGo.CoreV1().Services(pid).Get(name)
-
-	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services/" + name
-	//request, _ := http.NewRequest("GET", url, nil)
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//resp, err := k.client.Do(request)
-	//if err != nil {
-	//	glog.Error(err)
-	//	return nil, err
-	//} else {
-	//	if resp.StatusCode == http.StatusOK {
-	//		data, err := ioutil.ReadAll(resp.Body)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//
-	//		service := api.Service{}
-	//		json.Unmarshal(data, &service)
-	//		return &service, nil
-	//	} else {
-	//		//glog.Warningf("Failed to get Kubernetes service %s:%s: %s %d", pid, name,
-	//		//		resp.Status, resp.StatusCode)
-	//	}
-	//}
-	//return nil, nil
 }
 
 func (k *KubeHelper) GetServices(pid string, stack string) (*v1.ServiceList, error) {
@@ -493,69 +206,14 @@ func (k *KubeHelper) GetServices(pid string, stack string) (*v1.ServiceList, err
 	}
 
 	return k.kubeGo.CoreV1().Services(pid).List(listOptions)
-
-	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services?labelSelector=stack%3D" + stack
-	//request, _ := http.NewRequest("GET", url, nil)
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//resp, err := k.client.Do(request)
-	//if err != nil {
-	//	glog.Error(err)
-	//	return nil, err
-	//} else {
-	//	if resp.StatusCode == http.StatusOK {
-	//		data, err := ioutil.ReadAll(resp.Body)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//
-	//		serviceList := api.ServiceList{}
-	//		services := make([]api.Service, len(serviceList.Items))
-	//		json.Unmarshal(data, &serviceList)
-	//		for _, service := range serviceList.Items {
-	//			services = append(services, service)
-	//		}
-	//		return services, nil
-	//	} else {
-	//		glog.Warningf("Failed to get Kubernetes services: %s %d", resp.Status, resp.StatusCode)
-	//	}
-	//}
-	//return nil, nil
 }
+
 func (k *KubeHelper) GetReplicationControllers(pid string, label string, value string) (*v1.ReplicationControllerList, error) {
 	listOptions := v1.ListOptions{
 		LabelSelector: label + "=" + value,
 	}
 
 	return k.kubeGo.CoreV1().ReplicationControllers(pid).List(listOptions)
-
-	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers?labelSelector=" + label + "%3D" + value
-	//request, _ := http.NewRequest("GET", url, nil)
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//resp, err := k.client.Do(request)
-	//if err != nil {
-	//	glog.Error(err)
-	//	return nil, err
-	//} else {
-	//	if resp.StatusCode == http.StatusOK {
-	//		data, err := ioutil.ReadAll(resp.Body)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//
-	//		rcList := api.ReplicationControllerList{}
-	//		rcs := make([]api.ReplicationController, len(rcList.Items))
-	//		json.Unmarshal(data, &rcList)
-	//		for _, rc := range rcList.Items {
-	//			rcs = append(rcs, rc)
-	//		}
-	//		return rcs, nil
-	//	} else {
-	//		glog.Warningf("Get rcs failed: %s %d", resp.Status, resp.StatusCode)
-	//	}
-	//}
-	//return nil, nil
 }
 
 func (k *KubeHelper) GetPods(pid string, label string, value string) (*v1.PodList, error) {
@@ -565,59 +223,12 @@ func (k *KubeHelper) GetPods(pid string, label string, value string) (*v1.PodLis
 	}
 
 	return k.kubeGo.CoreV1().Pods(pid).List(listOptions)
-
-	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods?labelSelector=" + label + "%3D" + value
-	//request, _ := http.NewRequest("GET", url, nil)
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//resp, err := k.client.Do(request)
-	//if err != nil {
-	//	glog.Error(err)
-	//	return nil, err
-	//} else {
-	//	if resp.StatusCode == http.StatusOK {
-	//		data, err := ioutil.ReadAll(resp.Body)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//
-	//		podList := api.PodList{}
-	//		pods := make([]api.Pod, len(podList.Items))
-	//		json.Unmarshal(data, &podList)
-	//		for _, pod := range podList.Items {
-	//			pods = append(pods, pod)
-	//		}
-	//		return pods, nil
-	//	} else {
-	//		glog.Warningf("Get pods failed: %s %d", resp.Status, resp.StatusCode)
-	//	}
-	//}
-	//return nil, nil
 }
 
 func (k *KubeHelper) StopService(pid string, name string) error {
 
 	deleteOptions := v1.DeleteOptions{}
 	return k.kubeGo.CoreV1().Services(pid).Delete(name, &deleteOptions)
-
-	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/services/" + name
-	//request, _ := http.NewRequest("DELETE", url, nil)
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//httpresp, httperr := k.client.Do(request)
-	//if httperr != nil {
-	//	glog.Error(httperr)
-	//	return httperr
-	//} else {
-	//	if httpresp.StatusCode == http.StatusOK {
-	//		glog.V(4).Infof("Deleted service " + name)
-	//		return nil
-	//	} else {
-	//		glog.V(4).Infof("Error stopping service (%d)\n", httpresp.StatusCode)
-	//		return fmt.Errorf("%s", httpresp.Status)
-	//	}
-	//}
-	//return nil
 }
 
 func (k *KubeHelper) StopController(pid string, name string) error {
@@ -628,21 +239,6 @@ func (k *KubeHelper) StopController(pid string, name string) error {
 		return rcDeleteErr
 	}
 
-	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers/" + name
-	//request, _ := http.NewRequest("DELETE", url, nil)
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//httpresp, httperr := k.client.Do(request)
-	//if httperr != nil {
-	//	glog.Error(httperr)
-	//	return httperr
-	//} else {
-	//	if httpresp.StatusCode == http.StatusOK {
-	//		glog.V(4).Infof("Deleted controller " + name)
-	//	} else {
-	//		glog.V(4).Infof("Error stopping controller (%d)\n", httpresp.StatusCode)
-	//	}
-	//}
 	rcs, _ := k.GetReplicationControllers(pid, "name", name)
 	glog.V(4).Infof("Waiting for rc to terminate %s %d\n", name, len(rcs.Items))
 	for len(rcs.Items) > 0 {
@@ -695,24 +291,6 @@ func (k *KubeHelper) stopPod(pid string, podName string) error {
 	deleteOptions := v1.DeleteOptions{}
 
 	return k.kubeGo.CoreV1().Pods(pid).Delete(podName, &deleteOptions)
-
-	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + podName
-	//request, _ := http.NewRequest("DELETE", url, nil)
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//httpresp, httperr := k.client.Do(request)
-	//if httperr != nil {
-	//	glog.Error(httperr)
-	//	return httperr
-	//} else {
-	//	if httpresp.StatusCode == http.StatusOK {
-	//		glog.V(4).Infof("Deleted pod " + podName)
-	//	} else {
-	//		glog.V(4).Infof("Error stopping pod (%d)\n", httpresp.StatusCode)
-	//		return fmt.Errorf("Error stopping pod (%d)\n", httpresp.StatusCode)
-	//	}
-	//}
-	//return nil
 }
 
 func (k *KubeHelper) GetLog(pid string, podName string, tailLines int) (string, error) {
@@ -997,9 +575,6 @@ func (k *KubeHelper) GenerateName(randomLength int) string {
 	return fmt.Sprintf("s%s", utilrand.String(randomLength))
 }
 
-//func (s *Server) HandlePodEvent(eventType string, event *k8api.Event, pod *k8api.Pod) {
-//func (s *Server) HandleReplicationControllerEvent(eventType watch.EventType, event *k8api.Event,
-
 func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 	glog.V(4).Infoln("WatchEvents started")
 
@@ -1065,166 +640,6 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 	)
 
 	go rcController.Run(make(chan struct{}))
-	//for {
-	//	startTime := time.Now()
-	//
-	//url := k.kubeBase + apiBase + "/watch/events"
-	//request, _ := http.NewRequest("GET", url, nil)
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//httpresp, httperr := k.client.Do(request)
-	//if httperr != nil {
-	//	glog.Error(httperr)
-	//	return
-	//} else {
-	//	if httpresp.StatusCode == http.StatusOK {
-	//		reader := bufio.NewReader(httpresp.Body)
-	//		for {
-	//			data, err := reader.ReadBytes('\n')
-	//			if err != nil {
-	//				// EOF error location NDS-372 needs fixing
-	//				//glog.Error(err)
-	//				break
-	//			}
-	//
-	//			wevent := watch.WatchEvent{}
-	//			json.Unmarshal(data, &wevent)
-	//
-	//			event := api.Event{}
-	//
-	//			json.Unmarshal([]byte(wevent.Object.Raw), &event)
-	//
-	//			created := event.LastTimestamp
-	//			if created.After(startTime) {
-	//
-	//				if event.InvolvedObject.Kind == "Pod" {
-	//					pod, err := k.GetPod(event.InvolvedObject.Namespace, event.InvolvedObject.Name)
-	//					if err != nil {
-	//						glog.Error(err)
-	//					}
-	//					if pod != nil {
-	//						handler.HandlePodEvent(wevent.Type, &event, pod)
-	//					}
-	//				} else if event.InvolvedObject.Kind == "ReplicationController" {
-	//					rc, err := k.GetReplicationController(event.InvolvedObject.Namespace,
-	//						event.InvolvedObject.Name)
-	//					if err != nil {
-	//						glog.Error(err)
-	//					}
-	//					if rc != nil {
-	//						handler.HandleReplicationControllerEvent(wevent.Type, &event, rc)
-	//					}
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
-	//}
-}
-
-func (k *KubeHelper) WatchPods(handler events.EventHandler) {
-	// Hopefully this isn't needed.
-	// From Craig:
-	// "I originally only had WatchEvents, but found that there were certain Pod events that didn't come
-	// through (I'd need to look in detail to make sure, but I believe it was ADD and DELETE).
-	// I added the WatchPods to catch those.
-
-	glog.V(4).Infoln("WatchPods started")
-	//url := k.kubeBase + apiBase + "/watch/pods"
-	//
-	//for {
-	//	request, _ := http.NewRequest("GET", url, nil)
-	//	request.Header.Set("Content-Type", "application/json")
-	//	request.Header.Set("Authorization", k.getAuthHeader())
-	//	httpresp, httperr := k.client.Do(request)
-	//	if httperr != nil {
-	//		glog.Error(httperr)
-	//		return
-	//	} else {
-	//		if httpresp.StatusCode == http.StatusOK {
-	//			reader := bufio.NewReader(httpresp.Body)
-	//			for {
-	//				data, err := reader.ReadBytes('\n')
-	//				if err != nil {
-	//					// TODO: NDS-372
-	//					//glog.Error(err)
-	//					break
-	//				}
-	//
-	//				wevent := watch.WatchEvent{}
-	//				json.Unmarshal(data, &wevent)
-	//
-	//				pod := api.Pod{}
-	//
-	//				json.Unmarshal([]byte(wevent.Object.Raw), &pod)
-	//
-	//				handler.HandlePodEvent(wevent.Type, nil, &pod)
-	//			}
-	//		}
-	//	}
-	//}
-}
-
-// @TODO: Delete this method. Doesn't look like it is used anywhere
-func (k *KubeHelper) GetPod(pid string, name string) (*v1.Pod, error) {
-	return k.kubeGo.CoreV1().Pods(pid).Get(name)
-
-	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + name
-	//request, _ := http.NewRequest("GET", url, nil)
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//resp, err := k.client.Do(request)
-	//
-	//if err != nil {
-	//	glog.Error(err)
-	//	return nil, err
-	//} else {
-	//	if resp.StatusCode == http.StatusOK {
-	//		data, err := ioutil.ReadAll(resp.Body)
-	//		if err != nil {
-	//			glog.Error(err)
-	//			return nil, err
-	//		}
-	//
-	//		pod := api.Pod{}
-	//		json.Unmarshal(data, &pod)
-	//		return &pod, nil
-	//	} else {
-	//		glog.Warningf("Get pod failed (%s): %s %d", name, resp.Status, resp.StatusCode)
-	//	}
-	//}
-	//return nil, nil
-}
-
-// @TODO: Delete this method. Doesn't look like it is used anywhere
-func (k *KubeHelper) GetReplicationController(pid string, name string) (*v1.ReplicationController, error) {
-	return k.kubeGo.CoreV1().ReplicationControllers(pid).Get(name)
-
-	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/replicationcontrollers/" + name
-	//request, _ := http.NewRequest("GET", url, nil)
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//resp, err := k.client.Do(request)
-	//
-	//if err != nil {
-	//	glog.Error(err)
-	//	return nil, err
-	//} else {
-	//	if resp.StatusCode == http.StatusOK {
-	//		data, err := ioutil.ReadAll(resp.Body)
-	//		if err != nil {
-	//			glog.Error(err)
-	//			return nil, err
-	//		}
-	//
-	//		rc := api.ReplicationController{}
-	//		json.Unmarshal(data, &rc)
-	//		return &rc, nil
-	//	} else {
-	//		glog.Warningf("Get replicationcontroller failed (%s): %s %d", name, resp.Status, resp.StatusCode)
-	//	}
-	//}
-	//return nil, nil
 }
 
 func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHelper) *websocket.Handler {
@@ -1399,140 +814,21 @@ func (k *KubeHelper) CreateUpdateIngress(pid string, ingress *v1beta1.Ingress, u
 	} else {
 		return k.kubeGo.ExtensionsV1beta1().Ingresses(pid).Create(ingress)
 	}
-
-	//data, err := json.Marshal(ingress)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses"
-	//method := "POST"
-	//if update {
-	//	method = "PUT"
-	//	url += "/" + ingress.Name
-	//}
-	//glog.V(4).Infoln(url)
-	//request, _ := http.NewRequest(method, url, bytes.NewBuffer(data))
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//httpresp, httperr := k.client.Do(request)
-	//if httperr != nil {
-	//	glog.Error(httperr)
-	//	return nil, httperr
-	//} else {
-	//	if httpresp.StatusCode == http.StatusCreated || httpresp.StatusCode == http.StatusOK {
-	//		glog.V(2).Infof("Added/updated ingress %s\n", ingress.Name)
-	//		data, err := ioutil.ReadAll(httpresp.Body)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//
-	//		json.Unmarshal(data, &ingress)
-	//		return ingress, nil
-	//	} else if httpresp.StatusCode == http.StatusConflict {
-	//		return nil, fmt.Errorf("Ingress exists for namespace %s: %s\n", pid, httpresp.Status)
-	//	} else {
-	//		return nil, fmt.Errorf("Error adding/updating ingress for namespace %s: %s\n", pid, httpresp.Status)
-	//	}
-	//}
-	//return nil, nil
 }
 
 func (k *KubeHelper) GetIngress(pid string, ingressName string) (*v1beta1.Ingress, error) {
 	return k.kubeGo.ExtensionsV1beta1().Ingresses(pid).Get(ingressName)
-
-	//url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses/" + ingressName
-	//glog.V(4).Infoln(url)
-	//request, _ := http.NewRequest("GET", url, nil)
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//httpresp, httperr := k.client.Do(request)
-	//if httperr != nil {
-	//	glog.Error(httperr)
-	//	return nil, httperr
-	//} else {
-	//	if httpresp.StatusCode == http.StatusOK {
-	//		data, err := ioutil.ReadAll(httpresp.Body)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//
-	//		ingress := extensions.Ingress{}
-	//		json.Unmarshal(data, &ingress)
-	//		return &ingress, nil
-	//	} else {
-	//		return nil, fmt.Errorf("Error getting ingress %s for account %s: %s\n", ingressName, pid, httpresp.Status)
-	//	}
-	//}
-	//return nil, nil
 }
 
 func (k *KubeHelper) GetIngresses(pid string) (*v1beta1.IngressList, error) {
 	listOptions := v1.ListOptions{}
 	return k.kubeGo.ExtensionsV1beta1().Ingresses(pid).List(listOptions)
-
-	//url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses"
-	//glog.V(4).Infoln(url)
-	//request, _ := http.NewRequest("GET", url, nil)
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//httpresp, httperr := k.client.Do(request)
-	//if httperr != nil {
-	//	glog.Error(httperr)
-	//	return nil, httperr
-	//} else {
-	//	if httpresp.StatusCode == http.StatusOK {
-	//		data, err := ioutil.ReadAll(httpresp.Body)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//
-	//		ingressList := extensions.IngressList{}
-	//		json.Unmarshal(data, &ingressList)
-	//
-	//		var ingresses = []extensions.Ingress{}
-	//		for _, ingress := range ingressList.Items {
-	//			ingresses = append(ingresses, ingress)
-	//		}
-	//		return ingresses, nil
-	//
-	//	} else {
-	//		return nil, fmt.Errorf("Error getting ingresses for account %s: %s\n", pid, httpresp.Status)
-	//	}
-	//}
-	//return nil, nil
 }
 
 //http://kubernetes.io/docs/api-reference/extensions/v1beta1/operations/
 func (k *KubeHelper) DeleteIngress(pid string, name string) error {
 	deleteOptions := v1.DeleteOptions{}
 	return k.kubeGo.ExtensionsV1beta1().Ingresses(pid).Delete(name, &deleteOptions)
-
-	//url := k.kubeBase + extBase + "/namespaces/" + pid + "/ingresses/" + name
-	//glog.V(4).Infoln(url)
-	//request, _ := http.NewRequest("DELETE", url, nil)
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//httpresp, httperr := k.client.Do(request)
-	//if httperr != nil {
-	//	glog.Error(httperr)
-	//	return nil, httperr
-	//} else {
-	//	if httpresp.StatusCode == http.StatusOK {
-	//		glog.V(2).Infof("Deleted ingress %s\n", pid)
-	//		data, err := ioutil.ReadAll(httpresp.Body)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//
-	//		ingress := extensions.Ingress{}
-	//		json.Unmarshal(data, &ingress)
-	//		return &ingress, nil
-	//	} else {
-	//		return nil, fmt.Errorf("Error deleting ingress for account %s: %s\n", pid, httpresp.Status)
-	//	}
-	//}
-	//return nil, nil
 }
 
 func (k *KubeHelper) CreateBasicAuthSecret(pid string, username string, email string, hashedPassword string) (*v1.Secret, error) {
@@ -1570,128 +866,22 @@ func (k *KubeHelper) CreateTLSSecret(pid string, secretName string, tlsCert []by
 
 func (k *KubeHelper) CreateSecret(pid string, secret *v1.Secret) (*v1.Secret, error) {
 	return k.kubeGo.CoreV1().Secrets(pid).Create(secret)
-	//data, err := json.Marshal(secret)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/secrets"
-	//glog.V(4).Infoln(url)
-	//request, _ := http.NewRequest("POST", url, bytes.NewBuffer(data))
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//httpresp, httperr := k.client.Do(request)
-	//if httperr != nil {
-	//	glog.Error(httperr)
-	//	return nil, httperr
-	//} else {
-	//	if httpresp.StatusCode == http.StatusCreated {
-	//		glog.V(2).Infof("Added secret %s %s\n", pid, secret.Name)
-	//		data, err := ioutil.ReadAll(httpresp.Body)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//
-	//		json.Unmarshal(data, secret)
-	//		return secret, nil
-	//	} else if httpresp.StatusCode == http.StatusConflict {
-	//		return nil, fmt.Errorf("Secret %s exists for account %s: %s\n", secret.Name, pid, httpresp.Status)
-	//	} else {
-	//		return nil, fmt.Errorf("Error adding secret %s for account %s: %s\n", secret.Name, pid, httpresp.Status)
-	//	}
-	//}
-	//return nil, nil
 }
 
 func (k *KubeHelper) DeleteSecret(pid string, name string) error {
 
 	deleteOptions := v1.DeleteOptions{}
 	return k.kubeGo.CoreV1().Secrets(pid).Delete(name, &deleteOptions)
-
-	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/secrets/" + name
-	//glog.V(4).Infoln(url)
-	//request, _ := http.NewRequest("DELETE", url, nil)
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//httpresp, httperr := k.client.Do(request)
-	//if httperr != nil {
-	//	glog.Error(httperr)
-	//	return nil, httperr
-	//} else {
-	//	if httpresp.StatusCode == http.StatusOK {
-	//		glog.V(2).Infof("Deleted secret %s %s\n", pid, name)
-	//		data, err := ioutil.ReadAll(httpresp.Body)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//
-	//		secret := api.Secret{}
-	//		json.Unmarshal(data, &secret)
-	//		return &secret, nil
-	//	} else {
-	//		return nil, fmt.Errorf("Error deleting secret %s for account %s: %s\n", name, pid, httpresp.Status)
-	//	}
-	//}
-	//return nil, nil
 }
 
 func (k *KubeHelper) GetSecret(pid string, secretName string) (*v1.Secret, error) {
 	return k.kubeGo.CoreV1().Secrets(pid).Get(secretName)
-
-	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/secrets/" + secretName
-	//glog.V(4).Infoln(url)
-	//request, _ := http.NewRequest("GET", url, nil)
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//httpresp, httperr := k.client.Do(request)
-	//if httperr != nil {
-	//	glog.Error(httperr)
-	//	return nil, httperr
-	//} else {
-	//	if httpresp.StatusCode == http.StatusOK {
-	//		data, err := ioutil.ReadAll(httpresp.Body)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//
-	//		secret := api.Secret{}
-	//		json.Unmarshal(data, &secret)
-	//		return &secret, nil
-	//	} else {
-	//		return nil, fmt.Errorf("Error getting secret %s for account %s: %s\n", secretName, pid, httpresp.Status)
-	//	}
-	//}
-	//return nil, nil
 }
 
 func (k *KubeHelper) GetResourceQuota(pid string) (*v1.ResourceQuotaList, error) {
 
 	resourceListOptions := v1.ListOptions{}
 	return k.kubeGo.CoreV1().ResourceQuotas(pid).List(resourceListOptions)
-
-	//url := k.kubeBase + apiBase + "/namespaces/" + pid + "/resourcequotas/"
-	//glog.V(4).Infoln(url)
-	//request, _ := http.NewRequest("GET", url, nil)
-	//request.Header.Set("Content-Type", "application/json")
-	//request.Header.Set("Authorization", k.getAuthHeader())
-	//httpresp, httperr := k.client.Do(request)
-	//if httperr != nil {
-	//	glog.Error(httperr)
-	//	return nil, httperr
-	//} else {
-	//	if httpresp.StatusCode == http.StatusOK {
-	//		data, err := ioutil.ReadAll(httpresp.Body)
-	//		if err != nil {
-	//			return nil, err
-	//		}
-	//
-	//		quota := api.ResourceQuotaList{}
-	//		json.Unmarshal(data, &quota)
-	//		return &quota, nil
-	//	} else {
-	//		return nil, fmt.Errorf("Error getting quota for account %s: %s\n", pid, httpresp.Status)
-	//	}
-	//}
-	//return nil, nil
 }
 
 // Execute an arbitrary command in the specified pod and return stdout

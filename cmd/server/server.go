@@ -384,7 +384,6 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 
 	go s.kube.WatchEvents(s)
 
-	go s.kube.WatchPods(s)
 	go s.shutdownInactiveServices()
 
 	// primary rest api server
