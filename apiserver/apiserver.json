@@ -2,7 +2,7 @@
     "port": "30001",
     "timeout": 600,
     "requireApproval": true,
-    "domain" : "",
+    "domain" : "workbench.local",
     "ingress": "LoadBalancer",
     "supportEmail": "",
     "homeVolume": "global",
@@ -14,7 +14,7 @@
         "storageDefault": 10
     },
     "etcd": {
-        "address": "localhost:2379",
+        "address": "localhost:4001",
         "maxMessages": 100
     },
     "kubernetes": {

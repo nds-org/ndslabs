@@ -50,6 +50,12 @@ export GOPATH=$HOME/go
 export PATH=$PATH:$GOPATH/bin
 ```
 
+Source your profile:
+```
+. $HOME/.bash_profile
+```
+
+
 ## Clone and build the API server
 
 Clone this repo:
@@ -57,6 +63,7 @@ Clone this repo:
 mkdir -p $GOPATH/src/github.com/
 cd $GOPATH/src/github.com/
 git clone https://github.com/nds-org/ndslabs 
+cd ndslabs/apiserver
 ```	
 
 Build local binaries:
@@ -66,13 +73,13 @@ Build local binaries:
 
 ## Configure API server
 
-Clone the `ndslabs-specs` repo:
+Clone the `ndslabs-specs` repo anywhere on your machine:
 ```
 git clone https://github.com/nds-org/ndslabs-specs
 ```
 
 Modify the `apiserver.json` to reflect your local configuration. At a minimum,
-set the `supportEmail` to your email address, `kubernetes.address` to 
+set the `support.email` to your email address, `kubernetes.address` to 
 `https://minikube-ip:8443` and the `specs.path` to the location of the cloned repo above.
 
 
@@ -87,21 +94,22 @@ binary:
 
 ## Running integration tests
 
-Install `newman`:
+Install `newman` (may require `sudo`):
 ```
 npm install -g newman
 ```
 
-To configure the postman environment, edit `workbench.postman_environment.json`
+To configure the postman environment, edit `postman/workbench.postman_environment.json`
 and set the `host` value to `localhost:30001` and `email` value to your email
 address.
 
-Because the API server is running insecure, you'll need to edit `Workbench.postman_collection.json` 
+Because the API server is running insecure, you'll need to edit `postman/Workbench.postman_collection_local.json` 
 and replace all instances of `https` with `http`.
 
 Run the tests:
 ```
-newman run --insecure  --environment=workbench.postman_environment.json --delay-request=1000 Workbench.postman_collection.json
+cd postman
+newman run --insecure  --environment=workbench.postman_environment.json --delay-request=1000 Workbench.postman_collection_local.json
 ```
 
 ## Running as an external service
