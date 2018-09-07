@@ -16,21 +16,24 @@ import (
 	"syscall"
 	"time"
 
-	config "github.com/ndslabs/apiserver/pkg/config"
-	email "github.com/ndslabs/apiserver/pkg/email"
-	etcd "github.com/ndslabs/apiserver/pkg/etcd"
-	kube "github.com/ndslabs/apiserver/pkg/kube"
+	"github.com/ndslabs/apiserver/pkg/config"
+	"github.com/ndslabs/apiserver/pkg/email"
+	"github.com/ndslabs/apiserver/pkg/etcd"
+	"github.com/ndslabs/apiserver/pkg/kube"
 	mw "github.com/ndslabs/apiserver/pkg/middleware"
 	api "github.com/ndslabs/apiserver/pkg/types"
-	validate "github.com/ndslabs/apiserver/pkg/validate"
-	version "github.com/ndslabs/apiserver/pkg/version"
-	k8api "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/watch"
+	"github.com/ndslabs/apiserver/pkg/validate"
+	"github.com/ndslabs/apiserver/pkg/version"
 
 	"github.com/StephanDollberg/go-json-rest-middleware-jwt"
 	"github.com/ant0ine/go-json-rest/rest"
 	jwtbase "github.com/dgrijalva/jwt-go"
 	"github.com/golang/glog"
+	"path/filepath"
+
+	"k8s.io/api/core/v1"
+	kuberest "k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 var adminUser = "admin"
@@ -62,7 +65,16 @@ func main() {
 	var confPath, adminPasswd string
 	flag.StringVar(&confPath, "conf", "apiserver.json", "Configuration path")
 	flag.StringVar(&adminPasswd, "passwd", "admin", "Admin user password")
+
+	var kubeconfig *string
+	if home := os.Getenv("HOME"); home != "" {
+		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+	} else {
+		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+	}
+
 	flag.Parse()
+
 	cfg, err := readConfig(confPath)
 	if err != nil {
 		glog.Error(err)
@@ -116,10 +128,25 @@ func main() {
 	}
 	glog.Infof("Connected to etcd\n")
 
-	glog.Infof("Connecting to Kubernetes API %s\n", cfg.Kubernetes.Address)
+	var kConfig *kuberest.Config
+	if _, err := os.Stat(*kubeconfig); os.IsNotExist(err) {
+		glog.Infof("File %s does not exist, assuming in-cluster\n", *kubeconfig)
+		// Assume running in cluster
+		kConfig, err = kuberest.InClusterConfig()
+		if err != nil {
+			panic(err.Error())
+		}
+	} else {
+		glog.Infof("File %s exists, assuming out-of-cluster\n", *kubeconfig)
+		// Assume running out of cluster
+		kConfig, err = clientcmd.BuildConfigFromFlags("", *kubeconfig)
+		if err != nil {
+			panic(err.Error())
+		}
+	}
+
 	kube, err := kube.NewKubeHelper(cfg.Kubernetes.Address,
-		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath,
-		cfg.AuthSignInURL, cfg.AuthURL)
+		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath, kConfig, cfg.AuthSignInURL, cfg.AuthURL)
 	if err != nil {
 		glog.Errorf("Kubernetes API server not available\n")
 		glog.Fatal(err)
@@ -355,7 +382,7 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 	go s.initExistingAccounts()
 
 	go s.kube.WatchEvents(s)
-	go s.kube.WatchPods(s)
+
 	go s.shutdownInactiveServices()
 
 	// primary rest api server
@@ -412,8 +439,8 @@ func (s *Server) GetConsole(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	pods, _ := s.kube.GetPods(userId, "name", ssid)
-	pod := pods[0].Name
-	container := pods[0].Spec.Containers[0].Name
+	pod := pods.Items[0].Name
+	container := pods.Items[0].Spec.Containers[0].Name
 	glog.V(4).Infof("exec called for %s %s %s\n", userId, ssid, pod)
 	s.kube.Exec(userId, pod, container, s.kube).ServeHTTP(w.(http.ResponseWriter), r.Request)
 
@@ -586,6 +613,28 @@ func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 		rest.NotFound(w, r)
 		return
 	} else {
+		glog.V(4).Infof("Getting quotas for %s\n", userId)
+		quota, err := s.kube.GetResourceQuota(userId)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+		} else {
+			usedMemory := quota.Items[0].Status.Used[v1.ResourceMemory]
+			hardMemory := quota.Items[0].Status.Hard[v1.ResourceMemory]
+			usedCPU := quota.Items[0].Status.Used[v1.ResourceCPU]
+			hardCPU := quota.Items[0].Status.Hard[v1.ResourceCPU]
+
+			glog.V(4).Infof("Usage: %d %d \n", usedMemory.Value(), hardMemory.Value())
+
+			account.ResourceUsage = api.ResourceUsage{
+				CPU:    usedCPU.String(),
+				Memory: usedMemory.String(),
+				CPUPct: fmt.Sprintf("%f",
+					float64(usedCPU.Value())/float64(hardCPU.Value())),
+				MemoryPct: fmt.Sprintf("%f",
+					float64(usedMemory.Value())/float64(hardMemory.Value())),
+			}
+		}
 		account.Password = ""
 		if !(s.IsAdmin(r)) {
 			account.Token = ""
@@ -639,7 +688,7 @@ func (s *Server) updateIngress(uid string) error {
 		return err
 	}
 	if ingresses != nil {
-		for _, ingress := range ingresses {
+		for _, ingress := range ingresses.Items {
 			glog.V(4).Infof("Touching ingress %s\n", ingress.Name)
 			_, err = s.kube.CreateUpdateIngress(uid, &ingress, true)
 			if err != nil {
@@ -914,9 +963,9 @@ func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if len(gfs) > 0 {
+	if len(gfs.Items) > 0 {
 		cmd := []string{"gluster", "volume", "quota", homeVol.Name, "limit-usage", "/" + account.Namespace, fmt.Sprintf("%dGB", account.ResourceLimits.StorageQuota)}
-		_, err := s.kube.ExecCommand(systemNamespace, gfs[0].Name, cmd)
+		_, err := s.kube.ExecCommand(systemNamespace, gfs.Items[0].Name, cmd)
 		if err != nil {
 			return false, err
 		}
@@ -935,9 +984,11 @@ func (s *Server) getGlusterStatus() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if len(gfs) > 0 {
+
+	glog.Infof("Ok Gluster pods of %s size = %d or %d\n", glusterPodName, len(gfs.Items), len(gfs.Items))
+	if len(gfs.Items) > 0 {
 		cmd := []string{"gluster", "volume", "status", homeVol.Name}
-		_, err := s.kube.ExecCommand(systemNamespace, gfs[0].Name, cmd)
+		_, err := s.kube.ExecCommand(systemNamespace, gfs.Items[0].Name, cmd)
 		if err != nil {
 			return false, err
 		}
@@ -1003,7 +1054,7 @@ func (s *Server) DeleteAccount(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	if s.kube.NamespaceExists(userId) {
-		_, err := s.kube.DeleteNamespace(userId)
+		err := s.kube.DeleteNamespace(userId)
 		if err != nil {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1561,14 +1612,15 @@ func (s *Server) addStack(userId string, stack *api.Stack) (*api.Stack, error) {
 }
 
 // Create the Kubernetes service and ingress rules
-func (s *Server) createKubernetesService(userId string, stack *api.Stack, spec *api.ServiceSpec) (*k8api.Service, error) {
+func (s *Server) createKubernetesService(userId string, stack *api.Stack, spec *api.ServiceSpec) (*v1.Service, error) {
 	name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
+	glog.V(4).Infof("createKubernetesService %s %s\n", userId, name)
 	template := s.kube.CreateServiceTemplate(name, stack.Id, spec, s.useNodePort())
 
-	svc, err := s.kube.GetService(userId, name)
-	if svc == nil {
+	svc, _ := s.kube.GetService(userId, name)
+	if svc.Name == "" {
 		glog.V(4).Infof("Starting Kubernetes service %s\n", name)
-		svc, err = s.kube.StartService(userId, template)
+		svc, err := s.kube.StartService(userId, template)
 		if err != nil {
 			glog.Errorf("Error starting service %s\n", name)
 			glog.Error(err)
@@ -1582,9 +1634,9 @@ func (s *Server) createKubernetesService(userId string, stack *api.Stack, spec *
 	return svc, nil
 }
 
-func (s *Server) createIngressRule(userId string, svc *k8api.Service, stack *api.Stack) error {
+func (s *Server) createIngressRule(userId string, svc *v1.Service, stack *api.Stack) error {
 
-	_, delErr := s.kube.DeleteIngress(userId, svc.Name+"-ingress")
+	delErr := s.kube.DeleteIngress(userId, svc.Name+"-ingress")
 	if delErr != nil {
 		glog.Warning(delErr)
 	}
@@ -1634,7 +1686,7 @@ func (s *Server) PutStack(w rest.ResponseWriter, r *rest.Request) {
 					glog.Error(err)
 				}
 			}
-			_, err := s.kube.DeleteIngress(userId, stackService.Id+"-ingress")
+			err := s.kube.DeleteIngress(userId, stackService.Id+"-ingress")
 			if err != nil {
 				glog.Error(err)
 			}
@@ -1821,7 +1873,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 
 	pods, _ := s.kube.GetPods(userId, "name", fmt.Sprintf("%s-%s", stack.Id, serviceKey))
 	running := false
-	for _, pod := range pods {
+	for _, pod := range pods.Items {
 		if pod.Status.Phase == "Running" {
 			running = true
 		}
@@ -1872,23 +1924,23 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 
 	s.makeDirectories(userId, stackService)
 
-	k8vols := make([]k8api.Volume, 0)
+	k8vols := make([]v1.Volume, 0)
 	extraVols := make([]config.Volume, 0)
 
 	for _, volume := range s.Config.Volumes {
 		if volume.Name == s.homeVolume {
 			// Mount the home directory
-			k8homeVol := k8api.Volume{}
+			k8homeVol := v1.Volume{}
 			k8homeVol.Name = "home"
-			k8homeVol.HostPath = &k8api.HostPathVolumeSource{
+			k8homeVol.HostPath = &v1.HostPathVolumeSource{
 				Path: volume.Path + "/" + userId,
 			}
 			k8vols = append(k8vols, k8homeVol)
 		} else {
 			extraVols = append(extraVols, volume)
-			k8vol := k8api.Volume{}
+			k8vol := v1.Volume{}
 			k8vol.Name = volume.Name
-			k8vol.HostPath = &k8api.HostPathVolumeSource{
+			k8vol.HostPath = &v1.HostPathVolumeSource{
 				Path: volume.Path,
 			}
 			k8vols = append(k8vols, k8vol)
@@ -1905,8 +1957,8 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 		idx := 0
 		for fromPath, toPath := range stackService.VolumeMounts {
 
-			k8vol := k8api.Volume{}
-			k8hostPath := k8api.HostPathVolumeSource{}
+			k8vol := v1.Volume{}
+			k8hostPath := v1.HostPathVolumeSource{}
 			found := false
 			for i, mount := range spec.VolumeMounts {
 				if mount.MountPath == toPath {
@@ -1921,9 +1973,9 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 				volName := fmt.Sprintf("user%d", idx)
 				glog.V(4).Infof("Creating user mount %s\n", volName)
 				k8vol.Name = volName
-				k8vm := k8api.VolumeMount{Name: volName, MountPath: toPath}
+				k8vm := v1.VolumeMount{Name: volName, MountPath: toPath}
 				if len(template.Spec.Template.Spec.Containers[0].VolumeMounts) == 0 {
-					template.Spec.Template.Spec.Containers[0].VolumeMounts = []k8api.VolumeMount{}
+					template.Spec.Template.Spec.Containers[0].VolumeMounts = []v1.VolumeMount{}
 				}
 				template.Spec.Template.Spec.Containers[0].VolumeMounts = append(template.Spec.Template.Spec.Containers[0].VolumeMounts, k8vm)
 				k8hostPath.Path = homeVol.Path + "/" + userId + "/" + fromPath
@@ -1936,14 +1988,14 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 		if len(spec.VolumeMounts) > 0 {
 			// Go back through the spec volume mounts and create emptyDirs where needed
 			for _, mount := range spec.VolumeMounts {
-				k8vol := k8api.Volume{}
+				k8vol := v1.Volume{}
 
 				glog.V(4).Infof("Need volume for %s \n", stackService.Service)
 				if mount.Type == api.MountTypeDocker {
 					// TODO: Need to prevent non-NDS services from mounting the Docker socket
-					k8vol := k8api.Volume{}
+					k8vol := v1.Volume{}
 					k8vol.Name = "docker"
-					k8hostPath := k8api.HostPathVolumeSource{}
+					k8hostPath := v1.HostPathVolumeSource{}
 					k8hostPath.Path = "/var/run/docker.sock"
 					k8vol.HostPath = &k8hostPath
 					k8vols = append(k8vols, k8vol)
@@ -1957,7 +2009,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 
 					if !found {
 						glog.Warningf("Required volume not found, using emptyDir\n")
-						k8empty := k8api.EmptyDirVolumeSource{}
+						k8empty := v1.EmptyDirVolumeSource{}
 						k8vol.Name = fmt.Sprintf("empty%d", idx)
 						k8vol.EmptyDir = &k8empty
 						k8vols = append(k8vols, k8vol)
@@ -2383,7 +2435,7 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 
 	podStatus := make(map[string]string)
 	pods, _ := s.kube.GetPods(userId, "stack", stack.Id)
-	for _, pod := range pods {
+	for _, pod := range pods.Items {
 		label := pod.Labels["service"]
 		glog.V(4).Infof("Pod %s %d\n", label, len(pod.Status.Conditions))
 		if len(pod.Status.Conditions) > 0 {
@@ -2475,7 +2527,7 @@ func (s *Server) getLogs(userId string, sid string, ssid string, tailLines int) 
 			}
 
 			log += fmt.Sprintf("\nSERVICE LOG\n=====================\n")
-			for _, pod := range pods {
+			for _, pod := range pods.Items {
 				if pod.Labels["name"] == ssid {
 					podLog, err := s.kube.GetLog(userId, pod.Name, tailLines)
 					if err != nil {
@@ -2529,7 +2581,7 @@ func (s *Server) loadSpecs(path string) error {
 	return nil
 }
 
-func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, pod *k8api.Pod) {
+func (s *Server) HandlePodEvent(eventType string, pod *v1.Pod) {
 
 	if pod.Namespace != "default" && pod.Namespace != systemNamespace {
 		glog.V(4).Infof("HandlePodEvent %s", eventType)
@@ -2561,60 +2613,44 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 				return
 			}
 
-			if event != nil {
-				// This is a general Event
-				if event.Reason == "MissingClusterDNS" {
-					// Ignore these for now
-					return
-				}
-				if event.Type == "Warning" &&
-					(event.Reason != "Unhealthy" || event.Reason == "FailedSync" ||
-						event.Reason == "BackOff") {
-					// This is an error
-					stackService.Status = "error"
-				}
-
-				stackService.StatusMessages = append(stackService.StatusMessages,
-					fmt.Sprintf("Reason=%s, Message=%s", event.Reason, event.Message))
-			} else {
-				// This is a Pod event
-				ready := false
-				if len(pod.Status.Conditions) > 0 {
-					for _, condition := range pod.Status.Conditions {
-						if condition.Type == "Ready" {
-							ready = (condition.Status == "True")
-						}
+			// This is a Pod event
+			ready := false
+			if len(pod.Status.Conditions) > 0 {
+				for _, condition := range pod.Status.Conditions {
+					if condition.Type == "Ready" {
+						ready = (condition.Status == "True")
 					}
+				}
 
-					if len(pod.Status.ContainerStatuses) > 0 {
-						// The pod was terminated, this is an error
-						if pod.Status.ContainerStatuses[0].State.Terminated != nil {
-							reason := pod.Status.ContainerStatuses[0].State.Terminated.Reason
-							message := pod.Status.ContainerStatuses[0].State.Terminated.Message
-							stackService.Status = "error"
-							stackService.StatusMessages = append(stackService.StatusMessages,
-								fmt.Sprintf("Reason=%s, Message=%s", reason, message))
-						}
-					} else {
-						reason := pod.Status.Conditions[0].Reason
-						message := pod.Status.Conditions[0].Message
+				if len(pod.Status.ContainerStatuses) > 0 {
+					// The pod was terminated, this is an error
+					if pod.Status.ContainerStatuses[0].State.Terminated != nil {
+						reason := pod.Status.ContainerStatuses[0].State.Terminated.Reason
+						message := pod.Status.ContainerStatuses[0].State.Terminated.Message
+						stackService.Status = "error"
 						stackService.StatusMessages = append(stackService.StatusMessages,
 							fmt.Sprintf("Reason=%s, Message=%s", reason, message))
 					}
-
+				} else {
+					reason := pod.Status.Conditions[0].Reason
+					message := pod.Status.Conditions[0].Message
+					stackService.StatusMessages = append(stackService.StatusMessages,
+						fmt.Sprintf("Reason=%s, Message=%s", reason, message))
 				}
 
-				if ready {
-					stackService.Status = "ready"
-				} else {
-					if eventType == "ADDED" {
-						stackService.Status = "starting"
-					} else if eventType == "DELETED" {
-						if stackService.Status == "timeout" {
-							stackService.Status = "error"
-						} else {
-							stackService.Status = "stopped"
-						}
+			}
+
+			fmt.Sprintf("DEBUG READY %v\n", ready)
+			if ready {
+				stackService.Status = "ready"
+			} else {
+				if eventType == "ADDED" {
+					stackService.Status = "starting"
+				} else if eventType == "DELETED" {
+					if stackService.Status == "timeout" {
+						stackService.Status = "error"
+					} else {
+						stackService.Status = "stopped"
 					}
 				}
 			}
@@ -2630,8 +2666,7 @@ func (s *Server) HandlePodEvent(eventType watch.EventType, event *k8api.Event, p
 	}
 }
 
-func (s *Server) HandleReplicationControllerEvent(eventType watch.EventType, event *k8api.Event,
-	rc *k8api.ReplicationController) {
+func (s *Server) HandleReplicationControllerEvent(eventType string, event *v1.Event, rc *v1.ReplicationController) {
 
 	if rc.Namespace != "default" && rc.Namespace != systemNamespace {
 		glog.V(4).Infof("HandleReplicationControllerEvent %s", eventType)
@@ -3168,7 +3203,7 @@ func (s *Server) checkIngress(uid string, host string) (bool, error) {
 		return false, err
 	}
 	if ingresses != nil {
-		for _, ingress := range ingresses {
+		for _, ingress := range ingresses.Items {
 			if ingress.Spec.Rules[0].Host == host {
 				glog.V(4).Infof("Found ingress with host %s", ingress.Spec.Rules[0].Host)
 				return true, nil

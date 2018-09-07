@@ -17,7 +17,7 @@ if [ "$1" == "local" ] || [ "$1" == "docker" ]; then
     echo "  BUILD_DATE = \"$BUILD_DATE\"" >> $VERSIONFILE
     echo ")" >> $VERSIONFILE
     
-    glide install --strip-vendor 
+    glide install --strip-vendor
     
     COVERPKG=./cmd/server,./pkg/crypto,./pkg/etcd,./pkg/config,./pkg/email,./pkg/events,./pkg/kube,./pkg/middleware,./pkg/types,./pkg/validate
 	if [ "$1" == "local" ]; then 
@@ -57,7 +57,6 @@ if [ "$1" == "local" ] || [ "$1" == "docker" ]; then
           GOOS=darwin GOARCH=amd64 go build -o build/bin/ndslabsctl-darwin-amd64 ./cmd/apictl
     fi
     
-    rm -r pkg/version
 elif [ "$1" == "clean" ]; then
 	rm -r build
 	rm -r vendor/github.com vendor/golang.org vendor/gopkg.in vendor/k8s.io
