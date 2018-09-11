@@ -142,7 +142,9 @@ cat << EOF > /apiserver.json
         "address": "$KUBERNETES_ADDR",
         "username": "admin",
         "password": "admin",
-    	"tokenPath": "$TOKEN_PATH"
+    	"tokenPath": "$TOKEN_PATH",
+	"nodeSelectorName": "$NODE_SELECTOR_NAME",
+	"nodeSelectorValue": "$NODE_SELECTOR_VALUE"
     },
     "email": {
         "host": "$SMTP_HOST",
