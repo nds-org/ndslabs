@@ -398,7 +398,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 
 func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, domain string,
 	emailAddress string, smtpHost string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec,
-	links *map[string]ServiceAddrPort, extraVols *[]config.Volume) *v1.ReplicationController {
+	links *map[string]ServiceAddrPort, extraVols *[]config.Volume, nodeSelectorName string, nodeSelectorValue string) *v1.ReplicationController {
 
 	k8rc := v1.ReplicationController{}
 
@@ -540,9 +540,17 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 				},
 			},
 			NodeSelector: map[string]string{
-				"ndslabs-role-compute": "true",
+				//"ndslabs-role-compute": "true",
 			},
 		},
+	}
+
+	if nodeSelectorName != "" {
+		if nodeSelectorValue != "" {
+			k8template.Spec.NodeSelector[nodeSelectorName] = nodeSelectorValue
+		} else {
+			k8template.Spec.NodeSelector[nodeSelectorName] = "true"
+		}
 	}
 
 	if spec.ReadyProbe.Path != "" {

@@ -18,7 +18,9 @@
         "maxMessages": 100
     },
     "kubernetes": {
-        "address": "https://minikube-ip:8443"
+        "address": "https://minikube-ip:8443",
+        "nodeSelectorName": "",
+        "nodeSelectorValue": ""
     },
     "email": {
         "host": "",
