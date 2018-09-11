@@ -52,10 +52,12 @@ type Etcd struct {
 	MaxMessages int    `json:"maxMessages"`
 }
 type Kubernetes struct {
-	Address   string `json:"address"`
-	TokenPath string `json:"tokenPath"`
-	Username  string `json:"username"`
-	Password  string `json:"password"`
+	Address            string `json:"address"`
+	TokenPath          string `json:"tokenPath"`
+	Username           string `json:"username"`
+	Password           string `json:"password"`
+	NodeSelectorName   string `json:"nodeSelectorName"`
+	NodeSelectorValue  string `json:"nodeSelectorValue"`
 }
 type Email struct {
 	Host string `json:"host"`

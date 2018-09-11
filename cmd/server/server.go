@@ -195,6 +195,7 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 	glog.Infof("Using kube-apiserver %s", cfg.Kubernetes.Address)
 	glog.Infof("Using ome volume %s", cfg.HomeVolume)
 	glog.Infof("Using specs dir %s", cfg.Specs.Path)
+	glog.Infof("Using nodeSelector %s: %s", cfg.Kubernetes.NodeSelectorName, cfg.Kubernetes.NodeSelectorValue)
 	glog.Infof("Listening on port %s", cfg.Port)
 
 	homeVol := s.getHomeVolume()
@@ -1949,7 +1950,10 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 
 	// Create the controller template
 	account, _ := s.etcd.GetAccount(userId)
-	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, s.domain, account.EmailAddress, s.email.Server, stackService, spec, addrPortMap, &extraVols)
+        cfg := s.Config
+	nodeSelectorName := cfg.Kubernetes.NodeSelectorName
+	nodeSelectorValue := cfg.Kubernetes.NodeSelectorValue
+	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, s.domain, account.EmailAddress, s.email.Server, stackService, spec, addrPortMap, &extraVols, nodeSelectorName, nodeSelectorValue)
 
 	homeVol := s.getHomeVolume()
 	if len(stackService.VolumeMounts) > 0 || len(spec.VolumeMounts) > 0 {
