@@ -396,6 +396,52 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 	return &k8svc
 }
 
+func (k *KubeHelper) CreatePersistentVolumeClaim(ns string, name string, storageClass string) *v1.PersistentVolumeClaim {
+        k8pvc := v1.PersistentVolumeClaim{}
+
+        // PersistentVolumeClaim
+        k8pvc.APIVersion = "v1"
+        k8pvc.Kind = "PersistentVolumeClaim"
+        k8pvc.Name = name
+        k8pvc.Labels = map[string]string{
+                "name":    name,
+        }
+
+        // Since we use ReadWriteMany, capacity can be any value
+	k8rq := v1.ResourceRequirements{}
+        k8rq.Requests = v1.ResourceList{
+                v1.ResourceStorage:  resource.MustParse("1Mi"),
+        }
+
+	k8pvc.Spec = v1.PersistentVolumeClaimSpec{
+		Resources: k8rq,
+		AccessModes: []v1.PersistentVolumeAccessMode{
+                	v1.ReadWriteMany,
+        	},
+	}
+
+        // if storageClass is explicitly specified, use it (otherwise rely on cluster default)
+        if storageClass != "" {
+                k8pvc.Spec.StorageClassName = &storageClass
+        }
+
+        rslt, err := k.kubeGo.CoreV1().PersistentVolumeClaims(ns).Create(&k8pvc)
+
+        // Give Kubernetes time to bind a PersistentVolume for this PVC
+        time.Sleep(time.Second * 5)
+
+	if rslt == nil { 
+                glog.Errorf("Error creating PVC %s in namespace %s: %s\n", name, ns, err)
+	}
+
+        return &k8pvc
+}
+
+func (k *KubeHelper) DeletePersistentVolumeClaim(pid string, name string) error {
+        deleteOptions := metav1.DeleteOptions{}
+        return k.kubeGo.CoreV1().PersistentVolumeClaims(pid).Delete(name, &deleteOptions)
+}
+
 func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, domain string,
 	emailAddress string, smtpHost string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec,
 	links *map[string]ServiceAddrPort, extraVols *[]config.Volume, nodeSelectorName string, nodeSelectorValue string) *v1.ReplicationController {
