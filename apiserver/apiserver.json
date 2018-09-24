@@ -19,6 +19,7 @@
     },
     "kubernetes": {
         "address": "https://minikube-ip:8443",
+        "pvcStorageClass": "",
         "nodeSelectorName": "",
         "nodeSelectorValue": ""
     },
