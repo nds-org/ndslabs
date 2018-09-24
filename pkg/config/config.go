@@ -58,6 +58,7 @@ type Kubernetes struct {
 	Password           string `json:"password"`
 	NodeSelectorName   string `json:"nodeSelectorName"`
 	NodeSelectorValue  string `json:"nodeSelectorValue"`
+	StorageClass       string `json:"pvcStorageClass"`
 }
 type Email struct {
 	Host string `json:"host"`
