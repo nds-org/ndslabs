@@ -458,6 +458,11 @@ func (s *Server) initExistingAccounts() {
 		if !s.kube.NamespaceExists(account.Namespace) && account.Status == api.AccountStatusApproved {
 			s.kube.CreateNamespace(account.Namespace)
 
+                        // Create a PVC for this data mount
+			storageClass := s.Config.Kubernetes.StorageClass
+                        claimName := account.Namespace + "-home" 
+                        s.kube.CreatePersistentVolumeClaim(account.Namespace, claimName, storageClass)
+
 			if account.ResourceLimits.CPUMax > 0 &&
 				account.ResourceLimits.MemoryMax > 0 {
 				s.kube.CreateResourceQuota(account.Namespace,
@@ -730,6 +735,11 @@ func (s *Server) setupAccount(account *api.Account) error {
 	if err != nil {
 		return err
 	}
+
+        // Create a PVC for this data mount
+	storageClass := s.Config.Kubernetes.StorageClass
+        claimName := account.Namespace + "-home"
+        s.kube.CreatePersistentVolumeClaim(account.Namespace, claimName, storageClass)
 
 	if account.ResourceLimits == (api.AccountResourceLimits{}) {
 		glog.Warningf("No resource limits specified for account %s, using defaults\n", account.Name)
@@ -1933,11 +1943,12 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 			// Mount the home directory
 			k8homeVol := v1.Volume{}
 			k8homeVol.Name = "home"
-			k8homeVol.HostPath = &v1.HostPathVolumeSource{
-				Path: volume.Path + "/" + userId,
+			k8homeVol.PersistentVolumeClaim = &v1.PersistentVolumeClaimVolumeSource{
+				ClaimName: userId + "-home",
 			}
 			k8vols = append(k8vols, k8homeVol)
 		} else {
+			// TODO: should "shared" volumes continue to use hostPath?
 			extraVols = append(extraVols, volume)
 			k8vol := v1.Volume{}
 			k8vol.Name = volume.Name
@@ -1955,19 +1966,25 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	nodeSelectorValue := cfg.Kubernetes.NodeSelectorValue
 	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, s.domain, account.EmailAddress, s.email.Server, stackService, spec, addrPortMap, &extraVols, nodeSelectorName, nodeSelectorValue)
 
-	homeVol := s.getHomeVolume()
+	storageClass := s.Config.Kubernetes.StorageClass
 	if len(stackService.VolumeMounts) > 0 || len(spec.VolumeMounts) > 0 {
 
 		idx := 0
-		for fromPath, toPath := range stackService.VolumeMounts {
+		for _, toPath := range stackService.VolumeMounts {
 
 			k8vol := v1.Volume{}
-			k8hostPath := v1.HostPathVolumeSource{}
+			k8pvcVolSrc := v1.PersistentVolumeClaimVolumeSource{}
 			found := false
 			for i, mount := range spec.VolumeMounts {
 				if mount.MountPath == toPath {
-					k8vol.Name = fmt.Sprintf("vol%d", i)
-					k8hostPath.Path = homeVol.Path + "/" + userId + "/" + fromPath
+					volName := fmt.Sprintf("vol%d", i)
+					k8vol.Name = volName
+
+					// TODO: Allow user to reuse their PVCs for spec mounts?
+		                        // Create a PVC for this data mount
+					claimName := name + "-" + volName
+                		        s.kube.CreatePersistentVolumeClaim(userId, claimName, storageClass)
+					k8pvcVolSrc.ClaimName = claimName
 					found = true
 				}
 			}
@@ -1982,10 +1999,15 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 					template.Spec.Template.Spec.Containers[0].VolumeMounts = []v1.VolumeMount{}
 				}
 				template.Spec.Template.Spec.Containers[0].VolumeMounts = append(template.Spec.Template.Spec.Containers[0].VolumeMounts, k8vm)
-				k8hostPath.Path = homeVol.Path + "/" + userId + "/" + fromPath
+
+				// TODO: Allow user to reuse their PVCs for user mounts?
+                                // Create a PVC for this data mount
+                                claimName := name + "-" + volName
+                                s.kube.CreatePersistentVolumeClaim(userId, claimName, storageClass)
+                                k8pvcVolSrc.ClaimName = claimName
 				idx++
 			}
-			k8vol.HostPath = &k8hostPath
+			k8vol.PersistentVolumeClaim = &k8pvcVolSrc
 			k8vols = append(k8vols, k8vol)
 		}
 
@@ -1995,6 +2017,8 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 				k8vol := v1.Volume{}
 
 				glog.V(4).Infof("Need volume for %s \n", stackService.Service)
+
+				// Docker volume should use HostPath, others can use emptyDir
 				if mount.Type == api.MountTypeDocker {
 					// TODO: Need to prevent non-NDS services from mounting the Docker socket
 					k8vol := v1.Volume{}
@@ -2999,12 +3023,13 @@ func (s *Server) GetHealthz(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
+	// TODO: Remove this once PVCs are supported?
 	// Confirm access to Gluster and GFS
-	_, err = s.getGlusterStatus()
-	if err != nil {
-		rest.Error(w, "GFS not available", http.StatusInternalServerError)
-		return
-	}
+	//_, err = s.getGlusterStatus()
+	//if err != nil {
+	//	rest.Error(w, "GFS not available", http.StatusInternalServerError)
+	//	return
+	//}
 
 	w.WriteHeader(http.StatusOK)
 }
