@@ -16,7 +16,7 @@ type Config struct {
 	Kubernetes      Kubernetes    `json:"kubernetes"`
 	Email           Email         `json:"email"`
 	Specs           Specs         `json:"specs"`
-	HomeVolume      string        `json:"homeVolume"`
+	HomePvcSuffix   string        `json:"homePvcSuffix"`
 	Volumes         []Volume      `json:"volumes"`
 	Support         SupportLinks  `json:"support"`
 	AuthURL         string        `json:"authURL"`
