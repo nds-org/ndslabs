@@ -5,7 +5,7 @@
     "domain" : "workbench.local",
     "ingress": "LoadBalancer",
     "supportEmail": "",
-    "homeVolume": "global",
+    "homePvcSuffix": "-home",
     "defaultLimits": {
         "cpuMax": 2000,
         "cpuDefault": 1000,
@@ -31,11 +31,7 @@
     "specs": {
         "path": "/path/to/ndslabs-specs"
     },
-    "volumes": [{
-        "name": "global",
-        "path": "/tmp/data",
-        "type": "gluster"
-    }],
+    "volumes": [],
 	"support": {
 		"email": "you@email.org",
 		"forum": "",
