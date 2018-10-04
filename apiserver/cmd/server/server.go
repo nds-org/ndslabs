@@ -38,7 +38,6 @@ import (
 
 var adminUser = "admin"
 var systemNamespace = "kube-system"
-var glusterPodName = "glfs-server-global"
 
 type Server struct {
 	Config          *config.Config
@@ -48,7 +47,7 @@ type Server struct {
 	email           *email.EmailHelper
 	Namespace       string
 	local           bool
-	homeVolume      string
+	homePvcSuffix   string
 	hostname        string
 	jwt             *jwt.JWTMiddleware
 	prefix          string
@@ -172,7 +171,7 @@ func main() {
 	server.kube = kube
 	server.email = email
 	server.Config = cfg
-	server.homeVolume = cfg.HomeVolume
+	server.homePvcSuffix = cfg.HomePvcSuffix
 	server.requireApproval = cfg.RequireApproval
 
 	server.ingress = config.IngressTypeNodePort
@@ -193,13 +192,10 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 	glog.Infof("Starting Workbench API server (%s %s)", version.VERSION, version.BUILD_DATE)
 	glog.Infof("Using etcd %s ", cfg.Etcd.Address)
 	glog.Infof("Using kube-apiserver %s", cfg.Kubernetes.Address)
-	glog.Infof("Using ome volume %s", cfg.HomeVolume)
+	glog.Infof("Using home pvc suffix %s", cfg.HomePvcSuffix)
 	glog.Infof("Using specs dir %s", cfg.Specs.Path)
 	glog.Infof("Using nodeSelector %s: %s", cfg.Kubernetes.NodeSelectorName, cfg.Kubernetes.NodeSelectorValue)
 	glog.Infof("Listening on port %s", cfg.Port)
-
-	homeVol := s.getHomeVolume()
-	os.MkdirAll(homeVol.Path, 0777)
 
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
@@ -458,9 +454,9 @@ func (s *Server) initExistingAccounts() {
 		if !s.kube.NamespaceExists(account.Namespace) && account.Status == api.AccountStatusApproved {
 			s.kube.CreateNamespace(account.Namespace)
 
-                        // Create a PVC for this data mount
+                        // Create a PVC for this user's data
 			storageClass := s.Config.Kubernetes.StorageClass
-                        claimName := account.Namespace + "-home" 
+                        claimName := account.Namespace + s.Config.HomePvcSuffix
                         s.kube.CreatePersistentVolumeClaim(account.Namespace, claimName, storageClass)
 
 			if account.ResourceLimits.CPUMax > 0 &&
@@ -614,6 +610,7 @@ func (s *Server) GetAccount(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	glog.V(4).Infof("Getting account %s\n", userId)
+
 	account, err := s.etcd.GetAccount(userId)
 	if err != nil {
 		rest.NotFound(w, r)
@@ -736,9 +733,9 @@ func (s *Server) setupAccount(account *api.Account) error {
 		return err
 	}
 
-        // Create a PVC for this data mount
+        // Create a PVC for this user's data
 	storageClass := s.Config.Kubernetes.StorageClass
-        claimName := account.Namespace + "-home"
+        claimName := account.Namespace + s.Config.HomePvcSuffix
         s.kube.CreatePersistentVolumeClaim(account.Namespace, claimName, storageClass)
 
 	if account.ResourceLimits == (api.AccountResourceLimits{}) {
@@ -761,11 +758,6 @@ func (s *Server) setupAccount(account *api.Account) error {
 	_, err = s.kube.CreateLimitRange(account.Namespace,
 		account.ResourceLimits.CPUDefault,
 		account.ResourceLimits.MemoryDefault)
-	if err != nil {
-		return err
-	}
-
-	_, err = s.updateStorageQuota(account)
 	if err != nil {
 		return err
 	}
@@ -961,54 +953,6 @@ func (s *Server) DenyAccount(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-func (s *Server) updateStorageQuota(account *api.Account) (bool, error) {
-
-	homeVol := s.getHomeVolume()
-	err := os.MkdirAll(homeVol.Path+"/"+account.Namespace, 0777)
-	if err != nil {
-		return false, err
-	}
-
-	// Get the GFS server pods
-	gfs, err := s.kube.GetPods(systemNamespace, "name", glusterPodName)
-	if err != nil {
-		return false, err
-	}
-	if len(gfs.Items) > 0 {
-		cmd := []string{"gluster", "volume", "quota", homeVol.Name, "limit-usage", "/" + account.Namespace, fmt.Sprintf("%dGB", account.ResourceLimits.StorageQuota)}
-		_, err := s.kube.ExecCommand(systemNamespace, gfs.Items[0].Name, cmd)
-		if err != nil {
-			return false, err
-		}
-	} else {
-		glog.V(2).Info("No GFS servers found, cannot set account quota")
-	}
-	return true, nil
-}
-
-// For now, just call the status command and see if it returns an error
-func (s *Server) getGlusterStatus() (bool, error) {
-
-	homeVol := s.getHomeVolume()
-	// Get the GFS server pods
-	gfs, err := s.kube.GetPods(systemNamespace, "name", glusterPodName)
-	if err != nil {
-		return false, err
-	}
-
-	glog.Infof("Ok Gluster pods of %s size = %d or %d\n", glusterPodName, len(gfs.Items), len(gfs.Items))
-	if len(gfs.Items) > 0 {
-		cmd := []string{"gluster", "volume", "status", homeVol.Name}
-		_, err := s.kube.ExecCommand(systemNamespace, gfs.Items[0].Name, cmd)
-		if err != nil {
-			return false, err
-		}
-	} else {
-		glog.V(2).Info("No GFS servers found, GFS not enabled")
-	}
-	return true, nil
-}
-
 func (s *Server) PutAccount(w rest.ResponseWriter, r *rest.Request) {
 	userId := r.PathParam("userId")
 
@@ -1020,13 +964,6 @@ func (s *Server) PutAccount(w rest.ResponseWriter, r *rest.Request) {
 
 	account := api.Account{}
 	err := r.DecodeJsonPayload(&account)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	_, err = s.updateStorageQuota(&account)
 	if err != nil {
 		glog.Error(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1080,13 +1017,6 @@ func (s *Server) DeleteAccount(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	homeVol := s.getHomeVolume()
-	err = os.RemoveAll(homeVol.Path + "/" + userId)
-	if err != nil {
-		glog.Error(err)
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -1933,30 +1863,26 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 
 	name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
 
-	s.makeDirectories(userId, stackService)
-
 	k8vols := make([]v1.Volume, 0)
 	extraVols := make([]config.Volume, 0)
 
+        // Mount the home directory
+        k8homeVol := v1.Volume{}
+        k8homeVol.Name = "home"
+        k8homeVol.PersistentVolumeClaim = &v1.PersistentVolumeClaimVolumeSource{
+                ClaimName: userId + s.Config.HomePvcSuffix,
+        }
+        k8vols = append(k8vols, k8homeVol)
+
 	for _, volume := range s.Config.Volumes {
-		if volume.Name == s.homeVolume {
-			// Mount the home directory
-			k8homeVol := v1.Volume{}
-			k8homeVol.Name = "home"
-			k8homeVol.PersistentVolumeClaim = &v1.PersistentVolumeClaimVolumeSource{
-				ClaimName: userId + "-home",
-			}
-			k8vols = append(k8vols, k8homeVol)
-		} else {
-			// TODO: should "shared" volumes continue to use hostPath?
-			extraVols = append(extraVols, volume)
-			k8vol := v1.Volume{}
-			k8vol.Name = volume.Name
-			k8vol.HostPath = &v1.HostPathVolumeSource{
-				Path: volume.Path,
-			}
-			k8vols = append(k8vols, k8vol)
+		// TODO: should "shared" volumes continue to use hostPath?
+		extraVols = append(extraVols, volume)
+		k8vol := v1.Volume{}
+		k8vol.Name = volume.Name
+		k8vol.HostPath = &v1.HostPathVolumeSource{
+			Path: volume.Path,
 		}
+		k8vols = append(k8vols, k8vol)
 	}
 
 	// Create the controller template
@@ -1965,6 +1891,9 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	nodeSelectorName := cfg.Kubernetes.NodeSelectorName
 	nodeSelectorValue := cfg.Kubernetes.NodeSelectorValue
 	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, s.domain, account.EmailAddress, s.email.Server, stackService, spec, addrPortMap, &extraVols, nodeSelectorName, nodeSelectorValue)
+
+	jsonTemplate, _ := json.MarshalIndent(template, "", "   ")
+	glog.V(4).Infof("Template:\n%s", jsonTemplate)
 
 	storageClass := s.Config.Kubernetes.StorageClass
 	if len(stackService.VolumeMounts) > 0 || len(spec.VolumeMounts) > 0 {
@@ -2297,22 +2226,6 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 	s.etcd.PutStack(userId, sid, stack)
 
 	return stack, nil
-}
-
-func (s *Server) makeDirectories(userId string, stackService *api.StackService) {
-	for path, _ := range stackService.VolumeMounts {
-		homeVol := s.getHomeVolume()
-		os.MkdirAll(homeVol.Path+"/"+userId+"/"+path, 0777)
-	}
-}
-
-func (s *Server) getHomeVolume() *config.Volume {
-	for _, vol := range s.Config.Volumes {
-		if vol.Name == s.homeVolume {
-			return &vol
-		}
-	}
-	return nil
 }
 
 func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, error) {
@@ -3023,14 +2936,6 @@ func (s *Server) GetHealthz(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	// TODO: Remove this once PVCs are supported?
-	// Confirm access to Gluster and GFS
-	//_, err = s.getGlusterStatus()
-	//if err != nil {
-	//	rest.Error(w, "GFS not available", http.StatusInternalServerError)
-	//	return
-	//}
-
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -3242,9 +3147,11 @@ func (s *Server) checkIngress(uid string, host string) (bool, error) {
 	return false, nil
 }
 
+// FIXME: Revisit this after adding PVC support
+// See https://github.com/nds-org/ndslabs/issues/262
 // Write the oauth2 payload to the users home directory for access from applications
 func (s *Server) writeAuthPayload(userId string, tokens map[string]string) error {
-	path := s.getHomeVolume().Path + "/" + userId + "/.globus"
+	/*path := s.getHomeVolume().Path + "/" + userId + "/.globus"
 	os.MkdirAll(path, 0777)
 
 	json, err := json.MarshalIndent(tokens, "", "   ")
@@ -3255,7 +3162,7 @@ func (s *Server) writeAuthPayload(userId string, tokens map[string]string) error
 	err = ioutil.WriteFile(path+"/oauth2.json", json, 0777)
 	if err != nil {
 		return err
-	}
+	}*/
 	return nil
 }
 
