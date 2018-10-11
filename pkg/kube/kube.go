@@ -425,12 +425,12 @@ func (k *KubeHelper) CreatePersistentVolumeClaim(ns string, name string, storage
                 k8pvc.Spec.StorageClassName = &storageClass
         }
 
-        rslt, err := k.kubeGo.CoreV1().PersistentVolumeClaims(ns).Create(&k8pvc)
+        _, err := k.kubeGo.CoreV1().PersistentVolumeClaims(ns).Create(&k8pvc)
 
         // Give Kubernetes time to bind a PersistentVolume for this PVC
-        time.Sleep(time.Second * 5)
+        //time.Sleep(time.Second * 5)
 
-	if rslt == nil { 
+	if err != nil { 
                 glog.Errorf("Error creating PVC %s in namespace %s: %s\n", name, ns, err)
 	}
 
