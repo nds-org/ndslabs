@@ -1,14 +1,13 @@
 {
 	"info": {
 		"name": "Workbench",
-		"_postman_id": "b18647a8-5cad-d8f1-e4f6-c723029b73da",
+		"_postman_id": "307cd853-89e0-2a90-c0af-91f44f311356",
 		"description": "",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
 			"name": "Accounts",
-			"description": "",
 			"item": [
 				{
 					"name": "Admin login",
@@ -158,7 +157,10 @@
 								"value": "Bearer {{admin_token}}"
 							}
 						],
-						"body": {},
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
 						"url": {
 							"raw": "http://{{host}}/api/log_level/4",
 							"protocol": "http",
@@ -1649,7 +1651,6 @@
 		},
 		{
 			"name": "Authentication",
-			"description": "",
 			"item": [
 				{
 					"name": "Invalid login",
@@ -2394,7 +2395,6 @@
 		},
 		{
 			"name": "Services",
-			"description": "",
 			"item": [
 				{
 					"name": "Admin login",
@@ -3765,8 +3765,7 @@
 			]
 		},
 		{
-			"name": "Stacks",
-			"description": "",
+			"name": "Simple Stacks",
 			"item": [
 				{
 					"name": "User login",
@@ -3827,7 +3826,7 @@
 					"response": []
 				},
 				{
-					"name": "Post stack",
+					"name": "Post simple stack",
 					"event": [
 						{
 							"listen": "test",
@@ -3893,7 +3892,7 @@
 					"response": []
 				},
 				{
-					"name": "Get stack",
+					"name": "Get simple stack",
 					"event": [
 						{
 							"listen": "test",
@@ -3960,7 +3959,7 @@
 					"response": []
 				},
 				{
-					"name": "Start stack",
+					"name": "Start simple stack",
 					"event": [
 						{
 							"listen": "test",
@@ -4017,7 +4016,7 @@
 					"response": []
 				},
 				{
-					"name": "Wait for stack start",
+					"name": "Wait for simple stack start",
 					"event": [
 						{
 							"listen": "test",
@@ -4082,7 +4081,7 @@
 					"response": []
 				},
 				{
-					"name": "Get stack logs",
+					"name": "Get simple stack logs",
 					"event": [
 						{
 							"listen": "test",
@@ -4139,7 +4138,7 @@
 					"response": []
 				},
 				{
-					"name": "Stop stack",
+					"name": "Stop simple stack",
 					"event": [
 						{
 							"listen": "test",
@@ -4195,7 +4194,7 @@
 					"response": []
 				},
 				{
-					"name": "Wait for stack stop",
+					"name": "Wait for simple stack stop",
 					"event": [
 						{
 							"listen": "test",
@@ -4260,7 +4259,7 @@
 					"response": []
 				},
 				{
-					"name": "Put stack",
+					"name": "Put simple stack",
 					"event": [
 						{
 							"listen": "test",
@@ -4327,7 +4326,7 @@
 					"response": []
 				},
 				{
-					"name": "Put rename stack",
+					"name": "Put rename simple stack",
 					"event": [
 						{
 							"listen": "test",
@@ -4395,7 +4394,695 @@
 					"response": []
 				},
 				{
-					"name": "Delete stack",
+					"name": "Delete simple stack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "35a7bebd-03c8-41c0-95cd-b9e589b99e55",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "http://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stacks",
+								"{{stack_sid}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Complex Stacks",
+			"item": [
+				{
+					"name": "User login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Check token\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.environment.set(\"token\", jsonData.token);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "http://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
+						},
+						"url": {
+							"raw": "http://{{host}}/api/authenticate",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"authenticate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post complex stack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "8fb12b44-20fb-4ae1-a4ec-a4c006610833",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.expect(jsonData.name).to.eql(\"My MongoDB\");",
+									"    pm.expect(jsonData.status).to.eql(\"stopped\");",
+									"    pm.environment.set(\"stack_sid\", jsonData.id);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "http://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"key\": \"mongo\",\n    \"name\": \"My MongoDB\",\n    \"services\": [\n        {\n            \"service\": \"mongo\"\n        }\n    ],\n    \"secure\": true\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}/api/stacks",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stacks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get complex stack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d4e696bc-7048-40c3-b9f5-e918671a1471",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.expect(jsonData.key).to.eql(\"mongo\");",
+									"    pm.expect(jsonData.status).to.eql(\"stopped\");",
+									"    pm.environment.set(\"stack_sid\", jsonData.id);    ",
+									"    pm.environment.set(\"stack_ssid\", jsonData.services[0].id);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "http://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stacks",
+								"{{stack_sid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Start complex stack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "399d5eb3-bd8b-49aa-a20f-d12f500ae400",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(202);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "http://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}/api/start/{{stack_sid}}",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"start",
+								"{{stack_sid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for complex stack start",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "09aee015-2a2d-45e5-b677-ff9836a7a9bd",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"if (jsonData.status !== \"started\") {",
+									"  postman.setNextRequest(\"Wait for complex stack start\");",
+									"  setTimeout(function() {}, 10000);",
+									"} else {",
+									"  postman.setNextRequest(\"Get complex stack logs\");",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "http://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stacks",
+								"{{stack_sid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get complex stack logs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "12fc5ff4-60cd-475e-a765-241ea5aa4796",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "http://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}/api/logs/{{stack_ssid}}",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"logs",
+								"{{stack_ssid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Stop complex stack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d64e0295-db10-4f1c-ba0d-583c951124d5",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(202);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "http://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://{{host}}/api/stop/{{stack_sid}}",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stop",
+								"{{stack_sid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Wait for complex stack stop",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "09980388-e7fd-4b3d-b3b4-9eddbc97cf7f",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"if (jsonData.status !== \"stopped\") {",
+									"  postman.setNextRequest(\"Wait for complex stack stop\");",
+									"  setTimeout(function() {}, 20000);",
+									"} else {",
+									"  postman.setNextRequest(\"Put complex stack\");",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "http://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stacks",
+								"{{stack_sid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put complex stack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b18cec3b-5d5e-4b61-ba15-0aa0adb80236",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.expect(jsonData.name).to.eql(\"Your MongoDB\");",
+									"    pm.expect(jsonData.status).to.eql(\"stopped\");",
+									"    pm.environment.set(\"stack_sid\", jsonData.id);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "http://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"{{stack_sid}}\",\n    \"key\": \"mongo\",\n    \"name\": \"Your MongoDB\",\n    \"services\": [\n        {\n            \"id\": \"{{stack_sid}}-mongo\",\n            \"service\": \"mongo\",\n            \"volumeMounts\": {\n                \"AppData/swh8jq-mongo-6xr7g\": \"/data/db\"\n            }\n        }\n    ],\n    \"secure\": true\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stacks",
+								"{{stack_sid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Put rename complex stack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "eb9798f1-df4a-4501-bf04-be08427e93a3",
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"pm.test(\"HTTP response\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"JSON response\", function () {",
+									"    pm.response.to.be.json",
+									"    pm.expect(jsonData.name).to.eql(\"New name\");",
+									"    pm.expect(jsonData.status).to.eql(\"stopped\");",
+									"    pm.environment.set(\"stack_sid\", jsonData.id);",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Origin",
+								"value": "http://{{host}}/"
+							},
+							{
+								"key": "User-Agent",
+								"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"New name\"\n}"
+						},
+						"url": {
+							"raw": "http://{{host}}/api/stacks/{{stack_sid}}/rename",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"stacks",
+								"{{stack_sid}}",
+								"rename"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete complex stack",
 					"event": [
 						{
 							"listen": "test",
@@ -4455,7 +5142,6 @@
 		},
 		{
 			"name": "Misc",
-			"description": "",
 			"item": [
 				{
 					"name": "Get healthz",
@@ -4816,7 +5502,6 @@
 		},
 		{
 			"name": "Quickstart",
-			"description": "",
 			"item": [
 				{
 					"name": "User login",
@@ -5316,7 +6001,6 @@
 		},
 		{
 			"name": "Cleanup",
-			"description": "",
 			"item": [
 				{
 					"name": "Admin login",
