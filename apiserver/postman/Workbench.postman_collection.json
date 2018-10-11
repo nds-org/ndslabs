@@ -3831,25 +3831,25 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "f66d2585-d43d-4bc3-a5ca-531e4e513275",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"",
 									"var jsonData = pm.response.json();",
 									"",
 									"pm.test(\"JSON response\", function () {",
 									"    pm.response.to.be.json",
-									"    pm.expect(jsonData.name).to.eql(\"My File Manager\");",
+									"    pm.expect(jsonData.key).to.eql(\"cloudcmd\");",
 									"    pm.expect(jsonData.status).to.eql(\"stopped\");",
-									"    pm.environment.set(\"stack_sid\", jsonData.id);",
+									"    pm.environment.set(\"stack_sid\", jsonData.id);    ",
+									"    pm.environment.set(\"stack_ssid\", jsonData.services[0].id);",
 									"});",
 									""
-								],
-								"id": "de67e65e-457c-4171-b3ed-dcdc07efc207",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3897,6 +3897,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "b92cf37f-a7d7-4851-9ce7-2cfa4d7bee14",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -3913,9 +3915,7 @@
 									"    pm.environment.set(\"stack_ssid\", jsonData.services[0].id);",
 									"});",
 									""
-								],
-								"id": "fa052fb1-6ed0-4b86-9f0b-9a6b7b866b45",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -4021,6 +4021,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "2c4aa801-b3de-453c-ad3f-07a461a5deaf",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -4030,14 +4032,12 @@
 									"var jsonData = pm.response.json();",
 									"",
 									"if (jsonData.status !== \"started\") {",
-									"  postman.setNextRequest(\"Wait for stack start\");",
+									"  postman.setNextRequest(\"Wait for simple stack start\");",
 									"  setTimeout(function() {}, 10000);",
 									"} else {",
-									"  postman.setNextRequest(\"Get stack logs\");",
+									"  postman.setNextRequest(\"Get simple stack logs\");",
 									"}"
-								],
-								"id": "cf7deef1-26db-4c4e-8638-388aab72ff88",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -4199,6 +4199,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "a6aaee8c-d7f4-4e8d-b80d-499542245c70",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -4208,14 +4210,12 @@
 									"var jsonData = pm.response.json();",
 									"",
 									"if (jsonData.status !== \"stopped\") {",
-									"  postman.setNextRequest(\"Wait for stack stop\");",
+									"  postman.setNextRequest(\"Wait for simple stack stop\");",
 									"  setTimeout(function() {}, 20000);",
 									"} else {",
-									"  postman.setNextRequest(\"Put stack\");",
+									"  postman.setNextRequest(\"Put simple stack\");",
 									"}"
-								],
-								"id": "521dc444-b0c8-46a1-afac-59818e716fcf",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
