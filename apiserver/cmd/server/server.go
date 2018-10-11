@@ -1002,7 +1002,14 @@ func (s *Server) DeleteAccount(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	if s.kube.NamespaceExists(userId) {
-		err := s.kube.DeleteNamespace(userId)
+ 		claimName := userId + s.Config.HomePvcSuffix
+		err := s.kube.DeletePersistentVolumeClaim(userId, claimName)
+		if err != nil {
+			glog.Error(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		err = s.kube.DeleteNamespace(userId)
 		if err != nil {
 			glog.Error(err)
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
