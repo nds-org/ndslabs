@@ -1768,6 +1768,11 @@ func (s *Server) DeleteStack(w rest.ResponseWriter, r *rest.Request) {
 		stackService.Id = fmt.Sprintf("%s-%s", sid, stackService.Service)
 		name := fmt.Sprintf("%s-%s", stack.Id, stackService.Service)
 		glog.V(4).Infof("Stopping service %s\n", name)
+		for j := range stackService.VolumeMounts {
+			volName := j
+			volPath := stackService.VolumeMounts[j]
+			glog.V(4).Infof("Volume name: %s -> %s", volName, volPath)
+		}
 		spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
 		if len(spec.Ports) > 0 {
 			err := s.kube.StopService(userId, name)
@@ -1805,6 +1810,7 @@ func (s *Server) startStackService(serviceKey string, userId string, stack *api.
 }
 
 func (s *Server) startController(userId string, serviceKey string, stack *api.Stack, addrPortMap *map[string]kube.ServiceAddrPort) (bool, error) {
+	s.kube.CreateNetworkPolicy(userId, stack.Id, stack.Id)
 
 	var stackService *api.StackService
 	found := false
@@ -2401,6 +2407,9 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 	s.etcd.PutStack(userId, sid, stack)
 
 	stack, _ = s.getStackWithStatus(userId, sid)
+
+
+	s.kube.DeleteNetworkPolicy(userId, sid)
 	return stack, nil
 }
 
