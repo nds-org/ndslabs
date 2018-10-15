@@ -1810,7 +1810,11 @@ func (s *Server) startStackService(serviceKey string, userId string, stack *api.
 }
 
 func (s *Server) startController(userId string, serviceKey string, stack *api.Stack, addrPortMap *map[string]kube.ServiceAddrPort) (bool, error) {
-	s.kube.CreateNetworkPolicy(userId, stack.Id, stack.Id)
+	_, err := s.kube.CreateNetworkPolicy(userId, stack.Id, stack.Id)
+	if err != nil {
+		glog.Errorf("Failed to start controller %s: Failed to create NetworkPolicy: %s\n", serviceKey, err)
+		return false, err
+	}
 
 	var stackService *api.StackService
 	found := false
@@ -2396,8 +2400,10 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 
 	stack, _ = s.getStackWithStatus(userId, sid)
 
-
-	s.kube.DeleteNetworkPolicy(userId, sid)
+	err := s.kube.DeleteNetworkPolicy(userId, sid)
+	if err != nil {
+		glog.Errorf("Failed to delete network policy: %s\n", err)
+	}
 	return stack, nil
 }
 

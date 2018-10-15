@@ -398,7 +398,7 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 }
 
 
-func (k *KubeHelper) CreateNetworkPolicy(ns string, name string, groupName string) *networkingv1.NetworkPolicy {
+func (k *KubeHelper) CreateNetworkPolicy(ns string, name string, groupName string) (*networkingv1.NetworkPolicy, error) {
 	k8netPolicy := networkingv1.NetworkPolicy{
 		TypeMeta: metav1.TypeMeta{
 			Kind: "NetworkPolicy",
@@ -446,7 +446,7 @@ func (k *KubeHelper) CreateNetworkPolicy(ns string, name string, groupName strin
                 glog.Errorf("Error creating NetworkPolicy %s in namespace %s: %s\n", name, ns, err)
 	}
 
-	return &k8netPolicy
+	return &k8netPolicy, err
 }
 
 func (k *KubeHelper) NetworkPolicyExists(ns string, name string) bool {
