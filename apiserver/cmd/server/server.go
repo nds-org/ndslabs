@@ -1902,56 +1902,42 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	jsonTemplate, _ := json.MarshalIndent(template, "", "   ")
 	glog.V(4).Infof("Template:\n%s", jsonTemplate)
 
-	storageClass := s.Config.Kubernetes.StorageClass
+	//storageClass := s.Config.Kubernetes.StorageClass
 	if len(stackService.VolumeMounts) > 0 || len(spec.VolumeMounts) > 0 {
 
-		idx := 0
-		for _, toPath := range stackService.VolumeMounts {
+		for fromPath, toPath := range stackService.VolumeMounts {
 
-			k8vol := v1.Volume{}
-			k8pvcVolSrc := v1.PersistentVolumeClaimVolumeSource{}
 			found := false
-			for i, mount := range spec.VolumeMounts {
+			for _, mount := range spec.VolumeMounts {
 				if mount.MountPath == toPath {
-					volName := fmt.Sprintf("vol%d", i)
-					k8vol.Name = volName
-
-					// TODO: Allow user to reuse their PVCs for spec mounts?
-		                        // Create a PVC for this data mount
-					claimName := name + "-" + volName
-                		        s.kube.CreatePersistentVolumeClaim(userId, claimName, storageClass)
-					k8pvcVolSrc.ClaimName = claimName
+					glog.V(4).Info("Found PVC user mount")
+				        volName := "home"
+				        //if vol.Type == api.MountTypeDocker {
+                       			//	volName = "docker"
+				        //}
+				        k8vm := v1.VolumeMount{Name: volName, MountPath: toPath, SubPath: fromPath}
+                                        template.Spec.Template.Spec.Containers[0].VolumeMounts = append(template.Spec.Template.Spec.Containers[0].VolumeMounts, k8vm)
 					found = true
 				}
 			}
 
 			if !found {
 				// Create any user-specified mounts
-				volName := fmt.Sprintf("user%d", idx)
-				glog.V(4).Infof("Creating user mount %s\n", volName)
-				k8vol.Name = volName
-				k8vm := v1.VolumeMount{Name: volName, MountPath: toPath}
+				glog.V(4).Info("Creating user mount\n")
+				k8vm := v1.VolumeMount{Name: "home", MountPath: toPath, SubPath: fromPath}
 				if len(template.Spec.Template.Spec.Containers[0].VolumeMounts) == 0 {
 					template.Spec.Template.Spec.Containers[0].VolumeMounts = []v1.VolumeMount{}
 				}
 				template.Spec.Template.Spec.Containers[0].VolumeMounts = append(template.Spec.Template.Spec.Containers[0].VolumeMounts, k8vm)
 
-				// TODO: Allow user to reuse their PVCs for user mounts?
-                                // Create a PVC for this data mount
-                                claimName := name + "-" + volName
-                                s.kube.CreatePersistentVolumeClaim(userId, claimName, storageClass)
-                                k8pvcVolSrc.ClaimName = claimName
-				idx++
+				glog.V(4).Info("Added PVC user mount")
 			}
-			k8vol.PersistentVolumeClaim = &k8pvcVolSrc
-			k8vols = append(k8vols, k8vol)
 		}
 
 		if len(spec.VolumeMounts) > 0 {
 			// Go back through the spec volume mounts and create emptyDirs where needed
+			idx := 0
 			for _, mount := range spec.VolumeMounts {
-				k8vol := v1.Volume{}
-
 				glog.V(4).Infof("Need volume for %s \n", stackService.Service)
 
 				// Docker volume should use HostPath, others can use emptyDir
@@ -1973,8 +1959,10 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 
 					if !found {
 						glog.Warningf("Required volume not found, using emptyDir\n")
+						k8vol := v1.Volume{}
 						k8empty := v1.EmptyDirVolumeSource{}
 						k8vol.Name = fmt.Sprintf("empty%d", idx)
+						idx++
 						k8vol.EmptyDir = &k8empty
 						k8vols = append(k8vols, k8vol)
 					}
@@ -1984,7 +1972,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	}
 	template.Spec.Template.Spec.Volumes = k8vols
 
-	glog.V(4).Infof("Starting controller %s\n", name)
+	glog.V(4).Infof("Starting controller %s with volumes %s\n", name, template.Spec.Template.Spec.Volumes)
 	_, err := s.kube.StartController(userId, template)
 	if err != nil {
 		stackService.Status = "error"
