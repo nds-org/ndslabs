@@ -2,6 +2,8 @@
 
 set -e
 
+BASE_PATH="/home/$WB_USER"
+
 if [ "$1" = 'apiserver' ]; then
 
 	if [ -z "$WORKBENCH_NAME" ]; then 
@@ -92,7 +94,7 @@ if [ "$1" = 'apiserver' ]; then
 		TOKEN_PATH="/run/secrets/kubernetes.io/serviceaccount/token"
 	fi
 
-cat << EOF > /apiserver.json
+cat << EOF > ${BASE_PATH}/apiserver.json
 {
     "port": "30001",
     "origin": "$CORS_ORIGIN_ADDR",
@@ -135,7 +137,7 @@ cat << EOF > /apiserver.json
         "tls": $SMTP_TLS
     },
     "specs": {
-        "path": "/specs"
+        "path": "$HOME_WORKBENCH/specs"
     },
     "volumes": [
 	    {
@@ -160,12 +162,12 @@ EOF
 		SPEC_GIT_BRANCH=master
 	fi
 
-	git clone -b $SPEC_GIT_BRANCH $SPEC_GIT_REPO /specs
+	git clone -b $SPEC_GIT_BRANCH $SPEC_GIT_REPO $BASE_PATH/specs
 
-	echo $ADMIN_PASSWORD > /password.txt
+	echo $ADMIN_PASSWORD > $BASE_PATH/password.txt
 	umask 0
 
-	/apiserver -conf /apiserver.json -v 1 -passwd $ADMIN_PASSWORD
+	/apiserver -conf $BASE_PATH/apiserver.json -v 3 -passwd $ADMIN_PASSWORD
 
 else
     exec "$@"

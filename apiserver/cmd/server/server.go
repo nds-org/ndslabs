@@ -1911,6 +1911,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 			k8vol.HostPath = &k8api.HostPathVolumeSource{
 				Path: volume.Path,
 			}
+			os.MkdirAll(volume.Path, 0777)
 			k8vols = append(k8vols, k8vol)
 		}
 	}

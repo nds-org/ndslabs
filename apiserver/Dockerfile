@@ -1,6 +1,9 @@
 FROM ubuntu:xenial
 MAINTAINER willis8@illinois.edu
 
+ARG WB_USER="workbench"
+ARG WB_UID="1000"
+ARG WB_GID="100"
 
 COPY . /go/src/github.com/ndslabs/apiserver
 COPY entrypoint.sh /entrypoint.sh
@@ -26,6 +29,13 @@ RUN apt-get update -y -qq && \
     rm -rf /var/cache/apk/* /go /golang /tmp/* /root/.glide
 
 VOLUME /volumes
+
+RUN  useradd -m -s /bin/bash -N -u $WB_UID -g $WB_GID $WB_USER
+USER $WB_UID
+
+ENV WB_USER=$WB_USER \
+    WB_UID=$WB_UID \
+    WB_GID=$WB_GID
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["apiserver"]
