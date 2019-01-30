@@ -36,6 +36,10 @@ if [ "$1" = 'apiserver' ]; then
 		HOME_PVC_SUFFIX="-home"
 	fi
 
+	if [ -z "$PVC_STORAGE_CLASS" ]; then 
+		PVC_STORAGE_CLASS="nfs"
+	fi
+
 	if [ -z "$SHARED_VOLUME_PATH" ]; then 
 		SHARED_VOLUME_PATH="/shared"
 	fi
@@ -140,7 +144,8 @@ cat << EOF > /apiserver.json
         "password": "admin",
     	"tokenPath": "$TOKEN_PATH",
 	"nodeSelectorName": "$NODE_SELECTOR_NAME",
-	"nodeSelectorValue": "$NODE_SELECTOR_VALUE"
+	"nodeSelectorValue": "$NODE_SELECTOR_VALUE",
+	"pvcStorageClass": "$PVC_STORAGE_CLASS"
     },
     "email": {
         "host": "$SMTP_HOST",
