@@ -32,12 +32,8 @@ if [ "$1" = 'apiserver' ]; then
 		INGRESS="NodePort"
 	fi
 
-	if [ -z "$VOLUME_PATH" ]; then 
-		VOLUME_PATH="/volumes"
-	fi
-
-	if [ -z "$VOLUME_NAME" ]; then 
-		VOLUME_NAME="global"
+	if [ -z "$HOME_PVC_SUFFIX" ]; then 
+		HOME_PVC_SUFFIX="-home"
 	fi
 
 	if [ -z "$SHARED_VOLUME_PATH" ]; then 
@@ -116,7 +112,7 @@ cat << EOF > /apiserver.json
     "ingress": "$INGRESS",
     "username": "admin",
     "password": "admin",
-    "homeVolume": "$VOLUME_NAME",
+    "homePvcSuffix": "$HOME_PVC_SUFFIX",
     "name": "$WORKBENCH_NAME",
     "dataProviderURL": "$DATA_PROVIDER_URL",
     "authSignInURL": "$SIGNIN_URL",
@@ -155,13 +151,8 @@ cat << EOF > /apiserver.json
         "path": "/specs"
     },
     "volumes": [
-	    {
-            "name": "$VOLUME_NAME",
-            "path": "$VOLUME_PATH",
-            "type": "local"
-        }, 
-		{
-			"name": "$SHARED_VOLUME_NAME",
+        {
+            "name": "$SHARED_VOLUME_NAME",
             "path": "$SHARED_VOLUME_PATH",
             "type": "local",
             "readOnly": $SHARED_VOLUME_READ_ONLY
