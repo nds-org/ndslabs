@@ -154,7 +154,6 @@ cat << EOF > /apiserver.json
         {
             "name": "$SHARED_VOLUME_NAME",
             "path": "$SHARED_VOLUME_PATH",
-            "type": "local",
             "readOnly": $SHARED_VOLUME_READ_ONLY
         }
     ]
