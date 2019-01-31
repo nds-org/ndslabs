@@ -812,6 +812,7 @@ func (k *KubeHelper) CreateIngress(pid string, domain string, service string, po
 	}
 
 	annotations := map[string]string{}
+	annotations["kubernetes.io/ingress.class"] = "nginx"
 	if enableAuth {
 		annotations["nginx.ingress.kubernetes.io/auth-signin"] = k.authSignInURL
 		annotations["nginx.ingress.kubernetes.io/auth-url"] = k.authURL
