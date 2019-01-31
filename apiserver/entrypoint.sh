@@ -32,12 +32,12 @@ if [ "$1" = 'apiserver' ]; then
 		INGRESS="NodePort"
 	fi
 
-	if [ -z "$VOLUME_PATH" ]; then 
-		VOLUME_PATH="/volumes"
+	if [ -z "$HOME_PVC_SUFFIX" ]; then 
+		HOME_PVC_SUFFIX="-home"
 	fi
 
-	if [ -z "$VOLUME_NAME" ]; then 
-		VOLUME_NAME="global"
+	if [ -z "$PVC_STORAGE_CLASS" ]; then 
+		PVC_STORAGE_CLASS="nfs"
 	fi
 
 	if [ -z "$SHARED_VOLUME_PATH" ]; then 
@@ -116,7 +116,7 @@ cat << EOF > /apiserver.json
     "ingress": "$INGRESS",
     "username": "admin",
     "password": "admin",
-    "homeVolume": "$VOLUME_NAME",
+    "homePvcSuffix": "$HOME_PVC_SUFFIX",
     "name": "$WORKBENCH_NAME",
     "dataProviderURL": "$DATA_PROVIDER_URL",
     "authSignInURL": "$SIGNIN_URL",
@@ -144,7 +144,8 @@ cat << EOF > /apiserver.json
         "password": "admin",
     	"tokenPath": "$TOKEN_PATH",
 	"nodeSelectorName": "$NODE_SELECTOR_NAME",
-	"nodeSelectorValue": "$NODE_SELECTOR_VALUE"
+	"nodeSelectorValue": "$NODE_SELECTOR_VALUE",
+	"pvcStorageClass": "$PVC_STORAGE_CLASS"
     },
     "email": {
         "host": "$SMTP_HOST",
@@ -155,15 +156,9 @@ cat << EOF > /apiserver.json
         "path": "/specs"
     },
     "volumes": [
-	    {
-            "name": "$VOLUME_NAME",
-            "path": "$VOLUME_PATH",
-            "type": "local"
-        }, 
-		{
-			"name": "$SHARED_VOLUME_NAME",
+        {
+            "name": "$SHARED_VOLUME_NAME",
             "path": "$SHARED_VOLUME_PATH",
-            "type": "local",
             "readOnly": $SHARED_VOLUME_READ_ONLY
         }
     ]

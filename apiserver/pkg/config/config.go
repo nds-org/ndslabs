@@ -16,7 +16,7 @@ type Config struct {
 	Kubernetes      Kubernetes    `json:"kubernetes"`
 	Email           Email         `json:"email"`
 	Specs           Specs         `json:"specs"`
-	HomeVolume      string        `json:"homeVolume"`
+	HomePvcSuffix   string        `json:"homePvcSuffix"`
 	Volumes         []Volume      `json:"volumes"`
 	Support         SupportLinks  `json:"support"`
 	AuthURL         string        `json:"authURL"`
@@ -35,7 +35,6 @@ type Specs struct {
 type Volume struct {
 	Path     string     `json:"path"`
 	Name     string     `json:"name"`
-	Type     VolumeType `json:"type"`
 	ReadOnly bool       `json:"readOnly"`
 }
 
@@ -58,6 +57,7 @@ type Kubernetes struct {
 	Password           string `json:"password"`
 	NodeSelectorName   string `json:"nodeSelectorName"`
 	NodeSelectorValue  string `json:"nodeSelectorValue"`
+	StorageClass       string `json:"pvcStorageClass"`
 }
 type Email struct {
 	Host string `json:"host"`
@@ -70,12 +70,4 @@ type IngressType string
 const (
 	IngressTypeLoadBalancer IngressType = "LoadBalancer"
 	IngressTypeNodePort     IngressType = "NodePort"
-)
-
-type VolumeType string
-
-const (
-	VolumeTypeGluster VolumeType = "gluster"
-	VolumeTypeNFS     VolumeType = "nfs"
-	VolumeTypeLocal   VolumeType = "local"
 )

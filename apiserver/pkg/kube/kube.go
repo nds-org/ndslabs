@@ -396,6 +396,52 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 	return &k8svc
 }
 
+func (k *KubeHelper) CreatePersistentVolumeClaim(ns string, name string, storageClass string) *v1.PersistentVolumeClaim {
+        k8pvc := v1.PersistentVolumeClaim{}
+
+        // PersistentVolumeClaim
+        k8pvc.APIVersion = "v1"
+        k8pvc.Kind = "PersistentVolumeClaim"
+        k8pvc.Name = name
+        k8pvc.Labels = map[string]string{
+                "name":    name,
+        }
+
+        // Since we use ReadWriteMany, capacity can be any value
+	k8rq := v1.ResourceRequirements{}
+        k8rq.Requests = v1.ResourceList{
+                v1.ResourceStorage:  resource.MustParse("1Mi"),
+        }
+
+	k8pvc.Spec = v1.PersistentVolumeClaimSpec{
+		Resources: k8rq,
+		AccessModes: []v1.PersistentVolumeAccessMode{
+                	v1.ReadWriteMany,
+        	},
+	}
+
+        // if storageClass is explicitly specified, use it (otherwise rely on cluster default)
+        if storageClass != "" {
+                k8pvc.Spec.StorageClassName = &storageClass
+        }
+
+        _, err := k.kubeGo.CoreV1().PersistentVolumeClaims(ns).Create(&k8pvc)
+
+        // Give Kubernetes time to bind a PersistentVolume for this PVC
+        //time.Sleep(time.Second * 5)
+
+	if err != nil { 
+                glog.Errorf("Error creating PVC %s in namespace %s: %s\n", name, ns, err)
+	}
+
+        return &k8pvc
+}
+
+func (k *KubeHelper) DeletePersistentVolumeClaim(pid string, name string) error {
+        deleteOptions := metav1.DeleteOptions{}
+        return k.kubeGo.CoreV1().PersistentVolumeClaims(pid).Delete(name, &deleteOptions)
+}
+
 func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, domain string,
 	emailAddress string, smtpHost string, stackService *ndsapi.StackService, spec *ndsapi.ServiceSpec,
 	links *map[string]ServiceAddrPort, extraVols *[]config.Volume, nodeSelectorName string, nodeSelectorValue string) *v1.ReplicationController {
@@ -470,17 +516,6 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 			ReadOnly:  volume.ReadOnly,
 		}
 		k8volMounts = append(k8volMounts, k8vol)
-	}
-
-	if len(spec.VolumeMounts) > 0 {
-		for i, vol := range spec.VolumeMounts {
-			volName := fmt.Sprintf("vol%d", i)
-			if vol.Type == ndsapi.MountTypeDocker {
-				volName = "docker"
-			}
-			k8vol := v1.VolumeMount{Name: volName, MountPath: vol.MountPath}
-			k8volMounts = append(k8volMounts, k8vol)
-		}
 	}
 
 	k8cps := []v1.ContainerPort{}
@@ -777,6 +812,7 @@ func (k *KubeHelper) CreateIngress(pid string, domain string, service string, po
 	}
 
 	annotations := map[string]string{}
+	annotations["kubernetes.io/ingress.class"] = "nginx"
 	if enableAuth {
 		annotations["nginx.ingress.kubernetes.io/auth-signin"] = k.authSignInURL
 		annotations["nginx.ingress.kubernetes.io/auth-url"] = k.authURL
