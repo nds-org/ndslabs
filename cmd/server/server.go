@@ -1982,7 +1982,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	}
 	template.Spec.Template.Spec.Volumes = k8vols
 
-	glog.V(4).Infof("Starting controller %s\n", name)
+	glog.V(4).Infof("Starting controller %s with volumes %s\n", name, template.Spec.Template.Spec.Volumes)
 	_, err = s.kube.StartController(userId, template)
 	if err != nil {
 		stackService.Status = "error"
