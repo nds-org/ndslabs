@@ -397,7 +397,6 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 	return &k8svc
 }
 
-
 func (k *KubeHelper) CreateNetworkPolicy(ns string, name string, groupName string) (*networkingv1.NetworkPolicy, error) {
 	k8netPolicy := networkingv1.NetworkPolicy{
 		TypeMeta: metav1.TypeMeta{
@@ -879,6 +878,7 @@ func (k *KubeHelper) CreateIngress(pid string, domain string, service string, po
 	}
 
 	annotations := map[string]string{}
+	annotations["kubernetes.io/ingress.class"] = "nginx"
 	if enableAuth {
 		annotations["nginx.ingress.kubernetes.io/auth-signin"] = k.authSignInURL
 		annotations["nginx.ingress.kubernetes.io/auth-url"] = k.authURL

@@ -35,7 +35,6 @@ type Specs struct {
 type Volume struct {
 	Path     string     `json:"path"`
 	Name     string     `json:"name"`
-	Type     VolumeType `json:"type"`
 	ReadOnly bool       `json:"readOnly"`
 }
 
@@ -71,12 +70,4 @@ type IngressType string
 const (
 	IngressTypeLoadBalancer IngressType = "LoadBalancer"
 	IngressTypeNodePort     IngressType = "NodePort"
-)
-
-type VolumeType string
-
-const (
-	VolumeTypeGluster VolumeType = "gluster"
-	VolumeTypeNFS     VolumeType = "nfs"
-	VolumeTypeLocal   VolumeType = "local"
 )
