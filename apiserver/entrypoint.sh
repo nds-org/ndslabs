@@ -36,10 +36,6 @@ if [ "$1" = 'apiserver' ]; then
 		HOME_PVC_SUFFIX="-home"
 	fi
 
-	if [ -z "$PVC_STORAGE_CLASS" ]; then 
-		PVC_STORAGE_CLASS="nfs"
-	fi
-
 	if [ -z "$SHARED_VOLUME_PATH" ]; then 
 		SHARED_VOLUME_PATH="/shared"
 	fi
