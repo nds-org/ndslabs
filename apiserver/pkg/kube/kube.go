@@ -406,6 +406,9 @@ func (k *KubeHelper) CreatePersistentVolumeClaim(ns string, name string, storage
         k8pvc.Labels = map[string]string{
                 "name":    name,
         }
+        k8pvc.Annotations = map[string]string{
+        		"volume.beta.kubernetes.io/nfs-mount-path":	name,
+		}
 
         // Since we use ReadWriteMany, capacity can be any value
 	k8rq := v1.ResourceRequirements{}
