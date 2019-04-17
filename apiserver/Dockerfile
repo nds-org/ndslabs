@@ -1,4 +1,4 @@
-FROM golang:1.8-jessie as gobuild
+FROM golang:1.8-stretch as gobuild
 COPY . /go/src/github.com/ndslabs/apiserver
 
 RUN apt-get -qq update && \
@@ -6,7 +6,7 @@ RUN apt-get -qq update && \
     go get github.com/Masterminds/glide  &&  \
     cd /go/src/github.com/ndslabs/apiserver && ./build.sh docker
 
-FROM debian:jessie
+FROM debian:stretch
 COPY --from=gobuild /go/src/github.com/ndslabs/apiserver/build/bin/ndslabsctl-linux-amd64 /ndslabsctl/ndslabsctl-linux-amd64
 COPY --from=gobuild /go/src/github.com/ndslabs/apiserver/build/bin/ndslabsctl-darwin-amd64 /ndslabsctl/ndslabsctl-darwin-amd64
 COPY --from=gobuild /go/src/github.com/ndslabs/apiserver/build/bin/apiserver-linux-amd64 /usr/local/bin/apiserver
