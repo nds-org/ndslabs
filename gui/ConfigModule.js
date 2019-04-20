@@ -21,7 +21,7 @@ angular
  * The back-up (default) administrator e-mail to use for support, 
  * in case the /api/contact endpoint is unavailable
  */
-.constant('SupportEmail', 'ndslabs-support@nationaldataservice.org')
+.constant('SupportEmail', 'willis8@illinois.edu')
 
 // Landing App Routes
 .constant('LandingAppPath', '/landing')
@@ -48,19 +48,19 @@ angular
 /**
  * The name of the product to display in the UI and the URL to link to when clicked
  */
-.constant('OrgName', 'NDS')
-.constant('ProductName', 'Labs Workbench')
-.constant('ProductUrl', 'http://www.nationaldataservice.org/projects/labs.html')
+.constant('OrgName', 'CHEESE')
+.constant('ProductName', 'CHEESEHub')
+.constant('ProductUrl', 'http://cheesehub.readthedocs.io')
 
 /**
  * Helpful links to include in the landing page / navbar
  */
 .value('HelpLinks', [
-  { name: "Feature Overview",       icon: 'fa-info-circle',        url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Feature+Overview' },
-  { name: "F.A.Q.",                 icon: 'fa-question-circle',    url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Frequently+Asked+Questions'},
-  { name: "User's Guide",           icon: 'fa-book',               url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/User%27s+Guide' },
-  { name: "Developer's Guide",      icon: 'fa-code-fork',          url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Developer%27s+Guide' },
-  { name: "Acceptable Use Policy",  icon: 'fa-gavel',              url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Acceptable+Use+Policy' },
+  { name: "Feature Overview",       icon: 'fa-info-circle',        url: 'https://cheesehub.readthedocs.io' },
+  { name: "F.A.Q.",                 icon: 'fa-question-circle',    url: 'https://cheesehub.readthedocs.io' },
+  { name: "User's Guide",           icon: 'fa-book',               url: 'https://cheesehub.readthedocs.io' },
+  { name: "Developer's Guide",      icon: 'fa-code-fork',          url: 'https://cheesehub.readthedocs.io' },
+  { name: "Acceptable Use Policy",  icon: 'fa-gavel',              url: 'https://cheesehub.readthedocs.io' },
 ])
 
 /**
@@ -76,7 +76,7 @@ angular
  * 
  * TODO: We assume this is running on the same machine as the apiserver.
  */ 
-.constant('ApiHost', 'www.local.ndslabs.org')
+.constant('ApiHost', 'www.hub.cheesehub.org')
 .constant('ApiPort', '')
 .constant('ApiPath', '/api')
 .constant('ApiSecure', true) 
@@ -89,7 +89,7 @@ angular
 /** Store the value of the "rd" querystring parameter */
 .value('ReturnRoute', '')
 
-.constant('CookieOptions', { domain: '.local.ndslabs.org', secure: true, path: '/' })
+.constant('CookieOptions', { domain: '.hub.cheesehub.org', secure: true, path: '/' })
 
 /**
  * A shared store for our AuthInfo, done as a provider so that we
