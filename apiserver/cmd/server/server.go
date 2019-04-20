@@ -2137,8 +2137,8 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 	for _, stackService := range stackServices {
 		spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
 		name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
-		svc, _ := s.kube.GetService(userId, name)
-		if svc != nil {
+		svc, svcerr := s.kube.GetService(userId, name)
+		if svc != nil && svcerr == nil {
 			addrPort := kube.ServiceAddrPort{
 				Name:     stackService.Service,
 				Host:     svc.Spec.ClusterIP,
@@ -2146,6 +2146,9 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 				NodePort: svc.Spec.Ports[0].NodePort,
 			}
 			addrPortMap[stackService.Service] = addrPort
+		} else {
+			glog.Errorf("Failed to start stack=%s: %s\n", sid, svcerr)
+			break
 		}
 	}
 
