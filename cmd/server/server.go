@@ -1904,7 +1904,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 
 	// Create the controller template
 	account, _ := s.etcd.GetAccount(userId)
-        cfg := s.Config
+	cfg := s.Config
 	nodeSelectorName := cfg.Kubernetes.NodeSelectorName
 	nodeSelectorValue := cfg.Kubernetes.NodeSelectorValue
 	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, s.domain, account.EmailAddress, s.email.Server, stackService, spec, addrPortMap, &extraVols, nodeSelectorName, nodeSelectorValue)
@@ -2147,8 +2147,8 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 	for _, stackService := range stackServices {
 		spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
 		name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
-		svc, _ := s.kube.GetService(userId, name)
-		if svc != nil {
+		svc, err := s.kube.GetService(userId, name)
+		if err == nil {
 			addrPort := kube.ServiceAddrPort{
 				Name:     stackService.Service,
 				Host:     svc.Spec.ClusterIP,
@@ -2156,6 +2156,8 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 				NodePort: svc.Spec.Ports[0].NodePort,
 			}
 			addrPortMap[stackService.Service] = addrPort
+		} else {
+			glog.V(4).Infof("Error getting service %s: %s\n", name, err)
 		}
 	}
 
