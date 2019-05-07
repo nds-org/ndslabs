@@ -27,6 +27,7 @@ import (
 	utilrand "k8s.io/apimachinery/pkg/util/rand"
 
 	"k8s.io/api/core/v1"
+        networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -394,6 +395,71 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 	}
 
 	return &k8svc
+}
+
+func (k *KubeHelper) CreateNetworkPolicy(ns string, name string, groupName string) (*networkingv1.NetworkPolicy, error) {
+	k8netPolicy := networkingv1.NetworkPolicy{
+		TypeMeta: metav1.TypeMeta{
+			Kind: "NetworkPolicy",
+       			APIVersion: "networking.k8s.io/v1",
+        	},
+		ObjectMeta: metav1.ObjectMeta{
+                	Name: name,
+                	Namespace: ns,
+        	},
+		Spec: networkingv1.NetworkPolicySpec{
+			PodSelector: metav1.LabelSelector{},
+        	        Ingress: []networkingv1.NetworkPolicyIngressRule{
+				networkingv1.NetworkPolicyIngressRule{
+					From: []networkingv1.NetworkPolicyPeer{
+						networkingv1.NetworkPolicyPeer{
+							PodSelector: &metav1.LabelSelector{
+								MatchLabels: map[string]string{
+									"group": groupName,
+								},
+							},
+						},
+					},
+				},
+			},
+			Egress: []networkingv1.NetworkPolicyEgressRule{
+				networkingv1.NetworkPolicyEgressRule{
+					To: []networkingv1.NetworkPolicyPeer{
+						networkingv1.NetworkPolicyPeer{
+							PodSelector: &metav1.LabelSelector{
+								MatchLabels: map[string]string{
+									"group": groupName,
+								},
+							},
+						},
+					},
+				},
+			},
+			PolicyTypes: []networkingv1.PolicyType{},
+	        },
+
+	}
+
+	_, err := k.kubeGo.NetworkingV1().NetworkPolicies(ns).Create(&k8netPolicy)
+	if err != nil {
+                glog.Errorf("Error creating NetworkPolicy %s in namespace %s: %s\n", name, ns, err)
+	}
+
+	return &k8netPolicy, err
+}
+
+func (k *KubeHelper) NetworkPolicyExists(ns string, name string) bool {
+        getOptions := metav1.GetOptions{}
+        _, err := k.kubeGo.NetworkingV1().NetworkPolicies(ns).Get(name, getOptions)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func (k *KubeHelper) DeleteNetworkPolicy(ns string, name string) error {
+	deleteOptions := metav1.DeleteOptions{}
+	return k.kubeGo.NetworkingV1().NetworkPolicies(ns).Delete(name, &deleteOptions)
 }
 
 func (k *KubeHelper) CreatePersistentVolumeClaim(ns string, name string, storageClass string) *v1.PersistentVolumeClaim {
