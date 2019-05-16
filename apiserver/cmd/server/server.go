@@ -2145,19 +2145,23 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 	// Get the service/port mappinggs
 	addrPortMap := make(map[string]kube.ServiceAddrPort)
 	for _, stackService := range stackServices {
-		spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
-		name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
-		svc, err := s.kube.GetService(userId, name)
-		if err == nil {
-			addrPort := kube.ServiceAddrPort{
-				Name:     stackService.Service,
-				Host:     svc.Spec.ClusterIP,
-				Port:     svc.Spec.Ports[0].Port,
-				NodePort: svc.Spec.Ports[0].NodePort,
-			}
-			addrPortMap[stackService.Service] = addrPort
+		spec, specErr := s.etcd.GetServiceSpec(userId, stackService.Service)
+		if specErr != nil {
+			glog.Error(specErr)	
 		} else {
-			glog.V(4).Infof("Error getting service %s: %s\n", name, err)
+			name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
+			svc, svcErr := s.kube.GetService(userId, name)
+			if svcErr == nil {
+				addrPort := kube.ServiceAddrPort{
+					Name:     stackService.Service,
+					Host:     svc.Spec.ClusterIP,
+					Port:     svc.Spec.Ports[0].Port,
+					NodePort: svc.Spec.Ports[0].NodePort,
+				}
+				addrPortMap[stackService.Service] = addrPort
+			} else {
+				glog.Error(svcErr)
+			}
 		}
 	}
 
