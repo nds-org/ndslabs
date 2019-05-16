@@ -8,6 +8,22 @@
 		"name": "ndslabs/cowsay",
 		"tags": ["latest", "v1", "v2", "v3"]
 	},
+        "securityContext": {
+		"allowPrivilegeEscalation": true,
+		"capabilities": {
+			"add": ["NET_ADMIN", "SYS_TIME"],
+			"drop": ["NET_ADMIN"]
+		},
+		"privileged": true,
+		"procMount": "UnmaskedProcMount",
+		"readOnlyRootFilesystem": true,
+		"runAsGroup": 1000,
+		"runAsNonRoot": true,
+		"runAsUser": 1000,
+		"seLinuxOptions": {
+			"level": "s0:c123,c456"
+		}
+	},
 	"display": "stack",
 	"access": "external",
 	"depends": [{
