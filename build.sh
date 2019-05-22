@@ -17,7 +17,13 @@ if [ "$1" == "local" ] || [ "$1" == "docker" ]; then
     echo "  BUILD_DATE = \"$BUILD_DATE\"" >> $VERSIONFILE
     echo ")" >> $VERSIONFILE
     
-    glide install --strip-vendor
+    # Check for --cache flag
+    args="$@"
+    replaced="${@/--cache/}"
+    if [ "$args" == "$replaced" ]; then
+        echo "Fetching dependencies..."
+        glide install --strip-vendor
+    fi
     
     COVERPKG=./cmd/server,./pkg/crypto,./pkg/etcd,./pkg/config,./pkg/email,./pkg/events,./pkg/kube,./pkg/middleware,./pkg/types,./pkg/validate
 	if [ "$1" == "local" ]; then 
