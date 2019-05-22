@@ -1146,7 +1146,7 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 		glog.V(1).Infof("Added system service %s\n", service.Key)
 	} else {
 		// Don't allow privileged services in user catalogs
-		service.Privileged = false
+		service.SecurityContext = v1.SecurityContext{}
 
 		// Always require auth on user catalog services
 		service.AuthRequired = true
@@ -1223,7 +1223,7 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 			return
 		}
 		// Don't allow privileged services in user catalogs
-		service.Privileged = false
+		service.SecurityContext = v1.SecurityContext{}
 
 		// Always require auth on user catalog services
 		service.AuthRequired = true
