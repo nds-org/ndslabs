@@ -34,6 +34,9 @@ let apiBase = apiProtocol + '//' + apiHost;
 if (apiPort) { apiBase += ':' + apiPort }
 if (apiPath) { apiBase += apiPath }
 
+// The UI subdomain is excluded, since the UI handles its own auth checks
+const subdomainPrefix = process.env.SUBDOMAIN_PREFIX || 'www';
+
 // Configure gzip compression
 app.use(compression());
 
@@ -223,14 +226,14 @@ app.get('/cauth/auth', function(req, res) {
   logger.log("debug", "Checking user session: " + token);
   
   let requestedUrl = req.headers['x-original-url'];
-  let prefix = secureCookie ? 'https://www' : 'http://www';
+  let prefix = (secureCookie ? 'https://' : 'http://') + subdomainPrefix;
   let checkHost = '';
   
   if (!token) {
       res.sendStatus(401);
       return;
   } else if (requestedUrl.indexOf(prefix+cookieDomain) !== 0) {
-     // if request starts with an arbitrary host (e.g. not 'www.'), 
+     // if request starts with an arbitrary host (e.g. not 'subdomainPrefix.'), 
      //    we need to check authorization
     checkHost = requestedUrl.replace(/https?:\/\//, '').replace(/\/.*$/, '');
     //logger.log("debug", `Checking token's access to ${checkHost}`);
