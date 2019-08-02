@@ -2,7 +2,7 @@
 package types
 
 import (
-        "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 )
 
 type ServiceSpec struct {
@@ -32,6 +32,7 @@ type ServiceSpec struct {
 	Info                 string              `json:"info"`
 	SecurityContext      v1.SecurityContext  `json:"securityContext"`
 	AuthRequired         bool                `json:"authRequired"`
+	Collocate            bool                `json:"collocate"`
 }
 
 type ServiceImage struct {
