@@ -1146,7 +1146,7 @@ func (s *Server) PostService(w rest.ResponseWriter, r *rest.Request) {
 		glog.V(1).Infof("Added system service %s\n", service.Key)
 	} else {
 		// Don't allow privileged services in user catalogs
-		service.Privileged = false
+		service.SecurityContext = v1.SecurityContext{}
 
 		// Always require auth on user catalog services
 		service.AuthRequired = true
@@ -1223,7 +1223,7 @@ func (s *Server) PutService(w rest.ResponseWriter, r *rest.Request) {
 			return
 		}
 		// Don't allow privileged services in user catalogs
-		service.Privileged = false
+		service.SecurityContext = v1.SecurityContext{}
 
 		// Always require auth on user catalog services
 		service.AuthRequired = true
@@ -1810,11 +1810,6 @@ func (s *Server) startStackService(serviceKey string, userId string, stack *api.
 }
 
 func (s *Server) startController(userId string, serviceKey string, stack *api.Stack, addrPortMap *map[string]kube.ServiceAddrPort) (bool, error) {
-	_, err := s.kube.CreateNetworkPolicy(userId, stack.Id, stack.Id)
-	if err != nil {
-		glog.Errorf("Failed to start controller %s: Failed to create NetworkPolicy: %s\n", serviceKey, err)
-		return false, err
-	}
 
 	var stackService *api.StackService
 	found := false
@@ -1983,7 +1978,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	template.Spec.Template.Spec.Volumes = k8vols
 
 	glog.V(4).Infof("Starting controller %s with volumes %s\n", name, template.Spec.Template.Spec.Volumes)
-	_, err = s.kube.StartController(userId, template)
+	_, err := s.kube.StartController(userId, template)
 	if err != nil {
 		stackService.Status = "error"
 		stackService.StatusMessages = append(stackService.StatusMessages,
@@ -2145,20 +2140,31 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 	// Get the service/port mappinggs
 	addrPortMap := make(map[string]kube.ServiceAddrPort)
 	for _, stackService := range stackServices {
-		spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
-		name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
-		svc, err := s.kube.GetService(userId, name)
-		if err == nil {
-			addrPort := kube.ServiceAddrPort{
-				Name:     stackService.Service,
-				Host:     svc.Spec.ClusterIP,
-				Port:     svc.Spec.Ports[0].Port,
-				NodePort: svc.Spec.Ports[0].NodePort,
-			}
-			addrPortMap[stackService.Service] = addrPort
+		spec, specErr := s.etcd.GetServiceSpec(userId, stackService.Service)
+		if specErr != nil {
+			glog.Error(specErr)	
 		} else {
-			glog.V(4).Infof("Error getting service %s: %s\n", name, err)
+			name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
+			svc, svcErr := s.kube.GetService(userId, name)
+			if svcErr == nil {
+				addrPort := kube.ServiceAddrPort{
+					Name:     stackService.Service,
+					Host:     svc.Spec.ClusterIP,
+					Port:     svc.Spec.Ports[0].Port,
+					NodePort: svc.Spec.Ports[0].NodePort,
+				}
+				addrPortMap[stackService.Service] = addrPort
+			} else {
+				glog.Error(svcErr)
+			}
 		}
+	}
+
+	glog.V(4).Infof("Creating network policy for %s %s\n", userId, sid)
+	_, err := s.kube.CreateNetworkPolicy(userId, sid, sid)
+	if err != nil {
+		glog.Errorf("Failed to start controller %s: Failed to create NetworkPolicy: %s\n", sid, err)
+		return stack, err
 	}
 
 	// For each stack service, if no dependencies or dependency == started,

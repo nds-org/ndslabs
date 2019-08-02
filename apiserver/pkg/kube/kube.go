@@ -618,6 +618,7 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 	} else {
 		tag = "latest"
 	}
+
 	k8template := v1.PodTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
@@ -638,9 +639,7 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 					Command:         spec.Command,
 					Resources:       k8rq,
 					ImagePullPolicy: v1.PullAlways,
-					SecurityContext: &v1.SecurityContext{
-						Privileged: &spec.Privileged,
-					},
+					SecurityContext: &spec.SecurityContext,
 				},
 			},
 			NodeSelector: map[string]string{
