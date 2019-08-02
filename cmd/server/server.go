@@ -454,10 +454,10 @@ func (s *Server) initExistingAccounts() {
 		if !s.kube.NamespaceExists(account.Namespace) && account.Status == api.AccountStatusApproved {
 			s.kube.CreateNamespace(account.Namespace)
 
-                        // Create a PVC for this user's data
+			// Create a PVC for this user's data
 			storageClass := s.Config.Kubernetes.StorageClass
-                        claimName := account.Namespace + s.Config.HomePvcSuffix
-                        s.kube.CreatePersistentVolumeClaim(account.Namespace, claimName, storageClass)
+			claimName := account.Namespace + s.Config.HomePvcSuffix
+			s.kube.CreatePersistentVolumeClaim(account.Namespace, claimName, storageClass)
 
 			if account.ResourceLimits.CPUMax > 0 &&
 				account.ResourceLimits.MemoryMax > 0 {
@@ -733,10 +733,10 @@ func (s *Server) setupAccount(account *api.Account) error {
 		return err
 	}
 
-        // Create a PVC for this user's data
+	// Create a PVC for this user's data
 	storageClass := s.Config.Kubernetes.StorageClass
-        claimName := account.Namespace + s.Config.HomePvcSuffix
-        s.kube.CreatePersistentVolumeClaim(account.Namespace, claimName, storageClass)
+	claimName := account.Namespace + s.Config.HomePvcSuffix
+	s.kube.CreatePersistentVolumeClaim(account.Namespace, claimName, storageClass)
 
 	if account.ResourceLimits == (api.AccountResourceLimits{}) {
 		glog.Warningf("No resource limits specified for account %s, using defaults\n", account.Name)
@@ -1002,7 +1002,7 @@ func (s *Server) DeleteAccount(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	if s.kube.NamespaceExists(userId) {
- 		claimName := userId + s.Config.HomePvcSuffix
+		claimName := userId + s.Config.HomePvcSuffix
 		err := s.kube.DeletePersistentVolumeClaim(userId, claimName)
 		if err != nil {
 			glog.Error(err)
@@ -1878,13 +1878,13 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	k8vols := make([]v1.Volume, 0)
 	extraVols := make([]config.Volume, 0)
 
-        // Mount the home directory
-        k8homeVol := v1.Volume{}
-        k8homeVol.Name = "home"
-        k8homeVol.PersistentVolumeClaim = &v1.PersistentVolumeClaimVolumeSource{
-                ClaimName: userId + s.Config.HomePvcSuffix,
-        }
-        k8vols = append(k8vols, k8homeVol)
+	// Mount the home directory
+	k8homeVol := v1.Volume{}
+	k8homeVol.Name = "home"
+	k8homeVol.PersistentVolumeClaim = &v1.PersistentVolumeClaimVolumeSource{
+		ClaimName: userId + s.Config.HomePvcSuffix,
+	}
+	k8vols = append(k8vols, k8homeVol)
 
 	for _, volume := range s.Config.Volumes {
 		// TODO: should "shared" volumes continue to use hostPath?
@@ -1916,12 +1916,12 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 			for _, mount := range spec.VolumeMounts {
 				if mount.MountPath == toPath {
 					glog.V(4).Info("Found PVC user mount")
-				        volName := "home"
-				        //if vol.Type == api.MountTypeDocker {
-                       			//	volName = "docker"
-				        //}
-				        k8vm := v1.VolumeMount{Name: volName, MountPath: toPath, SubPath: fromPath}
-                                        template.Spec.Template.Spec.Containers[0].VolumeMounts = append(template.Spec.Template.Spec.Containers[0].VolumeMounts, k8vm)
+					volName := "home"
+					//if vol.Type == api.MountTypeDocker {
+					//	volName = "docker"
+					//}
+					k8vm := v1.VolumeMount{Name: volName, MountPath: toPath, SubPath: fromPath}
+					template.Spec.Template.Spec.Containers[0].VolumeMounts = append(template.Spec.Template.Spec.Containers[0].VolumeMounts, k8vm)
 					found = true
 				}
 			}
@@ -2142,7 +2142,7 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 	for _, stackService := range stackServices {
 		spec, specErr := s.etcd.GetServiceSpec(userId, stackService.Service)
 		if specErr != nil {
-			glog.Error(specErr)	
+			glog.Error(specErr)
 		} else {
 			name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
 			svc, svcErr := s.kube.GetService(userId, name)
