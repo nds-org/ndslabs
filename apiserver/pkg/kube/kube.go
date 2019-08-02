@@ -647,6 +647,27 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 		},
 	}
 
+	if spec.Collocate {
+		k8template.Spec.Affinity = &v1.Affinity{
+			PodAffinity: &v1.PodAffinity{
+				RequiredDuringSchedulingIgnoredDuringExecution: []v1.PodAffinityTerm{
+					{
+						LabelSelector: &metav1.LabelSelector{
+							MatchExpressions: []metav1.LabelSelectorRequirement{
+								{
+									Key:      "stack",
+									Operator: metav1.LabelSelectorOpIn,
+									Values:   []string{stack},
+								},
+							},
+						},
+						TopologyKey: "kubernetes.io/hostname",
+					},
+				},
+			},
+		}
+	}
+
 	if nodeSelectorName != "" {
 		if nodeSelectorValue != "" {
 			k8template.Spec.NodeSelector[nodeSelectorName] = nodeSelectorValue
