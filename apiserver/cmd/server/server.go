@@ -2160,11 +2160,13 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 		}
 	}
 
-	glog.V(4).Infof("Creating network policy for %s %s\n", userId, sid)
-	_, err := s.kube.CreateNetworkPolicy(userId, sid, sid)
-	if err != nil {
-		glog.Errorf("Failed to start controller %s: Failed to create NetworkPolicy: %s\n", sid, err)
-		return stack, err
+	if !s.kube.NetworkPolicyExists(userId, sid) {
+		glog.V(4).Infof("Creating network policy for %s %s\n", userId, sid)
+		_, err := s.kube.CreateNetworkPolicy(userId, sid, sid)
+		if err != nil {
+			glog.Errorf("Failed to start controller %s: Failed to create NetworkPolicy: %s\n", sid, err)
+			return stack, err
+		}
 	}
 
 	// For each stack service, if no dependencies or dependency == started,
