@@ -408,14 +408,25 @@ func (k *KubeHelper) CreateNetworkPolicy(ns string, name string, groupName strin
 			Namespace: ns,
 		},
 		Spec: networkingv1.NetworkPolicySpec{
-			PodSelector: metav1.LabelSelector{},
+			PodSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"stack": groupName,
+				},
+			},
 			Ingress: []networkingv1.NetworkPolicyIngressRule{
 				networkingv1.NetworkPolicyIngressRule{
 					From: []networkingv1.NetworkPolicyPeer{
 						networkingv1.NetworkPolicyPeer{
 							PodSelector: &metav1.LabelSelector{
 								MatchLabels: map[string]string{
-									"group": groupName,
+									"stack": groupName,
+								},
+							},
+						},
+						networkingv1.NetworkPolicyPeer{
+							PodSelector: &metav1.LabelSelector{
+								MatchLabels: map[string]string{
+									"app": "nginx-ingress",
 								},
 							},
 						},
@@ -428,7 +439,14 @@ func (k *KubeHelper) CreateNetworkPolicy(ns string, name string, groupName strin
 						networkingv1.NetworkPolicyPeer{
 							PodSelector: &metav1.LabelSelector{
 								MatchLabels: map[string]string{
-									"group": groupName,
+									"stack": groupName,
+								},
+							},
+						},
+						networkingv1.NetworkPolicyPeer{
+							PodSelector: &metav1.LabelSelector{
+								MatchLabels: map[string]string{
+									"app": "nginx-ingress",
 								},
 							},
 						},
