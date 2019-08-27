@@ -2160,14 +2160,17 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 		}
 	}
 
-	if !s.kube.NetworkPolicyExists(userId, sid) {
-		glog.V(4).Infof("Creating network policy for %s %s\n", userId, sid)
-		_, err := s.kube.CreateNetworkPolicy(userId, sid, sid)
-		if err != nil {
-			glog.Errorf("Failed to start controller %s: Failed to create NetworkPolicy: %s\n", sid, err)
-			return stack, err
+	/*
+		Disabling network policies per https://github.com/nds-org/ndslabs/issues/286
+		if !s.kube.NetworkPolicyExists(userId, sid) {
+			glog.V(4).Infof("Creating network policy for %s %s\n", userId, sid)
+			_, err := s.kube.CreateNetworkPolicy(userId, sid, sid)
+			if err != nil {
+				glog.Errorf("Failed to start controller %s: Failed to create NetworkPolicy: %s\n", sid, err)
+				return stack, err
+			}
 		}
-	}
+	*/
 
 	// For each stack service, if no dependencies or dependency == started,
 	// start service. Otherwise wait
@@ -2410,10 +2413,13 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 
 	stack, _ = s.getStackWithStatus(userId, sid)
 
-	err := s.kube.DeleteNetworkPolicy(userId, sid)
-	if err != nil {
-		glog.Errorf("Failed to delete network policy: %s\n", err)
-	}
+	/*
+		Disabling network policies per https://github.com/nds-org/ndslabs/issues/286
+		err := s.kube.DeleteNetworkPolicy(userId, sid)
+		if err != nil {
+			glog.Errorf("Failed to delete network policy: %s\n", err)
+		}
+	*/
 	return stack, nil
 }
 
