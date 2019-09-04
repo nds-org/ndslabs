@@ -27,8 +27,8 @@ import (
 	utilrand "k8s.io/apimachinery/pkg/util/rand"
 
 	"k8s.io/api/core/v1"
-        networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -400,22 +400,33 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 func (k *KubeHelper) CreateNetworkPolicy(ns string, name string, groupName string) (*networkingv1.NetworkPolicy, error) {
 	k8netPolicy := networkingv1.NetworkPolicy{
 		TypeMeta: metav1.TypeMeta{
-			Kind: "NetworkPolicy",
-       			APIVersion: "networking.k8s.io/v1",
-        	},
+			Kind:       "NetworkPolicy",
+			APIVersion: "networking.k8s.io/v1",
+		},
 		ObjectMeta: metav1.ObjectMeta{
-                	Name: name,
-                	Namespace: ns,
-        	},
+			Name:      name,
+			Namespace: ns,
+		},
 		Spec: networkingv1.NetworkPolicySpec{
-			PodSelector: metav1.LabelSelector{},
-        	        Ingress: []networkingv1.NetworkPolicyIngressRule{
+			PodSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"stack": groupName,
+				},
+			},
+			Ingress: []networkingv1.NetworkPolicyIngressRule{
 				networkingv1.NetworkPolicyIngressRule{
 					From: []networkingv1.NetworkPolicyPeer{
 						networkingv1.NetworkPolicyPeer{
 							PodSelector: &metav1.LabelSelector{
 								MatchLabels: map[string]string{
-									"group": groupName,
+									"stack": groupName,
+								},
+							},
+						},
+						networkingv1.NetworkPolicyPeer{
+							PodSelector: &metav1.LabelSelector{
+								MatchLabels: map[string]string{
+									"app": "nginx-ingress",
 								},
 							},
 						},
@@ -428,7 +439,14 @@ func (k *KubeHelper) CreateNetworkPolicy(ns string, name string, groupName strin
 						networkingv1.NetworkPolicyPeer{
 							PodSelector: &metav1.LabelSelector{
 								MatchLabels: map[string]string{
-									"group": groupName,
+									"stack": groupName,
+								},
+							},
+						},
+						networkingv1.NetworkPolicyPeer{
+							PodSelector: &metav1.LabelSelector{
+								MatchLabels: map[string]string{
+									"app": "nginx-ingress",
 								},
 							},
 						},
@@ -436,21 +454,20 @@ func (k *KubeHelper) CreateNetworkPolicy(ns string, name string, groupName strin
 				},
 			},
 			PolicyTypes: []networkingv1.PolicyType{},
-	        },
-
+		},
 	}
 
 	_, err := k.kubeGo.NetworkingV1().NetworkPolicies(ns).Create(&k8netPolicy)
 	if err != nil {
-                glog.Errorf("Error creating NetworkPolicy %s in namespace %s: %s\n", name, ns, err)
+		glog.Errorf("Error creating NetworkPolicy %s in namespace %s: %s\n", name, ns, err)
 	}
 
 	return &k8netPolicy, err
 }
 
 func (k *KubeHelper) NetworkPolicyExists(ns string, name string) bool {
-        getOptions := metav1.GetOptions{}
-        _, err := k.kubeGo.NetworkingV1().NetworkPolicies(ns).Get(name, getOptions)
+	getOptions := metav1.GetOptions{}
+	_, err := k.kubeGo.NetworkingV1().NetworkPolicies(ns).Get(name, getOptions)
 	if err != nil {
 		return false
 	}
@@ -463,52 +480,52 @@ func (k *KubeHelper) DeleteNetworkPolicy(ns string, name string) error {
 }
 
 func (k *KubeHelper) CreatePersistentVolumeClaim(ns string, name string, storageClass string) *v1.PersistentVolumeClaim {
-        k8pvc := v1.PersistentVolumeClaim{}
+	k8pvc := v1.PersistentVolumeClaim{}
 
-        // PersistentVolumeClaim
-        k8pvc.APIVersion = "v1"
-        k8pvc.Kind = "PersistentVolumeClaim"
-        k8pvc.Name = name
-        k8pvc.Labels = map[string]string{
-                "name":    name,
-        }
-        k8pvc.Annotations = map[string]string{
-        		"volume.beta.kubernetes.io/nfs-mount-path":	name,
-		}
+	// PersistentVolumeClaim
+	k8pvc.APIVersion = "v1"
+	k8pvc.Kind = "PersistentVolumeClaim"
+	k8pvc.Name = name
+	k8pvc.Labels = map[string]string{
+		"name": name,
+	}
+	k8pvc.Annotations = map[string]string{
+		"volume.beta.kubernetes.io/nfs-mount-path": name,
+	}
 
-        // Since we use ReadWriteMany, capacity can be any value
+	// Since we use ReadWriteMany, capacity can be any value
 	k8rq := v1.ResourceRequirements{}
-        k8rq.Requests = v1.ResourceList{
-                v1.ResourceStorage:  resource.MustParse("1Mi"),
-        }
+	k8rq.Requests = v1.ResourceList{
+		v1.ResourceStorage: resource.MustParse("1Mi"),
+	}
 
 	k8pvc.Spec = v1.PersistentVolumeClaimSpec{
 		Resources: k8rq,
 		AccessModes: []v1.PersistentVolumeAccessMode{
-                	v1.ReadWriteMany,
-        	},
+			v1.ReadWriteMany,
+		},
 	}
 
-        // if storageClass is explicitly specified, use it (otherwise rely on cluster default)
-        if storageClass != "" {
-                k8pvc.Spec.StorageClassName = &storageClass
-        }
-
-        _, err := k.kubeGo.CoreV1().PersistentVolumeClaims(ns).Create(&k8pvc)
-
-        // Give Kubernetes time to bind a PersistentVolume for this PVC
-        //time.Sleep(time.Second * 5)
-
-	if err != nil { 
-                glog.Errorf("Error creating PVC %s in namespace %s: %s\n", name, ns, err)
+	// if storageClass is explicitly specified, use it (otherwise rely on cluster default)
+	if storageClass != "" {
+		k8pvc.Spec.StorageClassName = &storageClass
 	}
 
-        return &k8pvc
+	_, err := k.kubeGo.CoreV1().PersistentVolumeClaims(ns).Create(&k8pvc)
+
+	// Give Kubernetes time to bind a PersistentVolume for this PVC
+	//time.Sleep(time.Second * 5)
+
+	if err != nil {
+		glog.Errorf("Error creating PVC %s in namespace %s: %s\n", name, ns, err)
+	}
+
+	return &k8pvc
 }
 
 func (k *KubeHelper) DeletePersistentVolumeClaim(pid string, name string) error {
-        deleteOptions := metav1.DeleteOptions{}
-        return k.kubeGo.CoreV1().PersistentVolumeClaims(pid).Delete(name, &deleteOptions)
+	deleteOptions := metav1.DeleteOptions{}
+	return k.kubeGo.CoreV1().PersistentVolumeClaims(pid).Delete(name, &deleteOptions)
 }
 
 func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack string, domain string,
@@ -646,6 +663,27 @@ func (k *KubeHelper) CreateControllerTemplate(ns string, name string, stack stri
 				//"ndslabs-role-compute": "true",
 			},
 		},
+	}
+
+	if spec.Collocate {
+		k8template.Spec.Affinity = &v1.Affinity{
+			PodAffinity: &v1.PodAffinity{
+				RequiredDuringSchedulingIgnoredDuringExecution: []v1.PodAffinityTerm{
+					{
+						LabelSelector: &metav1.LabelSelector{
+							MatchExpressions: []metav1.LabelSelectorRequirement{
+								{
+									Key:      "stack",
+									Operator: metav1.LabelSelectorOpIn,
+									Values:   []string{stack},
+								},
+							},
+						},
+						TopologyKey: "kubernetes.io/hostname",
+					},
+				},
+			},
+		}
 	}
 
 	if nodeSelectorName != "" {
