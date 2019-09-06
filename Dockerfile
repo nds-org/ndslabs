@@ -4,6 +4,7 @@ COPY . /go/src/github.com/ndslabs/apiserver
 RUN apt-get -qq update && \
     apt-get -qq install bash build-essential git gcc  && \
     go get github.com/Masterminds/glide  &&  \
+    go get github.com/docker/spdystream  &&  \
     cd /go/src/github.com/ndslabs/apiserver && ./build.sh docker
 
 FROM debian:stretch
