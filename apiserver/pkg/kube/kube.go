@@ -9,15 +9,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
-
-	// Used by exec
-	//"net/url"
-	//restclient "k8s.io/client-go/rest"
-	//"k8s.io/apimachinery/pkg/util/remotecommand"
-	//remotecommandserver "k8s.io/kubernetes/pkg/kubelet/server/remotecommand"
 
 	"github.com/golang/glog"
 	"github.com/ndslabs/apiserver/pkg/config"
@@ -36,6 +31,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/remotecommand"
 )
 
 var apiBase = "/api/v1"
@@ -58,6 +54,7 @@ type KubeHelper struct {
 	kubeGo        kubernetes.Interface
 	authSignInURL string
 	authURL       string
+	config        *rest.Config
 }
 
 func NewKubeHelper(kubeBase string, username string, password string, tokenPath string, kConfig *rest.Config,
@@ -69,6 +66,7 @@ func NewKubeHelper(kubeBase string, username string, password string, tokenPath 
 	kubeHelper := KubeHelper{}
 	kubeHelper.kubeBase = kubeBase
 	kubeHelper.client = &http.Client{Transport: tr}
+	kubeHelper.config = kConfig
 
 	// create the clientset
 	kubeGo, k8Err := kubernetes.NewForConfig(kConfig)
@@ -795,94 +793,85 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 
 func (k *KubeHelper) Exec(pid string, pod string, container string, kube *KubeHelper) *websocket.Handler {
 
-	//url, err := url.Parse(
-	//	k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + pod +
-	//		"/exec?container=" + container + "&command=" + defaultShell + "&tty=true&stdin=true&stdout=true&stderr=false")
-	//if err != nil {
-	//	glog.Warning(err)
-	//}
-	//
-	//conf := &restclient.Config{
-	//	Host:     k.kubeBase,
-	//	Insecure: true,
-	//}
-	//
-	//if len(k.token) > 0 {
-	//	conf.BearerToken = string(k.token)
-	//} else {
-	//	conf.Username = k.username
-	//	conf.Password = k.password
-	//}
-	//
-	//e, err := remotecommand.NewExecutor(conf, "POST", url)
-	//if err != nil {
-	//	glog.Warning(err)
-	//}
-	//
-	//wsHandler := websocket.Handler(func(ws *websocket.Conn) {
-	//	defer ws.Close()
-	//
-	//	outr, outw, err := os.Pipe()
-	//	if err != nil {
-	//		glog.Warning(err)
-	//		return
-	//	}
-	//	defer outr.Close()
-	//	defer outw.Close()
-	//
-	//	inr, inw, err := os.Pipe()
-	//	if err != nil {
-	//		glog.Fatal(err)
-	//		return
-	//	}
-	//	defer inr.Close()
-	//	defer inw.Close()
-	//
-	//	go func() {
-	//		for {
-	//
-	//			in := make([]byte, 2048)
-	//			n, err := ws.Read(in)
-	//			if err != nil {
-	//				//glog.Error(err)
-	//				return
-	//			}
-	//			inLen, err := inw.Write(in[:n])
-	//			if err != nil {
-	//				glog.Error(err)
-	//				return
-	//			}
-	//			if inLen < n {
-	//				panic("pty write overflow")
-	//			}
-	//		}
-	//	}()
-	//
-	//	go func() {
-	//		for {
-	//			out := make([]byte, 2048)
-	//			n, err := outr.Read(out)
-	//			if err != nil {
-	//				//glog.Error(err)
-	//				return
-	//			}
-	//			_, err = ws.Write(out[:n])
-	//			if err != nil {
-	//				glog.Error(err)
-	//				return
-	//			}
-	//		}
-	//	}()
-	//
-	//	err = e.Stream(remotecommandserver.SupportedStreamingProtocols, inr, outw, nil, true)
-	//	if err != nil {
-	//		glog.Error(err)
-	//		return
-	//	}
-	//})
-	//
-	//return &wsHandler
-	return nil
+	execUrl, err := url.Parse(
+		k.kubeBase + apiBase + "/namespaces/" + pid + "/pods/" + pod +
+			"/exec?container=" + container + "&command=" + defaultShell + "&tty=true&stdin=true&stdout=true&stderr=false")
+	if err != nil {
+		glog.Warning(err)
+	}
+
+	e, err := remotecommand.NewSPDYExecutor(k.config, "POST", execUrl)
+	if err != nil {
+		glog.Warning(err)
+	}
+
+	wsHandler := websocket.Handler(func(ws *websocket.Conn) {
+		defer ws.Close()
+
+		outr, outw, err := os.Pipe()
+		if err != nil {
+			glog.Warning(err)
+			return
+		}
+		defer outr.Close()
+		defer outw.Close()
+
+		inr, inw, err := os.Pipe()
+		if err != nil {
+			glog.Fatal(err)
+			return
+		}
+		defer inr.Close()
+		defer inw.Close()
+
+		go func() {
+			for {
+
+				in := make([]byte, 2048)
+				n, err := ws.Read(in)
+				if err != nil {
+					glog.Error(err)
+					return
+				}
+				inLen, err := inw.Write(in[:n])
+				if err != nil {
+					glog.Error(err)
+					return
+				}
+				if inLen < n {
+					panic("pty write overflow")
+				}
+			}
+		}()
+
+		go func() {
+			for {
+				out := make([]byte, 2048)
+				n, err := outr.Read(out)
+				if err != nil {
+					glog.Error(err)
+					return
+				}
+				_, err = ws.Write(out[:n])
+				if err != nil {
+					glog.Error(err)
+					return
+				}
+			}
+		}()
+
+		err = e.Stream(remotecommand.StreamOptions{
+			Stdin:  inr,
+			Stdout: outw,
+			Stderr: nil,
+			Tty:    true})
+		if err != nil {
+			glog.Error(err)
+			return
+		}
+	})
+
+	return &wsHandler
 }
 
 func (k *KubeHelper) CreateIngress(pid string, domain string, service string, ports []v1.ServicePort, enableAuth bool) (*v1beta1.Ingress, error) {
