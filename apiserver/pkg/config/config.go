@@ -33,9 +33,9 @@ type Specs struct {
 	Path string `json:"path"`
 }
 type Volume struct {
-	Path     string     `json:"path"`
-	Name     string     `json:"name"`
-	ReadOnly bool       `json:"readOnly"`
+	Path     string `json:"path"`
+	Name     string `json:"name"`
+	ReadOnly bool   `json:"readOnly"`
 }
 
 type DefaultLimits struct {
@@ -51,13 +51,15 @@ type Etcd struct {
 	MaxMessages int    `json:"maxMessages"`
 }
 type Kubernetes struct {
-	Address            string `json:"address"`
-	TokenPath          string `json:"tokenPath"`
-	Username           string `json:"username"`
-	Password           string `json:"password"`
-	NodeSelectorName   string `json:"nodeSelectorName"`
-	NodeSelectorValue  string `json:"nodeSelectorValue"`
-	StorageClass       string `json:"pvcStorageClass"`
+	Address           string  `json:"address"`
+	TokenPath         string  `json:"tokenPath"`
+	Username          string  `json:"username"`
+	Password          string  `json:"password"`
+	NodeSelectorName  string  `json:"nodeSelectorName"`
+	NodeSelectorValue string  `json:"nodeSelectorValue"`
+	StorageClass      string  `json:"pvcStorageClass"`
+	QPS               float32 `json:"qps"`
+	Burst             int     `json:"burst"`
 }
 type Email struct {
 	Host string `json:"host"`

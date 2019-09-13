@@ -95,6 +95,12 @@ func main() {
 	if cfg.Kubernetes.TokenPath == "" {
 		cfg.Kubernetes.TokenPath = "/run/secrets/kubernetes.io/serviceaccount/token"
 	}
+	if cfg.Kubernetes.QPS <= 0 {
+		cfg.Kubernetes.QPS = 50
+	}
+	if cfg.Kubernetes.Burst <= 0 {
+		cfg.Kubernetes.Burst = 100
+	}
 	if cfg.DefaultLimits.MemMax <= 0 {
 		cfg.DefaultLimits.MemMax = 8196 //M
 	}
@@ -143,6 +149,9 @@ func main() {
 			panic(err.Error())
 		}
 	}
+
+	kConfig.QPS = cfg.Kubernetes.QPS
+	kConfig.Burst = cfg.Kubernetes.Burst
 
 	kube, err := kube.NewKubeHelper(cfg.Kubernetes.Address,
 		cfg.Kubernetes.Username, cfg.Kubernetes.Password, cfg.Kubernetes.TokenPath, kConfig, cfg.AuthSignInURL, cfg.AuthURL)
