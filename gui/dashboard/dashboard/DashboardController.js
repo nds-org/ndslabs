@@ -168,7 +168,7 @@ angular
    * @param {} service - the service to show logs for
    */ 
   $scope.showLogs = function(service) {
-    Analytics.trackEvent('application', 'logs', service.key, 1, true);
+    Analytics.trackEvent('application', 'logs', service.service, 1, true);
 
     // See 'app/dashboard/modals/logViewer/logViewer.html'
     $uibModal.open({
@@ -190,7 +190,7 @@ angular
    * @param {} service - the service to show logs for
    */ 
   $scope.showConfig = function(service) {
-    Analytics.trackEvent('application', 'config', service.key, 1, true);
+    Analytics.trackEvent('application', 'config', service.service, 1, true);
 
     // See 'app/dashboard/modals/logViewer/logViewer.html'
     $uibModal.open({
