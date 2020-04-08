@@ -128,7 +128,7 @@
                     <li><a id="qsLinkBtn" href ng-click="shareLink(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt"></i> Generate QuickStart Link</a></li>
                     <li><a id="embedLinkBtn" href ng-click="shareEmbed(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt-square"></i> Generate QuickStart HTML Snippet</a></li>
                     <li><a id="viewJsonBtn" href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> View JSON</a></li>
-                    <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}" target="_blank"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
+                    <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}" target="_blank"><i class="fa fa-fw fa-newspaper-o"></i> Introduction & Instruction</a></li>
                     <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="editBtn" ng-href="/dashboard/store/edit/{{ spec.key }}" ><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
                     <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="deleteBtn" href ng-click="openDelete(spec)"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
                   </ul>
@@ -158,7 +158,6 @@
                 
                 <!-- Name / Description -->
                 <div class="media-body caption">
-                  <a id="helpLink" class="pull-right" target="_blank" ng-if="spec.info" ng-href="{{ spec.info }}"><i class="fa fa-fw fa-question-circle-o"></i></a>
                   <h4 class="media-heading">{{ spec.label }}</h4>
                   <p><small>{{ spec.description }}</small></p>
                 </div>
@@ -221,7 +220,7 @@
                       <li><a id="qsLinkBtn" href ng-click="shareLink(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt"></i> Generate QuickStart Link</a></li>
                       <li><a id="embedLinkBtn" href ng-click="shareEmbed(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt-square"></i> Generate QuickStart HTML Snippet</a></li>
                       <li><a id="viewJsonBtn" href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> View JSON</a></li>
-                      <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}" target="_blank"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
+                      <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}" target="_blank"><i class="fa fa-fw fa-newspaper-o"></i> Introduction & Instruction</a></li>
                       <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="editBtn" ng-href="/dashboard/store/edit/{{ spec.key }}" ><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
                       <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="deleteBtn" href ng-click="openDelete(spec)"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
                     </ul>
