@@ -196,12 +196,12 @@
                 <div class="col-xs-10">
                   
                   <!-- View Instance(s) -->
-                  <a id="viewBtn" class="btn btn-xs btn-link" ng-if="installs[spec.key].count > 0" ng-href="/dashboard/home?expand={{ spec.key }}" style="margin:7px;">
+                  <a id="viewBtn" class="btn btn-xs btn-primary" ng-if="installs[spec.key].count > 0" ng-href="/dashboard/home?expand={{ spec.key }}" style="margin:7px;">
                     View <span class="badge" style="margin-left:4px" ng-if="installs[spec.key].count > 0">{{ installs[spec.key].count }}</span>
                   </a>
                   
                   <!-- Install button -->
-                  <button id="addBtn"ng-disabled="installs[spec.key].progress > 0" ng-if="installs[spec.key].progress === 0" style="margin:7px;"
+                  <button id="addBtn" ng-disabled="installs[spec.key].progress > 0" ng-if="installs[spec.key].count === 0 && installs[spec.key].progress === 0" style="margin:7px;"
                       class="btn btn-xs btn-link" ng-click="install(spec)">
                     Add
                   </button>
