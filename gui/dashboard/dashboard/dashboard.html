@@ -27,6 +27,8 @@
     <li><a href="/landing/">{{ productName }}</a></li>
     <li class="active">Applications</li>
   </ol>
+
+  <p>This view shows the status of any applications that you have already added. To start an application, expand one below and then choose Launch.</p>
   
   <!-- Applications Area -->
   <div class="row">
@@ -46,7 +48,7 @@
           <!-- See https://github.com/angular-ui/bootstrap/issues/5368 -->
           <uib-accordion-group ng-repeat="stack in configuredStacks | orderBy:['name','id'] track by stack.id" is-open="expandedStacks[stack.id]"
               class="{{ stack.status === 'started' ? 'panel-success' : 
-                (stack.status === 'stopped' ? 'panel-danger' : 'panel-warning')  }}">
+                (stack.status === 'stopped' ? 'panel-default' : 'panel-warning')  }}">
             
             <uib-accordion-heading>
               <!-- Stack Status Indicator -->
@@ -54,8 +56,8 @@
                 <div class="col-xs-3 col-md-1 pull-left">
                   <i class="fa fa-fw fa-2x"
                     ng-class="{ 'fa-check-circle-o text-success': stack.status === 'started', 
-                        'fa-power-off text-danger': stack.status === 'stopped',
-                        'fa-warning text-danger animated faa-flash faa-fast': stack.status === 'error',
+                        'fa-power-off': stack.status === 'stopped',
+                        'fa-warning animated faa-flash faa-fast': stack.status === 'error',
                         'fa-spinner fa-spin fa-pulse text-primary': stack.status !== 'error' && stack.status !== 'started' && stack.status !== 'stopped' }"></i>
                 </div>
                 
