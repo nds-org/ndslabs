@@ -60,7 +60,7 @@ angular
 .constant('EditSpecPathSuffix', '/store/edit/:specKey/')
 
 // Navigate here when clicking "Sign In"
-.constant('SigninUrl', 'https://www.local.ndslabs.org/oauth2/authorize')
+.constant('SigninUrl', 'https://www.local.ndslabs.org/login/')
 
 /**
  * The name of the product to display in the UI and the URL to link to when clicked
