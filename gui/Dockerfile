@@ -30,6 +30,11 @@ ENV APISERVER_HOST="localhost" \
     APISERVER_PATH="/api" \
     APISERVER_SECURE="true" \
     ANALYTICS_ACCOUNT="" \
+    SHOW_CONSOLE="false" \
+    SHOW_IMPORT_SPEC="false" \
+    SHOW_CREATE_SPEC="false" \
+    SHOW_FILE_MANAGER="false" \
+    SHOW_EDIT_SERVICE="false" \
     SUPPORT_EMAIL="ndslabs-support@nationaldataservice.org"
 
 # Expose port 3000 for ExpressJS

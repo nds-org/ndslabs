@@ -29,8 +29,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('NavbarController', [ '$scope', '$rootScope', '$window', '$location', '$cookies', 'Project', 'AuthInfo', 'ProductName', 'ProductUrl', 'HelpLinks', 'FileManager', 'AutoRefresh', 'ReturnRoute', 'CookieOptions', 'SigninUrl',
-    function($scope, $rootScope, $window, $location, $cookies, Project, AuthInfo, ProductName, ProductUrl, HelpLinks, FileManager, AutoRefresh, ReturnRoute, CookieOptions, SigninUrl) {
+.controller('NavbarController', [ '$scope', '$rootScope', '$window', '$location', '$cookies', 'Project', 'AuthInfo', 'ProductName', 'ProductUrl', 'HelpLinks', 'FileManager', 'AutoRefresh', 'ReturnRoute', 'CookieOptions', 'SigninUrl', 'AdvancedFeatures',
+    function($scope, $rootScope, $window, $location, $cookies, Project, AuthInfo, ProductName, ProductUrl, HelpLinks, FileManager, AutoRefresh, ReturnRoute, CookieOptions, SigninUrl, AdvancedFeatures) {
   "use strict"
   
   // Enable JS dropdowns on the navbar
@@ -59,6 +59,7 @@ angular
   $scope.signinLink = $scope.enableOAuth ? SigninUrl : '/login/' + ($rootScope.rd ? 'rd=' : '');
   $scope.helpLinks = HelpLinks;
   
+  $scope.showFileManager = AdvancedFeatures.showFileManager;
   $scope.fileManager = FileManager;
   $scope.launchingFileManager = FileManager.busy;
   $scope.$watch('fileManager.busy', function(newValue, oldValue) {

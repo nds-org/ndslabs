@@ -17,6 +17,20 @@ angular
  * Make lodash available for injection into controllers
  */
 .constant('_', window._)
+
+/**
+ * Toggles for hiding the more advanced UI features
+ */
+.constant('AdvancedFeatures', {
+    showConsole: false,
+    showEditService: false,
+    showRemoveService: false,
+    showCreateSpec: false,
+    showImportSpec: false,
+    showFileManager: false,
+    showServiceHelpIcon: false,
+})
+
 /**
  * The back-up (default) administrator e-mail to use for support, 
  * in case the /api/contact endpoint is unavailable

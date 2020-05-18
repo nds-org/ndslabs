@@ -16,5 +16,16 @@
 # Substitute the ANALYTICS_ACCOUNT passed in by "docker run -e" or kubernetes
 /bin/sed -i -e "s#^\.constant('GaAccount', .*)#.constant('GaAccount', '${ANALYTICS_ACCOUNT}')#" "$BASEDIR/ConfigModule.js"
 
+# In lieu of actual user management, some instance-wide flags to toggle the more advanced features
+/bin/sed -i -e "s#^\showConsole: .*,#showConsole: ${SHOW_CONSOLE:-false},#" "$BASEDIR/ConfigModule.js"
+/bin/sed -i -e "s#^\showEditService: .*,#showEditService: ${SHOW_EDIT_SERVICE:-false},#" "$BASEDIR/ConfigModule.js"
+/bin/sed -i -e "s#^\showRemoveService: .*,#showRemoveService: ${SHOW_REMOVE_SERVICE:-false},#" "$BASEDIR/ConfigModule.js"
+/bin/sed -i -e "s#^\showServiceHelpIcon: .*,#showServiceHelpIcon: ${SHOW_SERVICE_HELP_ICON:-false},#" "$BASEDIR/ConfigModule.js"
+/bin/sed -i -e "s#^\showCreateSpec: .*,#showCreateSpec: ${SHOW_CREATE_SPEC:-false},#" "$BASEDIR/ConfigModule.js"
+/bin/sed -i -e "s#^\showImportSpec: .*,#showImportSpec: ${SHOW_IMPORT_SPEC:-false},#" "$BASEDIR/ConfigModule.js"
+/bin/sed -i -e "s#^\showFileManager: .*,#showFileManager: ${SHOW_FILE_MANAGER:-false},#" "$BASEDIR/ConfigModule.js"
+
+/bin/sed -i -e "s#^\.constant('AllowDuplicateApps', .*)#.constant('AllowDuplicateApps', ${ALLOW_DUPLICATE_APPS:-false})#" "$BASEDIR/ConfigModule.js"
+
 # Start ExpressJS
 node server.js

@@ -83,18 +83,14 @@
                     <thead>
                       <tr>
                         <td width="15%" class="text-center"><strong>Status</strong></td>
-                        <td width="20%"><strong>Name</strong></td>
-                        <td width="20%"><strong>ID</strong></td>
-                        <td width="10%" class="text-center"><strong>Console</strong></td>
-                        <td width="10%" class="text-center">
-                          <strong ng-if="stack.status !== 'stopped'">Config</strong>
-                          <strong ng-if="stack.status === 'stopped'">Edit</strong>
-                        </td>
-                        <td width="10%" class="text-center">
-                          <strong ng-if="stack.status !== 'stopped'">Logs</strong>
-                          <strong ng-if="stack.status === 'stopped'">Remove</strong>
-                        </td>
-                        <td width="10%" class="text-center"><strong>Help</strong></td>
+                        <td><strong>Name</strong></td>
+                        <td><strong>ID</strong></td>
+                        <td width="5%" class="text-center" ng-if="showConsole"><strong>Console</strong></td>
+                        <td width="5%" class="text-center" ng-if="showEditService && stack.status === 'stopped'"><strong>Edit</strong></td>
+                        <td width="5%" class="text-center" ng-if="stack.status !== 'stopped'"><strong >Config</strong></td>
+                        <td width="5%" class="text-center" ng-if="stack.status !== 'stopped'"><strong >Logs</strong></td>
+                        <td width="5%" class="text-center" ng-if="showRemoveService && stack.status === 'stopped'"><strong>Remove</strong></td>
+                        <td width="5%" class="text-center" ng-if="showServiceHelpIcon"><strong>Help</strong></td>
                       </tr>
                     </thead>
                     <tbody>
@@ -130,22 +126,24 @@
                         <td><span id="serviceIdText">{{ svc.id }}</span></td>
                         
                         <!-- Console -->
-                        <td class="text-center">
+                        <td class="text-center" ng-if="showConsole">
                           <a  id="consoleBtn"
                               type="button" class="btn btn-default btn-xs" target="_blank" ng-href="/dashboard/home/{{ stack.id }}/console/{{ svc.service }}"
                               ng-disabled="svc.status !== 'ready'">
                             <i class="fa fa-terminal"></i>
                           </a>
                         </td>
-                        
-                        <!-- View/Edit Config buttons -->
-                        <td class="text-center">
+
+                        <td class="text-center" ng-if="showEditService">
                           <!-- ng-click="showConfig(svc)" -->
                           <a  id="editServiceBtn" type="button" class="btn btn-default btn-xs" ng-href="/dashboard/home/{{ stack.id }}/edit/{{ svc.service }}"
                               ng-if="stack.status === 'stopped'">
                             <i class="fa fa-wrench"></i>
                           </a>
-                          
+                          </td>
+                        
+                        <!-- View/Edit Config buttons -->
+                        <td class="text-center">
                           <button id="viewConfigBtn" type="button" class="btn btn-default btn-xs" ng-click="showConfig(svc)"
                               ng-if="stack.status !== 'stopped' && (!_.isEmpty(svc.config) || svc.endpoints.length > 0)">
                             <i class="fa fa-puzzle-piece"></i>
@@ -162,7 +160,10 @@
                             <i class="fa fa-fw fa-file-text" ng-class="{ 'animated faa-vertical': stack.status === 'starting' && (svc.status === 'waiting' || svc.status === 'starting') }"></i>
                           </button>
                           
-                          <!-- Remove service from stack button -->
+                        </td>
+
+                        <!-- Remove optional service from stack -->
+                        <td class="text-center" ng-if="showRemoveService && stack.status === 'stopped'">
                           <button type="button" ng-disabled="stack.services | isRecursivelyRequired:svc"  id="removeBtn" 
                               ng-if="stack.status === 'stopped' && svc.service !== stack.key && !_.find((stack.key | requirements), [ 'key', svc.service ])" 
                               class="btn btn-xs btn-default" ng-click="removeStackSvc(stack, svc)" 
@@ -172,7 +173,7 @@
                         </td>
                         
                         <!-- Help Link -->
-                        <td class="text-center"><a  id="helpLink" ng-if="svc.service | specProperty:'info'" ng-href="{{ svc.service | specProperty:'info' }}" target="_blank"><i class="fa fa-fw fa-question-circle"></i></a></td>
+                        <td class="text-center" ng-if="showServiceHelpIcon"><a  id="helpLink" ng-if="svc.service | specProperty:'info'" ng-href="{{ svc.service | specProperty:'info' }}" target="_blank"><i class="fa fa-fw fa-question-circle"></i></a></td>
                       </tr>
                       
                       <!-- Add an artificial row (if necessary) for optional services -->
@@ -194,7 +195,7 @@
                         
                         <td colspan="4">{{ stack.selectedOption | specProperty:'description' }}</td>
                         
-                        <td class="text-center">
+                        <td class="text-center" ng-if="showServiceHelpIcon">
                           <a id="addServiceHelpLink" ng-if="stack.selectedOption | specProperty:'info'" ng-href="{{ stack.selectedOption | specProperty:'info' }}" target="_blank">
                             <i class="fa fa-fw fa-question-circle"></i>
                           </a>
