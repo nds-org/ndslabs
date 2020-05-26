@@ -22,7 +22,7 @@ angular
  * Toggles for hiding the more advanced UI features
  */
 .constant('AdvancedFeatures', {
-    showConsole: false,
+    showConsole: true,
     showEditService: false,
     showRemoveService: false,
     showCreateSpec: false,
