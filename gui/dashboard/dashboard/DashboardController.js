@@ -23,6 +23,8 @@ angular
   $scope.showServiceHelpIcon = AdvancedFeatures.showServiceHelpIcon;
   $scope.showEditService = AdvancedFeatures.showEditService;
   $scope.showConsole = AdvancedFeatures.showConsole;
+  $scope.showConfig = AdvancedFeatures.showConfig;
+  $scope.showLogs = AdvancedFeatures.showLogs;
   $scope.fileManager = FileManager;
   
   $scope.productName = ProductName;

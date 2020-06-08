@@ -17,7 +17,9 @@
 /bin/sed -i -e "s#^\.constant('GaAccount', .*)#.constant('GaAccount', '${ANALYTICS_ACCOUNT}')#" "$BASEDIR/ConfigModule.js"
 
 # In lieu of actual user management, some instance-wide flags to toggle the more advanced features
-/bin/sed -i -e "s#^\showConsole: .*,#showConsole: ${SHOW_CONSOLE:-false},#" "$BASEDIR/ConfigModule.js"
+/bin/sed -i -e "s#^\showConfig: .*,#showConfig: ${SHOW_CONFIG:-false},#" "$BASEDIR/ConfigModule.js"
+/bin/sed -i -e "s#^\showLogs: .*,#showLogs: ${SHOW_LOGS:-false},#" "$BASEDIR/ConfigModule.js"
+/bin/sed -i -e "s#^\showConsole: .*,#showConsole: ${SHOW_CONSOLE:-true},#" "$BASEDIR/ConfigModule.js"
 /bin/sed -i -e "s#^\showEditService: .*,#showEditService: ${SHOW_EDIT_SERVICE:-false},#" "$BASEDIR/ConfigModule.js"
 /bin/sed -i -e "s#^\showRemoveService: .*,#showRemoveService: ${SHOW_REMOVE_SERVICE:-false},#" "$BASEDIR/ConfigModule.js"
 /bin/sed -i -e "s#^\showServiceHelpIcon: .*,#showServiceHelpIcon: ${SHOW_SERVICE_HELP_ICON:-false},#" "$BASEDIR/ConfigModule.js"

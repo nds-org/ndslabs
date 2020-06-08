@@ -89,8 +89,8 @@
                         <td tooltip-append-to-body="true" uib-tooltip="A unique identifier for each part of an application instance"><strong>ID</strong></td>
                         <td width="5%" class="text-center" ng-if="showConsole" tooltip-append-to-body="true" uib-tooltip="Advanced user terminal, allowing for arbitrary console commands"><strong>Console</strong></td>
                         <td width="5%" class="text-center" ng-if="showEditService && stack.status === 'stopped'" tooltip-append-to-body="true" uib-tooltip="Edit the configuration for part of an application"><strong>Edit</strong></td>
-                        <td width="5%" class="text-center" ng-if="stack.status !== 'stopped'" tooltip-append-to-body="true" uib-tooltip="View the configuration for part of an application"><strong >Config</strong></td>
-                        <td width="5%" class="text-center" ng-if="stack.status !== 'stopped'" tooltip-append-to-body="true" uib-tooltip="View the logs for part of an application"><strong >Logs</strong></td>
+                        <td width="5%" class="text-center" ng-if="showConfig && stack.status !== 'stopped'" tooltip-append-to-body="true" uib-tooltip="View the configuration for part of an application"><strong >Config</strong></td>
+                        <td width="5%" class="text-center" ng-if="showLogs && stack.status !== 'stopped'" tooltip-append-to-body="true" uib-tooltip="View the logs for part of an application"><strong >Logs</strong></td>
                         <td width="5%" class="text-center" ng-if="showRemoveService && stack.status === 'stopped'" tooltip-append-to-body="true" uib-tooltip="Remove an optional part of an application"><strong>Remove</strong></td>
                         <td width="5%" class="text-center" ng-if="showServiceHelpIcon" tooltip-append-to-body="true" uib-tooltip="Additional instructions or documentation for a part of an application"><strong>Help</strong></td>
                       </tr>
@@ -150,7 +150,7 @@
                         </td>
                         
                         <!-- View Config buttons -->
-                        <td class="text-center" ng-if="stack.status !== 'stopped'">
+                        <td class="text-center" ng-if="showConfig && stack.status !== 'stopped'">
                           <button id="viewConfigBtn" type="button" class="btn btn-default btn-xs" ng-click="showConfig(svc)"
                               ng-if="!_.isEmpty(svc.config) || svc.endpoints.length > 0">
                             <i class="fa fa-puzzle-piece"></i>
@@ -158,11 +158,11 @@
                         </td>
                         
                         <!-- View Logs of Running Service, or Remove Stopped Service -->
-                        <td class="text-center">
+                        <td class="text-center" ng-if="showLogs && stack.status !== 'stopped'">
                           <!-- View logs button -->
                           <button type="button" class="btn btn-xs btn-default" id="viewLogsBtn" 
                               uib-tooltip="View the logs for this part of the application instance"
-                              ng-if="stack.status !== 'stopped'" tooltip-append-to-body="true"
+                              tooltip-append-to-body="true"
                               ng-disabled="stack.status === 'stopped'" tooltip-placement="left" ng-click="showLogs(svc)">
                             <i class="fa fa-fw fa-file-text" ng-class="{ 'animated faa-vertical': stack.status === 'starting' && (svc.status === 'waiting' || svc.status === 'starting') }"></i>
                           </button>

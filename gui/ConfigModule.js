@@ -29,6 +29,8 @@ angular
     showImportSpec: false,
     showFileManager: false,
     showServiceHelpIcon: false,
+    showLogs: false,
+    showConfig: false,
 })
 
 /**
