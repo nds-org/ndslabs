@@ -27,7 +27,5 @@
 /bin/sed -i -e "s#^\showImportSpec: .*,#showImportSpec: ${SHOW_IMPORT_SPEC:-false},#" "$BASEDIR/ConfigModule.js"
 /bin/sed -i -e "s#^\showFileManager: .*,#showFileManager: ${SHOW_FILE_MANAGER:-false},#" "$BASEDIR/ConfigModule.js"
 
-/bin/sed -i -e "s#^\.constant('AllowDuplicateApps', .*)#.constant('AllowDuplicateApps', ${ALLOW_DUPLICATE_APPS:-false})#" "$BASEDIR/ConfigModule.js"
-
 # Start ExpressJS
 node server.js
