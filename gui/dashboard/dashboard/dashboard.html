@@ -118,14 +118,15 @@
                         <!-- The Name of the Running Service and link to endpoint, if applicable -->
                         <td tooltip-append-to-body="true" uib-tooltip="A friendly label for this application instance">
                           {{ svc.service | specProperty:'label' }}
-                          <a  ng-repeat="endpt in svc.endpoints track by endpt.port" id="endpointLink"
+
+                          <a class="btn btn-link btn-sm" ng-repeat="endpt in svc.endpoints track by endpt.port" id="endpointLink"
                               tooltip-append-to-body="true" uib-tooltip="Navigate to {{ svc.service | capitalize }} port {{ endpt.port }}"
                               ga-event-track="['application', 'endpoint', svc.key]"
                               ng-if="stack.status === 'started' && svc.status === 'ready' 
                                   && endpt !== '' && ((stack.key | specProperty:'access') === 'external') && (endpt.protocol === 'http')"  target="_blank"
                               ng-href="{{ endpt | externalHostPort }}"
                               ng-disabled="stack.status === 'stopping' && svc.status === 'ready'">
-                            <i class="fa fa-fw fa-external-link faa-tada faa-slow animated"></i>
+                            Open
                           </a>
                         </td>
                         
