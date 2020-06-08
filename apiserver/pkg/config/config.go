@@ -16,10 +16,9 @@ type Config struct {
 	Kubernetes      Kubernetes    `json:"kubernetes"`
 	Email           Email         `json:"email"`
 	Specs           Specs         `json:"specs"`
-	HomeVolume      string        `json:"homeVolume"`
+	HomePvcSuffix   string        `json:"homePvcSuffix"`
 	Volumes         []Volume      `json:"volumes"`
 	Support         SupportLinks  `json:"support"`
-	DataProviderURL string        `json:"dataProviderURL"`
 	AuthURL         string        `json:"authURL"`
 	AuthSignInURL   string        `json:"authSignInURL"`
 }
@@ -34,10 +33,9 @@ type Specs struct {
 	Path string `json:"path"`
 }
 type Volume struct {
-	Path     string     `json:"path"`
-	Name     string     `json:"name"`
-	Type     VolumeType `json:"type"`
-	ReadOnly bool       `json:"readOnly"`
+	Path     string `json:"path"`
+	Name     string `json:"name"`
+	ReadOnly bool   `json:"readOnly"`
 }
 
 type DefaultLimits struct {
@@ -53,10 +51,15 @@ type Etcd struct {
 	MaxMessages int    `json:"maxMessages"`
 }
 type Kubernetes struct {
-	Address   string `json:"address"`
-	TokenPath string `json:"tokenPath"`
-	Username  string `json:"username"`
-	Password  string `json:"password"`
+	Address           string  `json:"address"`
+	TokenPath         string  `json:"tokenPath"`
+	Username          string  `json:"username"`
+	Password          string  `json:"password"`
+	NodeSelectorName  string  `json:"nodeSelectorName"`
+	NodeSelectorValue string  `json:"nodeSelectorValue"`
+	StorageClass      string  `json:"pvcStorageClass"`
+	QPS               float32 `json:"qps"`
+	Burst             int     `json:"burst"`
 }
 type Email struct {
 	Host string `json:"host"`
@@ -69,12 +72,4 @@ type IngressType string
 const (
 	IngressTypeLoadBalancer IngressType = "LoadBalancer"
 	IngressTypeNodePort     IngressType = "NodePort"
-)
-
-type VolumeType string
-
-const (
-	VolumeTypeGluster VolumeType = "gluster"
-	VolumeTypeNFS     VolumeType = "nfs"
-	VolumeTypeLocal   VolumeType = "local"
 )
