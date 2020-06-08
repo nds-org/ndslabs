@@ -9,8 +9,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('LoginController', [ '$scope', '$rootScope', '$cookies', '$routeParams', '$location', '$window', '$log', '$uibModal', 'AuthInfo', 'Project', 'NdsLabsApi', 'DashboardAppPath', 'HomePathSuffix', 'CookieOptions', '$uibModalStack', 'ServerData', 'ProductName', 'ReturnRoute', 'SigninUrl',
-    function($scope, $rootScope, $cookies, $routeParams, $location, $window, $log, $uibModal, authInfo, Project, NdsLabsApi, DashboardAppPath, HomePathSuffix, CookieOptions, $uibModalStack, ServerData, ProductName, ReturnRoute, SigninUrl) {
+.controller('LoginController', [ '$scope', '$rootScope', '$cookies', '$routeParams', '$location', '$window', '$log', '$uibModal', 'AuthInfo', 'Project', 'NdsLabsApi', 'DashboardAppPath', 'AppStorePathSuffix', 'HomePathSuffix', 'CookieOptions', '$uibModalStack', 'ServerData', 'ProductName', 'ReturnRoute', 'SigninUrl',
+    function($scope, $rootScope, $cookies, $routeParams, $location, $window, $log, $uibModal, authInfo, Project, NdsLabsApi, DashboardAppPath, AppStorePathSuffix, HomePathSuffix, CookieOptions, $uibModalStack, ServerData, ProductName, ReturnRoute, SigninUrl) {
   "use strict";
 
   $rootScope.rd = '';
@@ -77,7 +77,13 @@ angular
       if (rd) {
         $window.location.href = rd;
       } else {
-        $window.location.href = DashboardAppPath + HomePathSuffix;
+          NdsLabsApi.getStacks().then(stacks => {
+            if (stacks.length > 0) {
+                $window.location.href = DashboardAppPath + HomePathSuffix;
+            } else {
+                $window.location.href = DashboardAppPath + AppStorePathSuffix;
+            }
+          });
       }
     }, function(response) {
       var body = response.body || { 'Error': 'Something went wrong. Is the server running?' };
