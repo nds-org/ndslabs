@@ -12,5 +12,7 @@
 gui/tests/reports/*
 gui/shared/ndslabs-api.js
 gui/app/shared/ndslabs-api.js
+.idea
+apiserver/vendor
 gui/*.auth.json
 **/.protractor-fail-fast

@@ -22,9 +22,9 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('CatalogController', [ '$scope', '$filter', '$interval', '$uibModal', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stack', 'Stacks', 
+.controller('CatalogController', [ '$scope', '$filter', '$interval', '$uibModal', '$location', '$log', '_', 'Analytics', 'NdsLabsApi', 'Project', 'Stack', 'Stacks', 
     'StackService', 'Specs', 'clipboard', 'Vocabulary', 'RandomPassword', 'AuthInfo', 'ProductName', 'ApiUri', 'DashboardAppPath', 'HomePathSuffix',
-    function($scope, $filter, $interval, $uibModal, $location, $log, _, NdsLabsApi, Project, Stack, Stacks, StackService, Specs, clipboard, Vocabulary, RandomPassword, AuthInfo, ProductName, ApiUri, DashboardAppPath, HomePathSuffix) {
+    function($scope, $filter, $interval, $uibModal, $location, $log, _, Analytics, NdsLabsApi, Project, Stack, Stacks, StackService, Specs, clipboard, Vocabulary, RandomPassword, AuthInfo, ProductName, ApiUri, DashboardAppPath, HomePathSuffix) {
   "use strict";
   
   $scope.productName = ProductName;
@@ -145,6 +145,7 @@ angular
     var quickstartUrl = getQuickStartUrl(spec);
     console.log("Copying to clipboard:", quickstartUrl);
     clipboard.copyText(quickstartUrl);
+    Analytics.trackEvent('application', 'share-url', spec.key, 1, true);
   };
   
   $scope.shareEmbed = function(spec) {
@@ -157,6 +158,7 @@ angular
     var htmlString = '<a href="' + quickstartUrl + '">Try ' + spec.label + '</a>';
     console.log("Copying to clipboard:", htmlString);
     clipboard.copyText(htmlString);
+    Analytics.trackEvent('application', 'share-embed', spec.key, 1, true);
   };
   
   $scope.cloneSpec = function(spec) {
@@ -250,6 +252,8 @@ angular
     // Install this app to etcd
     return NdsLabsApi.postStacks({ 'stack': app }).then(function(stack, xhr) {
       $log.debug("successfully posted to /projects/" + projectId + "/stacks!");
+
+      Analytics.trackEvent('application', 'add', spec.key, 1, true);
       
       // Add /the new stack to the UI
       Stacks.all.push(stack);

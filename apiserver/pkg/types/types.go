@@ -1,6 +1,10 @@
 // Copyright ÃÂÃÂ© 2016 National Data Service
 package types
 
+import (
+	"k8s.io/api/core/v1"
+)
+
 type ServiceSpec struct {
 	Id                   string              `json:"id"`
 	Key                  string              `json:"key"`
@@ -26,8 +30,9 @@ type ServiceSpec struct {
 	DeveloperEnvironment string              `json:"developerEnvironment"`
 	Tags                 []string            `json:"tags"`
 	Info                 string              `json:"info"`
-	Privileged           bool                `json:"privileged"`
+	SecurityContext      v1.SecurityContext  `json:"securityContext"`
 	AuthRequired         bool                `json:"authRequired"`
+	Collocate            bool                `json:"collocate"`
 }
 
 type ServiceImage struct {
