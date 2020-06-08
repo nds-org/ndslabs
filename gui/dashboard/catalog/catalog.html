@@ -2,13 +2,12 @@
 <section>
   <div class="row">
     <div class="col-xs-12">
-      <h3>Catalog</h3>
+      <h3>Applications</h3>
       
       <ol class="breadcrumb">
         <!-- <li><a ng-href="{{ productUrl }}">{{ productName }}</a></li> -->
         <li><a href="/landing/">{{ productName }}</a></li>
-        <li><a href="/dashboard/home">Applications</a></li>
-        <li class="active">Catalog</li>
+        <li class="active">Applications</li>
       </ol>
         
       <!-- Application Search / Filter -->
@@ -128,7 +127,7 @@
                     <li><a id="qsLinkBtn" href ng-click="shareLink(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt"></i> Generate QuickStart Link</a></li>
                     <li><a id="embedLinkBtn" href ng-click="shareEmbed(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt-square"></i> Generate QuickStart HTML Snippet</a></li>
                     <li><a id="viewJsonBtn" href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> View JSON</a></li>
-                    <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}" target="_blank"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
+                    <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}" target="_blank"><i class="fa fa-fw fa-newspaper-o"></i> Introduction & Instruction</a></li>
                     <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="editBtn" ng-href="/dashboard/store/edit/{{ spec.key }}" ><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
                     <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="deleteBtn" href ng-click="openDelete(spec)"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
                   </ul>
@@ -158,7 +157,6 @@
                 
                 <!-- Name / Description -->
                 <div class="media-body caption">
-                  <a id="helpLink" class="pull-right" target="_blank" ng-if="spec.info" ng-href="{{ spec.info }}"><i class="fa fa-fw fa-question-circle-o"></i></a>
                   <h4 class="media-heading">{{ spec.label }}</h4>
                   <p><small>{{ spec.description }}</small></p>
                 </div>
@@ -196,12 +194,12 @@
                 <div class="col-xs-10">
                   
                   <!-- View Instance(s) -->
-                  <a id="viewBtn" class="btn btn-xs btn-link" ng-if="installs[spec.key].count > 0" ng-href="/dashboard/home?expand={{ spec.key }}" style="margin:7px;">
+                  <a id="viewBtn" class="btn btn-xs btn-primary" ng-if="installs[spec.key].count > 0" ng-href="/dashboard/home?expand={{ spec.key }}" style="margin:7px;">
                     View <span class="badge" style="margin-left:4px" ng-if="installs[spec.key].count > 0">{{ installs[spec.key].count }}</span>
                   </a>
                   
                   <!-- Install button -->
-                  <button id="addBtn"ng-disabled="installs[spec.key].progress > 0" ng-if="installs[spec.key].progress === 0" style="margin:7px;"
+                  <button id="addBtn" ng-disabled="installs[spec.key].progress > 0" ng-if="installs[spec.key].count === 0 && installs[spec.key].progress === 0" style="margin:7px;"
                       class="btn btn-xs btn-link" ng-click="install(spec)">
                     Add
                   </button>
@@ -221,7 +219,7 @@
                       <li><a id="qsLinkBtn" href ng-click="shareLink(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt"></i> Generate QuickStart Link</a></li>
                       <li><a id="embedLinkBtn" href ng-click="shareEmbed(spec)" ng-if="spec.catalog === 'system'"><i class="fa fa-fw fa-share-alt-square"></i> Generate QuickStart HTML Snippet</a></li>
                       <li><a id="viewJsonBtn" href ng-click="openExport(spec)"><i class="fa fa-fw fa-code"></i> View JSON</a></li>
-                      <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}" target="_blank"><i class="fa fa-fw fa-newspaper-o"></i> View Documentation</a></li>
+                      <li ng-if="spec.info"><a id="viewDocsBtn" ng-href="{{ spec.info }}" target="_blank"><i class="fa fa-fw fa-newspaper-o"></i> Introduction & Instruction</a></li>
                       <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="editBtn" ng-href="/dashboard/store/edit/{{ spec.key }}" ><i class="fa fa-fw fa-pencil"></i> Edit</a></li>
                       <li ng-class="{ 'disabled': (spec.key | stackExistsFromSpec) }" ng-if="spec.catalog === 'user'"><a id="deleteBtn" href ng-click="openDelete(spec)"><i class="fa fa-fw fa-trash"></i> Delete</a></li>
                     </ul>

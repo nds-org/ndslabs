@@ -2,7 +2,7 @@
 <section>
   <div class="row">
     <div class="col-xs-8">
-      <h3>{{ project.name }}</h3>
+      <h3>{{ project.name }} Dashboard</h3>
     </div>
     
     <div class="col-xs-4">
@@ -25,8 +25,10 @@
     
   <ol class="breadcrumb">
     <li><a href="/landing/">{{ productName }}</a></li>
-    <li class="active">Applications</li>
+    <li class="active">Dashboard</li>
   </ol>
+
+  <p>This view shows the status of any applications that you have already added. To start an application, expand one below and then choose Launch.</p>
   
   <!-- Applications Area -->
   <div class="row">
@@ -46,7 +48,7 @@
           <!-- See https://github.com/angular-ui/bootstrap/issues/5368 -->
           <uib-accordion-group ng-repeat="stack in configuredStacks | orderBy:['name','id'] track by stack.id" is-open="expandedStacks[stack.id]"
               class="{{ stack.status === 'started' ? 'panel-success' : 
-                (stack.status === 'stopped' ? 'panel-danger' : 'panel-warning')  }}">
+                (stack.status === 'stopped' ? 'panel-default' : 'panel-warning')  }}">
             
             <uib-accordion-heading>
               <!-- Stack Status Indicator -->
@@ -54,8 +56,8 @@
                 <div class="col-xs-3 col-md-1 pull-left">
                   <i class="fa fa-fw fa-2x"
                     ng-class="{ 'fa-check-circle-o text-success': stack.status === 'started', 
-                        'fa-power-off text-danger': stack.status === 'stopped',
-                        'fa-warning text-danger animated faa-flash faa-fast': stack.status === 'error',
+                        'fa-power-off': stack.status === 'stopped',
+                        'fa-warning animated faa-flash faa-fast': stack.status === 'error',
                         'fa-spinner fa-spin fa-pulse text-primary': stack.status !== 'error' && stack.status !== 'started' && stack.status !== 'stopped' }"></i>
                 </div>
                 
@@ -118,6 +120,7 @@
                           {{ svc.service | specProperty:'label' }}
                           <a  ng-repeat="endpt in svc.endpoints track by endpt.port" id="endpointLink"
                               tooltip-append-to-body="true" uib-tooltip="Navigate to {{ svc.service | capitalize }} port {{ endpt.port }}"
+                              ga-event-track="['application', 'endpoint', svc.key]"
                               ng-if="stack.status === 'started' && svc.status === 'ready' 
                                   && endpt !== '' && ((stack.key | specProperty:'access') === 'external') && (endpt.protocol === 'http')"  target="_blank"
                               ng-href="{{ endpt | externalHostPort }}"
@@ -132,6 +135,7 @@
                         <!-- Console -->
                         <td class="text-center" tooltip-append-to-body="true" uib-tooltip="{{ (stack.status === 'stopped' ? 'The application must be launched before the Console can be accessed' : 'Advanced user terminal, allowing for arbitrary console commands') }}">
                           <a  id="consoleBtn"
+                              ga-track-event="['application', 'console', svc.service, 1, true]"
                               type="button" class="btn btn-default btn-xs" target="_blank" ng-href="/dashboard/home/{{ stack.id }}/console/{{ svc.service }}"
                               ng-disabled="svc.status !== 'ready'">
                             <i class="fa fa-terminal"></i>
@@ -142,7 +146,7 @@
                         <td class="text-center" tooltip-append-to-body="true" uib-tooltip="{{ (stack.status === 'stopped' ? 'View' : 'Edit') + ' the configuration for this part of the application' }}">
                           <!-- ng-click="showConfig(svc)" -->
                           <a  id="editServiceBtn" type="button" class="btn btn-default btn-xs" ng-href="/dashboard/home/{{ stack.id }}/edit/{{ svc.service }}"
-                              ng-if="stack.status === 'stopped'">
+                              ng-if="stack.status === 'stopped'" ga-track-event="['application', 'edit', svc.service, 1, true]">
                             <i class="fa fa-wrench"></i>
                           </a>
                           
@@ -173,7 +177,7 @@
                         </td>
                         
                         <!-- Help Link -->
-                        <td class="text-center"><a  id="helpLink" tooltip-append-to-body="true" uib-tooltip="Additional instructions or documentation for a part of an application" ng-if="svc.service | specProperty:'info'" ng-href="{{ svc.service | specProperty:'info' }}" target="_blank"><i class="fa fa-fw fa-question-circle"></i></a></td>
+                        <td class="text-center"><a  id="helpLink" tooltip-append-to-body="true" uib-tooltip="Additional instructions or documentation for a part of an application" ng-if="svc.service | specProperty:'info'" ng-href="{{ svc.service | specProperty:'info' }}" target="_blank" ga-track-event="['application', 'help', svc.service, 1, true]"><i class="fa fa-fw fa-question-circle"></i></a></td>
                       </tr>
                       
                       <!-- Add an artificial row (if necessary) for optional services -->

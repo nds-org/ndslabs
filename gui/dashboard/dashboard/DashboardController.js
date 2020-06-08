@@ -9,9 +9,9 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('DashboardController', [ '$scope', 'Loading', '$log', '$routeParams', '$location', '$interval', '$q', '$window', '$filter', '$uibModal', '_', 'Project', 'RandomPassword', 'Stack', 'Stacks', 'Specs', 'AutoRefresh', 'AuthInfo',
+.controller('DashboardController', [ '$scope', 'Loading', '$log', '$routeParams', '$location', '$interval', '$q', '$window', '$filter', '$uibModal', '_', 'Analytics', 'Project', 'RandomPassword', 'Stack', 'Stacks', 'Specs', 'AutoRefresh', 'AuthInfo',
       'StackService', 'NdsLabsApi', 'ProductName', 'FileManager', 'QuickStart',
-    function($scope, Loading, $log, $routeParams, $location, $interval, $q, $window, $filter, $uibModal, _, Project, RandomPassword, Stack, Stacks, Specs, AutoRefresh, AuthInfo, StackService, NdsLabsApi,
+    function($scope, Loading, $log, $routeParams, $location, $interval, $q, $window, $filter, $uibModal, _, Analytics, Project, RandomPassword, Stack, Stacks, Specs, AutoRefresh, AuthInfo, StackService, NdsLabsApi,
       ProductName, FileManager, QuickStart) {
   "use strict";
   
@@ -79,6 +79,7 @@ angular
       'stackId': stack.id
     }).then(function(data, xhr) {
       $log.debug('successfully started ' + stack.name);
+      Analytics.trackEvent('application', 'launch', stack.key, 1, true);
     }, function(headers) {
       $log.error('failed to start ' + stack.name);
     }).finally(function() {
@@ -129,6 +130,7 @@ angular
         'stackId': stack.id
       }).then(function(data, xhr) {
         $log.debug('successfully stopped ' + stack.name);
+        Analytics.trackEvent('application', 'shutdown', stack.key, 1, true);
       }, function(headers) {
         $log.error('failed to stop ' + stack.name);
       })
@@ -166,6 +168,8 @@ angular
    * @param {} service - the service to show logs for
    */ 
   $scope.showLogs = function(service) {
+    Analytics.trackEvent('application', 'logs', service.service, 1, true);
+
     // See 'app/dashboard/modals/logViewer/logViewer.html'
     $uibModal.open({
       animation: true,
@@ -186,6 +190,8 @@ angular
    * @param {} service - the service to show logs for
    */ 
   $scope.showConfig = function(service) {
+    Analytics.trackEvent('application', 'config', service.service, 1, true);
+
     // See 'app/dashboard/modals/logViewer/logViewer.html'
     $uibModal.open({
       animation: true,
@@ -248,6 +254,8 @@ angular
         'stackId': stack.id
       }).then(function(data, xhr) {
         $log.debug('successfully deleted stack: ' + stack.name);
+        Analytics.trackEvent('application', 'delete', stack.key, 1, true);
+
         Loading.set(Stacks.populate());
       }, function(headers) {
         $log.error('failed to delete stack: ' + stack.name);

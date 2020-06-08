@@ -1,11 +1,11 @@
 {
     "port": "30001",
     "timeout": 600,
-    "requireApproval": false,
-    "domain" : "",
+    "requireApproval": true,
+    "domain" : "workbench.local",
     "ingress": "LoadBalancer",
     "supportEmail": "",
-    "homeVolume": "global",
+    "homePvcSuffix": "-home",
     "defaultLimits": {
         "cpuMax": 2000,
         "cpuDefault": 1000,
@@ -18,23 +18,22 @@
         "maxMessages": 100
     },
     "kubernetes": {
-        "address": "http://localhost:8080"
+        "address": "https://minikube-ip:8443",
+        "pvcStorageClass": "",
+        "nodeSelectorName": "",
+        "nodeSelectorValue": ""
     },
     "email": {
-        "host": "smtp.ncsa.uiuc.edu",
-        "port": 25,
+        "host": "",
+        "port": 0,
         "tls": true
     },
     "specs": {
-        "path": "/specs"
+        "path": "/path/to/ndslabs-specs"
     },
-    "volumes": [{
-        "name": "global",
-        "path": "/var/glfs/global",
-        "type": "gluster"
-    }],
+    "volumes": [],
 	"support": {
-		"email": "",
+		"email": "you@email.org",
 		"forum": "",
 		"chat": ""
 	}
