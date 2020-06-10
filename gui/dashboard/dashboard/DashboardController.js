@@ -17,8 +17,6 @@ angular
     QuickStart.get($routeParams.quickstart).launch();
   }
 
-  $scope.AdvancedFeatures = AdvancedFeatures;
-  
   $scope.showRemoveService = AdvancedFeatures.showRemoveService;
   $scope.showServiceHelpIcon = AdvancedFeatures.showServiceHelpIcon;
   $scope.showEditService = AdvancedFeatures.showEditService;
