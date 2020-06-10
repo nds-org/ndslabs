@@ -60,13 +60,13 @@ angular
         "username": $scope.settings.namespace, 
         "password": $scope.settings.password 
       }
-    }).then(function(data, xhr) {
+    }).then(function(response) {
       $scope.errorMessage = '';
       
       // TODO: cauth server should set this for us, but doesn't seem to be working
       // FIXME: parameterize domain or connect to cauth endpoint
       $cookies.put('namespace', $scope.settings.namespace, CookieOptions);
-      $cookies.put('token', data.token, CookieOptions);
+      $cookies.put('token', response.data.token, CookieOptions);
       
       $log.debug("Logged in!");
       //getProject();
@@ -97,7 +97,7 @@ angular
     $log.debug("Logging out!");
     
     // TODO: DELETE /authenticate to delete a token in the backend?
-    //NdsLabsApi.deleteAuthenticate().then(function(data, xhr) {
+    //NdsLabsApi.deleteAuthenticate().then(function(response) {
       $scope.errorMessage = '';
       $scope.progressMessage = '';
       $log.debug("Logging out!");

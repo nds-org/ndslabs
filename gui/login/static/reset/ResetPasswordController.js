@@ -50,8 +50,8 @@ angular
       return;
     }
     
-    NdsLabsApi.postReset({ userId: $scope.password.accountId }).then(function(data) {
-      console.debug(data);
+    NdsLabsApi.postReset({ userId: $scope.password.accountId }).then(function(response) {
+      console.debug(response.data);
       $scope.resetSendSuccessful = true;
     }, function(response) {
       $log.error("Failed to send password reset link");
@@ -68,10 +68,10 @@ angular
     }
     
     // TODO: What is the correct API call here?
-    NdsLabsApi.putChange_password({ password: { 
+    NdsLabsApi.putChangePassword({ password: { 
       password: $scope.password.password,
-    }}).then(function(data) {
-      console.debug(data);
+    }}).then(function(response) {
+      console.debug(response.data);
       $scope.resetSuccessful = true;
       $scope.resetForms();
     }, function(response) {
