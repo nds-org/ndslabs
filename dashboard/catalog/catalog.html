@@ -33,11 +33,11 @@
           </button>
         </div>
         <div class="input-group-btn">
-          <button id="importApplicationBtn" type="button" class="btn btn-secondary" ng-click="openImport()" style="border-radius:0;">
+          <button id="importApplicationBtn" ng-if="showImportSpec" type="button" class="btn btn-secondary" ng-click="openImport()" style="border-radius:0;">
             <i class="fa fa-fw fa-upload"></i> Import
           </button>
         </div>
-        <div class="input-group-btn">
+        <div class="input-group-btn" ng-if="showCreateSpec">
           <a id="createApplicationBtn" type="button" class="btn btn-primary" href="/dashboard/store/add">
             <i class="fa fa-fw fa-plus"></i> Create
           </a>
