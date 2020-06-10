@@ -9,16 +9,20 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('DashboardController', [ '$scope', 'Loading', '$log', '$routeParams', '$location', '$interval', '$q', '$window', '$filter', '$uibModal', '_', 'Analytics', 'Project', 'RandomPassword', 'Stack', 'Stacks', 'Specs', 'AutoRefresh', 'AuthInfo',
-      'StackService', 'NdsLabsApi', 'ProductName', 'FileManager', 'QuickStart',
-    function($scope, Loading, $log, $routeParams, $location, $interval, $q, $window, $filter, $uibModal, _, Analytics, Project, RandomPassword, Stack, Stacks, Specs, AutoRefresh, AuthInfo, StackService, NdsLabsApi,
-      ProductName, FileManager, QuickStart) {
+.controller('DashboardController', [ '$scope', 'Loading', '$log', '$routeParams', '$location', '$interval', '$q', '$window', '$filter', '$uibModal', '_', 'Analytics', 'Project', 'RandomPassword', 'Stack', 'Stacks', 'Specs', 'AutoRefresh', 'AuthInfo', 'StackService', 'NdsLabsApi', 'ProductName', 'FileManager', 'QuickStart', 'AdvancedFeatures',
+    function($scope, Loading, $log, $routeParams, $location, $interval, $q, $window, $filter, $uibModal, _, Analytics, Project, RandomPassword, Stack, Stacks, Specs, AutoRefresh, AuthInfo, StackService, NdsLabsApi, ProductName, FileManager, QuickStart, AdvancedFeatures) {
   "use strict";
   
   if ($routeParams.quickstart) {
     QuickStart.get($routeParams.quickstart).launch();
   }
-  
+
+  $scope.showRemoveService = AdvancedFeatures.showRemoveService;
+  $scope.showServiceHelpIcon = AdvancedFeatures.showServiceHelpIcon;
+  $scope.showEditService = AdvancedFeatures.showEditService;
+  $scope.showConsole = AdvancedFeatures.showConsole;
+  $scope.showConfigColumn = AdvancedFeatures.showConfig;
+  $scope.showLogsColumn = AdvancedFeatures.showLogs;
   $scope.fileManager = FileManager;
   
   $scope.productName = ProductName;

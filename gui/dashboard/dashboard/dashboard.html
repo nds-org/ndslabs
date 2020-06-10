@@ -79,24 +79,21 @@
             <!-- Application Services -->
             <div class="row">
               <div class="col-sm-12">
+
                 <!-- List off our stack's services here -->
                 <div class="table-responsive">
                   <table class="table table-striped table-hover">
                     <thead>
                       <tr>
                         <td width="15%" class="text-center"><strong>Status</strong></td>
-                        <td width="20%"><strong>Name</strong></td>
-                        <td width="20%" tooltip-append-to-body="true" uib-tooltip="A unique identifier for each part of an application instance"><strong>ID</strong></td>
-                        <td width="10%" class="text-center" tooltip-append-to-body="true" uib-tooltip="Advanced user terminal, allowing for arbitrary console commands"><strong>Console</strong></td>
-                        <td width="10%" class="text-center" tooltip-append-to-body="true" uib-tooltip="{{ (stack.status === 'stopped' ? 'Edit' : 'View') + ' the configuration for part of an application' }}">
-                          <strong ng-if="stack.status !== 'stopped'">Config</strong>
-                          <strong ng-if="stack.status === 'stopped'">Edit</strong>
-                        </td>
-                        <td width="10%" class="text-center" tooltip-append-to-body="true" uib-tooltip="{{ (stack.status === 'stopped' ? 'Remove an optional ' : 'View the logs for ') + 'part of an application' }}">
-                          <strong ng-if="stack.status !== 'stopped'">Logs</strong>
-                          <strong ng-if="stack.status === 'stopped'">Remove</strong>
-                        </td>
-                        <td width="10%" class="text-center" tooltip-append-to-body="true" uib-tooltip="Additional instructions or documentation for a part of an application"><strong>Help</strong></td>
+                        <td><strong>Name</strong></td>
+                        <td tooltip-append-to-body="true" uib-tooltip="A unique identifier for each part of an application instance"><strong>ID</strong></td>
+                        <td width="5%" class="text-center" ng-if="showConsole" tooltip-append-to-body="true" uib-tooltip="Advanced user terminal, allowing for arbitrary console commands"><strong>Console</strong></td>
+                        <td width="5%" class="text-center" ng-if="showEditService && stack.status === 'stopped'" tooltip-append-to-body="true" uib-tooltip="Edit the configuration for part of an application"><strong>Edit</strong></td>
+                        <td width="5%" class="text-center" ng-if="showConfigColumn && stack.status !== 'stopped'" tooltip-append-to-body="true" uib-tooltip="View the configuration for part of an application"><strong >Config</strong></td>
+                        <td width="5%" class="text-center" ng-if="showLogsColumn && stack.status !== 'stopped'" tooltip-append-to-body="true" uib-tooltip="View the logs for part of an application"><strong >Logs</strong></td>
+                        <td width="5%" class="text-center" ng-if="showRemoveService && stack.status === 'stopped'" tooltip-append-to-body="true" uib-tooltip="Remove an optional part of an application"><strong>Remove</strong></td>
+                        <td width="5%" class="text-center" ng-if="showServiceHelpIcon" tooltip-append-to-body="true" uib-tooltip="Additional instructions or documentation for a part of an application"><strong>Help</strong></td>
                       </tr>
                     </thead>
                     <tbody>
@@ -116,8 +113,8 @@
                         </td>
                         
                         <!-- The Name of the Running Service and link to endpoint, if applicable -->
-                        <td tooltip-append-to-body="true" uib-tooltip="A friendly label for this application instance">
-                          {{ svc.service | specProperty:'label' }}
+                        <td>
+                          <span tooltip-append-to-body="true" uib-tooltip="A friendly label for this application instance">{{ svc.service | specProperty:'label' }}</span>
 
                           <a class="btn btn-link btn-sm" ng-repeat="endpt in svc.endpoints track by endpt.port" id="endpointLink"
                               tooltip-append-to-body="true" uib-tooltip="Navigate to {{ svc.service | capitalize }} port {{ endpt.port }}"
@@ -134,7 +131,7 @@
                         <td tooltip-append-to-body="true" uib-tooltip="A unique identifier for this part of the application instance"><span id="serviceIdText">{{ svc.id }}</span></td>
                         
                         <!-- Console -->
-                        <td class="text-center" tooltip-append-to-body="true" uib-tooltip="{{ (stack.status === 'stopped' ? 'The application must be launched before the Console can be accessed' : 'Advanced user terminal, allowing for arbitrary console commands') }}">
+                        <td class="text-center" ng-if="showConsole" tooltip-append-to-body="true" uib-tooltip="{{ (stack.status === 'stopped' ? 'The application must be launched before the Console can be accessed' : 'Advanced user terminal, allowing for arbitrary console commands') }}">
                           <a  id="consoleBtn"
                               ga-track-event="['application', 'console', svc.service, 1, true]"
                               type="button" class="btn btn-default btn-xs" target="_blank" ng-href="/dashboard/home/{{ stack.id }}/console/{{ svc.service }}"
@@ -142,32 +139,39 @@
                             <i class="fa fa-terminal"></i>
                           </a>
                         </td>
+
+                        <!-- Edit Config buttons -->
+                        <td class="text-center" ng-if="showEditService" tooltip-append-to-body="true" uib-tooltip="Edit the configuration for this part of the application">
                         
-                        <!-- View/Edit Config buttons -->
-                        <td class="text-center" tooltip-append-to-body="true" uib-tooltip="{{ (stack.status === 'stopped' ? 'View' : 'Edit') + ' the configuration for this part of the application' }}">
                           <!-- ng-click="showConfig(svc)" -->
                           <a  id="editServiceBtn" type="button" class="btn btn-default btn-xs" ng-href="/dashboard/home/{{ stack.id }}/edit/{{ svc.service }}"
                               ng-if="stack.status === 'stopped'" ga-track-event="['application', 'edit', svc.service, 1, true]">
                             <i class="fa fa-wrench"></i>
                           </a>
-                          
+                        </td>
+                        
+                        <!-- View Config buttons -->
+                        <td class="text-center" ng-if="showConfigColumn && stack.status !== 'stopped'">
                           <button id="viewConfigBtn" type="button" class="btn btn-default btn-xs" ng-click="showConfig(svc)"
-                              ng-if="stack.status !== 'stopped' && (!_.isEmpty(svc.config) || svc.endpoints.length > 0)">
+                              ng-if="!_.isEmpty(svc.config) || svc.endpoints.length > 0">
                             <i class="fa fa-puzzle-piece"></i>
                           </button>
                         </td>
                         
                         <!-- View Logs of Running Service, or Remove Stopped Service -->
-                        <td class="text-center">
+                        <td class="text-center" ng-if="showLogsColumn && stack.status !== 'stopped'">
                           <!-- View logs button -->
                           <button type="button" class="btn btn-xs btn-default" id="viewLogsBtn" 
                               uib-tooltip="View the logs for this part of the application instance"
-                              ng-if="stack.status !== 'stopped'" tooltip-append-to-body="true"
+                              tooltip-append-to-body="true"
                               ng-disabled="stack.status === 'stopped'" tooltip-placement="left" ng-click="showLogs(svc)">
                             <i class="fa fa-fw fa-file-text" ng-class="{ 'animated faa-vertical': stack.status === 'starting' && (svc.status === 'waiting' || svc.status === 'starting') }"></i>
                           </button>
                           
-                          <!-- Remove service from stack button -->
+                        </td>
+
+                        <!-- Remove optional service from stack -->
+                        <td class="text-center" ng-if="showRemoveService && stack.status === 'stopped'">
                           <button type="button" ng-disabled="stack.services | isRecursivelyRequired:svc"  id="removeBtn" 
                               uib-tooltip="Remove this optional part from this application instance"
                               ng-if="stack.status === 'stopped' && svc.service !== stack.key && !_.find((stack.key | requirements), [ 'key', svc.service ])" 
@@ -178,7 +182,7 @@
                         </td>
                         
                         <!-- Help Link -->
-                        <td class="text-center"><a  id="helpLink" tooltip-append-to-body="true" uib-tooltip="Additional instructions or documentation for a part of an application" ng-if="svc.service | specProperty:'info'" ng-href="{{ svc.service | specProperty:'info' }}" target="_blank" ga-track-event="['application', 'help', svc.service, 1, true]"><i class="fa fa-fw fa-question-circle"></i></a></td>
+                        <td class="text-center" ng-if="showServiceHelpIcon"><a id="helpLink" tooltip-append-to-body="true" uib-tooltip="Additional instructions or documentation for a part of an application" ng-if="svc.service | specProperty:'info'" ng-href="{{ svc.service | specProperty:'info' }}" target="_blank" ga-track-event="['application', 'help', svc.service, 1, true]"><i class="fa fa-fw fa-question-circle"></i></a></td>
                       </tr>
                       
                       <!-- Add an artificial row (if necessary) for optional services -->
@@ -200,7 +204,7 @@
                         
                         <td colspan="4">{{ stack.selectedOption | specProperty:'description' }}</td>
                         
-                        <td class="text-center">
+                        <td class="text-center" ng-if="showServiceHelpIcon">
                           <a id="addServiceHelpLink" ng-if="stack.selectedOption | specProperty:'info'" ng-href="{{ stack.selectedOption | specProperty:'info' }}" target="_blank">
                             <i class="fa fa-fw fa-question-circle"></i>
                           </a>

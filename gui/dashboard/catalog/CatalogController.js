@@ -23,10 +23,12 @@ angular
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
 .controller('CatalogController', [ '$scope', '$filter', '$interval', '$uibModal', '$location', '$log', '_', 'Analytics', 'NdsLabsApi', 'Project', 'Stack', 'Stacks', 
-    'StackService', 'Specs', 'clipboard', 'Vocabulary', 'RandomPassword', 'AuthInfo', 'ProductName', 'ApiUri', 'DashboardAppPath', 'HomePathSuffix',
-    function($scope, $filter, $interval, $uibModal, $location, $log, _, Analytics, NdsLabsApi, Project, Stack, Stacks, StackService, Specs, clipboard, Vocabulary, RandomPassword, AuthInfo, ProductName, ApiUri, DashboardAppPath, HomePathSuffix) {
+    'StackService', 'Specs', 'clipboard', 'Vocabulary', 'RandomPassword', 'AuthInfo', 'ProductName', 'ApiUri', 'DashboardAppPath', 'HomePathSuffix', 'AdvancedFeatures',
+    function($scope, $filter, $interval, $uibModal, $location, $log, _, Analytics, NdsLabsApi, Project, Stack, Stacks, StackService, Specs, clipboard, Vocabulary, RandomPassword, AuthInfo, ProductName, ApiUri, DashboardAppPath, HomePathSuffix, AdvancedFeatures) {
   "use strict";
   
+  $scope.showCreateSpec = AdvancedFeatures.showCreateSpec;
+  $scope.showImportSpec = AdvancedFeatures.showImportSpec;
   $scope.productName = ProductName;
       
   $scope.tags = { all: [], selected: [] };

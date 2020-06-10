@@ -30,7 +30,7 @@
           </li>
           
 	        <!-- Then draw our Manage Files button -->
-          <li>
+          <li ng-if="showFileManager">
             <a id="filesNav" type="button" ng-click="fileManager.launch()">
                <i class="fa fa-fw" ng-class="{ 'fa-spinner fa-pulse': launchingFileManager, 'fa-files-o': !launchingFileManager }"></i> Files
             </a>
