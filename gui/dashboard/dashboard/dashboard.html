@@ -16,7 +16,7 @@
       <p>This view shows the status of any applications that you have already added. To start an application, expand one below and then choose Launch.</p>
     </div>
     <div class="col-sm-2">
-        <button id="refreshBtn" class="btn btn-default btn-xs pull-right" ng-click="autoRefresh.toggle()"
+        <button id="refreshBtn" class="btn btn-default btn-sm pull-right" style="margin-top:-5px" ng-click="autoRefresh.toggle()"
              ng-class="{ 'btn-info':autoRefresh.interval !== null }"
              ng-mouseenter="iconSpin = true" ng-mouseleave="iconSpin = false"
              uib-tooltip="Refresh" tooltip-placement="left">
