@@ -1,25 +1,8 @@
 <!-- The Dashboard View -->
 <section>
   <div class="row">
-    <div class="col-xs-8">
+    <div class="col-xs-12">
       <h3>{{ project.name }} Dashboard</h3>
-    </div>
-    
-    <div class="col-xs-4">
-      <div class="pull-right">
-        <a id="addApplicationBtn" class="btn btn-xs btn-primary" href="/dashboard/store"
-           ng-mouseenter="iconBounce = true" ng-mouseleave="iconBounce = false"
-           uib-tooltip="Add an Application Instance" tooltip-placement="left">
-          <i class="fa fa-fw fa-plus"  ng-class="{ 'faa-bounce animated':iconBounce }"></i>
-        </a>
-       
-        <button id="refreshBtn" class="btn btn-default btn-xs" ng-click="autoRefresh.toggle()"
-             ng-class="{ 'btn-info':autoRefresh.interval !== null }"
-             ng-mouseenter="iconSpin = true" ng-mouseleave="iconSpin = false"
-             uib-tooltip="Refresh" tooltip-placement="left">
-          <i class="fa fa-refresh fa-fw" ng-class="{ 'fa-spin':iconSpin || autoRefresh.interval !== null }"></i>
-        </button>
-      </div>
     </div>
   </div>
     
@@ -28,8 +11,19 @@
     <li class="active">Dashboard</li>
   </ol>
 
-  <p>This view shows the status of any applications that you have already added. To start an application, expand one below and then choose Launch.</p>
-  
+  <div class="row">
+    <div class="col-sm-10">
+      <p>This view shows the status of any applications that you have already added. To start an application, expand one below and then choose Launch.</p>
+    </div>
+    <div class="col-sm-2">
+        <button id="refreshBtn" class="btn btn-default btn-xs pull-right" ng-click="autoRefresh.toggle()"
+             ng-class="{ 'btn-info':autoRefresh.interval !== null }"
+             ng-mouseenter="iconSpin = true" ng-mouseleave="iconSpin = false"
+             uib-tooltip="Refresh" tooltip-placement="left">
+          <i class="fa fa-refresh fa-fw" ng-class="{ 'fa-spin':iconSpin || autoRefresh.interval !== null }"></i>
+        </button>
+    </div>
+  </div>
   <!-- Applications Area -->
   <div class="row">
     <div class="col-sm-12 fill-height">
