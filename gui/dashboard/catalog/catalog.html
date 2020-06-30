@@ -28,8 +28,11 @@
           </tags-input>
         
         <div class="input-group-btn">
-          <button id="toggleCardsBtn" type="button" class="btn btn-default" style="border-radius:0 !important;" ng-click="showCards = !showCards">
-            <i id="viewAsIcon" class="fa fa-fw" ng-class="{ 'fa-table': showCards, 'fa-list': !showCards }"></i>
+          <button id="toggleCardsBtnCards" type="button" class="btn" style="border-radius:0 !important;" ng-click="showCards = true" ng-class="{ 'btn-primary': showCards, 'btn-default': !showCards }">
+            <i id="viewAsIcon" class="fa fa-fw fa-table"></i>
+          </button>
+          <button id="toggleCardsBtn" type="button" class="btn" style="border-radius:0 !important;" ng-click="showCards = false" ng-class="{ 'btn-default': showCards, 'btn-primary': !showCards }">
+            <i id="viewAsIcon" class="fa fa-fw fa-list"></i>
           </button>
         </div>
         <div class="input-group-btn">
@@ -62,7 +65,7 @@
         No applications matched your search
       </p>
       <p class="text-center text-success" ng-show="(specs | display | showTags:tags.selected).length !== 0">
-        Choose an application below to configure
+        Choose an application below
       </p>
       
       <!-- Table -->
