@@ -22,7 +22,7 @@
   "resolutions": {
     "angular": "~1.8.0",
     "angular-animate": "~1.8.0",
-    "lodash": "4.17.13"
+    "lodash": "4.17.19"
   },
   "dependencies": {
     "angular": "~1.8.0",
@@ -66,7 +66,7 @@
     "jquery": "^3.3.1",
     "js-yaml": "^3.10.0",
     "load-grunt-tasks": "^3.5.2",
-    "lodash": "~4.17.13",
+    "lodash": "~4.17.19",
     "morgan": "^1.7.0",
     "ng-password-strength": "https://github.com/bodom0015/ng-password-strength.git",
     "ng-tags-input": "3.1.1",
