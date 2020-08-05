@@ -28,8 +28,11 @@
           </tags-input>
         
         <div class="input-group-btn">
-          <button id="toggleCardsBtn" type="button" class="btn btn-default" style="border-radius:0 !important;" ng-click="showCards = !showCards">
-            <i id="viewAsIcon" class="fa fa-fw" ng-class="{ 'fa-table': showCards, 'fa-list': !showCards }"></i>
+          <button id="toggleCardsBtnCards" type="button" class="btn" style="border-radius:0 !important;" ng-click="showCards = true" ng-class="{ 'btn-primary': showCards, 'btn-default': !showCards }">
+            <i id="viewAsIcon" class="fa fa-fw fa-table"></i>
+          </button>
+          <button id="toggleCardsBtn" type="button" class="btn" style="border-radius:0 !important;" ng-click="showCards = false" ng-class="{ 'btn-default': showCards, 'btn-primary': !showCards }">
+            <i id="viewAsIcon" class="fa fa-fw fa-list"></i>
           </button>
         </div>
         <div class="input-group-btn">
@@ -62,18 +65,22 @@
         No applications matched your search
       </p>
       <p class="text-center text-success" ng-show="(specs | display | showTags:tags.selected).length !== 0">
-        Choose an application below to configure
+        Choose an application below
       </p>
+
+      <div class="alert alert-success" role="alert" ng-if="showCopySuccess" style="position:fixed;z-index:2;top:10%;right:10%;width:35%">
+        Text has been copied to your clipboard
+      </div>
       
       <!-- Table -->
       <table ng-if="!showCards" class="table table-hover table-striped" ng-hide="(specs | display | showTags:tags.selected).length === 0">
         <thead>
           <tr>
             <th width="20%"><label>Name</label></th>
-            <th width="5%"><label>Source</label></th>
-            <th width="40%"><label>Description</label></th>
-            <th width="30%"></th>
-            <th width="5%"></th>
+            <th width="15%" ng-if="showCreateSpec || showImportSpec"><label>Source</label></th>
+            <th><label>Description</label></th>
+            <th></th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -82,8 +89,8 @@
               {{ spec.label }}
             </th>
             
-            <td>
-              <i class="fa fa-fw" tooptip-placement="top-right" uib-tooltip="Source: {{ spec.catalog | capitalize }}" ng-class="{ 'fa-user': spec.catalog === 'user', 'fa-server': spec.catalog === 'system' }"></i>
+            <td ng-if="showCreateSpec || showImportSpec">
+              <i class="fa fa-fw" tooptip-placement="top-right" uib-tooltip="Source: {{ spec.catalog | capitalize }}" ng-class="{ 'fa-user': spec.catalog === 'user', 'fa-server': spec.catalog === 'system' }"></i> {{ spec.key }}
             </td>
             
             <td>
@@ -164,7 +171,7 @@
               
               <!-- Tags -->
               <div class="row" style="margin:0;padding:0;">
-                <small class="pull-right" uib-tooltip="Source: {{ spec.catalog | capitalize }}" tooltip-placement="left"><small><i class="fa fa-fw" ng-class="{ 'fa-user': spec.catalog === 'user', 'fa-server': spec.catalog === 'system' }"></i> {{ spec.key }}</small></small>
+                <small ng-if="showCreateSpec || showImportSpec" class="pull-right" uib-tooltip="Source: {{ spec.catalog | capitalize }}" tooltip-placement="left"><small><i class="fa fa-fw" ng-class="{ 'fa-user': spec.catalog === 'user', 'fa-server': spec.catalog === 'system' }"></i> {{ spec.key }}</small></small>
                 <div class="pull-left">
                   <div class="text-center" style="padding:0;">
                     <button id="tag{{ $index }}" style="padding:0 4px 0 4px;margin:0 4px 0 4px;" class="btn btn-xs btn-default" 
@@ -200,8 +207,8 @@
                   
                   <!-- Install button -->
                   <button id="addBtn" ng-disabled="installs[spec.key].progress > 0" ng-if="installs[spec.key].count === 0 && installs[spec.key].progress === 0" style="margin:7px;"
-                      class="btn btn-xs btn-link" ng-click="install(spec)">
-                    Add
+                      class="btn btn-xs btn-default" ng-click="install(spec)">
+                    <i class="fa fa-fw fa-plus"></i> Add
                   </button>
                 </div>
                 
