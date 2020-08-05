@@ -31,9 +31,9 @@ angular
   ($scope.refreshLog = function() {
     NdsLabsApi.getLogsByStackServiceId({
       'stackServiceId': service.id
-    }).then(function(data, xhr) {
+    }).then(function(response) {
       $log.debug('successfully grabbed logs for serviceId ' + service.id);
-      $scope.serviceLog = data;
+      $scope.serviceLog = response.data;
       //$scope.gotoAnchor('bottom');
     }, function(headers) {
       $log.error('error grabbing logs for service ' + service.id);

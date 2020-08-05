@@ -261,7 +261,8 @@ angular
     });
     
     // Install this app to etcd
-    return NdsLabsApi.postStacks({ 'stack': app }).then(function(stack, xhr) {
+    return NdsLabsApi.postStacks({ 'stack': app }).then(function(response) {
+      var stack = response.data;
       $log.debug("successfully posted to /projects/" + projectId + "/stacks!");
 
       Analytics.trackEvent('application', 'add', spec.key, 1, true);

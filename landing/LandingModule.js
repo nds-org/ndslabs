@@ -71,8 +71,8 @@ angular
   // TODO: Move this logic to the LoginModule
   if ($scope.user && $scope.token) {
     $scope.verified = null;
-    NdsLabsApi.putRegisterVerify({ verify: { u: $scope.user, t: $scope.token } }).then(function(data) {
-      console.debug(data);
+    NdsLabsApi.putRegisterVerify({ verify: { u: $scope.user, t: $scope.token } }).then(function(response) {
+      console.debug(response.data);
       $scope.verified = true;
     }, function(response) {
       $log.error("Failed to verify user " + $scope.user + ":" + $scope.token);
