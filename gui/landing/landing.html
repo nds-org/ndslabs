@@ -56,7 +56,7 @@
       <ul class="fa-ul">
         <li><i class="fa-li fa fa-fw fa-dashboard"></i><a class="btn btn-link" id="dashboardLink" type="button" href="/dashboard/home">Access your Configured Application Instances</a></li>
         <li><i class="fa-li fa fa-fw fa-filter"></i><a class="btn btn-link" id="catalogLink" type="button" href="/dashboard/store">Browse the Application Catalog</a></li>
-        <li><i class="fa-li fa fa-fw fa-plus"></i><a class="btn btn-link" id="catalogAddLink" type="button" href="/dashboard/store/add">Add a New Application to the Catalog</a></li>
+        <li ng-if="showCreateSpec"><i class="fa-li fa fa-fw fa-plus"></i><a class="btn btn-link" id="catalogAddLink" type="button" href="/dashboard/store/add">Add a New Application to the Catalog</a></li>
       </ul>
     </div>
     

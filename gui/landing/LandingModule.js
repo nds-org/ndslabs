@@ -37,10 +37,11 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('LandingController', [ '$scope', '$rootScope', '$location', '$routeParams', '$log', '_', 'AuthInfo', 'OrgName', 'ProductName', 'ProductUrl', 'NdsLabsApi', 'HelpLinks', 'ReturnRoute', 'LoginAppPath', 'RecoveryPathSuffix', 'SigninUrl',
-    function($scope, $rootScope, $location, $routeParams, $log, _, AuthInfo, OrgName, ProductName, ProductUrl, NdsLabsApi, HelpLinks, ReturnRoute, LoginAppPath, RecoveryPathSuffix, SigninUrl) {
+.controller('LandingController', [ '$scope', '$rootScope', '$location', '$routeParams', '$log', '_', 'AuthInfo', 'OrgName', 'ProductName', 'ProductUrl', 'NdsLabsApi', 'HelpLinks', 'ReturnRoute', 'LoginAppPath', 'RecoveryPathSuffix', 'SigninUrl', 'AdvancedFeatures',
+    function($scope, $rootScope, $location, $routeParams, $log, _, AuthInfo, OrgName, ProductName, ProductUrl, NdsLabsApi, HelpLinks, ReturnRoute, LoginAppPath, RecoveryPathSuffix, SigninUrl, AdvancedFeatures) {
   "use strict";
 
+  $scope.showCreateSpec = AdvancedFeatures.showCreateSpec;
   if ($routeParams.t && !$routeParams.u) {
     $location.path(LoginAppPath + RecoveryPathSuffix);
     return;
