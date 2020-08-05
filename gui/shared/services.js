@@ -97,7 +97,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
           }, 1000);
           return NdsLabsApi.getStart({
             'key': quickstartKey
-          }).then(function(started, xhr) {
+          }).then(function(response) {
+            var started = response.data;
             $log.debug('Successfully started quickstartKey=' + quickstartKey + ', stackId=' + started);
             quickstart.navigate(started);
           }, function(headers) {
@@ -221,7 +222,7 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
        'Content-Type': 'application/json'
      },
      data: logItem
-    }).then(function(data) {
+    }).then(function(response) {
       service.logs.push(logItem);
     }, function(response) {
       console.log('Error sending logItem back to server: ', logItem);
@@ -311,7 +312,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
     populate: function(projectId) {
       return Loading.setNavbarLoading(NdsLabsApi.getAccountsByAccountId({ 
         "accountId": projectId 
-      })).then(function(data, xhr) {
+      })).then(function(response) {
+        var data = response.data;
         $log.debug("successfully grabbed from /projects/" + projectId + "!");
         project.project = data;
         
@@ -357,7 +359,8 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
     /** Grab the current site's available services */ 
     populate: function() {
       // Grab the list of available services at our site
-      return NdsLabsApi.getServices({ catalog: 'all' }).then(function(data, xhr) {
+      return NdsLabsApi.getServices({ catalog: 'all' }).then(function(response) {
+        var data = response.data;
         $log.debug("successfully grabbed from /services!");
         specs.all = angular.copy(data);
         
@@ -419,10 +422,10 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
     
     /** Grab the list of configured stacks in our project */
     populate: function(projectId) {
-      return NdsLabsApi.getStacks().then(function(data, xhr) {
+      return NdsLabsApi.getStacks().then(function(response) {
         $log.debug("successfully grabbed from /projects/" + projectId + "/stacks!");
         
-        stacks.all = data || [];
+        stacks.all = response.data || [];
         return stacks.all;
       }, function(headers) {
         $log.error("error grabbing from /projects/" + projectId + "/stacks!");
@@ -451,9 +454,9 @@ angular.module('ndslabs-services', [ 'ndslabs-api' ])
     
     /** Grab the list of configured stacks in our project */
     populate: function(name) {
-      return NdsLabsApi.getVocabularyByVocabName({ vocabName: name }).then(function(data, xhr) {
+      return NdsLabsApi.getVocabularyByVocabName({ vocabName: name }).then(function(response) {
         $log.debug("successfully grabbed vocab list for " + name + "!");
-        vocab.all = data || [];
+        vocab.all = response.data || [];
         return vocab.all;
       }, function(response) {
         $log.error("error grabbing vocab list!");

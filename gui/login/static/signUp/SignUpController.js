@@ -61,7 +61,7 @@ angular
       account.nexturl = $routeParams.rd;
     }
     
-    return NdsLabsApi.postRegister({ 'account': account }).then(function(data, xhr) {
+    return NdsLabsApi.postRegister({ 'account': account }).then(function(response) {
       $scope.errorMessage = '';
       $scope.showVerify = true;
     }, function(response) {

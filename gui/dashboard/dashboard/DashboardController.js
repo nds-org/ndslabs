@@ -81,7 +81,7 @@ angular
     // Then send the "start" command to the API server
     return NdsLabsApi.getStartByStackId({
       'stackId': stack.id
-    }).then(function(data, xhr) {
+    }).then(function(response) {
       $log.debug('successfully started ' + stack.name);
       Analytics.trackEvent('application', 'launch', stack.key, 1, true);
     }, function(headers) {
@@ -132,7 +132,7 @@ angular
       // Then send the "stop" command to the API server
       return NdsLabsApi.getStopByStackId({
         'stackId': stack.id
-      }).then(function(data, xhr) {
+      }).then(function(response) {
         $log.debug('successfully stopped ' + stack.name);
         Analytics.trackEvent('application', 'shutdown', stack.key, 1, true);
       }, function(headers) {
@@ -157,7 +157,7 @@ angular
     return NdsLabsApi.putStacksByStackId({
       'stack': stack,
       'stackId': stack.id
-    }).then(function(data, xhr) {
+    }).then(function(response) {
       $log.debug('successfully removed service ' + svc.service + ' from stack ' + stack.name);
     }, function(headers) {
       $log.error('failed to remove service ' + svc.service + ' from stack ' + stack.name);
@@ -222,7 +222,7 @@ angular
     return NdsLabsApi.putStacksByStackId({
       'stack': stk,
       'stackId': stack.id
-    }).then(function(data, xhr) {
+    }).then(function(response) {
       $log.debug('successfully set secure == ' + secure + ' on stack id ' + stk.id);
       stack.secure = stk.secure;
     }, function(headers) {
@@ -256,7 +256,7 @@ angular
       // Delete the stack
       return NdsLabsApi.deleteStacksByStackId({
         'stackId': stack.id
-      }).then(function(data, xhr) {
+      }).then(function(response) {
         $log.debug('successfully deleted stack: ' + stack.name);
         Analytics.trackEvent('application', 'delete', stack.key, 1, true);
 

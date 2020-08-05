@@ -217,7 +217,7 @@ angular
     });
     
     var method = $scope.editingSpec ? 'putServicesByServiceId' : 'postServices';
-    return NdsLabsApi[method]({ service: spec, serviceId: spec.key }).then(function(data) {
+    return NdsLabsApi[method]({ service: spec, serviceId: spec.key }).then(function(response) {
       // TODO: Only populate changed spec?
       Specs.populate().then(function() {
         $location.path('/store');
