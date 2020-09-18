@@ -23,7 +23,8 @@ angular
   });
   
   // Now populate the default values of each property
-  NdsLabsApi.getConfigs({ 'services': [ service.service ] }).then(function(data, headers) {
+  NdsLabsApi.getConfigs({ 'services': [ service.service ] }).then(function(response) {
+    var data = response.data;
     angular.forEach(data[service.service], function(cfg) {
       var config = _.find($scope.configs, [ 'name', cfg.name ]);
       config.defaultValue = cfg.value;

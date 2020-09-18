@@ -1,7 +1,7 @@
 {
 	"info": {
-		"name": "Workbench HTTPS",
-		"_postman_id": "0ece649e-c3a9-b2b3-1aac-d35d9d1815a6",
+		"name": "Workbench",
+		"_postman_id": "307cd853-89e0-2a90-c0af-91f44f311356",
 		"description": "",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -15,6 +15,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "bbef9fba-3785-4c54-a66c-c52cdf3375e5",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -26,9 +28,7 @@
 									"    pm.response.to.be.json",
 									"    pm.environment.set(\"admin_token\", jsonData.token);",
 									"});"
-								],
-								"id": "bbef9fba-3785-4c54-a66c-c52cdf3375e5",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -37,7 +37,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -53,8 +53,8 @@
 							"raw": "{\"username\": \"{{admin_username}}\", \"password\": \"{{admin_password}}\"}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/authenticate",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/authenticate",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -72,11 +72,11 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "86864787-7661-4b38-bfdc-e1a57b89419f",
+								"type": "text/javascript",
 								"exec": [
 									""
-								],
-								"id": "86864787-7661-4b38-bfdc-e1a57b89419f",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -85,7 +85,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -105,8 +105,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/accounts/{{username}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/accounts/{{username}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -125,15 +125,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "a57af2dc-16c0-4278-8ccb-090785606bcc",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									""
-								],
-								"id": "a57af2dc-16c0-4278-8ccb-090785606bcc",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -142,7 +142,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -162,8 +162,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/log_level/4",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/log_level/4",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -182,6 +182,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "80e76211-7a8b-452b-80f8-5afe7d39b69c",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -194,9 +196,7 @@
 									"    pm.expect(jsonData.status).to.eql(\"unverified\");",
 									"});",
 									""
-								],
-								"id": "80e76211-7a8b-452b-80f8-5afe7d39b69c",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -205,7 +205,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -221,8 +221,8 @@
 							"raw": "{\n    \"id\": \"{{username}}\",\n    \"name\": \"Test User\",\n    \"description\": \"Automated test account\",\n    \"namespace\": \"{{username}}\",\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\"\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/register",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/register",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -240,6 +240,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "ebf0e9da-b0b0-41f7-8731-07b6ecfa3701",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -257,9 +259,7 @@
 									"    }    ",
 									"});",
 									""
-								],
-								"id": "ebf0e9da-b0b0-41f7-8731-07b6ecfa3701",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -268,7 +268,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -288,8 +288,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/accounts",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/accounts",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -307,13 +307,13 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "a8ee1d36-7c33-4116-83fe-7cdaa558190d",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});"
-								],
-								"id": "a8ee1d36-7c33-4116-83fe-7cdaa558190d",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -322,7 +322,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -338,8 +338,8 @@
 							"raw": "{\n    \"u\": \"{{username}}\",\n    \"t\": \"{{verify_token}}\"\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/register/verify",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/register/verify",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -358,6 +358,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "8e6e6490-c630-4004-bdbe-c91706e5b3e3",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -377,9 +379,7 @@
 									"    }    ",
 									"});",
 									""
-								],
-								"id": "8e6e6490-c630-4004-bdbe-c91706e5b3e3",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -388,7 +388,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -408,8 +408,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/accounts",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/accounts",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -427,15 +427,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "e6421c7e-1f85-4275-b96f-a992ad3b9f74",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									""
-								],
-								"id": "e6421c7e-1f85-4275-b96f-a992ad3b9f74",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -444,7 +444,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -464,8 +464,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/register/deny?u={{username}}&t={{account_token}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/register/deny?u={{username}}&t={{account_token}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -476,14 +476,14 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "u",
-									"value": "{{username}}"
+									"value": "{{username}}",
+									"equals": true
 								},
 								{
-									"equals": true,
 									"key": "t",
-									"value": "{{account_token}}"
+									"value": "{{account_token}}",
+									"equals": true
 								}
 							]
 						}
@@ -496,6 +496,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "0c98c057-a00c-42c3-88db-2b7567189936",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -514,9 +516,7 @@
 									"    }",
 									"});",
 									""
-								],
-								"id": "0c98c057-a00c-42c3-88db-2b7567189936",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -525,7 +525,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -545,8 +545,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/accounts",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/accounts",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -564,15 +564,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "b1be56c6-e749-462f-9304-b978966b99cb",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									""
-								],
-								"id": "b1be56c6-e749-462f-9304-b978966b99cb",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -581,7 +581,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -601,8 +601,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/accounts/{{username}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/accounts/{{username}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -621,6 +621,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "80e76211-7a8b-452b-80f8-5afe7d39b69c",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -633,9 +635,7 @@
 									"    pm.expect(jsonData.status).to.eql(\"unverified\");",
 									"});",
 									""
-								],
-								"id": "80e76211-7a8b-452b-80f8-5afe7d39b69c",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -644,7 +644,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -660,8 +660,8 @@
 							"raw": "{\n    \"id\": \"{{username}}\",\n    \"name\": \"Test User\",\n    \"description\": \"Automated test account\",\n    \"namespace\": \"{{username}}\",\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\"\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/register",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/register",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -679,13 +679,13 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "a8ee1d36-7c33-4116-83fe-7cdaa558190d",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});"
-								],
-								"id": "a8ee1d36-7c33-4116-83fe-7cdaa558190d",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -694,7 +694,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -710,8 +710,8 @@
 							"raw": "{\n    \"u\": \"{{username}}\",\n    \"t\": \"{{verify_token}}\"\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/register/verify",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/register/verify",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -730,6 +730,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "791021c3-39d3-4538-a9f2-8eb4abc9a5c4",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -747,9 +749,7 @@
 									"    }",
 									"});",
 									""
-								],
-								"id": "791021c3-39d3-4538-a9f2-8eb4abc9a5c4",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -758,7 +758,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -778,8 +778,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/accounts",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/accounts",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -797,14 +797,14 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "fad97748-0a9e-4e1a-a8a5-d58a93fd902f",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});"
-								],
-								"id": "fad97748-0a9e-4e1a-a8a5-d58a93fd902f",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -813,7 +813,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -833,8 +833,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/register/approve?u={{username}}&t={{account_token}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/register/approve?u={{username}}&t={{account_token}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -845,14 +845,14 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "u",
-									"value": "{{username}}"
+									"value": "{{username}}",
+									"equals": true
 								},
 								{
-									"equals": true,
 									"key": "t",
-									"value": "{{account_token}}"
+									"value": "{{account_token}}",
+									"equals": true
 								}
 							]
 						}
@@ -865,6 +865,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "17513fc8-40a6-4740-aef2-d79d723fe6da",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -881,9 +883,7 @@
 									"    }",
 									"});",
 									""
-								],
-								"id": "17513fc8-40a6-4740-aef2-d79d723fe6da",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -892,7 +892,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -912,8 +912,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/accounts",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/accounts",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -931,6 +931,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "84803720-81c4-4fb0-813b-98f946dd9d57",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -944,9 +946,7 @@
 									"    pm.expect(jsonData.status).to.eql(\"approved\");",
 									"});",
 									""
-								],
-								"id": "84803720-81c4-4fb0-813b-98f946dd9d57",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -955,7 +955,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -975,8 +975,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/accounts/{{username}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/accounts/{{username}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -995,6 +995,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "5208cf0c-895a-46f6-aee6-bc71f6dff67b",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -1008,9 +1010,7 @@
 									"    pm.expect(jsonData.name).to.eql(\"Test Post User\");",
 									"});",
 									""
-								],
-								"id": "5208cf0c-895a-46f6-aee6-bc71f6dff67b",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1019,7 +1019,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -1039,8 +1039,8 @@
 							"raw": "{\n    \"id\": \"testpost\",\n    \"name\": \"Test Post User\",\n    \"description\": \"Automated test account\",\n    \"namespace\": \"testpost\",\n    \"email\": \"devnull@ncsa.illinois.edu\",\n    \"password\": \"\",\n    \"resourceLimits\": {\n        \"cpuMax\": 0,\n        \"cpuDefault\": 0,\n        \"memMax\": 0,\n        \"memDefault\": 0,\n        \"storageQuota\": 0\n    },\n    \"resourceUsage\": {\n        \"cpu\": \"0\",\n        \"memory\": \"0\",\n        \"storage\": \"\",\n        \"cpuPct\": \"0.000000\",\n        \"memPct\": \"0.000000\"\n    },\n    \"status\": \"approved\",\n    \"token\": \"\",\n    \"organization\": \"\",\n    \"created\": 0,\n    \"lastLogin\": 0,\n    \"inactiveTimeout\": 480,\n    \"nexturl\": \"\"\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/accounts",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/accounts",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -1058,15 +1058,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "be130786-184f-4e8e-ae18-adc8bd648fa0",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(409);",
 									"});",
 									""
-								],
-								"id": "be130786-184f-4e8e-ae18-adc8bd648fa0",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1075,7 +1075,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -1095,8 +1095,8 @@
 							"raw": "{\n    \"id\": \"testpost\",\n    \"name\": \"Test Post User\",\n    \"description\": \"Automated test account\",\n    \"namespace\": \"testpost\",\n    \"email\": \"devnull@ncsa.illinois.edu\",\n    \"password\": \"\",\n    \"resourceLimits\": {\n        \"cpuMax\": 0,\n        \"cpuDefault\": 0,\n        \"memMax\": 0,\n        \"memDefault\": 0,\n        \"storageQuota\": 0\n    },\n    \"resourceUsage\": {\n        \"cpu\": \"0\",\n        \"memory\": \"0\",\n        \"storage\": \"\",\n        \"cpuPct\": \"0.000000\",\n        \"memPct\": \"0.000000\"\n    },\n    \"status\": \"approved\",\n    \"token\": \"\",\n    \"organization\": \"\",\n    \"created\": 0,\n    \"lastLogin\": 0,\n    \"inactiveTimeout\": 480,\n    \"nexturl\": \"\"\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/accounts",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/accounts",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -1114,6 +1114,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "5757c938-f763-4d90-8891-35c533da3652",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -1126,9 +1128,7 @@
 									"    pm.expect(jsonData.account.id).to.eql(\"testpost\");",
 									"});",
 									""
-								],
-								"id": "5757c938-f763-4d90-8891-35c533da3652",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1137,7 +1137,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -1157,8 +1157,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/export/testpost",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/export/testpost",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -1177,6 +1177,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "17e38f49-52d0-4e97-ab47-482256b858d2",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -1190,9 +1192,7 @@
 									"    pm.expect(jsonData.name).to.eql(\"Test Put User\");",
 									"});",
 									""
-								],
-								"id": "17e38f49-52d0-4e97-ab47-482256b858d2",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1201,7 +1201,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -1221,8 +1221,8 @@
 							"raw": "{\n    \"id\": \"testpost\",\n    \"name\": \"Test Put User\",\n    \"description\": \"Automated test account\",\n    \"namespace\": \"testpost\",\n    \"email\": \"devnull@ncsa.illinois.edu\",\n    \"password\": \"\",\n    \"resourceLimits\": {\n        \"cpuMax\": 0,\n        \"cpuDefault\": 0,\n        \"memMax\": 0,\n        \"memDefault\": 0,\n        \"storageQuota\": 0\n    },\n    \"resourceUsage\": {\n        \"cpu\": \"0\",\n        \"memory\": \"0\",\n        \"storage\": \"\",\n        \"cpuPct\": \"0.000000\",\n        \"memPct\": \"0.000000\"\n    },\n    \"status\": \"approved\",\n    \"token\": \"\",\n    \"organization\": \"\",\n    \"created\": 0,\n    \"lastLogin\": 0,\n    \"inactiveTimeout\": 480,\n    \"nexturl\": \"\"\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/accounts/testpost",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/accounts/testpost",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -1241,15 +1241,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "b1be56c6-e749-462f-9304-b978966b99cb",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									""
-								],
-								"id": "b1be56c6-e749-462f-9304-b978966b99cb",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1258,7 +1258,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -1278,8 +1278,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/accounts/testpost",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/accounts/testpost",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -1298,6 +1298,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "35c3fc15-2148-448a-874b-f9b2405b03ef",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -1311,9 +1313,7 @@
 									"    pm.expect(jsonData.status).to.eql(\"approved\");",
 									"});",
 									""
-								],
-								"id": "35c3fc15-2148-448a-874b-f9b2405b03ef",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1322,7 +1322,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -1342,8 +1342,8 @@
 							"raw": "{\n    \"account\": {\n        \"id\": \"testimport\",\n        \"name\": \"Test Import User\",\n        \"description\": \"Automated test account\",\n        \"namespace\": \"testimport\",\n        \"email\": \"devnull@ncsa.illinois.edu\",\n        \"password\": \"$apr1$5Ptm546b$Ed3dnlPVJkt1mQQRboT4a0\",\n        \"resourceLimits\": {\n            \"cpuMax\": 0,\n            \"cpuDefault\": 0,\n            \"memMax\": 0,\n            \"memDefault\": 0,\n            \"storageQuota\": 0\n        },\n        \"resourceUsage\": {\n            \"cpu\": \"\",\n            \"memory\": \"\",\n            \"storage\": \"\",\n            \"cpuPct\": \"\",\n            \"memPct\": \"\"\n        },\n        \"status\": \"approved\",\n        \"token\": \"\",\n        \"organization\": \"\",\n        \"created\": 0,\n        \"lastLogin\": 0,\n        \"inactiveTimeout\": 480,\n        \"nexturl\": \"\"\n    }\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/import/testimport",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/import/testimport",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -1362,6 +1362,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "5ec7f0c2-6512-41e0-816c-6d26629a1c15",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -1375,9 +1377,7 @@
 									"    pm.expect(jsonData.status).to.eql(\"approved\");",
 									"});",
 									""
-								],
-								"id": "5ec7f0c2-6512-41e0-816c-6d26629a1c15",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1386,7 +1386,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -1406,8 +1406,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/accounts/testimport",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/accounts/testimport",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -1426,15 +1426,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "b1be56c6-e749-462f-9304-b978966b99cb",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									""
-								],
-								"id": "b1be56c6-e749-462f-9304-b978966b99cb",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1443,7 +1443,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -1463,8 +1463,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/accounts/testimport",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/accounts/testimport",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -1483,6 +1483,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -1495,9 +1497,7 @@
 									"    pm.environment.set(\"token\", jsonData.token);",
 									"});",
 									""
-								],
-								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1506,7 +1506,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -1522,8 +1522,8 @@
 							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/authenticate",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/authenticate",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -1541,15 +1541,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "54c6c1e3-3705-4f46-a1e2-1bcc4bd0254f",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(403);",
 									"});",
 									""
-								],
-								"id": "54c6c1e3-3705-4f46-a1e2-1bcc4bd0254f",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1558,7 +1558,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -1578,8 +1578,8 @@
 							"raw": "{\n    \"id\": \"testpost\",\n    \"name\": \"Test Post User\",\n    \"description\": \"Automated test account\",\n    \"namespace\": \"testpost\",\n    \"email\": \"devnull@ncsa.illinois.edu\",\n    \"password\": \"\",\n    \"resourceLimits\": {\n        \"cpuMax\": 0,\n        \"cpuDefault\": 0,\n        \"memMax\": 0,\n        \"memDefault\": 0,\n        \"storageQuota\": 0\n    },\n    \"resourceUsage\": {\n        \"cpu\": \"0\",\n        \"memory\": \"0\",\n        \"storage\": \"\",\n        \"cpuPct\": \"0.000000\",\n        \"memPct\": \"0.000000\"\n    },\n    \"status\": \"approved\",\n    \"token\": \"\",\n    \"organization\": \"\",\n    \"created\": 0,\n    \"lastLogin\": 0,\n    \"inactiveTimeout\": 480,\n    \"nexturl\": \"\"\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/accounts",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/accounts",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -1597,15 +1597,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "9c476f1e-69af-4b80-bd52-9bdaab9afa10",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(403);",
 									"});",
 									""
-								],
-								"id": "9c476f1e-69af-4b80-bd52-9bdaab9afa10",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1614,7 +1614,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -1634,8 +1634,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/accounts",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/accounts",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -1658,14 +1658,14 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "d971b9a5-a29c-470c-bb99-a0c74a9e9d0b",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(401);",
 									"});",
 									""
-								],
-								"id": "d971b9a5-a29c-470c-bb99-a0c74a9e9d0b",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1674,7 +1674,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -1690,8 +1690,8 @@
 							"raw": "{\"username\": \"invaliduser\", \"password\": \"invalidpassword\"}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/authenticate",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/authenticate",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -1709,6 +1709,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -1721,9 +1723,7 @@
 									"    pm.environment.set(\"token\", jsonData.token);",
 									"});",
 									""
-								],
-								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1732,7 +1732,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -1748,8 +1748,8 @@
 							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/authenticate",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/authenticate",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -1767,6 +1767,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -1779,9 +1781,7 @@
 									"    pm.environment.set(\"token\", jsonData.token);",
 									"});",
 									""
-								],
-								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1790,7 +1790,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -1806,8 +1806,8 @@
 							"raw": "{\"username\": \"{{email}}\", \"password\": \"{{password}}\"}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/authenticate",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/authenticate",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -1825,14 +1825,14 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "18b21c2c-2fa9-4fe9-a7e5-0e37716f3ed0",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(403);",
 									"});",
 									""
-								],
-								"id": "18b21c2c-2fa9-4fe9-a7e5-0e37716f3ed0",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1841,7 +1841,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -1861,8 +1861,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/check_token?host=test",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/check_token?host=test",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -1872,9 +1872,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "host",
-									"value": "test"
+									"value": "test",
+									"equals": true
 								}
 							]
 						}
@@ -1887,14 +1887,14 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "49f2b3d8-c657-4a0d-8dc4-7e43e70ef668",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									""
-								],
-								"id": "49f2b3d8-c657-4a0d-8dc4-7e43e70ef668",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1903,7 +1903,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -1923,8 +1923,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/check_token",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/check_token",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -1942,6 +1942,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "44c314d5-3f1c-45ec-a5d3-d209ebde9ce2",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -1955,9 +1957,7 @@
 									"    pm.environment.set(\"token\", jsonData.token);",
 									"});",
 									""
-								],
-								"id": "44c314d5-3f1c-45ec-a5d3-d209ebde9ce2",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1966,7 +1966,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -1986,8 +1986,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/refresh_token",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/refresh_token",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -2005,14 +2005,14 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "1da197b0-49b5-49a4-ab6a-731ae82676b3",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									""
-								],
-								"id": "1da197b0-49b5-49a4-ab6a-731ae82676b3",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2021,7 +2021,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -2041,8 +2041,8 @@
 							"raw": "{\n\t\"password\": \"changed_password\"\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/change_password",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/change_password",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -2060,6 +2060,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -2072,9 +2074,7 @@
 									"    pm.environment.set(\"token\", jsonData.token);",
 									"});",
 									""
-								],
-								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2083,7 +2083,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -2099,8 +2099,8 @@
 							"raw": "{\"username\": \"{{username}}\", \"password\": \"changed_password\"}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/authenticate",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/authenticate",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -2118,11 +2118,11 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "5f6dc2db-cfbf-4f52-8651-c60589ae0f34",
+								"type": "text/javascript",
 								"exec": [
 									""
-								],
-								"id": "5f6dc2db-cfbf-4f52-8651-c60589ae0f34",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2131,7 +2131,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -2151,8 +2151,8 @@
 							"raw": "{\n\t\"password\": \"{{password}}\"\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/change_password",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/change_password",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -2170,6 +2170,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -2182,9 +2184,7 @@
 									"    pm.environment.set(\"token\", jsonData.token);",
 									"});",
 									""
-								],
-								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2193,7 +2193,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -2209,8 +2209,8 @@
 							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/authenticate",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/authenticate",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -2228,14 +2228,14 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "1da197b0-49b5-49a4-ab6a-731ae82676b3",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									""
-								],
-								"id": "1da197b0-49b5-49a4-ab6a-731ae82676b3",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2244,7 +2244,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -2264,8 +2264,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/reset/{{username}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/reset/{{username}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -2284,15 +2284,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "ea296743-aa8a-4c06-90ef-362885829dd8",
+								"type": "text/javascript",
 								"exec": [
 									"// Return 200 regardless",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									""
-								],
-								"id": "ea296743-aa8a-4c06-90ef-362885829dd8",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2301,7 +2301,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -2321,8 +2321,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/reset/invalid",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/reset/invalid",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -2341,15 +2341,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "31a14d71-a021-4b5f-8766-02eeb0449503",
+								"type": "text/javascript",
 								"exec": [
 									"// Currently does nothing",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									""
-								],
-								"id": "31a14d71-a021-4b5f-8766-02eeb0449503",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2358,7 +2358,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -2378,8 +2378,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/authenticate",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/authenticate",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -2402,6 +2402,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "172ac3f1-bddd-439f-bd6a-969392b893f4",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -2413,9 +2415,7 @@
 									"    pm.response.to.be.json",
 									"    pm.environment.set(\"admin_token\", jsonData.token);",
 									"});"
-								],
-								"id": "172ac3f1-bddd-439f-bd6a-969392b893f4",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2424,7 +2424,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -2440,8 +2440,8 @@
 							"raw": "{\"username\": \"{{admin_username}}\", \"password\": \"{{admin_password}}\"}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/authenticate",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/authenticate",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -2459,14 +2459,14 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "40cdc37b-0855-4a96-9f87-bdfd7c5e474f",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(500);",
 									"});"
-								],
-								"id": "40cdc37b-0855-4a96-9f87-bdfd7c5e474f",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2475,7 +2475,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -2495,8 +2495,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/services?catalog=system",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/services?catalog=system",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -2506,9 +2506,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "catalog",
-									"value": "system"
+									"value": "system",
+									"equals": true
 								}
 							]
 						}
@@ -2521,14 +2521,14 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "4cabd350-bb55-4065-96f2-7bb2bb60e39b",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(400);",
 									"});"
-								],
-								"id": "4cabd350-bb55-4065-96f2-7bb2bb60e39b",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2537,7 +2537,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -2557,8 +2557,8 @@
 							"raw": "{\n  \"key\": \"nginx\"\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/services?catalog=system",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/services?catalog=system",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -2568,9 +2568,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "catalog",
-									"value": "system"
+									"value": "system",
+									"equals": true
 								}
 							]
 						}
@@ -2583,14 +2583,14 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "44f1a522-57fd-4517-bba0-ea3d11b3740f",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});"
-								],
-								"id": "44f1a522-57fd-4517-bba0-ea3d11b3740f",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2599,7 +2599,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -2619,8 +2619,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  }\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/services?catalog=system",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/services?catalog=system",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -2630,9 +2630,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "catalog",
-									"value": "system"
+									"value": "system",
+									"equals": true
 								}
 							]
 						}
@@ -2645,6 +2645,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "b83839ca-3ac3-4e65-af74-f24ca63fa524",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -2658,9 +2660,7 @@
 									"    pm.expect(jsonData.label).to.eql(\"nginxput\");",
 									"});",
 									""
-								],
-								"id": "b83839ca-3ac3-4e65-af74-f24ca63fa524",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2669,7 +2669,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -2689,8 +2689,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginxput\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  }\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/services/nginx?catalog=system",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/services/nginx?catalog=system",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -2701,9 +2701,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "catalog",
-									"value": "system"
+									"value": "system",
+									"equals": true
 								}
 							]
 						}
@@ -2716,14 +2716,14 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "1476660d-3e50-4ff8-881c-f607ae575f17",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(409);",
 									"});"
-								],
-								"id": "1476660d-3e50-4ff8-881c-f607ae575f17",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2732,7 +2732,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -2752,8 +2752,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  }\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/services?catalog=system",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/services?catalog=system",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -2763,9 +2763,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "catalog",
-									"value": "system"
+									"value": "system",
+									"equals": true
 								}
 							]
 						}
@@ -2778,14 +2778,14 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "8802833d-0379-4afe-8a6d-a630607ec77c",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(404);",
 									"});"
-								],
-								"id": "8802833d-0379-4afe-8a6d-a630607ec77c",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2794,7 +2794,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -2814,8 +2814,8 @@
 							"raw": "{\n  \"key\": \"missingdep\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n    \"depends\": [\n        {\n            \"key\": \"missing\",\n            \"required\": false,\n            \"shareConfig\": false\n        }\n    ]\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/services?catalog=system",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/services?catalog=system",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -2825,9 +2825,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "catalog",
-									"value": "system"
+									"value": "system",
+									"equals": true
 								}
 							]
 						}
@@ -2840,6 +2840,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -2852,9 +2854,7 @@
 									"    pm.environment.set(\"token\", jsonData.token);",
 									"});",
 									""
-								],
-								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2863,7 +2863,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -2879,8 +2879,8 @@
 							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/authenticate",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/authenticate",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -2898,6 +2898,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "0a756445-53d6-4268-9897-f052fc27ac45",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -2905,9 +2907,7 @@
 									"});",
 									"",
 									""
-								],
-								"id": "0a756445-53d6-4268-9897-f052fc27ac45",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2916,7 +2916,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -2936,8 +2936,8 @@
 							"raw": "{\n  \"key\": \"usernginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/services?catalog=user",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/services?catalog=user",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -2947,9 +2947,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "catalog",
-									"value": "user"
+									"value": "user",
+									"equals": true
 								}
 							]
 						}
@@ -2962,6 +2962,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "17b93574-7aa1-4a5e-ac52-177879d21884",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -2975,9 +2977,7 @@
 									"    pm.expect(jsonData.label).to.eql(\"nginxput\");",
 									"});",
 									""
-								],
-								"id": "17b93574-7aa1-4a5e-ac52-177879d21884",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2986,7 +2986,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -3006,8 +3006,8 @@
 							"raw": "{\n  \"key\": \"usernginx\",\n  \"label\": \"nginxput\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/services/usernginx?catalog=user",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/services/usernginx?catalog=user",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -3018,9 +3018,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "catalog",
-									"value": "user"
+									"value": "user",
+									"equals": true
 								}
 							]
 						}
@@ -3033,6 +3033,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "4c5ea647-1295-4ddb-9f02-07925da18ee0",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -3040,9 +3042,7 @@
 									"});",
 									"",
 									""
-								],
-								"id": "4c5ea647-1295-4ddb-9f02-07925da18ee0",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3051,7 +3051,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -3071,8 +3071,8 @@
 							"raw": "{\n  \"key\": \"missingdep\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n    \"depends\": [\n        {\n            \"key\": \"missing\",\n            \"required\": false,\n            \"shareConfig\": false\n        }\n    ]\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/services?catalog=user",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/services?catalog=user",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -3082,9 +3082,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "catalog",
-									"value": "user"
+									"value": "user",
+									"equals": true
 								}
 							]
 						}
@@ -3097,6 +3097,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "de192048-b984-40f6-965e-d7f6ba40bc55",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -3111,9 +3113,7 @@
 									"    pm.expect(jsonData.authRequired).to.eql(true);",
 									"});",
 									""
-								],
-								"id": "de192048-b984-40f6-965e-d7f6ba40bc55",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3122,7 +3122,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -3142,8 +3142,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/services/usernginx?catalog=user",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/services/usernginx?catalog=user",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -3154,9 +3154,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "catalog",
-									"value": "user"
+									"value": "user",
+									"equals": true
 								}
 							]
 						}
@@ -3169,14 +3169,14 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "52b0d6ce-cedf-4ead-9b9d-91bd9f742ee9",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(404);",
 									"});"
-								],
-								"id": "52b0d6ce-cedf-4ead-9b9d-91bd9f742ee9",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3185,7 +3185,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -3205,8 +3205,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/services/notfound?catalog=user",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/services/notfound?catalog=user",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -3217,9 +3217,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "catalog",
-									"value": "user"
+									"value": "user",
+									"equals": true
 								}
 							]
 						}
@@ -3232,6 +3232,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "54b1f2e0-1069-4bdf-9692-c3768ddad574",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -3244,9 +3246,7 @@
 									"    pm.response.to.be.json",
 									"});",
 									""
-								],
-								"id": "54b1f2e0-1069-4bdf-9692-c3768ddad574",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3255,7 +3255,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -3275,8 +3275,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/services/nginx?catalog=system",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/services/nginx?catalog=system",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -3287,9 +3287,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "catalog",
-									"value": "system"
+									"value": "system",
+									"equals": true
 								}
 							]
 						}
@@ -3302,14 +3302,14 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "0329e422-e3d7-4813-8acb-d246e643804c",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(404);",
 									"});",
 									""
-								],
-								"id": "0329e422-e3d7-4813-8acb-d246e643804c",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3318,7 +3318,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -3338,8 +3338,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/services/notfound?catalog=system",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/services/notfound?catalog=system",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -3350,9 +3350,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "catalog",
-									"value": "system"
+									"value": "system",
+									"equals": true
 								}
 							]
 						}
@@ -3365,6 +3365,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "35cb0e08-4e70-46d9-ab6e-36f029d97040",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -3379,9 +3381,7 @@
 									"    pm.expect(jsonData.length).to.eql(1);",
 									"});",
 									""
-								],
-								"id": "35cb0e08-4e70-46d9-ab6e-36f029d97040",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3390,7 +3390,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -3410,8 +3410,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/services?catalog=user",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/services?catalog=user",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -3421,9 +3421,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "catalog",
-									"value": "user"
+									"value": "user",
+									"equals": true
 								}
 							]
 						}
@@ -3436,15 +3436,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "b1be56c6-e749-462f-9304-b978966b99cb",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									""
-								],
-								"id": "b1be56c6-e749-462f-9304-b978966b99cb",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3453,7 +3453,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -3473,8 +3473,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/services/usernginx?catalog=user",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/services/usernginx?catalog=user",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -3485,9 +3485,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "catalog",
-									"value": "user"
+									"value": "user",
+									"equals": true
 								}
 							]
 						}
@@ -3500,15 +3500,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "a670d11a-f7ad-42db-bbb6-3dcf9b13f2ea",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(404);",
 									"});",
 									""
-								],
-								"id": "a670d11a-f7ad-42db-bbb6-3dcf9b13f2ea",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3517,7 +3517,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -3537,8 +3537,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/services/notfound?catalog=user",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/services/notfound?catalog=user",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -3549,9 +3549,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "catalog",
-									"value": "user"
+									"value": "user",
+									"equals": true
 								}
 							]
 						}
@@ -3564,15 +3564,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "b1be56c6-e749-462f-9304-b978966b99cb",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									""
-								],
-								"id": "b1be56c6-e749-462f-9304-b978966b99cb",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3581,7 +3581,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -3601,8 +3601,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/services/nginx?catalog=system",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/services/nginx?catalog=system",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -3613,9 +3613,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "catalog",
-									"value": "system"
+									"value": "system",
+									"equals": true
 								}
 							]
 						}
@@ -3628,6 +3628,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "9122026e-0fbb-435c-bcce-6eb80afda5d4",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -3641,9 +3643,7 @@
 									"    pm.response.to.be.json",
 									"});",
 									""
-								],
-								"id": "9122026e-0fbb-435c-bcce-6eb80afda5d4",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3652,7 +3652,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -3672,8 +3672,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/services?catalog=system",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/services?catalog=system",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -3683,9 +3683,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "catalog",
-									"value": "system"
+									"value": "system",
+									"equals": true
 								}
 							]
 						}
@@ -3698,6 +3698,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "9122026e-0fbb-435c-bcce-6eb80afda5d4",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -3711,9 +3713,7 @@
 									"    pm.response.to.be.json",
 									"});",
 									""
-								],
-								"id": "9122026e-0fbb-435c-bcce-6eb80afda5d4",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3722,7 +3722,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -3742,8 +3742,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/services?catalog=all",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/services?catalog=all",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -3753,9 +3753,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "catalog",
-									"value": "all"
+									"value": "all",
+									"equals": true
 								}
 							]
 						}
@@ -3773,6 +3773,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -3785,9 +3787,7 @@
 									"    pm.environment.set(\"token\", jsonData.token);",
 									"});",
 									""
-								],
-								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3796,7 +3796,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -3812,8 +3812,8 @@
 							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/authenticate",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/authenticate",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -3831,7 +3831,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "f66d2585-d43d-4bc3-a5ca-531e4e513275",
+								"id": "de67e65e-457c-4171-b3ed-dcdc07efc207",
 								"type": "text/javascript",
 								"exec": [
 									"",
@@ -3839,14 +3839,14 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
+									"",
 									"var jsonData = pm.response.json();",
 									"",
 									"pm.test(\"JSON response\", function () {",
 									"    pm.response.to.be.json",
-									"    pm.expect(jsonData.key).to.eql(\"cloudcmd\");",
+									"    pm.expect(jsonData.name).to.eql(\"My File Manager\");",
 									"    pm.expect(jsonData.status).to.eql(\"stopped\");",
-									"    pm.environment.set(\"stack_sid\", jsonData.id);    ",
-									"    pm.environment.set(\"stack_ssid\", jsonData.services[0].id);",
+									"    pm.environment.set(\"stack_sid\", jsonData.id);",
 									"});",
 									""
 								]
@@ -3858,7 +3858,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -3878,8 +3878,8 @@
 							"raw": "{\n    \"key\": \"cloudcmd\",\n    \"name\": \"My File Manager\",\n    \"services\": [\n        {\n            \"service\": \"cloudcmd\"\n        }\n    ],\n    \"secure\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stacks",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stacks",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -3897,7 +3897,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "b92cf37f-a7d7-4851-9ce7-2cfa4d7bee14",
+								"id": "fa052fb1-6ed0-4b86-9f0b-9a6b7b866b45",
 								"type": "text/javascript",
 								"exec": [
 									"",
@@ -3924,7 +3924,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -3944,8 +3944,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stacks/{{stack_sid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -3964,15 +3964,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "399d5eb3-bd8b-49aa-a20f-d12f500ae400",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(202);",
 									"});",
 									""
-								],
-								"id": "399d5eb3-bd8b-49aa-a20f-d12f500ae400",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3981,7 +3981,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -4001,8 +4001,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/start/{{stack_sid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/start/{{stack_sid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -4021,7 +4021,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "2c4aa801-b3de-453c-ad3f-07a461a5deaf",
+								"id": "cf7deef1-26db-4c4e-8638-388aab72ff88",
 								"type": "text/javascript",
 								"exec": [
 									"",
@@ -4032,10 +4032,10 @@
 									"var jsonData = pm.response.json();",
 									"",
 									"if (jsonData.status !== \"started\") {",
-									"  postman.setNextRequest(\"Wait for simple stack start\");",
+									"  postman.setNextRequest(\"Wait for stack start\");",
 									"  setTimeout(function() {}, 10000);",
 									"} else {",
-									"  postman.setNextRequest(\"Get simple stack logs\");",
+									"  postman.setNextRequest(\"Get stack logs\");",
 									"}"
 								]
 							}
@@ -4046,7 +4046,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -4066,8 +4066,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stacks/{{stack_sid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -4086,15 +4086,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "12fc5ff4-60cd-475e-a765-241ea5aa4796",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									""
-								],
-								"id": "12fc5ff4-60cd-475e-a765-241ea5aa4796",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -4103,7 +4103,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -4123,8 +4123,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/logs/{{stack_ssid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/logs/{{stack_ssid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -4143,14 +4143,14 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "d64e0295-db10-4f1c-ba0d-583c951124d5",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(202);",
 									"});"
-								],
-								"id": "d64e0295-db10-4f1c-ba0d-583c951124d5",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -4159,7 +4159,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -4179,8 +4179,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stop/{{stack_sid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stop/{{stack_sid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -4199,7 +4199,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "a6aaee8c-d7f4-4e8d-b80d-499542245c70",
+								"id": "521dc444-b0c8-46a1-afac-59818e716fcf",
 								"type": "text/javascript",
 								"exec": [
 									"",
@@ -4210,10 +4210,10 @@
 									"var jsonData = pm.response.json();",
 									"",
 									"if (jsonData.status !== \"stopped\") {",
-									"  postman.setNextRequest(\"Wait for simple stack stop\");",
+									"  postman.setNextRequest(\"Wait for stack stop\");",
 									"  setTimeout(function() {}, 20000);",
 									"} else {",
-									"  postman.setNextRequest(\"Put simple stack\");",
+									"  postman.setNextRequest(\"Put stack\");",
 									"}"
 								]
 							}
@@ -4224,7 +4224,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -4244,8 +4244,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stacks/{{stack_sid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -4264,6 +4264,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "f5553b62-53d0-4ad8-851e-2d81a6b471b4",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -4280,9 +4282,7 @@
 									"    pm.environment.set(\"stack_sid\", jsonData.id);",
 									"});",
 									""
-								],
-								"id": "f5553b62-53d0-4ad8-851e-2d81a6b471b4",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -4291,7 +4291,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -4311,8 +4311,8 @@
 							"raw": "{\n    \"id\": \"{{stack_sid}}\",\n    \"key\": \"cloudcmd\",\n    \"name\": \"Your File Manager\",\n    \"services\": [\n        {\n            \"id\": \"{{stack_sid}}-cloudcmd\",\n            \"service\": \"cloudcmd\"\n        }\n    ],\n    \"secure\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stacks/{{stack_sid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -4331,6 +4331,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "eb9798f1-df4a-4501-bf04-be08427e93a3",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -4347,9 +4349,7 @@
 									"    pm.environment.set(\"stack_sid\", jsonData.id);",
 									"});",
 									""
-								],
-								"id": "eb9798f1-df4a-4501-bf04-be08427e93a3",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -4358,7 +4358,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -4378,8 +4378,8 @@
 							"raw": "{\n    \"name\": \"New name\"\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stacks/{{stack_sid}}/rename",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stacks/{{stack_sid}}/rename",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -4399,15 +4399,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "35a7bebd-03c8-41c0-95cd-b9e589b99e55",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									""
-								],
-								"id": "35a7bebd-03c8-41c0-95cd-b9e589b99e55",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -4416,7 +4416,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -4436,8 +4436,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stacks/{{stack_sid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -4449,28 +4449,6 @@
 						}
 					},
 					"response": []
-				}
-			],
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"id": "a49656ba-2d0c-4f6c-9fc6-9256f407e759",
-						"type": "text/javascript",
-						"exec": [
-							""
-						]
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"id": "270f5698-f6ef-403e-bf1a-6bc8ff89e9ee",
-						"type": "text/javascript",
-						"exec": [
-							""
-						]
-					}
 				}
 			]
 		},
@@ -4522,8 +4500,8 @@
 							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/authenticate",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/authenticate",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -4588,8 +4566,8 @@
 							"raw": "{\n    \"key\": \"mongo\",\n    \"name\": \"My MongoDB\",\n    \"services\": [\n        {\n            \"service\": \"mongo\"\n        }\n    ],\n    \"secure\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stacks",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stacks",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -4654,8 +4632,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stacks/{{stack_sid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -4711,8 +4689,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/start/{{stack_sid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/start/{{stack_sid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -4776,8 +4754,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stacks/{{stack_sid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -4833,8 +4811,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/logs/{{stack_ssid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/logs/{{stack_ssid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -4889,8 +4867,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stop/{{stack_sid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stop/{{stack_sid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -4954,8 +4932,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stacks/{{stack_sid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -5021,8 +4999,8 @@
 							"raw": "{\n    \"id\": \"{{stack_sid}}\",\n    \"key\": \"mongo\",\n    \"name\": \"Your MongoDB\",\n    \"services\": [\n        {\n            \"id\": \"{{stack_sid}}-mongo\",\n            \"service\": \"mongo\",\n            \"volumeMounts\": {\n                \"AppData/swh8jq-mongo-6xr7g\": \"/data/db\"\n            }\n        }\n    ],\n    \"secure\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stacks/{{stack_sid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -5088,8 +5066,8 @@
 							"raw": "{\n    \"name\": \"New name\"\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stacks/{{stack_sid}}/rename",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stacks/{{stack_sid}}/rename",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -5146,8 +5124,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stacks/{{stack_sid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stacks/{{stack_sid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -5160,28 +5138,6 @@
 					},
 					"response": []
 				}
-			],
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"id": "ecfb4c3d-8400-473e-b755-66d1c23894db",
-						"type": "text/javascript",
-						"exec": [
-							""
-						]
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"id": "8aafb7f6-1477-4176-ab88-8d5f90086599",
-						"type": "text/javascript",
-						"exec": [
-							""
-						]
-					}
-				}
 			]
 		},
 		{
@@ -5193,13 +5149,13 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "6054548d-b167-43eb-8965-aee59331366e",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});"
-								],
-								"id": "6054548d-b167-43eb-8965-aee59331366e",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -5208,7 +5164,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -5224,8 +5180,8 @@
 							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/healthz",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/healthz",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -5243,13 +5199,13 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "6054548d-b167-43eb-8965-aee59331366e",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});"
-								],
-								"id": "6054548d-b167-43eb-8965-aee59331366e",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -5258,7 +5214,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -5274,8 +5230,8 @@
 							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/version",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/version",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -5293,13 +5249,13 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "6054548d-b167-43eb-8965-aee59331366e",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});"
-								],
-								"id": "6054548d-b167-43eb-8965-aee59331366e",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -5308,7 +5264,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -5324,8 +5280,8 @@
 							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -5343,13 +5299,13 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "6054548d-b167-43eb-8965-aee59331366e",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});"
-								],
-								"id": "6054548d-b167-43eb-8965-aee59331366e",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -5358,7 +5314,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -5374,8 +5330,8 @@
 							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/contact",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/contact",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -5393,13 +5349,13 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "6054548d-b167-43eb-8965-aee59331366e",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});"
-								],
-								"id": "6054548d-b167-43eb-8965-aee59331366e",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -5408,7 +5364,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -5424,8 +5380,8 @@
 							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/download",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/download",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -5443,13 +5399,13 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "6054548d-b167-43eb-8965-aee59331366e",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});"
-								],
-								"id": "6054548d-b167-43eb-8965-aee59331366e",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -5458,7 +5414,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -5474,8 +5430,8 @@
 							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/vocabulary/tags",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/vocabulary/tags",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -5494,13 +5450,13 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "6054548d-b167-43eb-8965-aee59331366e",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});"
-								],
-								"id": "6054548d-b167-43eb-8965-aee59331366e",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -5509,7 +5465,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -5529,8 +5485,8 @@
 							"raw": "{\n\t\"type\": \"help\", \n\t\"message\": \"test\",\n\t\"anonymous\": false\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/support",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/support",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -5553,6 +5509,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -5565,9 +5523,7 @@
 									"    pm.environment.set(\"token\", jsonData.token);",
 									"});",
 									""
-								],
-								"id": "e8d6cb5f-663a-437a-9999-0d09d574719f",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -5576,7 +5532,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -5592,8 +5548,8 @@
 							"raw": "{\"username\": \"{{username}}\", \"password\": \"{{password}}\"}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/authenticate",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/authenticate",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -5611,15 +5567,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "7c26b000-3a37-49f5-8b31-515f70165253",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									""
-								],
-								"id": "7c26b000-3a37-49f5-8b31-515f70165253",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -5628,7 +5584,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -5648,8 +5604,8 @@
 							"raw": "{\n  \"key\": \"usernginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/start?key=cloudcmd",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/start?key=cloudcmd",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -5659,9 +5615,9 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "key",
-									"value": "cloudcmd"
+									"value": "cloudcmd",
+									"equals": true
 								}
 							]
 						}
@@ -5698,7 +5654,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -5718,8 +5674,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stacks",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stacks",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -5737,6 +5693,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "105fc17d-da64-4a2a-9441-bd09384eeb38",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
@@ -5751,9 +5709,7 @@
 									"} else {",
 									"  postman.setNextRequest(\"Get quickstart check console\");",
 									"}"
-								],
-								"id": "105fc17d-da64-4a2a-9441-bd09384eeb38",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -5762,7 +5718,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -5782,8 +5738,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stacks/{{quickstart_sid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stacks/{{quickstart_sid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -5802,14 +5758,14 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "ff987575-3d2e-47eb-bfcb-79e0e1f8e03d",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});"
-								],
-								"id": "ff987575-3d2e-47eb-bfcb-79e0e1f8e03d",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -5818,7 +5774,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -5838,8 +5794,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/check_console?namespace={{username}}&ssid={{quickstart_ssid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/check_console?namespace={{username}}&ssid={{quickstart_ssid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -5849,14 +5805,14 @@
 							],
 							"query": [
 								{
-									"equals": true,
 									"key": "namespace",
-									"value": "{{username}}"
+									"value": "{{username}}",
+									"equals": true
 								},
 								{
-									"equals": true,
 									"key": "ssid",
-									"value": "{{quickstart_ssid}}"
+									"value": "{{quickstart_ssid}}",
+									"equals": true
 								}
 							]
 						}
@@ -5869,14 +5825,14 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "d64e0295-db10-4f1c-ba0d-583c951124d5",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(202);",
 									"});"
-								],
-								"id": "d64e0295-db10-4f1c-ba0d-583c951124d5",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -5885,7 +5841,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -5905,8 +5861,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stop/{{quickstart_sid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stop/{{quickstart_sid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -5950,7 +5906,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -5970,8 +5926,8 @@
 							"raw": "{\n  \"key\": \"nginx\",\n  \"label\": \"nginx\",\n  \"image\": {\n    \"registry\": \"\",\n    \"name\": \"nginx\",\n    \"tags\": [\n      \"latest\"\n    ]\n  },\n  \"display\": \"stack\",\n  \"access\": \"external\",\n  \"ports\": [\n    {\n      \"port\": 80,\n      \"protocol\": \"http\",\n      \"contextPath\": \"/\"\n    }\n  ],\n  \"readinessProbe\": {\n    \"type\": \"\",\n    \"path\": \"\",\n    \"port\": 0,\n    \"initialDelay\": 0,\n    \"timeout\": 0\n  },\n  \"resourceLimits\": {\n    \"cpuMax\": 500,\n    \"cpuDefault\": 100,\n    \"memMax\": 1000,\n    \"memDefault\": 50\n  },\n  \"authRequired\": false,\n  \"privileged\": true\n}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stacks/{{quickstart_sid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stacks/{{quickstart_sid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -5990,15 +5946,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "35a7bebd-03c8-41c0-95cd-b9e589b99e55",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									""
-								],
-								"id": "35a7bebd-03c8-41c0-95cd-b9e589b99e55",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -6007,7 +5963,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -6027,8 +5983,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/stacks/{{quickstart_sid}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/stacks/{{quickstart_sid}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -6052,6 +6008,8 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "d4a4ffdb-2996-48e9-b8f5-ae83b9d56d8b",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -6063,9 +6021,7 @@
 									"    pm.response.to.be.json",
 									"    pm.environment.set(\"admin_token\", jsonData.token);",
 									"});"
-								],
-								"id": "d4a4ffdb-2996-48e9-b8f5-ae83b9d56d8b",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -6074,7 +6030,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -6090,8 +6046,8 @@
 							"raw": "{\"username\": \"{{admin_username}}\", \"password\": \"{{admin_password}}\"}"
 						},
 						"url": {
-							"raw": "https://{{host}}/api/authenticate",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/authenticate",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -6109,15 +6065,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "b1be56c6-e749-462f-9304-b978966b99cb",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									""
-								],
-								"id": "b1be56c6-e749-462f-9304-b978966b99cb",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -6126,7 +6082,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -6146,8 +6102,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/accounts/{{username}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/accounts/{{username}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -6166,15 +6122,15 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "4ab26398-cf16-41be-aac2-ac067fe12efc",
+								"type": "text/javascript",
 								"exec": [
 									"",
 									"pm.test(\"HTTP response\", function () {",
 									"    pm.response.to.have.status(404);",
 									"});",
 									""
-								],
-								"id": "4ab26398-cf16-41be-aac2-ac067fe12efc",
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -6183,7 +6139,7 @@
 						"header": [
 							{
 								"key": "Origin",
-								"value": "https://{{host}}/"
+								"value": "http://{{host}}/"
 							},
 							{
 								"key": "User-Agent",
@@ -6203,8 +6159,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://{{host}}/api/accounts/{{username}}",
-							"protocol": "https",
+							"raw": "http://{{host}}/api/accounts/{{username}}",
+							"protocol": "http",
 							"host": [
 								"{{host}}"
 							],
@@ -6218,28 +6174,6 @@
 					"response": []
 				}
 			]
-		}
-	],
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"id": "004bb914-e71f-4a44-9c28-5cdea1d8b012",
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"id": "f283acf5-3cfc-486c-b98f-8b2e4e37ba50",
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
 		}
 	]
 }

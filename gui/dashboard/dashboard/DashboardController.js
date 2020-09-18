@@ -9,16 +9,20 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('DashboardController', [ '$scope', 'Loading', '$log', '$routeParams', '$location', '$interval', '$q', '$window', '$filter', '$uibModal', '_', 'Project', 'RandomPassword', 'Stack', 'Stacks', 'Specs', 'AutoRefresh', 'AuthInfo',
-      'StackService', 'NdsLabsApi', 'ProductName', 'FileManager', 'QuickStart',
-    function($scope, Loading, $log, $routeParams, $location, $interval, $q, $window, $filter, $uibModal, _, Project, RandomPassword, Stack, Stacks, Specs, AutoRefresh, AuthInfo, StackService, NdsLabsApi,
-      ProductName, FileManager, QuickStart) {
+.controller('DashboardController', [ '$scope', 'Loading', '$log', '$routeParams', '$location', '$interval', '$q', '$window', '$filter', '$uibModal', '_', 'Analytics', 'Project', 'RandomPassword', 'Stack', 'Stacks', 'Specs', 'AutoRefresh', 'AuthInfo', 'StackService', 'NdsLabsApi', 'ProductName', 'FileManager', 'QuickStart', 'AdvancedFeatures',
+    function($scope, Loading, $log, $routeParams, $location, $interval, $q, $window, $filter, $uibModal, _, Analytics, Project, RandomPassword, Stack, Stacks, Specs, AutoRefresh, AuthInfo, StackService, NdsLabsApi, ProductName, FileManager, QuickStart, AdvancedFeatures) {
   "use strict";
   
   if ($routeParams.quickstart) {
     QuickStart.get($routeParams.quickstart).launch();
   }
-  
+
+  $scope.showRemoveService = AdvancedFeatures.showRemoveService;
+  $scope.showServiceHelpIcon = AdvancedFeatures.showServiceHelpIcon;
+  $scope.showEditService = AdvancedFeatures.showEditService;
+  $scope.showConsole = AdvancedFeatures.showConsole;
+  $scope.showConfigColumn = AdvancedFeatures.showConfig;
+  $scope.showLogsColumn = AdvancedFeatures.showLogs;
   $scope.fileManager = FileManager;
   
   $scope.productName = ProductName;
@@ -77,8 +81,9 @@ angular
     // Then send the "start" command to the API server
     return NdsLabsApi.getStartByStackId({
       'stackId': stack.id
-    }).then(function(data, xhr) {
+    }).then(function(response) {
       $log.debug('successfully started ' + stack.name);
+      Analytics.trackEvent('application', 'launch', stack.key, 1, true);
     }, function(headers) {
       $log.error('failed to start ' + stack.name);
     }).finally(function() {
@@ -127,8 +132,9 @@ angular
       // Then send the "stop" command to the API server
       return NdsLabsApi.getStopByStackId({
         'stackId': stack.id
-      }).then(function(data, xhr) {
+      }).then(function(response) {
         $log.debug('successfully stopped ' + stack.name);
+        Analytics.trackEvent('application', 'shutdown', stack.key, 1, true);
       }, function(headers) {
         $log.error('failed to stop ' + stack.name);
       })
@@ -151,7 +157,7 @@ angular
     return NdsLabsApi.putStacksByStackId({
       'stack': stack,
       'stackId': stack.id
-    }).then(function(data, xhr) {
+    }).then(function(response) {
       $log.debug('successfully removed service ' + svc.service + ' from stack ' + stack.name);
     }, function(headers) {
       $log.error('failed to remove service ' + svc.service + ' from stack ' + stack.name);
@@ -166,6 +172,8 @@ angular
    * @param {} service - the service to show logs for
    */ 
   $scope.showLogs = function(service) {
+    Analytics.trackEvent('application', 'logs', service.service, 1, true);
+
     // See 'app/dashboard/modals/logViewer/logViewer.html'
     $uibModal.open({
       animation: true,
@@ -186,6 +194,8 @@ angular
    * @param {} service - the service to show logs for
    */ 
   $scope.showConfig = function(service) {
+    Analytics.trackEvent('application', 'config', service.service, 1, true);
+
     // See 'app/dashboard/modals/logViewer/logViewer.html'
     $uibModal.open({
       animation: true,
@@ -212,7 +222,7 @@ angular
     return NdsLabsApi.putStacksByStackId({
       'stack': stk,
       'stackId': stack.id
-    }).then(function(data, xhr) {
+    }).then(function(response) {
       $log.debug('successfully set secure == ' + secure + ' on stack id ' + stk.id);
       stack.secure = stk.secure;
     }, function(headers) {
@@ -246,8 +256,10 @@ angular
       // Delete the stack
       return NdsLabsApi.deleteStacksByStackId({
         'stackId': stack.id
-      }).then(function(data, xhr) {
+      }).then(function(response) {
         $log.debug('successfully deleted stack: ' + stack.name);
+        Analytics.trackEvent('application', 'delete', stack.key, 1, true);
+
         Loading.set(Stacks.populate());
       }, function(headers) {
         $log.error('failed to delete stack: ' + stack.name);

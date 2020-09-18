@@ -1,0 +1,5 @@
+# Run workbench in minikube
+sudo: required
+
+script:
+  - cd apiserver; docker build -t apiserver .

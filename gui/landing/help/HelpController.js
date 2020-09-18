@@ -30,7 +30,8 @@ angular
   
   $scope.productName = ProductName;
     
-  NdsLabsApi.getContact().then(function(contact) {
+  NdsLabsApi.getContact().then(function(response) {
+    var contact = response.data;
     $scope.support = contact;
       
     $scope.links = [
@@ -66,7 +67,7 @@ angular
     }
     
     $scope.status = "sending";
-    return NdsLabsApi.postSupport({ support: $scope.request }).then(function(data) {
+    return NdsLabsApi.postSupport({ support: $scope.request }).then(function(response) {
       $scope.resetForm();
       $scope.forms.supportForm.messageField.$pristine = true;
       $scope.status = "sent";

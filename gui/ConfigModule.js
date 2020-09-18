@@ -17,11 +17,27 @@ angular
  * Make lodash available for injection into controllers
  */
 .constant('_', window._)
+
+/**
+ * Toggles for hiding the more advanced UI features
+ */
+.constant('AdvancedFeatures', {
+    showConsole: true,
+    showEditService: false,
+    showRemoveService: false,
+    showCreateSpec: false,
+    showImportSpec: false,
+    showFileManager: false,
+    showServiceHelpIcon: false,
+    showLogs: false,
+    showConfig: false,
+})
+
 /**
  * The back-up (default) administrator e-mail to use for support,
  * in case the /api/contact endpoint is unavailable
  */
-.constant('SupportEmail', 'willis8@illinois.edu')
+.constant('SupportEmail', 'support@cheesehub.org')
 
 // Landing App Routes
 .constant('LandingAppPath', '/landing')
@@ -46,7 +62,7 @@ angular
 .constant('EditSpecPathSuffix', '/store/edit/:specKey/')
 
 // Navigate here when clicking "Sign In"
-.constant('SigninUrl', 'https://www.hub.cheesehub.org/login/')
+.constant('SigninUrl', 'https://www.local.ndslabs.org/login/')
 
 /**
  * The name of the product to display in the UI and the URL to link to when clicked
@@ -223,7 +239,7 @@ angular
             $cookies.remove('namespace', CookieOptions);
 
             $log.debug("Routing to login...");
-
+           
             return $q.reject(rejection);
           }
         }

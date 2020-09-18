@@ -16,8 +16,8 @@ var EC = protractor.ExpectedConditions;
 
 var TEST_NEW_APPLICATION_NAME = 'New Label';
 
-var TEXT_BASIC_AUTH_ENABLED = 'HTTP Basic Authentication Enabled';
-var TEXT_BASIC_AUTH_DISABLED = 'HTTP Basic Authentication Disabled';
+var TEXT_BASIC_AUTH_ENABLED = 'Authentication Enabled';
+var TEXT_BASIC_AUTH_DISABLED = 'Authentication Disabled';
 
 var WAIT_TIME_ALL_APPLICATIONS_SHUTDOWN = 600000;
 

@@ -32,12 +32,12 @@ if [ "$1" = 'apiserver' ]; then
 		INGRESS="NodePort"
 	fi
 
-	if [ -z "$VOLUME_PATH" ]; then 
-		VOLUME_PATH="/volumes"
+	if [ -z "$HOME_PVC_SUFFIX" ]; then 
+		HOME_PVC_SUFFIX="-home"
 	fi
 
-	if [ -z "$VOLUME_NAME" ]; then 
-		VOLUME_NAME="global"
+	if [ -z "$PVC_STORAGE_CLASS" ]; then 
+		PVC_STORAGE_CLASS="nfs"
 	fi
 
 	if [ -z "$SHARED_VOLUME_PATH" ]; then 
@@ -96,9 +96,18 @@ if [ "$1" = 'apiserver' ]; then
 		TOKEN_PATH="/run/secrets/kubernetes.io/serviceaccount/token"
 	fi
 
+	if [ -z "$SIGNIN_URL" ]; then 
+    		SIGNIN_URL="$CORS_ORIGIN_ADDR/login/#/",
+	fi
+        
+	if [ -z "$AUTH_URL" ]; then 
+    		AUTH_URL="$CORS_ORIGIN_ADDR/cauth/auth"
+	fi
+
 cat << EOF > /apiserver.json
 {
     "port": "30001",
+    "adminPort": "30002",
     "origin": "$CORS_ORIGIN_ADDR",
     "timeout": $TIMEOUT,
     "requireApproval": $REQUIRE_APPROVAL,
@@ -107,11 +116,11 @@ cat << EOF > /apiserver.json
     "ingress": "$INGRESS",
     "username": "admin",
     "password": "admin",
-    "homeVolume": "$VOLUME_NAME",
+    "homePvcSuffix": "$HOME_PVC_SUFFIX",
     "name": "$WORKBENCH_NAME",
     "dataProviderURL": "$DATA_PROVIDER_URL",
-    "authSignInURL": "$CORS_ORIGIN_ADDR/login/#/",
-    "authURL": "$CORS_ORIGIN_ADDR/cauth/auth",
+    "authSignInURL": "$SIGNIN_URL",
+    "authURL": "$AUTH_URL",
     "support": {
         "email": "$SUPPORT_EMAIL",
         "forum": "$SUPPORT_FORUM",
@@ -133,7 +142,10 @@ cat << EOF > /apiserver.json
         "address": "$KUBERNETES_ADDR",
         "username": "admin",
         "password": "admin",
-    	"tokenPath": "$TOKEN_PATH"
+    	"tokenPath": "$TOKEN_PATH",
+	"nodeSelectorName": "$NODE_SELECTOR_NAME",
+	"nodeSelectorValue": "$NODE_SELECTOR_VALUE",
+	"pvcStorageClass": "$PVC_STORAGE_CLASS"
     },
     "email": {
         "host": "$SMTP_HOST",
@@ -144,15 +156,9 @@ cat << EOF > /apiserver.json
         "path": "/specs"
     },
     "volumes": [
-	    {
-            "name": "$VOLUME_NAME",
-            "path": "$VOLUME_PATH",
-            "type": "local"
-        }, 
-		{
-			"name": "$SHARED_VOLUME_NAME",
+        {
+            "name": "$SHARED_VOLUME_NAME",
             "path": "$SHARED_VOLUME_PATH",
-            "type": "local",
             "readOnly": $SHARED_VOLUME_READ_ONLY
         }
     ]
