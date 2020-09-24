@@ -14,6 +14,7 @@ type Config struct {
 	DefaultLimits   DefaultLimits `json:"defaultLimits"`
 	Etcd            Etcd          `json:"etcd"`
 	Kubernetes      Kubernetes    `json:"kubernetes"`
+	Certmgr         Certmgr       `json:"certmgr"`
 	Email           Email         `json:"email"`
 	Specs           Specs         `json:"specs"`
 	HomePvcSuffix   string        `json:"homePvcSuffix"`
@@ -60,6 +61,11 @@ type Kubernetes struct {
 	StorageClass      string  `json:"pvcStorageClass"`
 	QPS               float32 `json:"qps"`
 	Burst             int     `json:"burst"`
+}
+type Certmgr struct {
+	ClusterIssuer	  string  `json:"clusterIssuer"`
+	Issuer		  string  `json:"issuer"`
+	Namespace	  string  `json:"namespace"`
 }
 type Email struct {
 	Host string `json:"host"`

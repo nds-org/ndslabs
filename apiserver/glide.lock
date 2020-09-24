@@ -1,5 +1,5 @@
-hash: 83b9fb5a3b8c3d14513052f6eddb50f657e9a48c577d491e08f2df76651e7bf8
-updated: 2020-09-24T18:33:37.54458096Z
+hash: 193a2032cae5621b631cbaa12ee390d4037bc458e517afd4767b791bf2e88ebb
+updated: 2020-09-24T21:08:07.662068919Z
 imports:
 - name: github.com/ant0ine/go-json-rest
   version: 37ad7dc626602a8355801da6acd85155655520f8
@@ -38,7 +38,7 @@ imports:
   subpackages:
   - spdy
 - name: github.com/fsnotify/fsnotify
-  version: f12c6236fe7b5cf6bcf30e5935d08cb079d78334
+  version: 7f4cf4dd2b522a984eaca51d1ccee54101d3414a
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/gogo/protobuf
@@ -47,7 +47,7 @@ imports:
   - proto
   - sortkeys
 - name: github.com/golang/glog
-  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
+  version: 44145f04b68cf362d9c4df2182967c2275eaefed
 - name: github.com/golang/protobuf
   version: 1643683e1b54a9e88ad26d98f81400c8c9d9f4f9
   subpackages:
@@ -90,35 +90,33 @@ imports:
 - name: github.com/kr/fs
   version: 2788f0dbd16903de03cb8186e5c7d97b69ad387b
 - name: github.com/magiconair/properties
-  version: 61b492c03cf472e0c6419be5899b8e0dc28b1b88
+  version: 0e5c09062c2daef666bd279e2d2d9f25f218f2be
 - name: github.com/mitchellh/mapstructure
-  version: 53818660ed4955e899c0bcafa97299a388bd7c8e
+  version: 9e1e4717f8567d7ead72d070d064ad17d444a67e
 - name: github.com/modern-go/reflect2
   version: 4b7aa43c6742a2c18fdef89dd197aaae7dac7ccd
-- name: github.com/pelletier/go-buffruneio
-  version: df1e16fde7fc330a0ca68167c23bf7ed6ac31d6d
 - name: github.com/pelletier/go-toml
-  version: 0049ab3dc4c4c70a9eee23087437b69c0dde2130
+  version: e6908614ee78e01b71b0adadb1379acff6da9320
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/pkg/sftp
-  version: 4d0e916071f68db74f8a73926335f809396d6b42
+  version: 60ec050bd01725d84d5b7624e27967babafd033d
+- name: github.com/sirupsen/logrus
+  version: f006c2ac4710855cf0f916dd6b77acf6b048dc6e
 - name: github.com/Sirupsen/logrus
   version: 6699a89a232f3db797f2e280639854bbc4b89725
   repo: https://github.com/sirupsen/logrus.git
-- name: github.com/sirupsen/logrus
-  version: f006c2ac4710855cf0f916dd6b77acf6b048dc6e
 - name: github.com/spf13/afero
   version: b28a7effac979219c2a2ed6205a4d70e4b1bcd02
   subpackages:
   - mem
   - sftp
 - name: github.com/spf13/cast
-  version: e31f36ffc91a2ba9ddb72a4b6a607ff9b3d3cb63
+  version: 8d17101741c81653ee960aa20f9febb31f1218aa
 - name: github.com/spf13/cobra
   version: f62e98d28ab7ad31d707ba837a966378465c7b57
 - name: github.com/spf13/jwalterweatherman
-  version: 33c24e77fb80341fe7130ee7c594256ff08ccc46
+  version: ce7498392da6d96a17a449ce0e96172af864d822
 - name: github.com/spf13/pflag
   version: 4c012f6dcd9546820e378d0bdda4d8fc772cdfea
 - name: github.com/spf13/viper
@@ -126,7 +124,7 @@ imports:
 - name: github.com/StephanDollberg/go-json-rest-middleware-jwt
   version: ff6ad319595d78f039df9a91bbac8b8bd120a764
 - name: github.com/tredoe/osutil
-  version: 7d3ee1afa71c90fd1514c8f557ae6c5f414208eb
+  version: 48cb8f4fe1028bc10dcd22bd57fd26b06dcf0d00
   subpackages:
   - user/crypt
   - user/crypt/apr1_crypt
@@ -137,7 +135,7 @@ imports:
   subpackages:
   - codec
 - name: github.com/xeipuuv/gojsonpointer
-  version: 4e3ac2762d5f479393488629ee9370b50873b3a6
+  version: 02993c407bfbf5f6dae44c4f4b1cf6a39b5fc5bb
 - name: github.com/xeipuuv/gojsonreference
   version: bd5ef7bd5415a7ac448318e64f11a24cd21e594b
 - name: github.com/xeipuuv/gojsonschema

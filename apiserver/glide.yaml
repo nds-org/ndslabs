@@ -69,3 +69,5 @@ import:
   version: "3.3"
   subpackages:
   - v3/pkg/types
+- package: github.com/pkg/sftp
+  version: ~1.12.0
