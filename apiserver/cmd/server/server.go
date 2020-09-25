@@ -1613,9 +1613,9 @@ func (s *Server) createIngressRule(userId string, svc *v1.Service, stack *api.St
 		return err
 	}
 	glog.V(4).Infof("Started ingress for service %s (secure=%t)\n", svc.Name, stack.Secure)
-        if cfg.Certmgr.ClusterIssuer != "" {
+        if clusterIssuer != "" {
                 glog.Infof("Using TLS clsuter issuer: %s\n", clusterIssuer)
-        } else if cfg.Certmgr.Issuer != "" {
+        } else if issuer != "" {
                 glog.Infof("Using TLS issuer: %s\n", issuer)
         }
 	return nil
