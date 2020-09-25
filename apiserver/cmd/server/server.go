@@ -183,8 +183,9 @@ func main() {
 	server.homePvcSuffix = cfg.HomePvcSuffix
 	server.requireApproval = cfg.RequireApproval
 
+	glog.Info("Checking for TLS issuer...\n")
 	if cfg.Certmgr.ClusterIssuer != "" {
-		glog.Infof("Using TLS clsuter issuer: %s\n", cfg.Certmgr.ClusterIssuer)
+		glog.Infof("Using TLS cluster issuer: %s\n", cfg.Certmgr.ClusterIssuer)
 	} else if cfg.Certmgr.Issuer != "" {
 		glog.Infof("Using TLS issuer: %s\n", cfg.Certmgr.Issuer)
 	}
