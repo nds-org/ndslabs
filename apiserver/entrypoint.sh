@@ -153,9 +153,8 @@ cat << EOF > /apiserver.json
         "tls": $SMTP_TLS
     },
     "certmgr": {
-        "cluster-issuer": "$CERTMGR_CLUSTER_ISSUER",
-        "issuer": "$CERTMGR_ISSUER",
-        "namespace": "$CERTMGR_NAMESPACE"
+        "cluster-issuer": "$TLS_CLUSTER_ISSUER",
+        "issuer": "$TLS_ISSUER"
     },
     "specs": {
         "path": "/specs"
