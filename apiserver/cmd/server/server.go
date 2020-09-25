@@ -183,6 +183,12 @@ func main() {
 	server.homePvcSuffix = cfg.HomePvcSuffix
 	server.requireApproval = cfg.RequireApproval
 
+	if cfg.Certmgr.ClusterIssuer != "" {
+		glog.Infof("Using TLS clsuter issuer: %s\n", cfg.Certmgr.ClusterIssuer)
+	} else if cfg.Certmgr.Issuer != "" {
+		glog.Infof("Using TLS issuer: %s\n", cfg.Certmgr.Issuer)
+	}
+
 	server.ingress = config.IngressTypeNodePort
 	if cfg.Ingress != "" {
 		server.ingress = cfg.Ingress
@@ -1607,6 +1613,11 @@ func (s *Server) createIngressRule(userId string, svc *v1.Service, stack *api.St
 		return err
 	}
 	glog.V(4).Infof("Started ingress for service %s (secure=%t)\n", svc.Name, stack.Secure)
+        if cfg.Certmgr.ClusterIssuer != "" {
+                glog.Infof("Using TLS clsuter issuer: %s\n", clusterIssuer)
+        } else if cfg.Certmgr.Issuer != "" {
+                glog.Infof("Using TLS issuer: %s\n", issuer)
+        }
 	return nil
 }
 

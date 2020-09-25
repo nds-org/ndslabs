@@ -65,7 +65,6 @@ type Kubernetes struct {
 type Certmgr struct {
 	ClusterIssuer	  string  `json:"clusterIssuer"`
 	Issuer		  string  `json:"issuer"`
-	Namespace	  string  `json:"namespace"`
 }
 type Email struct {
 	Host string `json:"host"`
