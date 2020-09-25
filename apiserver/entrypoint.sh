@@ -153,7 +153,7 @@ cat << EOF > /apiserver.json
         "tls": $SMTP_TLS
     },
     "certmgr": {
-        "cluster-issuer": "$TLS_CLUSTER_ISSUER",
+        "clusterIssuer": "$TLS_CLUSTER_ISSUER",
         "issuer": "$TLS_ISSUER"
     },
     "specs": {
