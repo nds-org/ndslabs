@@ -892,18 +892,20 @@ func (k *KubeHelper) CreateIngress(pid string, domain string, service string, po
 	}
 
 	hosts := []string{}
+	rootHost := fmt.Sprintf("%s", domain)
+	wildcardHost := fmt.Sprintf("*.%s", domain)
 	if len(ports) == 1 {
 		host := fmt.Sprintf("%s.%s", service, domain)
-		wildcardHost := fmt.Sprintf("*.%s", domain)
 		rule := k.createIngressRule(service, host, int(ports[0].Port))
 		ingress.Spec.Rules = append(ingress.Spec.Rules, rule)
+		hosts = append(hosts, rootHost)
 		hosts = append(hosts, wildcardHost)
 	} else {
 		for _, port := range ports {
 			host := fmt.Sprintf("%s-%d.%s", service, port.Port, domain)
-			wildcardHost := fmt.Sprintf("*.%s", domain)
 			rule := k.createIngressRule(service, host, int(port.Port))
 			ingress.Spec.Rules = append(ingress.Spec.Rules, rule)
+			hosts = append(hosts, rootHost)
 			hosts = append(hosts, wildcardHost)
 		}
 	}
