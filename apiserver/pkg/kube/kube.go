@@ -932,11 +932,6 @@ func (k *KubeHelper) CreateIngress(pid string, domain string, service string, po
 		},
 	}
 
-	// If cert-manager is present, add the secret name
-	if (clusterIssuer != "" || issuer != "") {
-		ingress.Spec.TLS[0].SecretName = service + "-tls"
-	}
-
 	return k.CreateUpdateIngress(pid, ingress, update)
 }
 
