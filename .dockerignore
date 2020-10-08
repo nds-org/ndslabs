@@ -1,5 +1,10 @@
-*/build
-*/vendor/github.com
-*/vendor/golang.org
-*/vendor/gopkg.in
-*/vendor/k8s.io
+*/build/*
+**/vendor/*
+
+.dockerignore
+.gitignore
+Dockerfile*
+*.sh
+apiserver.json
+!entrypoint.sh
+!build.sh

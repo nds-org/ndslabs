@@ -28,6 +28,10 @@
         "port": 0,
         "tls": true
     },
+    "certmgr": {
+        "clusterIssuer": "acmedns-issuer",
+        "issuer": ""
+    },
     "specs": {
         "path": "/path/to/ndslabs-specs"
     },

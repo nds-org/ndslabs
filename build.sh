@@ -20,7 +20,7 @@ if [ "$1" == "local" ] || [ "$1" == "docker" ]; then
     # Check for --cache flag
     args="$@"
     replaced="${@/--cache/}"
-    if [ "$args" == "$replaced" ]; then
+    if [ "$1" == "local" ] && [ "$args" == "$replaced" ]; then
         echo "Fetching dependencies..."
         glide install --strip-vendor
     fi

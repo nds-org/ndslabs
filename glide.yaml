@@ -11,16 +11,14 @@ import:
   subpackages:
   - rest
 - package: github.com/coreos/etcd
-  version: ^3.0.7
+  version: "3.3"
   subpackages:
   - client
-# Git Account name changed and broke old dependencies
-# https://github.com/sirupsen/logrus/issues/553#issuecomment-306591437
 - package: github.com/sirupsen/logrus
   version: v1.0.3
 - package: github.com/Sirupsen/logrus
-  repo: https://github.com/sirupsen/logrus.git
   version: master
+  repo: https://github.com/sirupsen/logrus.git
 - package: github.com/docker/docker
   version: ^1.12.1
   subpackages:
@@ -35,6 +33,7 @@ import:
   version: 83a7f6369d552cba07cdeea7dc622f1161a07deb
 - package: golang.org/x/crypto
   subpackages:
+  - bcrypt
   - ssh/terminal
 - package: golang.org/x/net
   subpackages:
@@ -54,16 +53,21 @@ import:
   - pkg/util/intstr
   - pkg/watch
   - pkg/watch/json
-- package: golang.org/x/crypto
-  subpackages:
-  - bcrypt
 - package: github.com/tredoe/osutil
   subpackages:
   - user/crypt/apr1_crypt
 - package: k8s.io/client-go
-  version: 7.0
+  version: "7.0"
 - package: github.com/gogo/protobuf
-  #  version: v0.3
   subpackages:
   - proto
 - package: github.com/golang/protobuf
+- package: github.com/docker/spdystream
+- package: github.com/modern-go/reflect2
+  version: ~1.0.1
+- package: go.etcd.io/etcd
+  version: "3.3"
+  subpackages:
+  - v3/pkg/types
+- package: github.com/pkg/sftp
+  version: ~1.12.0

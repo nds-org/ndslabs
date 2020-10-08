@@ -183,6 +183,13 @@ func main() {
 	server.homePvcSuffix = cfg.HomePvcSuffix
 	server.requireApproval = cfg.RequireApproval
 
+	glog.Info("Checking for TLS issuer...\n")
+	if cfg.Certmgr.ClusterIssuer != "" {
+		glog.Infof("Using TLS cluster issuer: %s\n", cfg.Certmgr.ClusterIssuer)
+	} else if cfg.Certmgr.Issuer != "" {
+		glog.Infof("Using TLS issuer: %s\n", cfg.Certmgr.Issuer)
+	}
+
 	server.ingress = config.IngressTypeNodePort
 	if cfg.Ingress != "" {
 		server.ingress = cfg.Ingress
@@ -1592,19 +1599,26 @@ func (s *Server) createKubernetesService(userId string, stack *api.Stack, spec *
 }
 
 func (s *Server) createIngressRule(userId string, svc *v1.Service, stack *api.Stack) error {
+	clusterIssuer := s.Config.Certmgr.ClusterIssuer
+	issuer := s.Config.Certmgr.Issuer
 
 	delErr := s.kube.DeleteIngress(userId, svc.Name+"-ingress")
 	if delErr != nil {
 		glog.Warning(delErr)
 	}
 	_, err := s.kube.CreateIngress(userId, s.domain, svc.Name,
-		svc.Spec.Ports, stack.Secure)
+		svc.Spec.Ports, stack.Secure, clusterIssuer, issuer)
 	if err != nil {
 		glog.Errorf("Error creating ingress for %s\n", svc.Name)
 		glog.Error(err)
 		return err
 	}
 	glog.V(4).Infof("Started ingress for service %s (secure=%t)\n", svc.Name, stack.Secure)
+        if clusterIssuer != "" {
+                glog.Infof("Using TLS clsuter issuer: %s\n", clusterIssuer)
+        } else if issuer != "" {
+                glog.Infof("Using TLS issuer: %s\n", issuer)
+        }
 	return nil
 }
 
