@@ -36,7 +36,8 @@ RUN apt-get -qq update && \
 COPY --from=gobuild /go/src/github.com/ndslabs/apiserver/build/bin/ndslabsctl-*-amd64 /ndslabsctl/
 COPY --from=gobuild /go/src/github.com/ndslabs/apiserver/build/bin/apiserver-linux-amd64 /usr/local/bin/apiserver
 
-COPY entrypoint.sh templates /
+COPY entrypoint.sh /entrypoint.sh
+COPY templates /templates
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["apiserver"]
