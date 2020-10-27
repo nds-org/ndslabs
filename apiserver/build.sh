@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 BUILD_DATE=`date +%Y-%m-%d\ %H:%M`
 VERSIONFILE="pkg/version/version.go"
@@ -22,6 +23,12 @@ if [ "$1" == "local" ] || [ "$1" == "docker" ]; then
     replaced="${@/--cache/}"
     if [ "$1" == "local" ] && [ "$args" == "$replaced" ]; then
         echo "Fetching dependencies..."
+	if [ "$(whoami)" == "root" ]; then
+		apt-get update -qq && apt-get install -qq curl
+	else
+		sudo apt-get update -qq && sudo apt-get install -qq curl
+	fi
+	which glide || curl https://glide.sh/get | sh
         glide install --strip-vendor
     fi
     

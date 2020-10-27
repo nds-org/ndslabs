@@ -35,10 +35,12 @@
     "specs": {
         "path": "/path/to/ndslabs-specs"
     },
-    "volumes": [],
-	"support": {
-		"email": "you@email.org",
-		"forum": "",
-		"chat": ""
-	}
+    "volumes": [
+	{ "name": "ddosdatasets", "path": "/shared/ddos-datasets", "readOnly": true }
+    ],
+    "support": {
+	"email": "you@email.org",
+	"forum": "",
+	"chat": ""
+    }
 }
