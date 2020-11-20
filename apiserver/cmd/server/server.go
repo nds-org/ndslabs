@@ -1889,7 +1889,7 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 				setTo := strings.Split(config.SetTo, ".")
 				// Is the setTo key this service?
 				if setTo[0] == serviceKey {
-					glog.V(4).Infof("Setting %s.%s to %s.%s value\n", serviceKey, config.Name, ss.Id, setTo[1], ss.Config[setTo[1]])
+					glog.V(4).Infof("Setting %s.%s to %s.%s value\n", ss.Id, config.Name, setTo[1], ss.Config[setTo[1]])
 					stackService.Config[setTo[1]] = ss.Config[config.Name]
 				}
 			}
@@ -3068,7 +3068,7 @@ func (s *Server) StopAllStacks(w rest.ResponseWriter, r *rest.Request) {
 		for _, account := range *accounts {
 			stacks, err := s.etcd.GetStacks(account.Namespace)
 			for _, stack := range *stacks {
-				glog.V(4).Infof("Stopping stack %s for account \n", stack.Id, account.Namespace)
+				glog.V(4).Infof("Stopping stack %s for account %s\n", stack.Id, account.Namespace)
 				_, err = s.stopStack(account.Namespace, stack.Id)
 				if err == nil {
 					glog.V(4).Infof("Stack %s stopped \n", stack.Id)
