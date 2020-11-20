@@ -23,9 +23,9 @@ angular
   $scope.productName = ProductName;
   $scope.swaggerSpec = '';
   
-  $http.get(url).then(function(data) {
+  $http.get(url).then(function(response) {
     $log.debug("Successfully pulled swagger spec");
-    $scope.swaggerSpec = data.data;
+    $scope.swaggerSpec = response.data.data;
   }, function(response) {
     $log.error("Failed to retrieve swagger spec");
   });

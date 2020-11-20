@@ -52,18 +52,11 @@ WARNING: It is not advised to run this on a publicly exposed port, as the built-
 
 
 ## Regenerate Swagger API
-Regenerate the AngularJS REST API client code from a Swagger API spec
-
-See [swagger.sh](swagger.sh)
+You can use Grunt to regenerate the AngularJS REST API client code from a Swagger API spec.
 
 Usage:
 ```bash
-./swagger.sh [URL]
+grunt swagger-js-codegen
 ```
 
-If no URL is given, the spec from your local working copy of [../apis/swagger-spec/ndslabs.yaml](../apis/swagger-spec/ndslabs.yaml) will be used instead.
-
-Args:
-* URL: An optional URL from which to download the swagger spec (must be in YAML format).
-
-NOTE: If no URL is provided, the file located at ../apis/swagger-spec/ndslabs.json will be used instead.
+The spec from your local working copy of [swagger.yaml](swagger.yaml) will be used to produce `shared/ndslabs-api.js`, which contains the generated code comprising the NdsLabsApi module for AngularJS.

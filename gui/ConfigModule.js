@@ -17,6 +17,22 @@ angular
  * Make lodash available for injection into controllers
  */
 .constant('_', window._)
+
+/**
+ * Toggles for hiding the more advanced UI features
+ */
+.constant('AdvancedFeatures', {
+    showConsole: true,
+    showEditService: false,
+    showRemoveService: false,
+    showCreateSpec: false,
+    showImportSpec: false,
+    showFileManager: false,
+    showServiceHelpIcon: false,
+    showLogs: false,
+    showConfig: false,
+})
+
 /**
  * The back-up (default) administrator e-mail to use for support, 
  * in case the /api/contact endpoint is unavailable
@@ -46,7 +62,7 @@ angular
 .constant('EditSpecPathSuffix', '/store/edit/:specKey/')
 
 // Navigate here when clicking "Sign In"
-.constant('SigninUrl', 'https://www.local.ndslabs.org/oauth2/authorize')
+.constant('SigninUrl', 'https://www.local.ndslabs.org/login/')
 
 /**
  * The name of the product to display in the UI and the URL to link to when clicked
@@ -69,7 +85,7 @@ angular
 /**
  * The version/revision of this GUI
  */
-.constant('BuildVersion', '1.0.13-devel')
+.constant('BuildVersion', '1.2.0-devel')
 .constant('BuildDate', '')
 
 /**

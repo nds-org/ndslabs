@@ -21,16 +21,16 @@
       <div class="navbar-collapse collapse">
         <!-- Draw once for the left half of the navbar, and once again for the right -->
         <ul class="nav navbar-nav" ng-show="auth.token">
-          <li ng-class="{ 'active': path === '/store' }">
-            <a id="catalogNav" ng-href="/dashboard/store"><i class="fa fa-fw fa-list-alt"></i> Catalog</a>
+          <li ng-class="{ 'active': path.indexOf('/store') !== -1 }">
+            <a id="catalogNav" ng-href="/dashboard/store"><i class="fa fa-fw fa-list-alt"></i> Applications</a>
           </li>
           
-          <li ng-class="{ 'active': path === '/home' }">
-            <a id="applicationsNav" ng-href="/dashboard/home"><i class="fa fa-fw fa-dashboard"></i> Applications</a>
+          <li ng-class="{ 'active': path.indexOf('/home') !== -1 }">
+            <a id="applicationsNav" ng-href="/dashboard/home"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
           </li>
           
 	        <!-- Then draw our Manage Files button -->
-          <li>
+          <li ng-if="showFileManager">
             <a id="filesNav" type="button" ng-click="fileManager.launch()">
                <i class="fa fa-fw" ng-class="{ 'fa-spinner fa-pulse': launchingFileManager, 'fa-files-o': !launchingFileManager }"></i> Files
             </a>
@@ -42,7 +42,7 @@
           <!-- First, always draw our help links -->
           <li>
   	        <a id="helpDropdown" class="dropdown-toggle" data-toggle="dropdown">
-              <i class="fa fa-fw fa-question-circle-o"></i> <span class="caret"></span>
+              Help <span class="caret"></span>
             </a>
             
             <ul class="dropdown-menu dropdown-menu-right" role="menu">

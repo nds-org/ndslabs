@@ -22,11 +22,13 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('CatalogController', [ '$scope', '$filter', '$interval', '$uibModal', '$location', '$log', '_', 'NdsLabsApi', 'Project', 'Stack', 'Stacks', 
-    'StackService', 'Specs', 'clipboard', 'Vocabulary', 'RandomPassword', 'AuthInfo', 'ProductName', 'ApiUri', 'DashboardAppPath', 'HomePathSuffix',
-    function($scope, $filter, $interval, $uibModal, $location, $log, _, NdsLabsApi, Project, Stack, Stacks, StackService, Specs, clipboard, Vocabulary, RandomPassword, AuthInfo, ProductName, ApiUri, DashboardAppPath, HomePathSuffix) {
+.controller('CatalogController', [ '$scope', '$filter', '$interval', '$timeout', '$uibModal', '$location', '$log', '_', 'Analytics', 'NdsLabsApi', 'Project', 'Stack', 'Stacks', 
+    'StackService', 'Specs', 'clipboard', 'Vocabulary', 'RandomPassword', 'AuthInfo', 'ProductName', 'ApiUri', 'DashboardAppPath', 'HomePathSuffix', 'AdvancedFeatures',
+    function($scope, $filter, $interval, $timeout, $uibModal, $location, $log, _, Analytics, NdsLabsApi, Project, Stack, Stacks, StackService, Specs, clipboard, Vocabulary, RandomPassword, AuthInfo, ProductName, ApiUri, DashboardAppPath, HomePathSuffix, AdvancedFeatures) {
   "use strict";
   
+  $scope.showCreateSpec = AdvancedFeatures.showCreateSpec;
+  $scope.showImportSpec = AdvancedFeatures.showImportSpec;
   $scope.productName = ProductName;
       
   $scope.tags = { all: [], selected: [] };
@@ -95,6 +97,12 @@ angular
   $scope.$watch(function () { return Project.project; }, function(newValue, oldValue) { projectId = newValue.namespace; });
   $scope.$watch('tags.selected', function(newValue, oldValue) { refilter($scope.specs, newValue); }, true);
   
+  $scope.showCopySuccess = false;
+  $scope.displayCopySuccessAlert = function() {
+    $scope.showCopySuccess = true;
+    $timeout(function() { $scope.showCopySuccess = false; }, 3000);
+  }
+
   $scope.copyToClipboard = function(spec) {
     if (!clipboard.supported) {
       alert('Sorry, copy to clipboard is not supported');
@@ -129,6 +137,7 @@ angular
     })(specCopy); // jshint ignore:line
     
     clipboard.copyText(JSON.stringify(specCopy, null, 4));
+    $scope.displayCopySuccessAlert();
   };
   
   var getQuickStartUrl = function(spec) { 
@@ -145,6 +154,8 @@ angular
     var quickstartUrl = getQuickStartUrl(spec);
     console.log("Copying to clipboard:", quickstartUrl);
     clipboard.copyText(quickstartUrl);
+    Analytics.trackEvent('application', 'share-url', spec.key, 1, true);
+    $scope.displayCopySuccessAlert ();
   };
   
   $scope.shareEmbed = function(spec) {
@@ -157,6 +168,8 @@ angular
     var htmlString = '<a href="' + quickstartUrl + '">Try ' + spec.label + '</a>';
     console.log("Copying to clipboard:", htmlString);
     clipboard.copyText(htmlString);
+    Analytics.trackEvent('application', 'share-embed', spec.key, 1, true);
+    $scope.displayCopySuccessAlert();
   };
   
   $scope.cloneSpec = function(spec) {
@@ -248,8 +261,11 @@ angular
     });
     
     // Install this app to etcd
-    return NdsLabsApi.postStacks({ 'stack': app }).then(function(stack, xhr) {
+    return NdsLabsApi.postStacks({ 'stack': app }).then(function(response) {
+      var stack = response.data;
       $log.debug("successfully posted to /projects/" + projectId + "/stacks!");
+
+      Analytics.trackEvent('application', 'add', spec.key, 1, true);
       
       // Add /the new stack to the UI
       Stacks.all.push(stack);

@@ -4,7 +4,7 @@
 FROM ndslabs/ng-base:latest
 
 # Set build information here before building (or at build time with --build-args version=X.X.X)
-ARG version="1.1.0"
+ARG version="1.2.0"
 
 # Set up necessary environment variables
 ENV DEBIAN_FRONTEND="noninteractive" \
@@ -30,6 +30,14 @@ ENV APISERVER_HOST="localhost" \
     APISERVER_PATH="/api" \
     APISERVER_SECURE="true" \
     ANALYTICS_ACCOUNT="" \
+    SHOW_CONSOLE="true" \
+    SHOW_CONFIG="false" \
+    SHOW_LOGS="false" \
+    SHOW_IMPORT_SPEC="false" \
+    SHOW_CREATE_SPEC="false" \
+    SHOW_FILE_MANAGER="false" \
+    SHOW_EDIT_SERVICE="false" \
+    SHOW_SVC_HELP_ICON="false" \
     SUPPORT_EMAIL="ndslabs-support@nationaldataservice.org"
 
 # Expose port 3000 for ExpressJS

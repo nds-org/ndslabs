@@ -2,8 +2,6 @@ package: github.com/ndslabs/apiserver
 ignore:
 - github.com/ndslabs/apiserver
 import:
-- package: github.com/ugorji/go
-  version: f1f1a805ed361a0e078bb537e4ea78cd37dcf065
 - package: github.com/dgrijalva/jwt-go
   version: f164e17f59b82642a3895ba065c385db6c547344
 - package: github.com/StephanDollberg/go-json-rest-middleware-jwt
@@ -13,61 +11,63 @@ import:
   subpackages:
   - rest
 - package: github.com/coreos/etcd
-  version: 3.0.14
+  version: "3.3"
   subpackages:
   - client
+- package: github.com/sirupsen/logrus
+  version: v1.0.3
+- package: github.com/Sirupsen/logrus
+  version: master
+  repo: https://github.com/sirupsen/logrus.git
 - package: github.com/docker/docker
   version: ^1.12.1
   subpackages:
   - pkg/term
 - package: github.com/golang/glog
 - package: github.com/spf13/pflag
-  version: 103ce5cd2042f2fe629c1957abb64ab3e7f50235
 - package: github.com/spf13/cobra
   version: f62e98d28ab7ad31d707ba837a966378465c7b57
 - package: github.com/spf13/viper
   version: ed0a9674c6ef3646e218d8bb70708d250e94354b
 - package: github.com/xeipuuv/gojsonschema
+  version: 83a7f6369d552cba07cdeea7dc622f1161a07deb
 - package: golang.org/x/crypto
   subpackages:
+  - bcrypt
   - ssh/terminal
 - package: golang.org/x/net
   subpackages:
   - context
   - websocket
 - package: golang.org/x/sys
-  version: bf42f188b9bc6f2cf5b8ee5a912ef1aedd0eba4c
 - package: gopkg.in/gcfg.v1
   version: ^1.2.0
 - package: k8s.io/kubernetes
-  version: "1.5"
+  version: "1.10"
   subpackages:
   - pkg/api
   - pkg/api/resource
   - pkg/api/unversioned
   - pkg/apis/extensions
-  - pkg/client/restclient
-  - pkg/client/unversioned/remotecommand
   - pkg/kubelet/server/remotecommand
   - pkg/util/intstr
-  - pkg/util/rand
   - pkg/watch
   - pkg/watch/json
-- package: golang.org/x/crypto
-  subpackages:
-  - bcrypt
 - package: github.com/tredoe/osutil
   subpackages:
   - user/crypt/apr1_crypt
 - package: k8s.io/client-go
-  version: v2.0.0
+  version: "7.0"
 - package: github.com/gogo/protobuf
-  version: v0.3
   subpackages:
   - proto
 - package: github.com/golang/protobuf
-- package: github.com/sirupsen/logrus
-  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
-- package: github.com/Sirupsen/logrus
-  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
-  repo: https://github.com/sirupsen/logrus.git
+- package: github.com/docker/spdystream
+- package: github.com/modern-go/reflect2
+  version: ~1.0.1
+- package: go.etcd.io/etcd
+  version: "3.3"
+  subpackages:
+  - v3/pkg/types
+- package: github.com/pkg/sftp
+  version: ~1.12.0

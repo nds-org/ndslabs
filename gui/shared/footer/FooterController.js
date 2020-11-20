@@ -19,8 +19,8 @@ angular
   $scope.guiBuildDate = BuildDate;
   $scope.showAlertBanner = false;
   
-  NdsLabsApi.getVersion().then(function(data, xhr) {
-    $scope.apiVersion = data;
+  NdsLabsApi.getVersion().then(function(response) {
+    $scope.apiVersion = response.data;
     $scope.showAlertBanner = false;
   }, function(headers) {
     $log.error('Failed to grab API Version. Is the server running?');

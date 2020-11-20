@@ -192,8 +192,8 @@
         </div>
       </div>
       
-      <!-- Link to Acceptable Use Policy -->
-      <div class="row">
+      <!-- Link to Acceptable Use Policy, if provided -->
+      <div class="row" ng-if="eulaLink && eulaLink.url">
         <div class="text-center col-sm-offset-3 col-sm-6" style="margin-bottom:10px;">
           By submitting this form you agree to our <a ng-href="{{ eulaLink.url }}" target="_blank" id="usePolicyLink">{{ eulaLink.name | lowercase }}</a>.
         </div>
