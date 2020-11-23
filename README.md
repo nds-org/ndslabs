@@ -4,7 +4,7 @@
 
 [![Join the chat at https://gitter.im/nds-org/ndslabs](https://badges.gitter.im/nds-org/ndslabs.svg)](https://gitter.im/nds-org/ndslabs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) ![Docker Automated build](https://img.shields.io/docker/automated/ndslabs/apiserver.svg?maxAge=2592000)
 
-This is the main repository for the [National Data Service](http://www.nationaldataservice.org/) [Labs Workbench](https://www.workbench.nationaldataservice.org/) service.  
+This is the main repository for the [National Data Service](http://www.nationaldataservice.org/) [Labs Workbench](http://www.nationaldataservice.org/platform/workbench.html) service.  
 
 Labs Workbench is an experimental space for evaluating, developing, and exploring interoperability between research data management services. This is achieved through the use of applications containerized with [Docker](https://www.docker.com/what-docker), [Kubernetes](http://kubernetes.io/docs/whatisk8s/) for container orchestration, deployed on an [OpenStack](https://www.openstack.org/) cluster.
 
