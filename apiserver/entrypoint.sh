@@ -11,6 +11,16 @@ if [ "$1" = 'apiserver' ]; then
 	if [ -z "$ETCD_ADDR" ]; then 
 		ETCD_ADDR="localhost:4001"
 	fi
+	
+	ETCD_HOST="$(echo $ETCD_ADDR | awk -F[/:] '{print $1}')"
+	if [ -z "$ETCD_HOST" ]; then 
+		ETCD_HOST="localhost"
+	fi
+
+	ETCD_PORT="$(echo $ETCD_ADDR | awk -F[/:] '{print $2}')"
+	if [ -z "$ETCD_PORT" ]; then 
+		ETCD_PORT="4001"
+	fi
 
 	if [ -z "$KUBERNETES_ADDR" ]; then 
 		KUBERNETES_ADDR="https://localhost:6443"
@@ -168,6 +178,14 @@ cat << EOF > /apiserver.json
     ]
 }
 EOF
+
+
+	# Wait for etcd to come online
+	echo "Waiting for etcd at $ETCD_ADDR..."
+	while ! nc -z $ETCD_HOST $ETCD_PORT; do   
+		sleep 0.1 # wait for 1/10 of the second before check again
+	done
+        echo "Connecting to etcd at $ETCD_ADDR..."
 
 	if [ -z "$SPEC_GIT_REPO" ]; then 
 		SPEC_GIT_REPO=https://github.com/nds-org/ndslabs-specs

@@ -1,4 +1,6 @@
-FROM ubuntu:xenial
+FROM ubuntu:focal
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Install NodeJS and friends
 RUN apt-get -qq update && \
@@ -10,7 +12,7 @@ RUN apt-get -qq update && \
       npm \
       wget \
       curl && \
-    curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash - && \
+    curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash - && \
     apt-get -qq install nodejs && \
     apt-get -qq autoremove && \
     apt-get -qq autoclean && \
