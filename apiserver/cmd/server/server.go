@@ -329,6 +329,7 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 	routes = append(routes,
 		rest.Get(s.prefix, s.GetPaths),
 		rest.Get(s.prefix+"version", Version),
+		rest.Get(s.prefix+"validate", s.ValidateOAuth),
 		rest.Post(s.prefix+"authenticate", jwt.LoginHandler),
 		rest.Delete(s.prefix+"authenticate", s.Logout),
 		rest.Get(s.prefix+"check_token", s.CheckToken),
@@ -535,6 +536,160 @@ func (s *Server) GetPaths(w rest.ResponseWriter, r *rest.Request) {
 
 func Version(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(fmt.Sprintf("%s %s", version.VERSION, version.BUILD_DATE))
+}
+
+func (s *Server) ValidateOAuth(w rest.ResponseWriter, r *rest.Request) {
+	oauth_cookie, err := r.Cookie("_oauth2_proxy") // cookie_segments[1]
+	glog.Info("Checking for OAuth2 cookie...")
+
+	if err != nil {
+		glog.Error(err)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	oauth_url := "https://ngress-ingress-nginx-controller.kube-system.svc.cluster.local/oauth2/userinfo"
+	glog.Infof("Validating OAuth2 cookie: %s", oauth_url)
+	req, err := http.NewRequest("GET", oauth_url, nil)
+	if err != nil {
+		glog.Error(err)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	client := &http.Client{}
+	host :=  "www." + s.Config.Domain
+	req.Header.Add("Host", host)
+	req.AddCookie(oauth_cookie)
+	resp, err := client.Do(req)
+	if err != nil {
+		glog.Error(err)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		glog.Error("Got response from /userinfo that was not OK: " + string(resp.StatusCode))
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	body_bytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		glog.Error(err)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var oauth_fields map[string]string
+	err = json.Unmarshal(body_bytes, &oauth_fields)
+        if err != nil {
+		glog.Errorf("Failed to deserialize JSON: %s\n", oauth_fields)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	oauth_accessToken := oauth_fields["accessToken"]
+	//	oauth_otherTokenStr := oauth_fields["otherTokens"]
+	oauth_email := oauth_fields["email"]
+	oauth_name := strings.Split(oauth_fields["name"], "@")[0]
+	oauth_user := oauth_fields["preferredUsername"]
+
+	// TODO: do we need to support rd parameter?
+
+	if oauth_email == "" || oauth_user == "" {
+		glog.Warning("No oauth header found: " + oauth_name + " (" + oauth_user + ": " + oauth_email + ") ") // + oauth_accessToken)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+/*
+		tokens := make(map[string]string)
+		otherTokens := strings.Split(otherTokenStr, " ")
+		for _, kvpair := range otherTokens {
+			kv := strings.Split(kvpair, "=")
+			tokens[kv[0]] = kv[1]
+		}
+
+		err := s.writeAuthPayload(user, tokens)
+		if err != nil {
+			glog.Error(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+*/		
+
+				
+	// OAuth2 token is valid and contains everything we need, register account if necessary
+	glog.Infof("Creating/updating account for %s %s %s %s\n", oauth_user, oauth_email, oauth_name, oauth_accessToken)
+	//	glog.Infof("Other tokens %s\n", otherTokens)
+				
+
+	oauth_account := s.getAccountByEmail(oauth_email)
+	if oauth_account == nil {
+		act := api.Account{
+       			Name:         oauth_name,
+       			Description:  "Oauth shadow account", // Fetch this from other OAuth scope info?
+       			Namespace:    oauth_user,
+       			EmailAddress: oauth_email,
+       			Password:     s.kube.RandomString(10),
+       			Organization: "",                     // Fetch this from other OAuth scope info?
+       			Created:      time.Now().Unix(),
+       			LastLogin:    time.Now().Unix(),
+       			NextURL:      "", // TODO: rd,
+       		}
+       		act.Status = api.AccountStatusApproved
+	       
+       		err := s.etcd.PutAccount(act.Namespace, &act, true)
+       		if err != nil {
+       			glog.Error(err)
+       			w.WriteHeader(http.StatusInternalServerError)
+       			return
+       		}
+	        
+       		err = s.setupAccount(&act)
+        	if err != nil {
+        		glog.Error(err)
+        		w.WriteHeader(http.StatusInternalServerError)
+        		return
+       		}
+       	} else {
+       		oauth_account.LastLogin = time.Now().Unix()
+       		oauth_account.NextURL = "" // TODO: rd
+	       
+       		err := s.etcd.PutAccount(oauth_account.Namespace, oauth_account, true)
+     		if err != nil {
+	       		glog.Error(err)
+	       		w.WriteHeader(http.StatusInternalServerError)
+        		return
+       		}
+       	}
+	        
+       	token, err := s.getTemporaryToken(oauth_user)
+       	if err != nil {
+       		glog.Error(err)
+       		w.WriteHeader(http.StatusOK)
+       		return
+       	}
+				
+
+	//  Issue JWT
+        tokenCookie := http.Cookie{Name: "token", Value: token, Domain: s.domain, Path: "/", Secure: true, HttpOnly: false, Expires: time.Now().AddDate(0,0,1)}
+        namespaceCookie := http.Cookie{Name: "namespace", Value: oauth_user, Domain: s.domain, Path: "/", Secure: true, HttpOnly: false, Expires: time.Now().AddDate(0,0,1)}
+
+        glog.Info("Setting Cookies:\n")
+        fmt.Println(tokenCookie)
+        fmt.Println(namespaceCookie)
+	//expiration := time.Now().Add(365 * 24 * time.Hour)
+        // http.SetCookie(w, &tokenCookie)
+        // http.SetCookie(w, &namespaceCookie)
+
+        w.Header().Add("Set-Cookie", "token=" + token)
+        w.Header().Add("Set-Cookie", "namespace=" + oauth_user)
+
+	//w.WriteHeader(http.StatusOK)
+	w.WriteJson(&token)
+	return
 }
 
 func (s *Server) CheckToken(w rest.ResponseWriter, r *rest.Request) {
