@@ -26,7 +26,7 @@ FROM debian:buster
 
 # Install runtime dependencies
 RUN apt-get -qq update && \
-    apt-get -qq install --no-install-recommends binutils git ca-certificates netcat && \
+    apt-get -qq install --no-install-recommends binutils git ca-certificates netcat curl && \
     apt-get -qq autoremove && \
     apt-get -qq autoclean && \
     apt-get -qq clean all && \
