@@ -192,7 +192,7 @@ EOF
 	umask 0
 
 	if [ -z "$TEST" ]; then
-		apiserver -conf /apiserver.json --logtostderr=true -v=4 -passwd $ADMIN_PASSWORD 
+		apiserver -conf /apiserver.json --logtostderr=true -v=2 -passwd $ADMIN_PASSWORD 
         else
                 echo "Running binary with test/coverage instrumentation"
                 echo "Writing output to $VOLUME_PATH/coverage.out"
