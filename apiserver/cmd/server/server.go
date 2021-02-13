@@ -548,7 +548,8 @@ func (s *Server) ValidateOAuth(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	oauth_url := "https://ngress-ingress-nginx-controller.kube-system.svc.cluster.local/oauth2/userinfo"
+	host :=  "www." + s.Config.Domain
+	oauth_url := "https://" + host + "/oauth2/userinfo"
 	glog.Infof("Validating OAuth2 cookie: %s", oauth_url)
 	req, err := http.NewRequest("GET", oauth_url, nil)
 	if err != nil {
@@ -558,7 +559,6 @@ func (s *Server) ValidateOAuth(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	client := &http.Client{}
-	host :=  "www." + s.Config.Domain
 	req.Header.Add("Host", host)
 	req.AddCookie(oauth_cookie)
 	resp, err := client.Do(req)
@@ -592,8 +592,8 @@ func (s *Server) ValidateOAuth(w rest.ResponseWriter, r *rest.Request) {
 	oauth_accessToken := oauth_fields["accessToken"]
 	//	oauth_otherTokenStr := oauth_fields["otherTokens"]
 	oauth_email := oauth_fields["email"]
-	oauth_name := strings.Split(oauth_fields["name"], "@")[0]
-	oauth_user := oauth_fields["preferredUsername"]
+	oauth_name := oauth_fields["name"]
+	oauth_user := strings.Split(auth_fields["preferredUsername"], "@")[0]
 
 	// TODO: do we need to support rd parameter?
 
