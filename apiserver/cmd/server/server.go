@@ -406,20 +406,10 @@ func (s *Server) start(cfg *config.Config, adminPasswd string) {
 	}
 	glog.Infof("Listening on %s", cfg.Port)
 
-	// internal admin server, currently only handling oauth registration
-	adminsrv := &http.Server{
-		Addr:    ":" + cfg.AdminPort,
-		Handler: http.HandlerFunc(s.RegisterUserOauth),
-	}
-	glog.Infof("Admin server listening on %s", cfg.AdminPort)
-
 	stop := make(chan os.Signal, 2)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		httpsrv.ListenAndServe()
-	}()
-	go func() {
-		adminsrv.ListenAndServe()
 	}()
 	<-stop
 
@@ -539,17 +529,16 @@ func Version(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (s *Server) ValidateOAuth(w rest.ResponseWriter, r *rest.Request) {
-	oauth_cookie, err := r.Cookie("_oauth2_proxy") // cookie_segments[1]
 	glog.Info("Checking for OAuth2 cookie...")
-
+	oauth_cookie, err := r.Cookie("_oauth2_proxy") // cookie_segments[1]
 	if err != nil {
 		glog.Error(err)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	host :=  "www." + s.Config.Domain
-	oauth_url := "https://" + host + "/oauth2/userinfo"
+	oauth_host :=  "https://www." + s.Config.Domain
+	oauth_url := oauth_host + "/oauth2/userinfo"
 	glog.Infof("Validating OAuth2 cookie: %s", oauth_url)
 	req, err := http.NewRequest("GET", oauth_url, nil)
 	if err != nil {
@@ -558,9 +547,10 @@ func (s *Server) ValidateOAuth(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	client := &http.Client{}
-	req.Header.Add("Host", host)
+	req.Header.Add("Host", "www." + s.Config.Domain)
 	req.AddCookie(oauth_cookie)
+
+	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		glog.Error(err)
@@ -589,21 +579,33 @@ func (s *Server) ValidateOAuth(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	oauth_accessToken := oauth_fields["accessToken"]
-	//	oauth_otherTokenStr := oauth_fields["otherTokens"]
 	oauth_email := oauth_fields["email"]
-	oauth_name := oauth_fields["name"]
-	oauth_user := strings.Split(auth_fields["preferredUsername"], "@")[0]
-
-	// TODO: do we need to support rd parameter?
-
-	if oauth_email == "" || oauth_user == "" {
-		glog.Warning("No oauth header found: " + oauth_name + " (" + oauth_user + ": " + oauth_email + ") ") // + oauth_accessToken)
+	if oauth_email == "" {
+		glog.Warning("No OAuth fields found.") // + oauth_accessToken)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-/*
+
+	// Fallback to Email prefix if username not available
+	oauth_user := strings.Split(oauth_fields["preferredUsername"], "@")[0]
+	if oauth_user == "" {
+		oauth_user = strings.Split(oauth_email, "@")[0]
+	}
+
+	// Fallback to Username if full name not available
+	oauth_name := oauth_fields["name"]
+	if oauth_name == "" {
+		oauth_name = oauth_user
+	}
+
+	// TODO: Wire up accessToken? Is this needed for anything?
+	// oauth_accessToken := oauth_fields["accessToken"]
+
+	// TODO: Wire up otherTokens. This is needed for (at least) the MDF Forge Notebook
+	// Assign other tokens, if presented
+/*	oauth_otherTokenStr := oauth_fields["otherTokens"]
+	if oauth_otherTokensStr != "" {
 		tokens := make(map[string]string)
 		otherTokens := strings.Split(otherTokenStr, " ")
 		for _, kvpair := range otherTokens {
@@ -611,18 +613,19 @@ func (s *Server) ValidateOAuth(w rest.ResponseWriter, r *rest.Request) {
 			tokens[kv[0]] = kv[1]
 		}
 
+		// Write token(s) to user's home directory
 		err := s.writeAuthPayload(user, tokens)
 		if err != nil {
 			glog.Error(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-*/		
-
+	}
+*/
 				
 	// OAuth2 token is valid and contains everything we need, register account if necessary
-	glog.Infof("Creating/updating account for %s %s %s %s\n", oauth_user, oauth_email, oauth_name, oauth_accessToken)
-	//	glog.Infof("Other tokens %s\n", otherTokens)
+	glog.Infof("Creating/updating account for %s %s %s\n", oauth_user, oauth_email, oauth_name) //, oauth_accessToken)
+//	glog.V(4).Infof("Other tokens %s\n", otherTokens)
 				
 
 	oauth_account := s.getAccountByEmail(oauth_email)
@@ -665,29 +668,14 @@ func (s *Server) ValidateOAuth(w rest.ResponseWriter, r *rest.Request) {
        		}
        	}
 	        
+	//  Issue JWT
        	token, err := s.getTemporaryToken(oauth_user)
        	if err != nil {
        		glog.Error(err)
-       		w.WriteHeader(http.StatusOK)
+       		w.WriteHeader(http.StatusUnauthorized)
        		return
        	}
-				
 
-	//  Issue JWT
-        tokenCookie := http.Cookie{Name: "token", Value: token, Domain: s.domain, Path: "/", Secure: true, HttpOnly: false, Expires: time.Now().AddDate(0,0,1)}
-        namespaceCookie := http.Cookie{Name: "namespace", Value: oauth_user, Domain: s.domain, Path: "/", Secure: true, HttpOnly: false, Expires: time.Now().AddDate(0,0,1)}
-
-        glog.Info("Setting Cookies:\n")
-        fmt.Println(tokenCookie)
-        fmt.Println(namespaceCookie)
-	//expiration := time.Now().Add(365 * 24 * time.Hour)
-        // http.SetCookie(w, &tokenCookie)
-        // http.SetCookie(w, &namespaceCookie)
-
-        w.Header().Add("Set-Cookie", "token=" + token)
-        w.Header().Add("Set-Cookie", "namespace=" + oauth_user)
-
-	//w.WriteHeader(http.StatusOK)
 	w.WriteJson(&token)
 	return
 }
@@ -899,10 +887,7 @@ func (s *Server) createLMABasicAuthSecret() error {
 }
 
 func (s *Server) setupAccount(account *api.Account) error {
-	_, err := s.kube.CreateNamespace(account.Namespace)
-	if err != nil {
-		return err
-	}
+	s.kube.CreateNamespace(account.Namespace)
 
 	// Create a PVC for this user's data
 	storageClass := s.Config.Kubernetes.StorageClass
@@ -919,19 +904,12 @@ func (s *Server) setupAccount(account *api.Account) error {
 			StorageQuota:  s.Config.DefaultLimits.StorageDefault,
 		}
 	}
-	_, err = s.kube.CreateResourceQuota(account.Namespace,
+	s.kube.CreateResourceQuota(account.Namespace,
 		account.ResourceLimits.CPUMax,
 		account.ResourceLimits.MemoryMax)
-	if err != nil {
-		return err
-	}
-
-	_, err = s.kube.CreateLimitRange(account.Namespace,
+	s.kube.CreateLimitRange(account.Namespace,
 		account.ResourceLimits.CPUDefault,
 		account.ResourceLimits.MemoryDefault)
-	if err != nil {
-		return err
-	}
 
 	return nil
 }
@@ -3368,98 +3346,4 @@ func (s *Server) writeAuthPayload(userId string, tokens map[string]string) error
 		return err
 	}*/
 	return nil
-}
-
-// Register a user via oauth
-func (s *Server) RegisterUserOauth(w http.ResponseWriter, r *http.Request) {
-
-	rd := r.FormValue("rd")
-	if rd == "" {
-		rd = "https://www." + s.domain + "/dashboard"
-	}
-
-	accessToken := r.Header.Get("X-Forwarded-Access-Token")
-	otherTokenStr := r.Header.Get("X-Forwarded-Other-Tokens")
-	email := r.Header.Get("X-Forwarded-Email")
-	user := r.Header.Get("X-Forwarded-User")
-
-	if accessToken == "" || email == "" || user == "" {
-		glog.Warning("No oauth header found")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-	tokens := make(map[string]string)
-	otherTokens := strings.Split(otherTokenStr, " ")
-	for _, kvpair := range otherTokens {
-		kv := strings.Split(kvpair, "=")
-		tokens[kv[0]] = kv[1]
-	}
-
-	err := s.writeAuthPayload(user, tokens)
-	if err != nil {
-		glog.Error(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	glog.Infof("Creating/updating account for %s %s %s\n", user, email, accessToken)
-	glog.Infof("Other tokens %s\n", otherTokens)
-
-	account := s.getAccountByEmail(email)
-	if account == nil {
-		act := api.Account{
-			Name:         user,
-			Description:  "Oauth shadow account",
-			Namespace:    user,
-			EmailAddress: email,
-			Password:     s.kube.RandomString(10),
-			Organization: "",
-			Created:      time.Now().Unix(),
-			LastLogin:    time.Now().Unix(),
-			NextURL:      rd,
-		}
-		act.Status = api.AccountStatusApproved
-
-		err := s.etcd.PutAccount(act.Namespace, &act, true)
-		if err != nil {
-			glog.Error(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		err = s.setupAccount(&act)
-		if err != nil {
-			glog.Error(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-	} else {
-		account.LastLogin = time.Now().Unix()
-		account.NextURL = rd
-
-		err := s.etcd.PutAccount(account.Namespace, account, true)
-		if err != nil {
-			glog.Error(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-	}
-
-	token, err := s.getTemporaryToken(user)
-	if err != nil {
-		glog.Error(err)
-		w.WriteHeader(http.StatusOK)
-		return
-	}
-
-	glog.Infof("Setting Cookie\n")
-	//expiration := time.Now().Add(365 * 24 * time.Hour)
-	http.SetCookie(w, &http.Cookie{Name: "token", Value: token, Domain: s.domain, Path: "/"})
-	http.SetCookie(w, &http.Cookie{Name: "namespace", Value: user, Domain: s.domain, Path: "/"})
-
-	glog.Infof("Redirecting to %s\n", rd)
-	http.Redirect(w, r, rd, 301)
-	return
 }
