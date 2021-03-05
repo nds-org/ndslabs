@@ -1,9 +1,0 @@
-{ 
-    "id": "demo",
-    "name": "Demo User",
-    "description": "demo account description",
-    "namespace": "demo",
-    "email": "labs@ndslabs.edu",
-    "password": "12345"
-}
-
