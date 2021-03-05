@@ -1,1 +1,1 @@
-swagger-codegen generate -i swagger-spec/ndslabs.yaml -l html -o docs
+swagger-codegen generate -i swagger-spec/swagger.yaml -l html -o docs
