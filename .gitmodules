@@ -7,3 +7,6 @@
 [submodule "helm-chart"]
 	path = helm-chart
 	url = https://github.com/nds-org/workbench-helm-chart
+[submodule "specs"]
+	path = specs
+	url = https://github.com/nds-org/ndslabs-specs
