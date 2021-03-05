@@ -4,3 +4,6 @@
 [submodule "webui"]
 	path = webui
 	url = https://github.com/nds-org/workbench-webui
+[submodule "helm-chart"]
+	path = helm-chart
+	url = https://github.com/nds-org/workbench-helm-chart
