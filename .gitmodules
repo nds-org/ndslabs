@@ -1,3 +1,6 @@
 [submodule "apiserver"]
 	path = apiserver
 	url = https://github.com/nds-org/workbench-apiserver-golang
+[submodule "webui"]
+	path = webui
+	url = https://github.com/nds-org/workbench-webui
