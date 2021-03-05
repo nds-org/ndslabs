@@ -1,0 +1,3 @@
+[submodule "apiserver"]
+	path = apiserver
+	url = https://github.com/nds-org/workbench-apiserver-golang
