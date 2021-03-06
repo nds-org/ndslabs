@@ -1,5 +1,0 @@
-[Unit]
-Description=NDS Labs API Server
-
-[Service]
-ExecStart=/home/core/apiserver/apiserver -v 4 -conf /home/core/apiserver/apiserver.conf

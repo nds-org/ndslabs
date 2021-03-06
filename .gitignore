@@ -1,3 +1,5 @@
+**/_build/*
+
 **/nds-build
 **/*.swp
 **/.c9/
