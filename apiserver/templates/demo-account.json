@@ -1,0 +1,18 @@
+{ 
+    "id": "demo",
+    "name": "demo account",
+    "description": "demo account description",
+    "namespace": "demo",
+    "email": "devnull@ncsa.illinois.edu",
+    "password": "demo123",
+    "storageQuota": "10",
+    "status": "approved",
+    "resourceLimits": {
+	"cpuMax": 2000,
+	"cpuDefault": 1000,
+	"memMax": 8196,
+	"memDefault": 100,
+	"storageQuota": 10
+    }
+}
+
