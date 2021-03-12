@@ -50,7 +50,7 @@ var addCmd = &cobra.Command{
 
 var addAccountCmd = &cobra.Command{
 	Use:    "account [name] [password]",
-	Short:  "Add the specified account (admin user only)",
+	Short:  "Add and approve the specified account (admin user only)",
 	PreRun: Connect,
 	Run: func(cmd *cobra.Command, args []string) {
 
@@ -67,6 +67,7 @@ var addAccountCmd = &cobra.Command{
 			account.Name = args[0]
 			account.Namespace = args[0]
 			account.Password = args[1]
+			account.Status = "approved"
 			//account.StorageQuota =
 			//account.Description =
 			//account.EmailAddress =
