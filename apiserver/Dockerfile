@@ -36,6 +36,7 @@ RUN apt-get -qq update && \
 
 # Copy final binaries from build container
 COPY --from=gobuild /go/src/github.com/ndslabs/apiserver/build/bin/ndslabsctl-*-amd64 /ndslabsctl/
+COPY --from=gobuild /go/src/github.com/ndslabs/apiserver/build/bin/ndslabsctl-linux-amd64 /usr/local/bin/ndslabsctl
 COPY --from=gobuild /go/src/github.com/ndslabs/apiserver/build/bin/apiserver-linux-amd64 /usr/local/bin/apiserver
 
 COPY entrypoint.sh /entrypoint.sh

@@ -2155,7 +2155,11 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	}
 	timeWait := time.Second * 0
 	for (ready + failed) < len(stack.Services) {
-		stck, _ := s.etcd.GetStack(userId, stack.Id)
+		stck, err := s.etcd.GetStack(userId, stack.Id)
+		if err != nil {
+			glog.Errorf("Failed to get stack from etcd: %s %s\n", userId, stack.Id)
+			return false, err
+		}
 		for _, ss := range stck.Services {
 			glog.V(4).Infof("Stack service %s: status=%s\n", ss.Id, ss.Status)
 			if ss.Status == "ready" {
@@ -2340,7 +2344,11 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 			break
 		}
 
-		stack, _ = s.getStackWithStatus(userId, sid)
+		stack, err := s.getStackWithStatus(userId, sid)
+		if err != nil {
+			glog.Errorf("Failed to get stack with status: %s %s\n", userId, sid)
+			return stack, err
+		}
 		for _, stackService := range stack.Services {
 			if stackService.Status == "error" {
 				errors[stackService.Service] = 1
@@ -2374,7 +2382,11 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 
 	ready := map[string]int{}
 	for len(ready) < len(started) && len(errors) == 0 {
-		stack, _ = s.getStackWithStatus(userId, sid)
+		stack, err := s.getStackWithStatus(userId, sid)
+		if err != nil {
+			glog.Errorf("Failed to get stack with status: %s %s\n", userId, sid)
+			return stack, err
+		}
 		for _, stackService := range stack.Services {
 			if stackService.Status == "ready" {
 				ready[stackService.Service] = 1
@@ -2386,9 +2398,15 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 		time.Sleep(time.Second * 3)
 	}
 
+	
+
 	// To overcome the 503 error on ingress, wait 5 seconds before returning the endpoint
 	time.Sleep(time.Second * 5)
-	stack, _ = s.getStackWithStatus(userId, sid)
+	stack, err := s.getStackWithStatus(userId, sid)
+	if err != nil {
+			glog.Errorf("Failed to get stack with status: %s %s\n", userId, sid)
+			return stack, err
+	}
 	stack.Status = "started"
 	for _, stackService := range stack.Services {
 		if stackService.Status == "error" || stackService.Status == "timeout" {
@@ -2404,9 +2422,10 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 
 func (s *Server) getStackWithStatus(userId string, sid string) (*api.Stack, error) {
 
-	stack, _ := s.etcd.GetStack(userId, sid)
-	if stack == nil {
-		return nil, nil
+	stack, err := s.etcd.GetStack(userId, sid)
+	if err != nil {
+		glog.Errorf("Failed to get stack from etcd: %s %s\n", userId, sid)
+		return stack, err
 	}
 
 	for i := range stack.Services {
@@ -2496,7 +2515,11 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 	path := "/accounts/" + userId + "/stacks/" + sid
 	glog.V(4).Infof("Stopping stack %s\n", path)
 
-	stack, _ := s.etcd.GetStack(userId, sid)
+	stack, err := s.etcd.GetStack(userId, sid)
+	if err != nil {
+		glog.Errorf("Failed to get stack from etcd: %s %s\n", userId, sid)
+		return stack, err
+	}
 
 	glog.V(4).Infof("Stack status %s\n", stack.Status)
 	if stack.Status == stackStatus[Stopped] {
@@ -2512,7 +2535,11 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 	stopped := map[string]int{}
 
 	for len(stopped) < len(stack.Services) {
-		stack, _ = s.getStackWithStatus(userId, sid)
+		stack, err := s.getStackWithStatus(userId, sid)
+		if err != nil {
+			glog.Errorf("Failed to get stack from etcd: %s %s\n", userId, sid)
+			return stack, err
+		}
 		for _, stackService := range stack.Services {
 			spec, _ := s.etcd.GetServiceSpec(userId, stackService.Service)
 			name := fmt.Sprintf("%s-%s", stack.Id, spec.Key)
@@ -2567,7 +2594,11 @@ func (s *Server) stopStack(userId string, sid string) (*api.Stack, error) {
 	stack.Status = stackStatus[Stopped]
 	s.etcd.PutStack(userId, sid, stack)
 
-	stack, _ = s.getStackWithStatus(userId, sid)
+	stack, err = s.getStackWithStatus(userId, sid)
+	if err != nil {
+		glog.Errorf("Failed to get stack with status: %s %s\n", userId, sid)
+		return stack, err
+	}
 
 	/*
 		Disabling network policies per https://github.com/nds-org/ndslabs/issues/286
