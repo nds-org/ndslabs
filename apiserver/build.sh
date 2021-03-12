@@ -4,6 +4,7 @@ BUILD_DATE=`date +%Y-%m-%d\ %H:%M`
 VERSIONFILE="pkg/version/version.go"
 VERSION="1.2.0"
 
+set -e
 
 if [ "$1" == "local" ] || [ "$1" == "docker" ]; then
 

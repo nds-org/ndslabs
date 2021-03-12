@@ -79,7 +79,11 @@ angular
     $cookies.remove('namespace', CookieOptions);
     
     // TODO: Can we avoid hard-coding this URL?
-    $window.location.href = '/landing/';
+    if ($scope.enableOAuth) {
+      $window.location.href = '/oauth2/sign_out'; // '/login/' + ($rootScope.rd ? 'rd=' : '');
+    } else {
+      $window.location.href = '/landing/';
+    }
   };
   
   $scope.brand = 

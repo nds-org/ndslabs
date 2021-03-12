@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/base64"
-	"encoding/json"
+	// "encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -739,25 +739,25 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				if obj.(*v1.Pod).GetCreationTimestamp().After(startTime) {
-					fmt.Printf("pod added: %s \n", obj.(*v1.Pod).Name)
+					// fmt.Printf("pod added: %s \n", obj.(*v1.Pod).Name)
 					handler.HandlePodEvent("ADDED", obj.(*v1.Pod))
-					data, _ := json.MarshalIndent(obj.(*v1.Pod), "", "    ")
-					fmt.Println(string(data))
+					// data, _ := json.MarshalIndent(obj.(*v1.Pod), "", "    ")
+					// fmt.Println(string(data))
 				}
 			},
 			DeleteFunc: func(obj interface{}) {
 				if obj.(*v1.Pod).GetDeletionTimestamp().After(startTime) {
-					fmt.Printf("pod deleted: %s \n", obj.(*v1.Pod).Name)
+					// fmt.Printf("pod deleted: %s \n", obj.(*v1.Pod).Name)
 					handler.HandlePodEvent("DELETED", obj.(*v1.Pod))
-					data, _ := json.MarshalIndent(obj.(*v1.Pod), "", "    ")
-					fmt.Println(string(data))
+					// data, _ := json.MarshalIndent(obj.(*v1.Pod), "", "    ")
+					// fmt.Println(string(data))
 				}
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
-				fmt.Printf("pod updated: %s %s \n", oldObj.(*v1.Pod).Name, newObj.(*v1.Pod).Name)
+				// fmt.Printf("pod updated: %s %s \n", oldObj.(*v1.Pod).Name, newObj.(*v1.Pod).Name)
 				handler.HandlePodEvent("UPDATED", newObj.(*v1.Pod))
-				data, _ := json.MarshalIndent(newObj.(*v1.Pod), "", "    ")
-				fmt.Println(string(data))
+				// data, _ := json.MarshalIndent(newObj.(*v1.Pod), "", "    ")
+				// fmt.Println(string(data))
 			},
 		},
 	)
@@ -774,16 +774,16 @@ func (k *KubeHelper) WatchEvents(handler events.EventHandler) {
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				if obj.(*v1.ReplicationController).GetCreationTimestamp().After(startTime) {
-					fmt.Printf("rc added: %s \n", obj.(*v1.ReplicationController).Name)
+					// fmt.Printf("rc added: %s \n", obj.(*v1.ReplicationController).Name)
 				}
 			},
 			DeleteFunc: func(obj interface{}) {
 				if obj.(*v1.ReplicationController).GetDeletionTimestamp().After(startTime) {
-					fmt.Printf("rc deleted: %s \n", obj.(*v1.ReplicationController).Name)
+					// fmt.Printf("rc deleted: %s \n", obj.(*v1.ReplicationController).Name)
 				}
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
-				fmt.Printf("rc changed %s -> %s\n", oldObj.(*v1.ReplicationController).Name, newObj.(*v1.ReplicationController).Name)
+				// fmt.Printf("rc changed %s -> %s\n", oldObj.(*v1.ReplicationController).Name, newObj.(*v1.ReplicationController).Name)
 			},
 		},
 	)

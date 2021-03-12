@@ -399,6 +399,20 @@ paths:
             properties:
               data:
                 type: string
+  /validate:
+    get:
+      description: |
+        Check if the user has an active/valid OAuth session
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/definitions/Token'
+        '401':
+          description: Not logged in
   /register:
     post:
       description: |
