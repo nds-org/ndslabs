@@ -911,7 +911,10 @@ func (k *KubeHelper) CreateIngress(pid string, domain string, service string, po
 	}
 
 	annotations := map[string]string{}
-	annotations["kubernetes.io/ingress.class"] = "nginx"
+	
+	// TODO: Support configurable ingress class
+	// annotations["kubernetes.io/ingress.class"] = "nginx"
+	
 	if clusterIssuer != "" {
                 // Check for cert-manager.io/cluster-issuer
                 annotations["cert-manager.io/cluster-issuer"] = clusterIssuer
