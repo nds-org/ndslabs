@@ -4,8 +4,8 @@
 /bin/sed -i -e "s#^\.constant('ApiHost', '.*')#.constant('ApiHost', '${APISERVER_HOST:-www.local.ndslabs.org}')#" "$BASEDIR/ConfigModule.js"
 /bin/sed -i -e "s#^\.constant('ApiPort', '.*')#.constant('ApiPort', '${APISERVER_PORT}')#" "$BASEDIR/ConfigModule.js"
 /bin/sed -i -e "s#^\.constant('ApiPath', '.*')#.constant('ApiPath', '${APISERVER_PATH:-/api}')#" "$BASEDIR/ConfigModule.js"
-/bin/sed -i -e "s#^\.constant('ApiSecure', .*)#.constant('ApiSecure', ${APISERVER_SECUREi:-true})#" "$BASEDIR/ConfigModule.js"
-/bin/sed -i -e "s#^\.constant('CookieOptions', .*#.constant('CookieOptions', { domain: '.${DOMAIN:-local.ndslabs.org}', secure: ${API_SECURE:-true}, path: '/' })#" "$BASEDIR/ConfigModule.js"
+/bin/sed -i -e "s#^\.constant('ApiSecure', .*)#.constant('ApiSecure', ${APISERVER_SECURE:-true})#" "$BASEDIR/ConfigModule.js"
+/bin/sed -i -e "s#^\.constant('CookieOptions', .*#.constant('CookieOptions', { domain: '.${DOMAIN:-local.ndslabs.org}', secure: ${APISERVER_SECURE:-true}, path: '/' })#" "$BASEDIR/ConfigModule.js"
 
 # Substitute the SIGNIN_URL passed in by "docker run -e" or kubernetes
 /bin/sed -i -e "s#^\.constant('SigninUrl', .*)#.constant('SigninUrl', '${SIGNIN_URL:-https://www.local.ndslabs.org/login/}')#" "$BASEDIR/ConfigModule.js"
