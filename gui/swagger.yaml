@@ -332,8 +332,7 @@ paths:
       parameters:
         - in: query
           name: key
-          schema:
-            type: string
+          type: string
           required: true
           description: The key of the service spec to start and navigate to
       get:
