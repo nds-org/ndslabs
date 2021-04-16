@@ -135,11 +135,11 @@
                         </td>
 
                         <!-- Edit Config buttons -->
-                        <td class="text-center" ng-if="showEditService" tooltip-append-to-body="true" uib-tooltip="Edit the configuration for this part of the application">
+                        <td class="text-center" ng-if="showEditService && stack.status === 'stopped'" tooltip-append-to-body="true" uib-tooltip="Edit the configuration for this part of the application">
                         
                           <!-- ng-click="showConfig(svc)" -->
                           <a  id="editServiceBtn" type="button" class="btn btn-default btn-xs" ng-href="/dashboard/home/{{ stack.id }}/edit/{{ svc.service }}"
-                              ng-if="stack.status === 'stopped'" ga-track-event="['application', 'edit', svc.service, 1, true]">
+                              ga-track-event="['application', 'edit', svc.service, 1, true]">
                             <i class="fa fa-wrench"></i>
                           </a>
                         </td>
