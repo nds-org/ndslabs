@@ -1,0 +1,3 @@
+ETCD_HOST = '127.0.0.1'
+ETCD_PORT = 4001
+ETCD_BASE_PATH = '/ndslabs'
