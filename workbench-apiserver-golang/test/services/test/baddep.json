@@ -1,0 +1,26 @@
+{
+    "key": "baddeptest",
+    "label": "Test - Bad dependency",
+    "image": {
+		"name": "nginx",
+		"tags": ["latest"]
+	},
+    "display": "stack",
+    "access": "external",
+    "description": "A test container for resource limits",
+    "ports": [
+        {
+            "port": 8080,
+            "protocol": "http"
+        }
+    ],
+	"depends": [
+	    { "key": "noimagetest", "required": true }
+	],
+    "resourceLimits": {
+        "cpuMax": 1000,
+        "cpuDefault": 100,
+        "memMax": 10,
+        "memDefault": 1
+    }
+}

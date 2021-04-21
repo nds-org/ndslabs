@@ -1,0 +1,10 @@
+*/build/*
+**/vendor/*
+
+.dockerignore
+.gitignore
+Dockerfile*
+*.sh
+apiserver.json
+!entrypoint.sh
+!build.sh

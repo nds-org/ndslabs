@@ -1,0 +1,23 @@
+{
+    "key": "toobigtest",
+    "label": "Test - Too Big",
+    "image": {
+        "name": "nginx",
+        "tags": ["latest"]
+    },
+    "display": "stack",
+    "access": "external",
+    "description": "A test container for resource limits",
+    "ports": [
+        {
+            "port": 8080,
+            "protocol": "http"
+        }
+    ],
+    "resourceLimits": {
+        "cpuMax": 10,
+        "cpuDefault": 10,
+        "memMax": 102400,
+        "memDefault": 102400
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "key": "noimagetest",
+    "label": "Test -  No such image",
+    "image": {
+        "name": "ndslabs/xyzzy",
+        "tags": ["latest"]
+    },
+    "display": "stack",
+    "description": "A test container for missing image",
+    "ports": [
+        {
+            "port": 8080,
+            "protocol": "http"
+        }
+    ],
+    "resourceLimits": {
+        "cpuMax": 1000,
+        "cpuDefault": 1,
+        "memMax": 10,
+        "memDefault": 1
+    }
+}

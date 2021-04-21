@@ -1,0 +1,17 @@
+{
+    "key": "memhogtest",
+    "label": "Test - Memory Hog ",
+    "image": {
+        "name": "ndslabs/stress",
+        "tags": ["latest"]
+    },
+    "display": "stack",
+    "description": "A test container for resource limits",
+	"command": [ "stress", "--vm", "100" ],
+    "resourceLimits": {
+        "cpuMax": 1000,
+        "cpuDefault": 100,
+        "memMax": 1024,
+        "memDefault": 100
+    }
+}

@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<body>
+<p>
+Hello {{.Name}}, 
+<br/><br/>
+
+{{ if .Unapproved }}
+
+Your registration request is still under review and has not been approved. Please contact us at the email address below with any questions. 
+{{ else }}
+
+<br/><br/>
+Someone has requested to reset your {{.WorkbenchName}} password.  If this action was not triggered by you, then you can safely ignore this message. Please click on the link below to reset the password for your account:
+<br/><br/>
+<a href="{{.Link}}">Reset password</a>
+<br/><br/>
+This link is valid for 30 minutes.
+{{ end }}
+
+<br/><br/>
+
+
+Thank you,<br>
+{{.WorkbenchName}} team<br>
+{{.SupportEmail}}<br>
+</p>
+    
+</body>
+</html>
+
