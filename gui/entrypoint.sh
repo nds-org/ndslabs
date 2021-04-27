@@ -5,7 +5,15 @@
 /bin/sed -i -e "s#^\.constant('ApiPort', '.*')#.constant('ApiPort', '${APISERVER_PORT}')#" "$BASEDIR/ConfigModule.js"
 /bin/sed -i -e "s#^\.constant('ApiPath', '.*')#.constant('ApiPath', '${APISERVER_PATH:-/api}')#" "$BASEDIR/ConfigModule.js"
 /bin/sed -i -e "s#^\.constant('ApiSecure', .*)#.constant('ApiSecure', ${APISERVER_SECURE:-true})#" "$BASEDIR/ConfigModule.js"
-/bin/sed -i -e "s#^\.constant('CookieOptions', .*#.constant('CookieOptions', { domain: '.${DOMAIN:-local.ndslabs.org}', secure: ${APISERVER_SECURE:-true}, path: '/' })#" "$BASEDIR/ConfigModule.js"
+/bin/sed -i -e "s#^\.constant('CookieOptions', .*#.constant('CookieOptions', { domain: '.${COOKIEDOMAIN:-local.ndslabs.org}', secure: ${APISERVER_SECURE:-true}, path: '/' })#" "$BASEDIR/ConfigModule.js"
+
+# If provided, substitute the PRODUCT_NAME and PRODUCT_LANDING_HTML passed in by "docker run -e" or kubernetes
+if [ "$PRODUCT_NAME" != "" ]; then
+  /bin/sed -i -e "s#^\.constant('ProductName', .*)#.constant('ProductName', '${PRODUCT_NAME}')#" "$BASEDIR/ConfigModule.js"
+fi
+if [ "$PRODUCT_LANDING_HTML" != "" ]; then
+  /bin/sed -i -e "s#^\.constant('ProductLandingHtml', .*)#.constant('ProductLandingHtml', '${PRODUCT_LANDING_HTML}')#" "$BASEDIR/ConfigModule.js"
+fi
 
 # Substitute the SIGNIN_URL passed in by "docker run -e" or kubernetes
 /bin/sed -i -e "s#^\.constant('SigninUrl', .*)#.constant('SigninUrl', '${SIGNIN_URL:-https://www.local.ndslabs.org/login/}')#" "$BASEDIR/ConfigModule.js"
