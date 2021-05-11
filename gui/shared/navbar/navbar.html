@@ -12,7 +12,7 @@
         <div class="navbar-brand cursor-pointer">
           <!-- Draw the brand logo -->
           <a id="navbarBrand" ng-href="/landing/{{ rd ? '?rd=' + rd : '' }}" class="undecorate-link">
-            <img id="navBrandLogo" src="../asset/png/favicon-32x32.png" alt="{{ brand.name }}" height="32" width="32"> {{ brand.name }} <sup><small><small>BETA</small></small></sup>
+            <img id="navBrandLogo" src="{{ brand.logo }}" alt="{{ brand.name }}" height="32" width="32"> {{ brand.name }} <sup ng-if="{{ brand.beta }}"><small><small>BETA</small></small></sup>
           </a>
         </div>
       </div>
