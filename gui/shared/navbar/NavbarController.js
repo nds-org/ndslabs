@@ -29,8 +29,8 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('NavbarController', [ '$scope', '$rootScope', '$window', '$location', '$cookies', 'Project', 'AuthInfo', 'ProductName', 'ProductUrl', 'HelpLinks', 'FileManager', 'AutoRefresh', 'ReturnRoute', 'CookieOptions', 'SigninUrl', 'AdvancedFeatures',
-    function($scope, $rootScope, $window, $location, $cookies, Project, AuthInfo, ProductName, ProductUrl, HelpLinks, FileManager, AutoRefresh, ReturnRoute, CookieOptions, SigninUrl, AdvancedFeatures) {
+.controller('NavbarController', [ '$scope', '$rootScope', '$window', '$location', '$cookies', 'Project', 'AuthInfo', 'ProductName', 'ProductBrandLogoPath', 'ProductUrl', 'HelpLinks', 'FileManager', 'AutoRefresh', 'ReturnRoute', 'CookieOptions', 'SigninUrl', 'AdvancedFeatures',
+    function($scope, $rootScope, $window, $location, $cookies, Project, AuthInfo, ProductName, ProductBrandLogoPath, ProductUrl, HelpLinks, FileManager, AutoRefresh, ReturnRoute, CookieOptions, SigninUrl, AdvancedFeatures) {
   "use strict"
   
   // Enable JS dropdowns on the navbar
@@ -88,6 +88,7 @@ angular
   
   $scope.brand = 
   {
+    logo: ProductBrandLogoPath,
     name: ProductName,
     url: ProductUrl
   };
