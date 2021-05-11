@@ -7,12 +7,18 @@
 /bin/sed -i -e "s#^\.constant('ApiSecure', .*)#.constant('ApiSecure', ${APISERVER_SECURE:-true})#" "$BASEDIR/ConfigModule.js"
 /bin/sed -i -e "s#^\.constant('CookieOptions', .*#.constant('CookieOptions', { domain: '.${COOKIEDOMAIN:-local.ndslabs.org}', secure: ${APISERVER_SECURE:-true}, path: '/' })#" "$BASEDIR/ConfigModule.js"
 
-# If provided, substitute the PRODUCT_NAME and PRODUCT_LANDING_HTML passed in by "docker run -e" or kubernetes
-if [ "$PRODUCT_NAME" != "" ]; then
-  /bin/sed -i -e "s#^\.constant('ProductName', .*)#.constant('ProductName', '${PRODUCT_NAME}')#" "$BASEDIR/ConfigModule.js"
+# If provided, substitute UI customizations passed in by "docker run -e" or kubernetes
+if [ "$WORKBENCH_NAME" != "" ]; then
+  /bin/sed -i -e "s#^\.constant('ProductName', .*)#.constant('ProductName', '${WORKBENCH_NAME}')#" "$BASEDIR/ConfigModule.js"
 fi
-if [ "$PRODUCT_LANDING_HTML" != "" ]; then
-  /bin/sed -i -e "s#^\.constant('ProductLandingHtml', .*)#.constant('ProductLandingHtml', '${PRODUCT_LANDING_HTML}')#" "$BASEDIR/ConfigModule.js"
+if [ "$WORKBENCH_LANDING_HTML" != "" ]; then
+  /bin/sed -i -e "s#^\.constant('ProductLandingHtml', .*)#.constant('ProductLandingHtml', '${WORKBENCH_LANDING_HTML}')#" "$BASEDIR/ConfigModule.js"
+fi
+if [ "$WORKBENCH_BRAND_LOGO_PATH" != "" ]; then
+  /bin/sed -i -e "s#^\.constant('ProductBrandLogoPath', .*)#.constant('ProductBrandLogoPath', '${WORKBENCH_BRAND_LOGO_PATH}')#" "$BASEDIR/ConfigModule.js"
+fi
+if [ "$WORKBENCH_FAVICON_PATH" != "" ]; then
+  /bin/sed -i -e "s#^\.constant('ProductFaviconPath', .*)#.constant('ProductFaviconPath', '${WORKBENCH_FAVICON_PATH}')#" "$BASEDIR/ConfigModule.js"
 fi
 
 # Substitute the SIGNIN_URL passed in by "docker run -e" or kubernetes
