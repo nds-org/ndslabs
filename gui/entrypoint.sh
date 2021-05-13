@@ -20,6 +20,9 @@ fi
 if [ "$WORKBENCH_FAVICON_PATH" != "" ]; then
   /bin/sed -i -e "s#^\.constant('ProductFaviconPath', .*)#.constant('ProductFaviconPath', '${WORKBENCH_FAVICON_PATH}')#" "$BASEDIR/ConfigModule.js"
 fi
+if [ "$WORKBENCH_LEARNMORE_URL" != "" ]; then
+  /bin/sed -i -e "s#^\.constant('ProductUrl', .*)#.constant('ProductUrl', '${WORKBENCH_LEARNMORE_URL}')#" "$BASEDIR/ConfigModule.js"
+fi
 
 # Substitute the SIGNIN_URL passed in by "docker run -e" or kubernetes
 /bin/sed -i -e "s#^\.constant('SigninUrl', .*)#.constant('SigninUrl', '${SIGNIN_URL:-https://www.local.ndslabs.org/login/}')#" "$BASEDIR/ConfigModule.js"
