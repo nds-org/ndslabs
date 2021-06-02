@@ -27,8 +27,8 @@ const port = 3000;
 
 // Build up a Workbench API URL
 const apiProtocol = 'http:'; // HTTP, since this isn't going through the loadbalancer
-const apiHost = process.env.NDSLABS_APISERVER_SERVICE_HOST || 'localhost';
-const apiPort = process.env.NDSLABS_APISERVER_SERVICE_PORT || '30001';
+const apiHost = process.env.NDSLABS_APISERVER_SERVICE_HOST || process.env.APISERVER_HOST || 'localhost';
+const apiPort = process.env.NDSLABS_APISERVER_SERVICE_PORT || process.env.APISERVER_PORT || '30001';
 const apiPath = '/api';
 let apiBase = apiProtocol + '//' + apiHost;
 if (apiPort) { apiBase += ':' + apiPort }
@@ -66,6 +66,7 @@ app.use('/shared', express.static('shared'));
 app.use('/asset', express.static('asset'));
 app.use('/ConfigModule.js', express.static('ConfigModule.js'));
 app.use('/swagger.yaml', express.static('swagger.yaml'));
+app.use('/env.json', express.static('env.json'));
 
 // Use optimized versions of the images (drop-in)
 app.use('/asset/png', express.static('dist/png'));
@@ -225,26 +226,35 @@ app.get('/cauth/auth', function(req, res) {
   let token = req.cookies['token'];
   logger.log("debug", "Checking user session: " + token);
   
-  let requestedUrl = req.headers['x-original-url'];
+  let requestedUrl = req.headers['x-original-url'] || req.headers['origin'];
   let prefix = (secureCookie ? 'https://' : 'http://') + subdomainPrefix;
   let checkHost = '';
   
   if (!token) {
       res.sendStatus(401);
       return;
-  } else if (requestedUrl.indexOf(prefix+cookieDomain) !== 0) {
+  } else if (requestedUrl && requestedUrl.indexOf(prefix+cookieDomain) !== 0) {
      // if request starts with an arbitrary host (e.g. not 'subdomainPrefix.'), 
      //    we need to check authorization
     checkHost = requestedUrl.replace(/https?:\/\//, '').replace(/\/.*$/, '');
-    //logger.log("debug", `Checking token's access to ${checkHost}`);
+    logger.log("info", `Checking token's access to ${checkHost}`);
   }
+
+  logger.log("info", `Requested URL: ${requestedUrl}`);
+  logger.log("info", `Prefix: ${prefix}`);
+  logger.log("info", `Cookie Domain: ${cookieDomain}`);
+  logger.log("info", `Auth-free: ${prefix+cookieDomain}`);
+  logger.log("info", `Checking Host: ${checkHost}`);
+
+  let apiPathSuffix = apiPath + '/check_token' + (checkHost ? '?host=' + checkHost : '');
+  logger.log("info", `CheckHost Path Suffix: ${apiPathSuffix}`);
 
   // If token was given, check that it's valid
   http.get({ 
       protocol: apiProtocol,
       host: apiHost,
       port: apiPort,
-      path: apiPath + '/check_token' + (checkHost ? '?host=' + checkHost : ''), 
+      path: apiPathSuffix, 
       headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token
@@ -259,6 +269,7 @@ app.get('/cauth/auth', function(req, res) {
                         `Status Code: ${statusCode}`);
     }
     if (error) {
+      logger.log('error', 'CheckHost Failed')
       logger.log('error', error.message);
       // consume response data to free up memory
       resp.resume();

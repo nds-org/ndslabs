@@ -130,9 +130,28 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
   
   // Every so often, check that our token is still valid
   var checkToken = function() {
-    NdsLabsApi.getCheckToken().then(function() { $log.debug('Token is still valid.'); }, function() {
-      $log.error('Token expired, redirecting to login.');
-      terminateSession();
+    NdsLabsApi.getCheckToken().then(function() { $log.debug('Token is still valid.'); }, function(chkTokenErr) {
+      NdsLabsApi.getValidate().then(function(resp) { 
+        $log.debug('Valid OAuth2 session detected. Token issued!');
+        var token = resp.data;
+        var tokenFields = parseJwt(token);
+        var username = tokenFields['user'];
+
+        // Save to AuthInfo provider
+        authInfo.get().token = token;
+        authInfo.get().namespace = username;
+
+        // Save as cookie
+        $cookies.put('token', token, CookieOptions);
+        $cookies.put('namespace', username, CookieOptions);
+
+        Loading.set(ServerData.populateAll(authInfo.get().namespace));
+      }, function(oauthErr) { 
+        $log.error('Token expired, redirecting to login.');
+        var token = $cookies.get('token', CookieOptions);
+        console.log('Detecting cookie checkToken: ' + token);
+        terminateSession();
+      });
     });
   };
   
@@ -142,14 +161,31 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
       $window.document.title = current.$$route.title;
     }
   });
+
+
+  var parseJwt = function(token) {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+  }
+
   
   // When user changes routes, check that they are still authed
   $rootScope.$on( "$routeChangeStart", function(event, next, current) {
     // Check if the token is still valid on route changes
     var token = $cookies.get('token', CookieOptions);
+    console.log('Detecting cookie $routeChangeStart: ' + token);
     if (token) {
       authInfo.get().token = token;
-      authInfo.get().namespace = $cookies.get('namespace', CookieOptions);
+      var tokenFields = parseJwt(token);
+      var username = tokenFields['user'];
+      $cookies.put('namespace', username, CookieOptions);
+      authInfo.get().namespace =  username;
+      Loading.set(ServerData.populateAll(authInfo.get().namespace));
       NdsLabsApi.getRefreshToken().then(function() {
         $log.debug('Token refreshed: ' + authInfo.get().token);
         Loading.set(ServerData.populateAll(authInfo.get().namespace));
@@ -162,7 +198,7 @@ angular.module('ndslabs', [ 'navbar', 'footer', 'ndslabs-services', 'ndslabs-fil
         authInfo.tokenInterval = authInterval = $interval(checkToken, tokenCheckMs);
         
       }, function() {
-        $log.debug('Failed to refresh token!');
+        $log.error('Failed to refresh token!');
         
         // TODO: Allow login page to reroute user to destination?
         // XXX: This would matter more if there are multiple views

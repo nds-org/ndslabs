@@ -1,7 +1,7 @@
 #
 # Build: docker build -t ndslabs/angular-ui .
 #
-FROM ndslabs/ng-base:latest
+FROM ndslabs/ng-base:focal-erbium
 
 # Set build information here before building (or at build time with --build-args version=X.X.X)
 ARG version="1.2.0"
@@ -12,8 +12,11 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     NODE_ENV="production" \
     BASEDIR="/home"
 
+
 # Copy in our app source
 WORKDIR $BASEDIR
+COPY package.json package-lock.json $BASEDIR/
+RUN npm install
 COPY . $BASEDIR/
 
 # Update build date / version number and enable backports
@@ -21,8 +24,7 @@ RUN /bin/sed -i -e "s#^\.constant('BuildVersion', '.*')#.constant('BuildVersion'
     /bin/sed -i -e "s#^\.constant('BuildDate', .*)#.constant('BuildDate', new Date('$(date)'))#" "$BASEDIR/ConfigModule.js"
 
 # Install app dependencies
-RUN npm install && \
-    grunt swagger-js-codegen
+RUN grunt swagger-js-codegen
 
 # Set up some default environment variable
 ENV APISERVER_HOST="localhost" \

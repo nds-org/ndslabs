@@ -11,7 +11,7 @@ if [ "$1" = 'apiserver' ]; then
 	if [ -z "$ETCD_ADDR" ]; then 
 		ETCD_ADDR="localhost:4001"
 	fi
-
+	
 	if [ -z "$KUBERNETES_ADDR" ]; then 
 		KUBERNETES_ADDR="https://localhost:6443"
 	fi
@@ -169,6 +169,13 @@ cat << EOF > /apiserver.json
 }
 EOF
 
+	echo -n "Waiting for etcd at $ETCD_ADDR..."
+	until $(curl -XGET --output /dev/null --silent --fail ${ETCD_ADDR}/version); do
+	    echo -n "."
+	    sleep 3 
+	done
+	echo -e "\netcd is online: $ETCD_ADDR"
+
 	if [ -z "$SPEC_GIT_REPO" ]; then 
 		SPEC_GIT_REPO=https://github.com/nds-org/ndslabs-specs
 	fi
@@ -185,7 +192,7 @@ EOF
 	umask 0
 
 	if [ -z "$TEST" ]; then
-		apiserver -conf /apiserver.json --logtostderr=true -v=1 -passwd $ADMIN_PASSWORD 
+		apiserver -conf /apiserver.json --logtostderr=true -v=2 -passwd $ADMIN_PASSWORD 
         else
                 echo "Running binary with test/coverage instrumentation"
                 echo "Writing output to $VOLUME_PATH/coverage.out"
