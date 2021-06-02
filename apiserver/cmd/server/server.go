@@ -639,6 +639,7 @@ func (s *Server) ValidateOAuth(w rest.ResponseWriter, r *rest.Request) {
        			Organization: "",                     // Fetch this from other OAuth scope info?
        			Created:      time.Now().Unix(),
        			LastLogin:    time.Now().Unix(),
+			InactiveTimeout: s.Config.DefaultLimits.InactiveTimeout,
        			NextURL:      "", // TODO: rd,
        		}
        		act.Status = api.AccountStatusApproved
