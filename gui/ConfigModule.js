@@ -69,6 +69,9 @@ angular
  */
 .constant('OrgName', 'NDS')
 .constant('ProductName', 'Labs Workbench')
+.constant('ProductLandingHtml', '<p>Labs Workbench is an environment where developers can prototype tools and capabilities that help build out the NDS framework and services.</p><p>In particular, it is a place that can host the development activities of <a href="http://www.nationaldataservice.org/projects/pilots.html">NDS pilot projects</a>.</p>')
+.constant('ProductBrandLogoPath', '../asset/png/favicon-32x32.png')
+.constant('ProductFaviconPath', '../asset/png/favicon-16x16.png')
 .constant('ProductUrl', 'http://www.nationaldataservice.org/projects/labs.html')
 
 /**
