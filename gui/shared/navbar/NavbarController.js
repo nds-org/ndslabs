@@ -29,10 +29,10 @@ angular
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('NavbarController', [ '$scope', '$rootScope', '$window', '$location', '$cookies', 'Project', 'AuthInfo', 'ProductName', 'ProductBrandLogoPath', 'ProductUrl', 'HelpLinks', 'FileManager', 'AutoRefresh', 'ReturnRoute', 'CookieOptions', 'SigninUrl', 'AdvancedFeatures',
-    function($scope, $rootScope, $window, $location, $cookies, Project, AuthInfo, ProductName, ProductBrandLogoPath, ProductUrl, HelpLinks, FileManager, AutoRefresh, ReturnRoute, CookieOptions, SigninUrl, AdvancedFeatures) {
+.controller('NavbarController', [ '$scope', '$rootScope', '$window', '$http', '$location', '$cookies', 'Project', 'AuthInfo', 'ProductName', 'ProductBrandLogoPath', 'ProductUrl', 'HelpLinks', 'FileManager', 'AutoRefresh', 'ReturnRoute', 'CookieOptions', 'SigninUrl', 'AdvancedFeatures',
+    function($scope, $rootScope, $window, $http, $location, $cookies, Project, AuthInfo, ProductName, ProductBrandLogoPath, ProductUrl, HelpLinks, FileManager, AutoRefresh, ReturnRoute, CookieOptions, SigninUrl, AdvancedFeatures) {
   "use strict"
-  
+
   // Enable JS dropdowns on the navbar
   // FIXME: Is there a cleaner way to do this? Calling jQuery manually is ugly...
   $('.dropdown-toggle').dropdown();
@@ -57,7 +57,6 @@ angular
   
   $scope.enableOAuth = SigninUrl.indexOf("/oauth2/") !== -1;
   $scope.signinLink = $scope.enableOAuth ? SigninUrl : '/login/' + ($rootScope.rd ? 'rd=' : '');
-  $scope.helpLinks = HelpLinks;
   
   $scope.showFileManager = AdvancedFeatures.showFileManager;
   $scope.fileManager = FileManager;
@@ -86,10 +85,15 @@ angular
     }
   };
   
-  $scope.brand = 
-  {
-    logo: ProductBrandLogoPath,
-    name: ProductName,
-    url: ProductUrl
-  };
+  $http.get('/env.json').then(function(response) {
+      var envData = response.data;
+      console.log("Env: ", envData);
+      $scope.helpLinks = envData.product.helpLinks;  // formerly: HelpLinks;
+      $scope.brand = {
+        logo: envData.product.brandLogoPath,
+        name: envData.product.name,
+        url: envData.product.learnMoreUrl
+      };
+  });
+
 }]);

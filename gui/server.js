@@ -66,6 +66,7 @@ app.use('/shared', express.static('shared'));
 app.use('/asset', express.static('asset'));
 app.use('/ConfigModule.js', express.static('ConfigModule.js'));
 app.use('/swagger.yaml', express.static('swagger.yaml'));
+app.use('/env.json', express.static('env.json'));
 
 // Use optimized versions of the images (drop-in)
 app.use('/asset/png', express.static('dist/png'));
