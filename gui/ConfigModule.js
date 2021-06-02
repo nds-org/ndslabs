@@ -77,13 +77,7 @@ angular
 /**
  * Helpful links to include in the landing page / navbar
  */
-.value('HelpLinks', [
-  { name: "Feature Overview",       icon: 'fa-info-circle',        url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Feature+Overview' },
-  { name: "F.A.Q.",                 icon: 'fa-question-circle',    url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Frequently+Asked+Questions'},
-  { name: "User's Guide",           icon: 'fa-book',               url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/User%27s+Guide' },
-  { name: "Developer's Guide",      icon: 'fa-code-fork',          url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Developer%27s+Guide' },
-  { name: "Acceptable Use Policy",  icon: 'fa-gavel',              url: 'https://nationaldataservice.atlassian.net/wiki/display/NDSC/Acceptable+Use+Policy' },
-])
+.value('HelpLinks', [])
 
 /**
  * The version/revision of this GUI
@@ -182,7 +176,7 @@ angular
 /**
  * Configure routes / HTTP for our app using the services defined above
  */
-.config([ '$provide', '$locationProvider', '$httpProvider', '$logProvider', 'GaAccount', 'AnalyticsProvider', 'DEBUG', 
+.config([ '$provide', '$locationProvider', '$httpProvider', '$logProvider', 'GaAccount', 'AnalyticsProvider', 'DEBUG',
     function($provide, $locationProvider, $httpProvider, $logProvider, GaAccount, AnalyticsProvider, DEBUG) {
   "use strict";
   
@@ -305,9 +299,12 @@ angular
   //                 .setHybridMobileSupport(true)
                    .useDisplayFeatures(true)
                    .useEnhancedLinkAttribution(true);
-}]).run(['$cookies', '$location', '$log', 'AuthInfo', 'CookieOptions',
-    function($cookies, $location, $log, AuthInfo, CookieOptions) {
-  
+}]).run([ '$window', '$cookies', '$location', '$log', 'AuthInfo', 'CookieOptions', 'ProductFaviconPath', 
+    function($window, $cookies, $location, $log, AuthInfo, CookieOptions, ProductFaviconPath) {
+
+  // Set custom favicon
+  $window.document.querySelector('link[rel="shortcut icon"]').setAttribute('href', ProductFaviconPath);
+
   // Grab saved auth data from cookies and attempt to use the leftover session
   var token = $cookies.get('token', CookieOptions);
   var namespace = $cookies.get('namespace', CookieOptions);
