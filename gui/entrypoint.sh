@@ -54,7 +54,7 @@ echo "{
     \"brandLogoPath\": \"${WORKBENCH_BRAND_LOGO_PATH:-../asset/png/favicon-32x32.png}\",
     \"faviconPath\": \"${WORKBENCH_FAVICON_PATH:-../asset/png/favicon-16x16.png}\",
     \"learnMoreUrl\": \"${WORKBENCH_LEARNMORE_URL:-http://www.nationaldataservice.org/platform/workbench.html}\",
-    \"helpLinks\": ${WORKBENCH_HELP_LINKS:-[]},
+    \"helpLinks\": ${WORKBENCH_HELP_LINKS:-[]}
   },
   \"advancedFeatures\": {
     \"showConfig\": ${SHOW_CONFIG:-false},
