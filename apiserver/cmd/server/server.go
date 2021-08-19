@@ -15,6 +15,7 @@ import (
 	"strings"
 	"syscall"
 	"time"
+	"regexp"
 
 	"github.com/ndslabs/apiserver/pkg/config"
 	"github.com/ndslabs/apiserver/pkg/email"
@@ -592,6 +593,15 @@ func (s *Server) ValidateOAuth(w rest.ResponseWriter, r *rest.Request) {
 	if oauth_user == "" {
 		oauth_user = strings.Split(oauth_email, "@")[0]
 	}
+
+        // Make a Regex to say we only want letters and numbers
+        reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+        if err != nil {
+            glog.Fatal(err)
+	    w.WriteHeader(http.StatusUnauthorized)
+	    return
+        }
+        oauth_user = reg.ReplaceAllString(oauth_user, "")
 
 	// Fallback to Username if full name not available
 	oauth_name := oauth_fields["name"]
