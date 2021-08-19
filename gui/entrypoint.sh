@@ -49,12 +49,12 @@ fi
 
 echo "{
   \"product\": {
-    \"name\": \"${WORKBENCH_NAME}\",
-    \"landingHtml\": \"${WORKBENCH_LANDING_HTML}\",
-    \"brandLogoPath\": \"${WORKBENCH_BRAND_LOGO_PATH}\",
-    \"faviconPath\": \"${WORKBENCH_FAVICON_PATH}\",
-    \"learnMoreUrl\": \"${WORKBENCH_LEARNMORE_URL}\",
-    \"helpLinks\": ${WORKBENCH_HELP_LINKS}
+    \"name\": \"${WORKBENCH_NAME:-Workbench}\",
+    \"landingHtml\": \"${WORKBENCH_LANDING_HTML:-<p>Labs Workbench is an environment where developers can prototype tools and capabilities that help build out the NDS framework and services.</p>\n<p>In particular, it is a place that can host the development activities of <a href='http://www.nationaldataservice.org/projects/pilots.html'>NDS pilot projects.</a></p>\n}\",
+    \"brandLogoPath\": \"${WORKBENCH_BRAND_LOGO_PATH:-../asset/png/favicon-32x32.png}\",
+    \"faviconPath\": \"${WORKBENCH_FAVICON_PATH:-../asset/png/favicon-16x16.png}\",
+    \"learnMoreUrl\": \"${WORKBENCH_LEARNMORE_URL:-http://www.nationaldataservice.org/platform/workbench.html}\",
+    \"helpLinks\": ${WORKBENCH_HELP_LINKS:-[]},
   },
   \"advancedFeatures\": {
     \"showConfig\": ${SHOW_CONFIG:-false},
