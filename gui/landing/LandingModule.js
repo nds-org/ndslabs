@@ -9,7 +9,7 @@ angular
 .config([ '$routeProvider', 'ProductName', 'LandingAppPath', 'LandingPathSuffix', 'ContactUsPathSuffix', 'ApiRefPathSuffix',
     function($routeProvider, ProductName, LandingAppPath, LandingPathSuffix, ContactUsPathSuffix, ApiRefPathSuffix) {
   "use strict";
-      
+
   $routeProvider
     .when(LandingPathSuffix, {
       title: ProductName + ' Landing Page',
@@ -33,42 +33,42 @@ angular
 
 /**
  * The controller for our "Landing Page" View
- * 
+ *
  * @author lambert8
  * @see https://opensource.ncsa.illinois.edu/confluence/display/~lambert8/3.%29+Controllers%2C+Scopes%2C+and+Partial+Views
  */
-.controller('LandingController', [ '$scope', '$rootScope', '$location', '$routeParams', '$log', '$sce', '_', 'AuthInfo', 'OrgName', 'ProductName', 'ProductUrl', 'NdsLabsApi', 'HelpLinks', 'ReturnRoute', 'LoginAppPath', 'RecoveryPathSuffix', 'SigninUrl', 'ProductLandingHtml',
-    function($scope, $rootScope, $location, $routeParams, $log, $sce, _, AuthInfo, OrgName, ProductName, ProductUrl, NdsLabsApi, HelpLinks, ReturnRoute, LoginAppPath, RecoveryPathSuffix, SigninUrl, ProductLandingHtml) {
+.controller('LandingController', [ '$scope', '$rootScope', '$location', '$http', '$routeParams', '$log', '$sce', '_', 'AuthInfo', 'OrgName', 'ProductName', 'ProductUrl', 'NdsLabsApi', 'HelpLinks', 'ReturnRoute', 'LoginAppPath', 'RecoveryPathSuffix', 'SigninUrl', 'ProductLandingHtml',
+    function($scope, $rootScope, $location, $http, $routeParams, $log, $sce, _, AuthInfo, OrgName, ProductName, ProductUrl, NdsLabsApi, HelpLinks, ReturnRoute, LoginAppPath, RecoveryPathSuffix, SigninUrl, ProductLandingHtml) {
   "use strict";
 
   if ($routeParams.t && !$routeParams.u) {
     $location.path(LoginAppPath + RecoveryPathSuffix);
     return;
   }
-  
+
   $rootScope.rd = '';
   if ($routeParams.rd) {
     ReturnRoute = $routeParams.rd;
     $rootScope.rd = encodeURIComponent(ReturnRoute);
   }
-      
+
   $scope.orgName = OrgName;
   $scope.productName = ProductName;
   $scope.productUrl = ProductUrl;
   $scope.productLandingHtml = $sce.trustAsHtml(ProductLandingHtml);
   $scope.helpLinks = HelpLinks;
-  
+
   $scope.auth = AuthInfo.get();
-  
+
   $scope.enableOAuth = SigninUrl.indexOf("/oauth2/") !== -1;
   $scope.signinLink = $scope.enableOAuth ? SigninUrl : '/login/' + ($rootScope.rd ? 'rd=' : '');
   $scope.featureLink = _.find($scope.helpLinks, [ 'name', 'Feature Overview' ]);
-  
+
   $scope.token = $routeParams.t;
   $scope.user = $routeParams.u;
-  
+
   $scope.productName = ProductName;
-  
+
   // TODO: Move this logic to the LoginModule
   if ($scope.user && $scope.token) {
     $scope.verified = null;
@@ -80,4 +80,12 @@ angular
       $scope.verified = false;
     });
   }
+
+  $http.get('/env.json').then(function(response) {
+    var envData = response.data;
+    $scope.productName = envData.product.name;
+    $scope.productUrl = envData.product.learnMoreUrl;
+    $scope.productLandingHtml = $sce.trustAsHtml(envData.product.landingHtml);
+    $scope.helpLinks = envData.product.helpLinks;  // formerly: HelpLinks;
+  });
 }]);
