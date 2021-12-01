@@ -14,10 +14,14 @@ on:
     branches:
       - master
       - main
-      - cddr
       - develop
 
   pull_request:
+  
+  # Trigger the workflow on release activity
+  release:
+    # Only use the types keyword to narrow down the activity types that will trigger your workflow.
+    types: [published, created]
 
 # Certain actions will only run when this is the master repo.
 env:
