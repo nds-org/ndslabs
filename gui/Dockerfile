@@ -4,7 +4,7 @@
 FROM ndslabs/ng-base:latest
 
 # Set build information here before building (or at build time with --build-args version=X.X.X)
-ARG version="1.2.0"
+ARG version="1.2.1"
 
 # Set up necessary environment variables
 ENV DEBIAN_FRONTEND="noninteractive" \

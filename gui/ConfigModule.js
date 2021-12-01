@@ -85,7 +85,7 @@ angular
 /**
  * The version/revision of this GUI
  */
-.constant('BuildVersion', '1.2.0-devel')
+.constant('BuildVersion', '1.2.1-devel')
 .constant('BuildDate', '')
 
 /**
