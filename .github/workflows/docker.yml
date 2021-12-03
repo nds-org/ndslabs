@@ -60,8 +60,11 @@ jobs:
             BRANCH=${GITHUB_REF##*/}
           fi
           echo "GITHUB_BRANCH=${BRANCH}" >> $GITHUB_ENV
+          
+          # Commit was for main/release branch, build a new version
           if [ "$BRANCH" == "master" -o "$BRANCH" == "main" ]; then
             version="$(cat gui/package.json | jq -r .version)"
+            echo "VERSION=$(version)" >> $GITHUB_ENV
             tags="latest"
             oldversion=""
             while [ "${oldversion}" != "${version}" ]; do
@@ -69,7 +72,6 @@ jobs:
               tags="${tags},${version}"
               version=${version%.*}
             done
-            echo "VERSION=$(awk '/version = / { print $4 }' project/Build.scala | sed 's/"//g')" >> $GITHUB_ENV
             echo "TAGS=${tags}" >> $GITHUB_ENV
           else
             echo "VERSION=$BRANCH" >> $GITHUB_ENV
