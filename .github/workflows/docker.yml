@@ -1,0 +1,133 @@
+name: Docker
+
+# This will run when:
+# - when new code is pushed to master/develop to push the tags
+#   latest and develop
+# - when a pull request is created and updated  to make sure the
+#   Dockerfile is still valid.
+# To be able to push to dockerhub, this execpts the following
+# secrets to be set in the project:
+# - DOCKERHUB_USERNAME : username that can push to the org
+# - DOCKERHUB_PASSWORD : password asscoaited with the username
+on:
+  push:
+    branches:
+      - master
+      - main
+      - develop
+
+  pull_request:
+  
+  # Trigger the workflow on release activity
+  release:
+    # Only use the types keyword to narrow down the activity types that will trigger your workflow.
+    types:
+      - published
+      - edited
+      - created
+
+# Certain actions will only run when this is the master repo.
+env:
+  MASTER_REPO: nds-org/ndslabs
+  DOCKERHUB_ORG: ndslabs
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        name:
+          - api
+          - ui
+        include:
+          - name: api
+            FOLDER: apiserver
+            IMAGE: apiserver
+          - name: ui
+            FOLDER: gui
+            IMAGE: angular-ui
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # calculate some variables that are used later
+      - name: github branch
+        run: |
+          if [ "${{ github.event.release.target_commitish }}" != "" ]; then
+            BRANCH="${{ github.event.release.target_commitish }}"
+          else
+            BRANCH=${GITHUB_REF##*/}
+          fi
+          echo "GITHUB_BRANCH=${BRANCH}" >> $GITHUB_ENV
+          
+          # Commit was for main/release branch, build a new version
+          if [ "$BRANCH" == "master" -o "$BRANCH" == "main" ]; then
+            version="$(cat gui/package.json | jq -r .version)"
+            echo "VERSION=$(version)" >> $GITHUB_ENV
+            tags="latest"
+            oldversion=""
+            while [ "${oldversion}" != "${version}" ]; do
+              oldversion="${version}"
+              tags="${tags},${version}"
+              version=${version%.*}
+            done
+            echo "TAGS=${tags}" >> $GITHUB_ENV
+          else
+            echo "VERSION=$BRANCH" >> $GITHUB_ENV
+            echo "TAGS=$BRANCH" >> $GITHUB_ENV
+          fi
+
+      # build the docker image, this will always run to make sure
+      # the Dockerfile still works.
+      - name: Build image
+        uses: elgohr/Publish-Docker-Github-Action@2.22
+        env:
+          BRANCH: ${{ env.GITHUB_BRANCH }}
+          VERSION: ${{ env.VERSION }}
+          BUILDNUMBER: ${{ github.run_number }}
+          GITSHA1: ${{ github.sha  }}
+        with:
+          registry: docker.pkg.github.com
+          name: ${{ github.repository_owner }}/${{ github.event.repository.name }}/${{ matrix.IMAGE }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          context: ${{ matrix.FOLDER }}
+          tags: "${{ env.TAGS }}"
+          buildargs: BRANCH,VERSION,BUILDNUMBER,GITSHA1
+          no_push: true
+
+      # this will publish to github container registry
+      - name: Publish to GitHub
+        if: github.event_name != 'pull_request' && github.repository == env.MASTER_REPO
+        uses: elgohr/Publish-Docker-Github-Action@2.22
+        env:
+          BRANCH: ${{ env.GITHUB_BRANCH }}
+          VERSION: ${{ env.VERSION }}
+          BUILDNUMBER: ${{ github.run_number }}
+          GITSHA1: ${{ github.sha  }}
+        with:
+          registry: ghcr.io
+          name: ${{ github.repository_owner }}/${{ matrix.IMAGE }}
+          username: ${{ secrets.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_PASSWORD }}
+          context: ${{ matrix.FOLDER }}
+          tags: "${{ env.TAGS }}"
+          buildargs: BRANCH,VERSION,BUILDNUMBER,GITSHA1
+
+      # this will publish to dockerhub
+      - name: Publish to Docker Hub
+        if: github.event_name != 'pull_request' && github.repository == env.MASTER_REPO
+        uses: elgohr/Publish-Docker-Github-Action@2.22
+        env:
+          BRANCH: ${{ env.GITHUB_BRANCH }}
+          VERSION: ${{ env.VERSION }}
+          BUILDNUMBER: ${{ github.run_number }}
+          GITSHA1: ${{ github.sha  }}
+        with:
+          name: ${{ env.DOCKERHUB_ORG }}/${{ matrix.IMAGE }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          context: ${{ matrix.FOLDER }}
+          tags: "${{ env.TAGS }}"
+          buildargs: BRANCH,VERSION,BUILDNUMBER,GITSHA1

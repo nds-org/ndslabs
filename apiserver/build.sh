@@ -2,7 +2,7 @@
 
 BUILD_DATE=`date +%Y-%m-%d\ %H:%M`
 VERSIONFILE="pkg/version/version.go"
-VERSION="1.2.0"
+VERSION="1.3.0"
 
 set -e
 
