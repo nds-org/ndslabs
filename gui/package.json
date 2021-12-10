@@ -64,7 +64,7 @@
     "grunt-swagger-js-codegen": "https://github.com/bodom0015/grunt-swagger-js-codegen.git",
     "grunt-wait": "^0.1.0",
     "jquery": "^3.5.0",
-    "js-yaml": "^3.10.0",
+    "js-yaml": "^3.13.1",
     "load-grunt-tasks": "^3.5.2",
     "lodash": "~4.17.21",
     "morgan": "^1.7.0",
