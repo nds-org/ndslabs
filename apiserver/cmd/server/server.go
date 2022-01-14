@@ -2071,9 +2071,6 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 	nodeSelectorValue := cfg.Kubernetes.NodeSelectorValue
 	template := s.kube.CreateControllerTemplate(userId, name, stack.Id, s.domain, account.EmailAddress, s.email.Server, stackService, spec, addrPortMap, &extraVols, nodeSelectorName, nodeSelectorValue)
 
-	jsonTemplate, _ := json.MarshalIndent(template, "", "   ")
-	glog.V(4).Infof("Template:\n%s", jsonTemplate)
-
 	//storageClass := s.Config.Kubernetes.StorageClass
 	if len(stackService.VolumeMounts) > 0 || len(spec.VolumeMounts) > 0 {
 
@@ -2084,11 +2081,16 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 				if mount.MountPath == toPath {
 					glog.V(4).Info("Found PVC user mount")
 					volName := "home"
-					//if vol.Type == api.MountTypeDocker {
-					//	volName = "docker"
-					//}
-					k8vm := v1.VolumeMount{Name: volName, MountPath: toPath, SubPath: fromPath}
-					template.Spec.Template.Spec.Containers[0].VolumeMounts = append(template.Spec.Template.Spec.Containers[0].VolumeMounts, k8vm)
+					if fromPath == "/" {
+						k8vm := v1.VolumeMount{Name: volName, MountPath: toPath}
+						template.Spec.Template.Spec.Containers[0].VolumeMounts = append(template.Spec.Template.Spec.Containers[0].VolumeMounts, k8vm)
+					} else {
+						//if vol.Type == api.MountTypeDocker {
+						//	volName = "docker"
+						//}
+						k8vm := v1.VolumeMount{Name: volName, MountPath: toPath, SubPath: fromPath}
+						template.Spec.Template.Spec.Containers[0].VolumeMounts = append(template.Spec.Template.Spec.Containers[0].VolumeMounts, k8vm)
+					}
 					found = true
 				}
 			}
@@ -2143,6 +2145,9 @@ func (s *Server) startController(userId string, serviceKey string, stack *api.St
 		}
 	}
 	template.Spec.Template.Spec.Volumes = k8vols
+
+	jsonTemplate, _ := json.MarshalIndent(template, "", "   ")
+	glog.V(4).Infof("Template:\n%s", jsonTemplate)
 
 	glog.V(4).Infof("Starting controller %s with volumes %s\n", name, template.Spec.Template.Spec.Volumes)
 	_, err := s.kube.StartController(userId, template)
