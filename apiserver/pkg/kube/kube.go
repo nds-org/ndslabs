@@ -395,6 +395,8 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 	return &k8svc
 }
 
+# Not currently used
+# TODO: Retest with Traefik. Policies appear to be specific to NGINX
 func (k *KubeHelper) CreateNetworkPolicy(ns string, name string, groupName string) (*networkingv1.NetworkPolicy, error) {
 	k8netPolicy := networkingv1.NetworkPolicy{
 		TypeMeta: metav1.TypeMeta{
@@ -912,7 +914,7 @@ func (k *KubeHelper) CreateIngress(pid string, domain string, service string, po
 
 	annotations := map[string]string{}
 	
-	// TODO: Support configurable ingress class
+	// TODO: Support configurable ingress class? Applicable for cluster with multiple ingress controllers
 	// annotations["kubernetes.io/ingress.class"] = "nginx"
 	
 	if clusterIssuer != "" {
@@ -923,8 +925,9 @@ func (k *KubeHelper) CreateIngress(pid string, domain string, service string, po
                 annotations["cert-manager.io/issuer"] = issuer
 	}
 	if enableAuth {
-		annotations["nginx.ingress.kubernetes.io/auth-signin"] = k.authSignInURL
-		annotations["nginx.ingress.kubernetes.io/auth-url"] = k.authURL
+		annotations["ingress.kubernetes.io/auth-signin"] = k.authSignInURL
+		annotations["ingress.kubernetes.io/auth-url"] = k.authURL
+		annotations["ingress.kubernetes.io/auth-type"] = "forward"
 	} else {
 		glog.V(4).Info("Removing auth annotations for " + ingress.Name)
 	}
