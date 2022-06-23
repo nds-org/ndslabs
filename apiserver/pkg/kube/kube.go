@@ -395,8 +395,8 @@ func (k *KubeHelper) CreateServiceTemplate(name string, stack string, spec *ndsa
 	return &k8svc
 }
 
-# Not currently used
-# TODO: Retest with Traefik. Policies appear to be specific to NGINX
+// Not currently used
+// TODO: Retest with Traefik. Policies appear to be specific to NGINX
 func (k *KubeHelper) CreateNetworkPolicy(ns string, name string, groupName string) (*networkingv1.NetworkPolicy, error) {
 	k8netPolicy := networkingv1.NetworkPolicy{
 		TypeMeta: metav1.TypeMeta{
