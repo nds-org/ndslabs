@@ -122,7 +122,12 @@ func (k *KubeHelper) CreateNamespace(pid string) (*v1.Namespace, error) {
 	ns := v1.Namespace{}
 	ns.SetName(pid)
 
-	return k.kubeGo.CoreV1().Namespaces().Create(&ns)
+	namespace, err := k.kubeGo.CoreV1().Namespaces().Create(&ns)
+	if err != nil {
+		glog.Errorf("Error creating Namespace %s: %s\n", pid, err)
+	}
+
+	return namespace, err
 }
 
 func (k *KubeHelper) CreateResourceQuota(pid string, cpu int, mem int) (*v1.ResourceQuota, error) {
@@ -136,7 +141,12 @@ func (k *KubeHelper) CreateResourceQuota(pid string, cpu int, mem int) (*v1.Reso
 		},
 	}
 
-	return k.kubeGo.CoreV1().ResourceQuotas(pid).Create(&resourceQuota)
+	quota, err := k.kubeGo.CoreV1().ResourceQuotas(pid).Create(&resourceQuota)
+	if err != nil {
+		glog.Errorf("Error creating ResourceQuota %s with mem=%s and cpu=%s: %s\n", pid, mem, cpu, err)
+	}
+
+	return quota, err
 }
 
 func (k *KubeHelper) CreateLimitRange(pid string, cpu int, mem int) (*v1.LimitRange, error) {
@@ -155,7 +165,12 @@ func (k *KubeHelper) CreateLimitRange(pid string, cpu int, mem int) (*v1.LimitRa
 		},
 	}
 
-	return k.kubeGo.CoreV1().LimitRanges(pid).Create(&limitRange)
+	limrange, err := k.kubeGo.CoreV1().LimitRanges(pid).Create(&limitRange)
+	if err != nil {
+		glog.Errorf("Error creating LimitRange %s with mem=%s and cpu=%s: %s\n", pid, mem, cpu, err)
+	}
+
+	return limrange, err
 }
 
 func (k *KubeHelper) GetNamespace(pid string) (*v1.Namespace, error) {
@@ -479,7 +494,7 @@ func (k *KubeHelper) DeleteNetworkPolicy(ns string, name string) error {
 	return k.kubeGo.NetworkingV1().NetworkPolicies(ns).Delete(name, &deleteOptions)
 }
 
-func (k *KubeHelper) CreatePersistentVolumeClaim(ns string, name string, storageClass string) *v1.PersistentVolumeClaim {
+func (k *KubeHelper) CreatePersistentVolumeClaim(ns string, name string, storageClass string) (*v1.PersistentVolumeClaim, error) {
 	k8pvc := v1.PersistentVolumeClaim{}
 
 	// PersistentVolumeClaim
@@ -520,7 +535,7 @@ func (k *KubeHelper) CreatePersistentVolumeClaim(ns string, name string, storage
 		glog.Errorf("Error creating PVC %s in namespace %s: %s\n", name, ns, err)
 	}
 
-	return &k8pvc
+	return &k8pvc, err
 }
 
 func (k *KubeHelper) DeletePersistentVolumeClaim(pid string, name string) error {
@@ -913,16 +928,16 @@ func (k *KubeHelper) CreateIngress(pid string, domain string, service string, po
 	}
 
 	annotations := map[string]string{}
-	
+
 	// TODO: Support configurable ingress class? Applicable for cluster with multiple ingress controllers
 	// annotations["kubernetes.io/ingress.class"] = "nginx"
-	
+
 	if clusterIssuer != "" {
-                // Check for cert-manager.io/cluster-issuer
-                annotations["cert-manager.io/cluster-issuer"] = clusterIssuer
+		// Check for cert-manager.io/cluster-issuer
+		annotations["cert-manager.io/cluster-issuer"] = clusterIssuer
 	} else if issuer != "" {
-                // Check for cert-manager.io/issuer
-                annotations["cert-manager.io/issuer"] = issuer
+		// Check for cert-manager.io/issuer
+		annotations["cert-manager.io/issuer"] = issuer
 	}
 	if enableAuth {
 		annotations["ingress.kubernetes.io/auth-signin"] = k.authSignInURL

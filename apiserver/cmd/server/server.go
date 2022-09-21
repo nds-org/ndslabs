@@ -11,11 +11,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"regexp"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
-	"regexp"
 
 	"github.com/ndslabs/apiserver/pkg/config"
 	"github.com/ndslabs/apiserver/pkg/email"
@@ -538,7 +538,7 @@ func (s *Server) ValidateOAuth(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	oauth_host :=  "https://www." + s.Config.Domain
+	oauth_host := "https://www." + s.Config.Domain
 	oauth_url := oauth_host + "/oauth2/userinfo"
 	glog.Infof("Validating OAuth2 cookie: %s", oauth_url)
 	req, err := http.NewRequest("GET", oauth_url, nil)
@@ -548,7 +548,7 @@ func (s *Server) ValidateOAuth(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	req.Header.Add("Host", "www." + s.Config.Domain)
+	req.Header.Add("Host", "www."+s.Config.Domain)
 	req.AddCookie(oauth_cookie)
 
 	client := &http.Client{}
@@ -574,7 +574,7 @@ func (s *Server) ValidateOAuth(w rest.ResponseWriter, r *rest.Request) {
 
 	var oauth_fields map[string]string
 	err = json.Unmarshal(body_bytes, &oauth_fields)
-        if err != nil {
+	if err != nil {
 		glog.Errorf("Failed to deserialize JSON: %s\n", oauth_fields)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -587,21 +587,20 @@ func (s *Server) ValidateOAuth(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-
 	// Fallback to Email prefix if username not available
 	oauth_user := strings.Split(oauth_fields["preferredUsername"], "@")[0]
 	if oauth_user == "" {
 		oauth_user = strings.Split(oauth_email, "@")[0]
 	}
 
-        // Make a Regex to say we only want letters and numbers
-        reg, err := regexp.Compile("[^a-zA-Z0-9]+")
-        if err != nil {
-            glog.Fatal(err)
-	    w.WriteHeader(http.StatusUnauthorized)
-	    return
-        }
-        oauth_user = reg.ReplaceAllString(oauth_user, "")
+	// Make a Regex to say we only want letters and numbers
+	reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+	if err != nil {
+		glog.Fatal(err)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	oauth_user = reg.ReplaceAllString(oauth_user, "")
 
 	// Fallback to Username if full name not available
 	oauth_name := oauth_fields["name"]
@@ -614,78 +613,77 @@ func (s *Server) ValidateOAuth(w rest.ResponseWriter, r *rest.Request) {
 
 	// TODO: Wire up otherTokens. This is needed for (at least) the MDF Forge Notebook
 	// Assign other tokens, if presented
-/*	oauth_otherTokenStr := oauth_fields["otherTokens"]
-	if oauth_otherTokensStr != "" {
-		tokens := make(map[string]string)
-		otherTokens := strings.Split(otherTokenStr, " ")
-		for _, kvpair := range otherTokens {
-			kv := strings.Split(kvpair, "=")
-			tokens[kv[0]] = kv[1]
+	/*	oauth_otherTokenStr := oauth_fields["otherTokens"]
+		if oauth_otherTokensStr != "" {
+			tokens := make(map[string]string)
+			otherTokens := strings.Split(otherTokenStr, " ")
+			for _, kvpair := range otherTokens {
+				kv := strings.Split(kvpair, "=")
+				tokens[kv[0]] = kv[1]
+			}
+
+			// Write token(s) to user's home directory
+			err := s.writeAuthPayload(user, tokens)
+			if err != nil {
+				glog.Error(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		}
+	*/
+
+	// OAuth2 token is valid and contains everything we need, register account if necessary
+	glog.Infof("Creating/updating account for %s %s %s\n", oauth_user, oauth_email, oauth_name) //, oauth_accessToken)
+	//	glog.V(4).Infof("Other tokens %s\n", otherTokens)
+
+	oauth_account := s.getAccountByEmail(oauth_email)
+	if oauth_account == nil {
+		act := api.Account{
+			Name:            oauth_name,
+			Description:     "Oauth shadow account", // Fetch this from other OAuth scope info?
+			Namespace:       oauth_user,
+			EmailAddress:    oauth_email,
+			Password:        s.kube.RandomString(10),
+			Organization:    "", // Fetch this from other OAuth scope info?
+			Created:         time.Now().Unix(),
+			LastLogin:       time.Now().Unix(),
+			InactiveTimeout: s.Config.DefaultLimits.InactiveTimeout,
+			NextURL:         "", // TODO: rd,
+		}
+		act.Status = api.AccountStatusApproved
+
+		err := s.etcd.PutAccount(act.Namespace, &act, true)
+		if err != nil {
+			glog.Error(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 
-		// Write token(s) to user's home directory
-		err := s.writeAuthPayload(user, tokens)
+		err = s.setupAccount(&act)
+		if err != nil {
+			glog.Error(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	} else {
+		oauth_account.LastLogin = time.Now().Unix()
+		oauth_account.NextURL = "" // TODO: rd
+
+		err := s.etcd.PutAccount(oauth_account.Namespace, oauth_account, true)
 		if err != nil {
 			glog.Error(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	}
-*/
-				
-	// OAuth2 token is valid and contains everything we need, register account if necessary
-	glog.Infof("Creating/updating account for %s %s %s\n", oauth_user, oauth_email, oauth_name) //, oauth_accessToken)
-//	glog.V(4).Infof("Other tokens %s\n", otherTokens)
-				
 
-	oauth_account := s.getAccountByEmail(oauth_email)
-	if oauth_account == nil {
-		act := api.Account{
-       			Name:         oauth_name,
-       			Description:  "Oauth shadow account", // Fetch this from other OAuth scope info?
-       			Namespace:    oauth_user,
-       			EmailAddress: oauth_email,
-       			Password:     s.kube.RandomString(10),
-       			Organization: "",                     // Fetch this from other OAuth scope info?
-       			Created:      time.Now().Unix(),
-       			LastLogin:    time.Now().Unix(),
-			InactiveTimeout: s.Config.DefaultLimits.InactiveTimeout,
-       			NextURL:      "", // TODO: rd,
-       		}
-       		act.Status = api.AccountStatusApproved
-	       
-       		err := s.etcd.PutAccount(act.Namespace, &act, true)
-       		if err != nil {
-       			glog.Error(err)
-       			w.WriteHeader(http.StatusInternalServerError)
-       			return
-       		}
-	        
-       		err = s.setupAccount(&act)
-        	if err != nil {
-        		glog.Error(err)
-        		w.WriteHeader(http.StatusInternalServerError)
-        		return
-       		}
-       	} else {
-       		oauth_account.LastLogin = time.Now().Unix()
-       		oauth_account.NextURL = "" // TODO: rd
-	       
-       		err := s.etcd.PutAccount(oauth_account.Namespace, oauth_account, true)
-     		if err != nil {
-	       		glog.Error(err)
-	       		w.WriteHeader(http.StatusInternalServerError)
-        		return
-       		}
-       	}
-	        
 	//  Issue JWT
-       	token, err := s.getTemporaryToken(oauth_user)
-       	if err != nil {
-       		glog.Error(err)
-       		w.WriteHeader(http.StatusUnauthorized)
-       		return
-       	}
+	token, err := s.getTemporaryToken(oauth_user)
+	if err != nil {
+		glog.Error(err)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
 	w.WriteJson(&token)
 	return
@@ -898,15 +896,15 @@ func (s *Server) createLMABasicAuthSecret() error {
 }
 
 func (s *Server) setupAccount(account *api.Account) error {
-	err := s.kube.CreateNamespace(account.Namespace)
+	_, err := s.kube.CreateNamespace(account.Namespace)
 	if err != nil {
 		glog.Error(err)
 	}
-	
+
 	// Create a PVC for this user's data
 	storageClass := s.Config.Kubernetes.StorageClass
 	claimName := account.Namespace + s.Config.HomePvcSuffix
-	err = s.kube.CreatePersistentVolumeClaim(account.Namespace, claimName, storageClass)
+	_, err = s.kube.CreatePersistentVolumeClaim(account.Namespace, claimName, storageClass)
 	if err != nil {
 		glog.Error(err)
 	}
@@ -921,13 +919,13 @@ func (s *Server) setupAccount(account *api.Account) error {
 			StorageQuota:  s.Config.DefaultLimits.StorageDefault,
 		}
 	}
-	err = s.kube.CreateResourceQuota(account.Namespace,
+	_, err = s.kube.CreateResourceQuota(account.Namespace,
 		account.ResourceLimits.CPUMax,
 		account.ResourceLimits.MemoryMax)
 	if err != nil {
 		glog.Error(err)
 	}
-	err = s.kube.CreateLimitRange(account.Namespace,
+	_, err = s.kube.CreateLimitRange(account.Namespace,
 		account.ResourceLimits.CPUDefault,
 		account.ResourceLimits.MemoryDefault)
 	if err != nil {
@@ -1770,11 +1768,11 @@ func (s *Server) createIngressRule(userId string, svc *v1.Service, stack *api.St
 		return err
 	}
 	glog.V(4).Infof("Started ingress for service %s (secure=%t)\n", svc.Name, stack.Secure)
-        if clusterIssuer != "" {
-                glog.Infof("Using TLS clsuter issuer: %s\n", clusterIssuer)
-        } else if issuer != "" {
-                glog.Infof("Using TLS issuer: %s\n", issuer)
-        }
+	if clusterIssuer != "" {
+		glog.Infof("Using TLS clsuter issuer: %s\n", clusterIssuer)
+	} else if issuer != "" {
+		glog.Infof("Using TLS issuer: %s\n", issuer)
+	}
 	return nil
 }
 
@@ -2426,14 +2424,12 @@ func (s *Server) startStack(userId string, stack *api.Stack) (*api.Stack, error)
 		time.Sleep(time.Second * 3)
 	}
 
-	
-
 	// To overcome the 503 error on ingress, wait 5 seconds before returning the endpoint
 	time.Sleep(time.Second * 5)
 	stack, err := s.getStackWithStatus(userId, sid)
 	if err != nil {
-			glog.Errorf("Failed to get stack with status: %s %s\n", userId, sid)
-			return stack, err
+		glog.Errorf("Failed to get stack with status: %s %s\n", userId, sid)
+		return stack, err
 	}
 	stack.Status = "started"
 	for _, stackService := range stack.Services {
