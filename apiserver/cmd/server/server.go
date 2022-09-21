@@ -898,12 +898,18 @@ func (s *Server) createLMABasicAuthSecret() error {
 }
 
 func (s *Server) setupAccount(account *api.Account) error {
-	s.kube.CreateNamespace(account.Namespace)
-
+	err := s.kube.CreateNamespace(account.Namespace)
+	if err != nil {
+		glog.Error(err)
+	}
+	
 	// Create a PVC for this user's data
 	storageClass := s.Config.Kubernetes.StorageClass
 	claimName := account.Namespace + s.Config.HomePvcSuffix
-	s.kube.CreatePersistentVolumeClaim(account.Namespace, claimName, storageClass)
+	err = s.kube.CreatePersistentVolumeClaim(account.Namespace, claimName, storageClass)
+	if err != nil {
+		glog.Error(err)
+	}
 
 	if account.ResourceLimits == (api.AccountResourceLimits{}) {
 		glog.Warningf("No resource limits specified for account %s, using defaults\n", account.Name)
@@ -915,12 +921,18 @@ func (s *Server) setupAccount(account *api.Account) error {
 			StorageQuota:  s.Config.DefaultLimits.StorageDefault,
 		}
 	}
-	s.kube.CreateResourceQuota(account.Namespace,
+	err = s.kube.CreateResourceQuota(account.Namespace,
 		account.ResourceLimits.CPUMax,
 		account.ResourceLimits.MemoryMax)
-	s.kube.CreateLimitRange(account.Namespace,
+	if err != nil {
+		glog.Error(err)
+	}
+	err = s.kube.CreateLimitRange(account.Namespace,
 		account.ResourceLimits.CPUDefault,
 		account.ResourceLimits.MemoryDefault)
+	if err != nil {
+		glog.Error(err)
+	}
 
 	return nil
 }
