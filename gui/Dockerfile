@@ -4,7 +4,7 @@
 FROM ndslabs/ng-base:focal-erbium
 
 # Set build information here before building (or at build time with --build-args version=X.X.X)
-ARG version="1.3.3"
+ARG version="1.3.2"
 
 # Set up necessary environment variables
 ENV DEBIAN_FRONTEND="noninteractive" \
