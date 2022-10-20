@@ -1,7 +1,26 @@
 #
 # Build: docker build -t ndslabs/angular-ui .
 #
-FROM ndslabs/ng-base:focal-erbium
+FROM node:fermium
+
+# Install helper tools
+RUN apt-get -qq update && \
+    apt-get -qq install --no-install-recommends \
+      build-essential \
+      git \
+      sudo \
+      vim \
+      wget \
+      curl && \
+    apt-get -qq autoremove && \
+    apt-get -qq autoclean && \
+    apt-get -qq clean all && \
+    rm -rf /var/cache/apk/* /tmp/* /var/lib/apt/lists/*
+
+WORKDIR /root
+
+# Install Grunt + Gulp
+RUN npm install -g grunt-cli gulp-cli
 
 # Set build information here before building (or at build time with --build-args version=X.X.X)
 ARG version="1.3.3"
