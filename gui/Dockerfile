@@ -3,6 +3,9 @@
 #
 FROM node:fermium
 
+# Upgrade npm
+RUN npm install -g npm@7
+
 # Install helper tools
 RUN apt-get -qq update && \
     apt-get -qq install --no-install-recommends \
@@ -20,7 +23,7 @@ RUN apt-get -qq update && \
 WORKDIR /root
 
 # Install Grunt + Gulp
-RUN npm install -g grunt-cli gulp-cli
+RUN npm install -g grunt-cli gulp-cli 
 
 # Set build information here before building (or at build time with --build-args version=X.X.X)
 ARG version="1.3.3"
