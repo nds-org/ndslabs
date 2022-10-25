@@ -1,5 +1,5 @@
 package cmd
 const (
-  VERSION = "1.0.2"
-  BUILD_DATE = "2016-09-01 06:17"
+  VERSION = "1.3.4"
+  BUILD_DATE = "2022-10-25 12:00"
 )
