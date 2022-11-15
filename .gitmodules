@@ -1,7 +1,3 @@
-[submodule "apiserver"]
-	path = apiserver
-	url = https://github.com/nds-org/workbench-apiserver-python
-	branch = main
 [submodule "webui"]
 	path = webui
 	url = https://github.com/nds-org/workbench-webui
@@ -14,3 +10,6 @@
 	path = specs
 	url = https://github.com/nds-org/ndslabs-specs
 	branch = main
+[submodule "apiserver"]
+	path = apiserver
+	url = https://github.com/nds-org/workbench-apiserver-python
