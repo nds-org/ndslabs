@@ -9,7 +9,7 @@
 [submodule "specs"]
 	path = specs
 	url = https://github.com/nds-org/ndslabs-specs
-	branch = f9287d3d676ed5b38cb728b9123041c209d129c7
+	branch = 243313df33f04dbd2a2dc192fef6871e700b19f0
 [submodule "apiserver"]
 	path = apiserver
 	url = https://github.com/nds-org/workbench-apiserver-python
