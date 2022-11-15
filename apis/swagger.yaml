@@ -3,51 +3,102 @@ info:
   title: NDS Labs Workbench
   description: API for the NDS Labs Workbench service
   contact:
-   email: ndslabs-support@nationaldataservice.org
-   name:  NDS Labs Support
-   url: http://www.nationaldataservice.org/projects/labs.html
-  version: 1.2.0
-basePath: /api
+    email: ndslabs-support@nationaldataservice.org
+    name:  NDS Labs Support
+    url: http://www.nationaldataservice.org/projects/labs.html
+  version: 2.0.0
 schemes:
   - https
+basePath: /api/v1
+securityDefinitions:
+  KeycloakOIDC:
+    type: oauth2
+    flow: implicit
+    authorizationUrl: /auth/realms/workbench-dev/protocol/openid-connect/auth
+    x-tokenInfoUrl: /auth/realms/workbench-dev/protocol/openid-connect/userinfo
+    x-tokenInfoFunc: pkg.auth.keycloak.userinfo
+  KeycloakApiKey:
+    x-apikeyInfoFunc: 'pkg.auth.jwt.validate_apikey_header'
+    type: apiKey
+    name: X-API-KEY
+    in: header
+  OAuth2ProxyCookie:
+    x-apikeyInfoFunc: 'pkg.auth.oauth2.validate_auth_cookie'
+    type: apiKey
+    name: Cookie
+    in: header
+  OAuth2Proxy:
+    authorizationUrl: /oauth2/start
+    x-tokenInfoUrl: /oauth2/userinfo
+    x-tokenInfoFunc: pkg.auth.oauth2.userinfo
+    type: oauth2
+    flow: implicit
+    scopes:
+      profile: Default
+      email: Default
+      openid: Default
+      workbench-user: Allow access to Workbench WebUI/API
+      workbench-admin: Allow admin operations
+      workbench-accounts: Allow account management operations
+      workbench-catalog: Allow personal catalog operations
+      workbench-dev: Raise resourceLimits for developers
 produces:
   - application/json
 consumes:
   - application/json
 parameters:
-  service-id:
-    name: service-id
+  service_id:
+    name: service_id
     in: path
     description: The unique service identifier
     type: string
     required: true
-  account-id:
-    name: account-id
+  account_id:
+    name: account_id
     in: path
     description: The unique account identifier
     type: string
     required: true
-  stack-id:
-    name: stack-id
+  stack_id:
+    name: stack_id
     in: path
     description: The unique stack identifier
     type: string
     required: true
-  stack-service-id:
-    name: stack-service-id
+  stack_service_id:
+    name: stack_service_id
     in: path
     description: The unique stack service identifier
     type: string
     required: true
-  vocab-name:
-    name: vocab-name
+  vocab_name:
+    name: vocab_name
     in: path
     description: Vocabulary name
     type: string
     required: true
 paths:
+  /version:
+    get:
+      tags:
+        - system
+      operationId: 'get_version'
+      x-swagger-router-controller: 'api.v1.system'
+      description: |
+        Retrieve the server version from the Swagger spec
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: string
+        '404':
+          description: Not found
   /authenticate:
     post:
+      tags:
+        - user account
+      operationId: 'post_authenticate'
+      x-swagger-router-controller: 'api.v1.user_auth'
       description: |
         Authenticate a user (login)
       parameters:
@@ -61,39 +112,48 @@ paths:
         '200':
           description: OK
           schema:
-            type: object
-            properties:
-              data:
-                $ref: '#/definitions/Token'
+            $ref: '#/definitions/Token'
         '401':
-          description: Not logged in
+          description: Unauthorized - invalid credentials
+          schema:
+            $ref: '#/definitions/Error'
     delete:
+      tags:
+        - user account
+      operationId: 'delete_authenticate'
+      x-swagger-router-controller: 'api.v1.user_auth'
       description: |
         Logout a user
       responses:
-        '200':
-          description: OK
-          schema:
-            type: object
-            properties:
-              data:
-                $ref: '#/definitions/Token'
+        '204':
+          description: No Content (logout successful)
   /refresh_token:
     get:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - user account
+      operationId: 'refresh_token'
+      x-swagger-router-controller: 'api.v1.user_auth'
       description: |
         Refresh the JWT token
       responses:
         '200':
           description: OK
           schema:
-            type: object
-            properties:
-              data:
-                $ref: '#/definitions/Token'
+            $ref: '#/definitions/Token'
         '401':
-          description: Not logged in
+          description: Unauthorized - missing or invalid login token
   /check_token:
     get:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - user account
+      operationId: 'check_token'
+      x-swagger-router-controller: 'api.v1.user_auth'
       description: |
         Validate the JWT token
       parameters:
@@ -107,28 +167,85 @@ paths:
         '200':
           description: OK
         '401':
-          description: Not logged in
-  /services:
+          description: Unauthorized - missing or invalid login token
+
+
+
+  /services/all:
     get:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - app spec
+      operationId: 'list_services_all'
+      x-swagger-router-controller: 'api.v1.app_specs'
       description: |
-        Retrieves a site-wide list of available service definitions.
-      parameters:
-        - name: catalog
-          in: query
-          description: 'Filter list for catalog (user, system, all)'
-          required: false
-          type: string
+        Retrieves a site-wide list of all available service definitions,
+        including those added by the user.
       responses:
         '200':
           description: OK
           schema:
-            type: object
-            properties:
-              data:
-                type: array
-                items:
-                  $ref: '#/definitions/Service'
+            type: array
+            items:
+              $ref: '#/definitions/Service'
+        '401':
+          description: Unauthorized - missing or invalid login token
+          schema:
+            $ref: '#/definitions/Error'
+
+  /services/mine:
+    get:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - app spec
+      operationId: 'list_services_for_user'
+      x-swagger-router-controller: 'api.v1.app_specs'
+      description: |
+        Retrieves a list of available service definitions that have been
+        added by the current user.
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Service'
+        '401':
+          description: Unauthorized - missing or invalid login token
+          schema:
+            $ref: '#/definitions/Error'
+  /services:
+    get:
+      tags:
+        - app spec
+      operationId: 'list_services'
+      x-swagger-router-controller: 'api.v1.app_specs'
+      description: |
+        Retrieves a site-wide list of available service definitions.
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Service'
+        '401':
+          description: Unauthorized - missing or invalid login token
+          schema:
+            $ref: '#/definitions/Error'
+
     post:
+      security:
+        - KeycloakOIDC: [workbench-catalog]
+        - OAuth2ProxyCookie: [workbench-catalog]
+      tags:
+        - app spec
+      operationId: 'create_service'
+      x-swagger-router-controller: 'api.v1.app_specs'
       description: |
         Adds a new service to the service library
       parameters:
@@ -141,23 +258,52 @@ paths:
       responses:
         '201':
           description: Created
-  '/services/{service-id}':
+          schema:
+            $ref: '#/definitions/Service'
+        '401':
+          description: Unauthorized - missing or invalid login token
+        '403':
+          description: Forbidden - missing required scope
+        '400':
+          description: Validation failed - spec is invalid
+          schema:
+            $ref: '#/definitions/Error'
+        '409':
+          description: Conflict - spec key already exists
+          schema:
+            $ref: '#/definitions/Error'
+  '/services/{service_id}':
     parameters:
-      - $ref: '#/parameters/service-id'
+      - $ref: '#/parameters/service_id'
     get:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - app spec
+      operationId: 'get_service_by_id'
+      x-swagger-router-controller: 'api.v1.app_specs'
       description: |
         Retrieves the service definition.
       responses:
         '200':
-          description: The service object
+          description: OK
           schema:
-            type: object
-            properties:
-              data:
-                $ref: '#/definitions/Service'
+            $ref: '#/definitions/Service'
+        '404':
+          description: Not found - spec key not found
+          schema:
+            $ref: '#/definitions/Error'
     put:
+      security:
+        - KeycloakOIDC: [workbench-catalog]
+        - OAuth2ProxyCookie: [workbench-catalog]
+      tags:
+        - app spec
+      operationId: 'update_service'
+      x-swagger-router-controller: 'api.v1.app_specs'
       description: |
-        Updates a service definition in the service library
+        Updates a service definition in the app catalog
       parameters:
         - name: service
           in: body
@@ -166,31 +312,77 @@ paths:
             $ref: '#/definitions/Service'
           required: true
       responses:
-        '201':
-          description: Updated
+        '200':
+          description: Update saved successfully
+          schema:
+            $ref: '#/definitions/Service'
+        '304':
+          description: Not modified - spec has not changed
+          schema:
+            $ref: '#/definitions/Service'
+        '400':
+          description: Validation failed - spec is invalid
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Authorization failed - user is forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '409':
+          description: Conflict - spec key already exists
+          schema:
+            $ref: '#/definitions/Error'
     delete:
+      security:
+        - KeycloakOIDC: [workbench-catalog]
+        - OAuth2ProxyCookie: [workbench-catalog]
+      tags:
+        - app spec
+      operationId: 'delete_service'
+      x-swagger-router-controller: 'api.v1.app_specs'
       description: |
         Delete a service
       responses:
-        '200':
-          description: OK
+        '204':
+          description: Deletion was successful
+        '403':
+          description: Authorization failed - user is forbidden
+          schema:
+            $ref: '#/definitions/Error'
   /accounts:
     get:
+      security:
+        - KeycloakOIDC: [workbench-accounts]
+        - OAuth2ProxyCookie: [workbench-accounts]
+      tags:
+        - user account
+      operationId: 'list_accounts'
+      x-swagger-router-controller: 'api.v1.user_accounts'
       description: |
         Retrieves a site-wide list of NDSLabs accounts.
       responses:
         '200':
           description: OK
           schema:
-            type: object
-            properties:
-              data:
-                type: array
-                items:
-                  $ref: '#/definitions/Account'
+            type: array
+            items:
+              $ref: '#/definitions/Account'
+        '403':
+          description: Forbidden - user needs permissions to view other accounts
+          schema:
+            $ref: '#/definitions/Error'
         '404':
           description: Not found
+          schema:
+            $ref: '#/definitions/Error'
     post:
+      security:
+        - KeycloakOIDC: [workbench-accounts]
+        - OAuth2ProxyCookie: [workbench-accounts]
+      tags:
+        - user account
+      operationId: 'create_account'
+      x-swagger-router-controller: 'api.v1.user_accounts'
       description: |
         Adds a new accounts
       parameters:
@@ -203,21 +395,56 @@ paths:
       responses:
         '201':
           description: Created
-  '/accounts/{account-id}':
-    parameters:
-      - $ref: '#/parameters/account-id'
+          schema:
+            $ref: '#/definitions/Account'
+  '/me':
     get:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - user account
+      operationId: 'get_user_me'
+      x-swagger-router-controller: 'api.v1.user_auth'
+      description: |
+        Retrieves basic userinfo about the currently logged-in user.
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized - missing or invalid login token
+          schema:
+            $ref: '#/definitions/Error'
+  '/accounts/{account_id}':
+    parameters:
+      - $ref: '#/parameters/account_id'
+    get:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - user account
+      operationId: 'get_account_by_id'
+      x-swagger-router-controller: 'api.v1.user_accounts'
       description: |
         Retrieves basic information about a account.
       responses:
         '200':
           description: OK
           schema:
-            type: object
-            properties:
-              data:
-                $ref: '#/definitions/Account'
+            $ref: '#/definitions/Account'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/Error'
     put:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - user account
+      operationId: 'update_account'
+      x-swagger-router-controller: 'api.v1.user_accounts'
       description: |
         Updates account information
       parameters:
@@ -228,31 +455,65 @@ paths:
             $ref: '#/definitions/Account'
           required: true
       responses:
-        '201':
-          description: Updated
-    delete:
-      description: |
-        Delete a account
-      responses:
         '200':
-          description: OK
+          description: Update successful
+          schema:
+            $ref: '#/definitions/Account'
+        '304':
+          description: Not modified - account has not changed
+          schema:
+            $ref: '#/definitions/Account'
+        '403':
+          description: Forbidden - user needs permissions to edit other accounts
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - user account
+      operationId: 'delete_account'
+      x-swagger-router-controller: 'api.v1.user_accounts'
+      description: |
+        Delete an account
+      responses:
+        '204':
+          description: No Content (delete successful)
+        '403':
+          description: Forbidden - user needs permissions to edit other accounts
+          schema:
+            $ref: '#/definitions/Error'
   /stacks:
     get:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - user app
+      operationId: 'list_userapps'
+      x-swagger-router-controller: 'api.v1.user_apps'
       description: |
         Retrieves a list of stacks for this account.
       responses:
         '200':
           description: OK
           schema:
-            type: object
-            properties:
-              data:
-                type: array
-                items:
-                  $ref: '#/definitions/Stack'
+            type: array
+            items:
+              $ref: '#/definitions/Stack'
         '404':
           description: Not found
+          schema:
+            $ref: '#/definitions/Error'
     post:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - user app
+      operationId: 'create_userapp'
+      x-swagger-router-controller: 'api.v1.user_apps'
       description: |
         Adds a new stack to this account
       parameters:
@@ -265,21 +526,34 @@ paths:
       responses:
         '201':
           description: Created
-  '/stacks/{stack-id}':
+          schema:
+            $ref: '#/definitions/Stack'
+  '/stacks/{stack_id}':
     parameters:
-      - $ref: '#/parameters/stack-id'
+      - $ref: '#/parameters/stack_id'
     get:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - user app
+      operationId: 'get_userapp_by_id'
+      x-swagger-router-controller: 'api.v1.user_apps'
       description: |
         Retrieves the stack definition.
       responses:
         '200':
           description: OK
           schema:
-            type: object
-            properties:
-              data:
-                $ref: '#/definitions/Stack'
+            $ref: '#/definitions/Stack'
     put:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - user app
+      operationId: 'update_userapp'
+      x-swagger-router-controller: 'api.v1.user_apps'
       description: |
         Updates stack information
       parameters:
@@ -290,18 +564,39 @@ paths:
             $ref: '#/definitions/Stack'
           required: true
       responses:
-        '201':
-          description: Updated
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Stack'
+        '304':
+          description: Not modified - userapp has not changed
+          schema:
+            $ref: '#/definitions/Stack'
     delete:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - user app
+      operationId: 'delete_userapp'
+      x-swagger-router-controller: 'api.v1.user_apps'
       description: |
         Delete a stack
       responses:
-        '200':
-          description: OK
-  '/stacks/{stack-id}/rename':
+        '204':
+          description: No Content (delete successful)
+  '/stacks/{stack_id}/rename':
     parameters:
-      - $ref: '#/parameters/stack-id'
+      - $ref: '#/parameters/stack_id'
     put:
+      deprecated: true
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - user app
+      operationId: 'rename_userapp'
+      x-swagger-router-controller: 'api.v1.user_apps'
       parameters:
         - name: name
           description: Stack name
@@ -312,60 +607,119 @@ paths:
       description: |
         Rename the stack
       responses:
-        '201':
-          description: Updated
-  '/logs/{stack-service-id}':
+        '200':
+          description: OK
+  '/logs/{stack_service_id}':
     parameters:
-      - $ref: '#/parameters/stack-service-id'
+      - $ref: '#/parameters/stack_service_id'
     get:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - user app
+      operationId: 'get_stack_service_logs'
+      x-swagger-router-controller: 'api.v1.user_apps'
       description: |
         Retrieves the stack service log.
       responses:
         '200':
           description: OK
           schema:
-            type: object
-            properties:
-              data:
-                $ref: '#/definitions/Log'
+            $ref: '#/definitions/Log'
   '/start':
-      parameters:
-        - in: query
-          name: key
-          schema:
-            type: string
-          required: true
-          description: The key of the service spec to start and navigate to
-      get:
-        description: |
-          Adds, starts, and navigates to the specified application
-        responses:
-          '200':
-            description: OK
-          '400':
-            description: Application key was not given
-          '404':
-            description: Application key was not found
-  '/start/{stack-id}':
     parameters:
-      - $ref: '#/parameters/stack-id'
+      - in: query
+        name: key
+        type: string
+        required: true
+        description: The key of the service spec to start and navigate to
     get:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - user app
+      operationId: 'quickstart_stack'
+      x-swagger-router-controller: 'api.v1.user_apps'
+      description: |
+        Quickstarts (adds, starts, and navigates to) the specified application
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Stack'
+        '400':
+          description: Application key was not given
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Application key was not found
+          schema:
+            $ref: '#/definitions/Error'
+  '/start/{stack_id}':
+    parameters:
+      - $ref: '#/parameters/stack_id'
+    get:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - user app
+      operationId: 'start_stack'
+      x-swagger-router-controller: 'api.v1.user_apps'
       description: |
         Starts the specified stack
       responses:
         '200':
           description: OK
-  '/stop/{stack-id}':
+          schema:
+            $ref: '#/definitions/Stack'
+        '401':
+          description: Unauthorized - missing or invalid login token
+        '403':
+          description: Forbidden - missing required scope
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/Error'
+  '/stop/{stack_id}':
     parameters:
-      - $ref: '#/parameters/stack-id'
+      - $ref: '#/parameters/stack_id'
     get:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - user app
+      operationId: 'stop_stack'
+      x-swagger-router-controller: 'api.v1.user_apps'
       description: |
         Stops the specified stack
       responses:
         '200':
           description: OK
+          schema:
+            $ref: '#/definitions/Stack'
+        '401':
+          description: Unauthorized - missing or invalid login token
+        '403':
+          description: Forbidden - missing required scope
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/Error'
   /configs:
     get:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - user app
+      operationId: 'get_stack_configs'
+      x-swagger-router-controller: 'api.v1.user_apps'
       parameters:
         - name: services
           in: query
@@ -381,26 +735,30 @@ paths:
         '200':
           description: OK
           schema:
-            type: object
-            properties:
-              data:
-                type: array
-                items:
-                  $ref: '#/definitions/Config'
-  /version:
+            type: array
+            items:
+              $ref: '#/definitions/Config'
+  /validate:
     get:
+      tags:
+        - user account
+      operationId: 'validate_o_auth_token'
+      x-swagger-router-controller: 'api.v1.user_auth'
       description: |
-        Retrieve the server version
+        Check if the user has an active/valid OAuth session
       responses:
         '200':
           description: OK
           schema:
-            type: object
-            properties:
-              data:
-                type: string
+            type: string
+        '401':
+          description: Unauthorized - missing or invalid login token
   /register:
     post:
+      tags:
+        - user account
+      operationId: 'register_user'
+      x-swagger-router-controller: 'api.v1.user_accounts'
       description: |
         Register
       parameters:
@@ -413,25 +771,35 @@ paths:
       responses:
         '201':
           description: Created
-  '/vocabulary/{vocab-name}':
+  '/vocabulary/{vocab_name}':
     get:
+      tags:
+        - vocabulary
+      operationId: 'get_vocabulary_by_name'
+      x-swagger-router-controller: 'api.v1.vocabulary'
       parameters:
-        - $ref: '#/parameters/vocab-name'
+        - $ref: '#/parameters/vocab_name'
       description: |
         Retrieves a vocabulary
       responses:
         '200':
           description: OK
           schema:
-            type: object
-            properties:
-              data:
-                type: array
-                items:
-                  $ref: '#/definitions/Vocabulary'
-                  
+            $ref: '#/definitions/Vocabulary'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/Error'
+
   '/change_password':
     put:
+      security:
+        - KeycloakOIDC: []
+        - OAuth2ProxyCookie: []
+      tags:
+        - user account
+      operationId: 'change_password'
+      x-swagger-router-controller: 'api.v1.user_accounts'
       parameters:
         - name: password
           description: Change password object
@@ -449,6 +817,11 @@ paths:
           description: Updated
   '/register/verify':
     put:
+      deprecated: true
+      tags:
+        - user account
+      operationId: 'verify_email_address'
+      x-swagger-router-controller: 'api.v1.user_accounts'
       parameters:
         - name: verify
           description: Verification object
@@ -474,6 +847,13 @@ paths:
         required: true
         type: string
     post:
+      deprecated: true
+      security:
+        - KeycloakOIDC: []
+      tags:
+        - user account
+      operationId: 'send_reset_password_email'
+      x-swagger-router-controller: 'api.v1.user_accounts'
       description: |
         Request password reset email.
       responses:
@@ -481,6 +861,12 @@ paths:
           description: OK
   '/support':
     post:
+      security:
+        - KeycloakOIDC: []
+      tags:
+        - support
+      operationId: 'submit_help_request'
+      x-swagger-router-controller: 'api.v1.support'
       description: |
         Submit a support request
       parameters:
@@ -495,12 +881,23 @@ paths:
           description: Created
   '/contact':
     get:
-      description: | 
+      tags:
+        - support
+      operationId: 'get_contact_info'
+      x-swagger-router-controller: 'api.v1.support'
+      description: |
         Get contact information
       responses:
         '200':
           description: OK
 definitions:
+  Error:
+    type: object
+    required:
+      - error
+    properties:
+      error:
+        type: string
   Auth:
     type: object
     properties:
@@ -516,11 +913,30 @@ definitions:
   VolumeMount:
     type: object
     properties:
+      defaultPath:
+        type: string
       mountPath:
         type: string
-      name:
-        type: string
+    required:
+      - mountPath
   Service:
+    x-groupName: "ndslabs.org"
+    x-version: "v1"
+    x-scope: "Cluster"
+    x-shortNames:
+      - workbenchspec
+      - workbenchspecs
+      - wbappspec
+      - wbappspecs
+      - appspec
+      - appspecs
+      - wbspec
+      - wbspecs
+      - spec
+      - specs
+    x-singular: "workbenchappspec"
+    x-plural: "workbenchappspecs"
+    x-kind: "WorkbenchAppSpec"
     type: object
     properties:
       id:
@@ -529,11 +945,44 @@ definitions:
         type: string
       label:
         type: string
+      catalog:
+        type: string
+        enum:
+          - system
+          - user
+          - all
+        default: user
       description:
         type: string
       maintainer:
         type: string
+      securityContext:
+        type: object
+        properties:
+          privileged:
+            type: boolean
+          allowPrivilegeEscalation:
+            type: boolean
+          runAsUser:
+            type: integer
+          runAsGroup:
+            type: integer
+          procMount:
+            type: string
+          readOnlyRootFilesystem:
+            type: boolean
+          runAsNonRoot:
+            type: boolean
+          capabilities:
+            type: object
+            properties:
+              add:
+                type: array
+                items:
+                  type: string
       logo:
+        type: string
+      info:
         type: string
       display:
         type: string
@@ -542,48 +991,68 @@ definitions:
       developerEnvironment:
         type: string
       config:
-        $ref: '#/definitions/Config'
+        type: array
+        items:
+          $ref: '#/definitions/Config'
+        default: []
       readinessProbe:
         $ref: '#/definitions/ReadyProbe'
       image:
         $ref: '#/definitions/ServiceImage'
       resourceLimits:
         $ref: '#/definitions/ResourceLimits'
+      additionalResources:
+        type: array
+        items:
+          type: string
+        default: []
       depends:
         type: array
         items:
           $ref: '#/definitions/ServiceDependency'
+        default: []
       ports:
         type: array
         items:
           $ref: '#/definitions/Port'
+        default: []
       volumeMounts:
         type: array
         items:
           $ref: '#/definitions/VolumeMount'
+        default: []
       repositories:
         type: array
         items:
           $ref: '#/definitions/Repository'
+        default: []
       command:
         type: array
         items:
           type: string
+        default: []
       args:
         type: array
         items:
           type: string
+        default: []
       tags:
         type: array
         items:
           type: string
+        default: []
       createdTime:
         type: integer
       updatedTime:
         type: integer
+    required:
+      - key
+      - image
   ReadyProbe:
     type: object
     properties:
+      type:
+        type: string
       path:
         type: string
       port:
@@ -599,9 +1068,13 @@ definitions:
         type: integer
       protocol:
         type: string
+      contextPath:
+        type: string
   Repository:
     type: object
     properties:
+      type:
+        type: string
       port:
         type: string
       url:
@@ -609,7 +1082,7 @@ definitions:
   ServiceDependency:
     type: object
     properties:
-      serviceId:
+      key:
         type: string
       required:
         type: boolean
@@ -619,6 +1092,8 @@ definitions:
       id:
         type: string
       name:
+        type: string
+      email:
         type: string
       description:
         type: string
@@ -651,12 +1126,31 @@ definitions:
           storage:
             type: string
   Stack:
+    x-groupName: "ndslabs.org"
+    x-version: "v1"
+    x-plural: "workbenchuserapps"
+    x-singular: "workbenchuserapp"
+    x-kind: "WorkbenchUserApp"
+    x-scope: "Namespaced"
+    x-shortNames:
+      - workbenchapp
+      - workbenchapps
+      - wbuserapp
+      - wbuserapps
+      - userapp
+      - userapps
+      - wbapp
+      - wbapps
+      - app
+      - apps
     type: object
     properties:
       id:
         type: string
       key:
         type: string
+      secure:
+        type: boolean
       name:
         type: string
       services:
@@ -667,47 +1161,75 @@ definitions:
         type: string
       action:
         type: string
-      createTime:
+      createdTime:
         type: integer
       updateTime:
         type: integer
+    required:
+      - key
   StackService:
     type: object
     properties:
       id:
         type: string
-      stackId:
+      stack:
         type: string
-      serviceId:
+      createdTime:
+        type: integer
+      updateTime:
+        type: integer
+      service:
         type: string
       status:
         type: string
-      imageTag:
-        type: string
-      statusMessage:
+      statusMessages:
         type: array
         items:
           type: string
+      developerEnvironment:
+        type: string
+      config:
+        type: object
+        additionalProperties:
+          type: string
+        default: {}
+      internalIP:
+        type: string
+      singlePod:
+        type: boolean
+      collocate:
+        type: boolean
+      readinessProbe:
+        $ref: '#/definitions/ReadyProbe'
+      imageTag:
+        type: string
+      resourceLimits:
+        $ref: '#/definitions/ResourceLimits'
+      volumeMounts:
+        type: object
+        additionalProperties:
+          type: string
+        default: {}
       endpoints:
         type: array
         items:
           type: object
           properties:
-            internalIP:
-              type: string
             host:
               type: string
-            ports:
-              type: array
-              items:
-                type: object
-              properties:
-                port:
-                  type: integer
-                nodePort:
-                  type: integer
-                protocol:
-                  type: string
+            path:
+              type: string
+            url:
+              type: string
+            port:
+              type: integer
+            nodePort:
+              type: integer
+            protocol:
+              type: string
+    required:
+      - stack
+      - service
   Log:
     type: object
     properties:
@@ -724,28 +1246,39 @@ definitions:
         type: string
       canOverride:
         type: boolean
+        default: true
       isPassword:
         type: boolean
+        default: false
   ServiceImage:
     type: object
     properties:
+      registry:
+        type: string
       name:
         type: string
       tags:
         type: array
         items:
           type: string
+        default: []
+    required:
+      - name
   ResourceLimits:
     type: object
     properties:
       cpuMax:
         type: string
+        default: "400m"
       cpuDefault:
         type: string
+        default: "200m"
       memMax:
         type: string
+        default: "512mb"
       memDefault:
         type: string
+        default: "1gb"
   Vocabulary:
     type: object
     properties:
@@ -769,4 +1302,5 @@ definitions:
         type: string
       message:
         type: string
-              
+
+
