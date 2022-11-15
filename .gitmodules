@@ -1,15 +1,16 @@
 [submodule "webui"]
 	path = webui
 	url = https://github.com/nds-org/workbench-webui
-	branch = main
+	branch = 25fcd51ba692f33316aa3af7e31b0fdfc8ebcd65
 [submodule "helm-chart"]
 	path = helm-chart
 	url = https://github.com/nds-org/workbench-helm-chart
-	branch = main
+	branch = 029184e60a24676c1e4897ddccbbfc5ba8362745
 [submodule "specs"]
 	path = specs
 	url = https://github.com/nds-org/ndslabs-specs
-	branch = main
+	branch = a39d05d150d3f71b73631edf5ec78f484464af8e
 [submodule "apiserver"]
 	path = apiserver
 	url = https://github.com/nds-org/workbench-apiserver-python
+	branch = 25fcd51ba692f33316aa3af7e31b0fdfc8ebcd65
