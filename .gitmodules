@@ -5,7 +5,7 @@
 [submodule "helm-chart"]
 	path = helm-chart
 	url = https://github.com/nds-org/workbench-helm-chart
-	branch = 72ef30866e97825442689e98084e401d7ad9bdf2
+	branch = 722cd01aadd918404448086b6870eca09b9587d9
 [submodule "specs"]
 	path = specs
 	url = https://github.com/nds-org/ndslabs-specs
