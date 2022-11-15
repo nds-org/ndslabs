@@ -1,6 +1,6 @@
 [submodule "apiserver"]
 	path = apiserver
-	url = https://github.com/nds-org/workbench-apiserver-golang
+	url = https://github.com/nds-org/workbench-apiserver-python
 	branch = main
 [submodule "webui"]
 	path = webui
@@ -9,8 +9,8 @@
 [submodule "helm-chart"]
 	path = helm-chart
 	url = https://github.com/nds-org/workbench-helm-chart
-	branch = master
+	branch = main
 [submodule "specs"]
 	path = specs
 	url = https://github.com/nds-org/ndslabs-specs
-	branch = master
+	branch = main
