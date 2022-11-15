@@ -1,7 +1,7 @@
 [submodule "webui"]
 	path = webui
 	url = https://github.com/nds-org/workbench-webui
-	branch = 1b38f3fb4a1e0c59b9f888d67200b32c94b03392
+	branch = 7c87023ed93f124e6b56fdce38706845948de80e
 [submodule "helm-chart"]
 	path = helm-chart
 	url = https://github.com/nds-org/workbench-helm-chart
