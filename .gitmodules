@@ -13,4 +13,4 @@
 [submodule "apiserver"]
 	path = apiserver
 	url = https://github.com/nds-org/workbench-apiserver-python
-	branch = 25fcd51ba692f33316aa3af7e31b0fdfc8ebcd65
+	branch = a5a27676504e914f2347795ae685b16c59777fba
