@@ -33,7 +33,7 @@ the [ndslabs-specs](https://github.com/nds-org/ndslabs-specs) repository. The ca
 ## API Server and Web UI
 The two main components of the Workbench platform are the `apiserver` and the `webui`.
 
-The [workbench-apiserver-golang](https://github.com/nds-org/workbench-apiserver-golang) and [workbench-webui](https://github.com/nds-org/workbench-apiserver-golang) have their own source repositories.
+The [workbench-apiserver-python](https://github.com/nds-org/workbench-apiserver-python) and [workbench-webui](https://github.com/nds-org/workbench-webui) have their own source repositories.
 
 ## Documentations
 The `apis` and `docs` directories contain instructions for generating the documentation for the platform.
