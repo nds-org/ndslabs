@@ -6,7 +6,7 @@ info:
     email: ndslabs-support@nationaldataservice.org
     name:  NDS Labs Support
     url: http://www.nationaldataservice.org/projects/labs.html
-  version: 2.0.0
+  version: 2.1.1
 schemes:
   - https
 basePath: /api/v1
@@ -90,7 +90,18 @@ paths:
         '200':
           description: OK
           schema:
-            type: string
+            type: object
+            properties:
+              name:
+                type: string
+              version:
+                type: string
+              hash:
+                type: string
+              branch:
+                type: string
+              buildnumber:
+                type: string
         '404':
           description: Not found
   /authenticate:
