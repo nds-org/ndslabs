@@ -1,0 +1,17 @@
+version: '3.10'
+
+services:
+  docs:
+    image: ndslabs/sphinxdocs
+    build:
+      context: .
+    ports:
+    - 8080:80
+    develop:
+      watch:
+        - action: sync
+          path: images/
+        - action: rebuild
+          path: ./
+          ignore:
+          - images/

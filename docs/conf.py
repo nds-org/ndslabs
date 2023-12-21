@@ -46,7 +46,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Labs Workbench'
-copyright = u'2018, National Data Service'
+copyright = u'2024, National Data Service'
 author = u'National Data Service'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -155,13 +155,26 @@ texinfo_documents = [
 html_context = {
     "display_github": True,
     "github_user": "nds-org",
-    "github_repo": "ndslabs-docs",
-    "github_version": "master",
+    "github_repo": "ndslabs",
+    "github_version": "develop",
     "conf_py_path": "/",
 }
 
-#html_logo = 'images/nds_badge.png'
+html_logo = 'images/logos/workbench-v2-logo.svg'
 html_theme_options = {
-    'logo_only': True,
+    #'analytics_id': 'G-XXXXXXXXXX',  #  Provided by Google in your dashboard
+    #'analytics_anonymize_ip': False,
+    'logo_only': False,
+    #'logo_only': True,
     'display_version': True,
+    'prev_next_buttons_location': 'bottom',
+    'style_external_links': True,
+    'vcs_pageview_mode': '',
+    #'style_nav_header_background': 'white',
+    # Toc options
+    'collapse_navigation': True,
+    'sticky_navigation': True,
+    #'navigation_depth': 4,
+    'includehidden': False,
+    'titles_only': False
 }
