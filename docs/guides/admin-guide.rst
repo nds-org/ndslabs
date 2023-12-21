@@ -116,7 +116,7 @@ Production Deployment
     * Edit `config.backend.userapps.shared_storage` if you want to enable one or more Shared Data Volume
     * Edit `config.backend.userapps.annotations` to modify the Ingress annotations for UserApps
     * Edit `mongodb.autoimport` section to change which github repo is loaded during the `import-specs` job
-    * Locate `kubernetes.docker.internal` throughout and replace with your own documentation
+    * Locate `kubernetes.docker.internal` throughout and replace with your own domain
 3. Change your kubeconfig context to your desired cluster context: `kubectl config use-context <name>`
 4. Deploy the Helm chart using your custom values: `helm upgrade --install --create-namespace -n <namespace> <name> . -f values.myworkbench.yaml`
     * By default, `namespace=workbench` and `name=workbench` - you can use any combination here to deploy multiple different Workbench instances to the same cluster
