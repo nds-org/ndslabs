@@ -167,7 +167,7 @@ This should provide you with a ClientID + ClientSecret to use.
 
 In Keycloak, create a new **Client** for each provider and specify your ClientID + ClientSecret when requested, and also set:
 
-* First Login Flow" = `browser` 
+* First Login Flow = `browser` 
 * Valid Redirect URLs = `https://<APPDOMAIN>/oauth2/callback`
 * Set Authorization URL / Token URL / User Info URL / etc according to your chosen provider
 * Default Scopes: `openid profile` + any other scopes desired
