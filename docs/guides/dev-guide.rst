@@ -73,26 +73,26 @@ This allows you to create, modify, and test custom applications
   :alt: Import json to catalog
 
 
-* Create / Edit App in Catalog
-    * Key (required)  / Label (optional)
-    * Display: stack / service / none
-    * Access : external / internal / none
-    * Docker Image Metadata
-        * Single repo / image name
-        * List of offered tags
-        * Command / Args
-    * Logo / info URLs
-    * Dependencies
-    * Environment Variables
-        * Defaults / Overrides
-        * Passwords
-    * Ports
-        * Protocol - TCP / UDP / HTTP(S)
-        * Port Number
-        * Path (HTTP only)
-    * Volumes
-        * From Path (Host / PVC)
-        * To Path (inside Container)
+Create / Edit App in Catalog
+* Key (required)  / Label (optional)
+* Display: stack / service / none
+* Access : external / internal / none
+* Docker Image Metadata
+    * Single repo / image name
+    * List of offered tags
+    * Command / Args
+* Logo / info URLs
+* Dependencies
+* Environment Variables
+    * Defaults / Overrides
+    * Passwords
+* Ports
+    * Protocol - TCP / UDP / HTTP(S)
+    * Port Number
+    * Path (HTTP only)
+* Volumes
+    * From Path (Host / PVC)
+    * To Path (inside Container)
 
 
 .. image:: /images/dev/workbench-dev-catalog-create.png
