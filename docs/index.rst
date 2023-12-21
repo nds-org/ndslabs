@@ -15,58 +15,27 @@ Labs Workbench is a scalable, web-based platform intended to support turn-key
 deployment of encapsulated data management and analysis tools to support 
 exploratory analysis and development near research datasets. 
 
+
+.. include:: overview/terminology.rst
+
+
 .. _overview:
 
-Overview
---------
-
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 4
    :caption: Overview
 
-   use-cases
-   demonstration
+   overview/use-cases
+   overview/terminology
+   overview/architecture
 
-.. _install_workbench:
-
-Installing Workbench
---------------------
-
-The installation guide will show you how to install and customize 
-Labs Workench on Kubernetes. 
+.. _guides:
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Installing Workbench
+   :maxdepth: 4
+   :caption: Platform Usage
 
-   install/cloud-providers
-   install/kubernetes
-   install/helm
-   install/workbench
-   install/gke
-
-.. _customize_workbench:
-
-Customizing Workbench
----------------------
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-   customize-registration
-   customize-authentication
-   customize-catalog
-
-
-Developer's  Guide
-------------------
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-   architecture
-   debugging
-   development
+   guides/user-guide
+   guides/dev-guide
+   guides/admin-guide
 
