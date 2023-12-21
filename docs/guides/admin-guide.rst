@@ -169,8 +169,8 @@ In Keycloak, create a new **Client** for each provider and specify your ClientID
 
 * First Login Flow = `browser` 
 * Valid Redirect URLs = `https://<APPDOMAIN>/oauth2/callback`
+* Default Scopes = *openid profile* + any other scopes desired
 * Set Authorization URL / Token URL / User Info URL / etc according to your chosen provider
-* Default Scopes: `openid profile` + any other scopes desired
 
 For a more detailed example of configuring OAuth2 Proxy authentiating via Keycloak, see `an example application <https://osc.github.io/ood-documentation/release-1.7/authentication/tutorial-oidc-keycloak-rhel7/configure-cilogon.html#configure-keycloak-with-cilogon>`_
 
@@ -214,8 +214,8 @@ To summarize, the steps required to authorize Keycloak group membership with OAu
 
 * Create a new Client Scope with the name **groups** in Keycloak.
     * Include a mapper of type **Group Membership**.
-    * Set the "Token Claim Name" to **groups** or customize by matching it to the `--oidc-groups-claim` option of OAuth2 Proxy.
-    * If the "Full group path" option is selected, you need to include a "/" separator in the group names defined in the `--allowed-group` option of OAuth2 Proxy. Example: "/groupname" or "/groupname/childgroup".
+    * Set the "Token Claim Name" to **groups** or customize by matching it to the *--oidc-groups-claim* option of OAuth2 Proxy.
+    * If the "Full group path" option is selected, you need to include a "/" separator in the group names defined in the *--allowed-group* option of OAuth2 Proxy. Example: "/groupname" or "/groupname/childgroup".
 
 After creating the Client Scope named *groups* you will need to attach it to your client.
 **Clients -> <your client's id> -> Client scopes -> Add client scope** -> Select **groups** and choose Optional and you should now have a client that maps group memberships into the JWT tokens so that Oauth2 Proxy may evaluate them.
