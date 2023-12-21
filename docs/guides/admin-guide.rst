@@ -130,7 +130,7 @@ Keycloak Configuration Options
 ------------------------------
 
 If you need to change the configuration of Keycloak, go to https://kubernetes.docker.internal/auth/
-Default credentails: `admin` / `workbench`
+Default credentials: `admin` / `workbench`
 
 After logging in, choose the `workbench-dev` realm from the dropdown at the top-left
 
@@ -143,6 +143,7 @@ When a user logs in via `browser` or `first broker login`, they are sent through
 These flows can be customized by navigating to the **Authentication** page, although most of the built-in flows work very nicely without additional modifications.
 
 Some examples:
+
 * `browser` tells us how the user will be redirected to the Keycloak Login page (e.g. optionally skip Kecloak login and go to first provider)
 * `first broker login` lets us customize what happens after a user logs in for the first time (create a user, merge with existing account matching email, etc)
 
