@@ -74,6 +74,7 @@ This allows you to create, modify, and test custom applications
 
 
 Create / Edit App in Catalog
+
 * Key (required)  / Label (optional)
 * Display: stack / service / none
 * Access : external / internal / none

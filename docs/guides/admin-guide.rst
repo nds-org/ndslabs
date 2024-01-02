@@ -116,7 +116,7 @@ Production Deployment
     * Edit `config.backend.userapps.shared_storage` if you want to enable one or more Shared Data Volume
     * Edit `config.backend.userapps.annotations` to modify the Ingress annotations for UserApps
     * Edit `mongodb.autoimport` section to change which github repo is loaded during the `import-specs` job
-    * Locate `kubernetes.docker.internal` throughout and replace with your own documentation
+    * Locate `kubernetes.docker.internal` throughout and replace with your own domain
 3. Change your kubeconfig context to your desired cluster context: `kubectl config use-context <name>`
 4. Deploy the Helm chart using your custom values: `helm upgrade --install --create-namespace -n <namespace> <name> . -f values.myworkbench.yaml`
     * By default, `namespace=workbench` and `name=workbench` - you can use any combination here to deploy multiple different Workbench instances to the same cluster
@@ -130,7 +130,7 @@ Keycloak Configuration Options
 ------------------------------
 
 If you need to change the configuration of Keycloak, go to https://kubernetes.docker.internal/auth/
-Default credentails: `admin` / `workbench`
+Default credentials: `admin` / `workbench`
 
 After logging in, choose the `workbench-dev` realm from the dropdown at the top-left
 
@@ -143,6 +143,7 @@ When a user logs in via `browser` or `first broker login`, they are sent through
 These flows can be customized by navigating to the **Authentication** page, although most of the built-in flows work very nicely without additional modifications.
 
 Some examples:
+
 * `browser` tells us how the user will be redirected to the Keycloak Login page (e.g. optionally skip Kecloak login and go to first provider)
 * `first broker login` lets us customize what happens after a user logs in for the first time (create a user, merge with existing account matching email, etc)
 
@@ -166,10 +167,10 @@ This should provide you with a ClientID + ClientSecret to use.
 
 In Keycloak, create a new **Client** for each provider and specify your ClientID + ClientSecret when requested, and also set:
 
-* First Login Flow" = `browser` 
+* First Login Flow = `browser` 
 * Valid Redirect URLs = `https://<APPDOMAIN>/oauth2/callback`
+* Default Scopes = *openid profile* + any other scopes desired
 * Set Authorization URL / Token URL / User Info URL / etc according to your chosen provider
-* Default Scopes: `openid profile` + any other scopes desired
 
 For a more detailed example of configuring OAuth2 Proxy authentiating via Keycloak, see `an example application <https://osc.github.io/ood-documentation/release-1.7/authentication/tutorial-oidc-keycloak-rhel7/configure-cilogon.html#configure-keycloak-with-cilogon>`_
 
@@ -213,8 +214,8 @@ To summarize, the steps required to authorize Keycloak group membership with OAu
 
 * Create a new Client Scope with the name **groups** in Keycloak.
     * Include a mapper of type **Group Membership**.
-    * Set the "Token Claim Name" to **groups** or customize by matching it to the `--oidc-groups-claim` option of OAuth2 Proxy.
-    * If the "Full group path" option is selected, you need to include a "/" separator in the group names defined in the `--allowed-group` option of OAuth2 Proxy. Example: "/groupname" or "/groupname/childgroup".
+    * Set the "Token Claim Name" to **groups** or customize by matching it to the *--oidc-groups-claim* option of OAuth2 Proxy.
+    * If the "Full group path" option is selected, you need to include a "/" separator in the group names defined in the *--allowed-group* option of OAuth2 Proxy. Example: "/groupname" or "/groupname/childgroup".
 
 After creating the Client Scope named *groups* you will need to attach it to your client.
 **Clients -> <your client's id> -> Client scopes -> Add client scope** -> Select **groups** and choose Optional and you should now have a client that maps group memberships into the JWT tokens so that Oauth2 Proxy may evaluate them.
