@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Labs Workbench &mdash; Labs Workbench develop documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=16816911"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Use Cases" href="overview/use-cases.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            Labs Workbench
+              <img src="_static/workbench-v2-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                develop
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="overview/use-cases.html">Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview/terminology.html">Terminology</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview/architecture.html">Architecture</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Platform Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guides/user-guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/dev-guide.html">Contributor Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/admin-guide.html">Admin Guide</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Labs Workbench</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Labs Workbench</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/nds-org/ndslabs/blob/develop/index.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="labs-workbench">
+<h1>Labs Workbench<a class="headerlink" href="#labs-workbench" title="Link to this heading"></a></h1>
+<p>The growing size and complexity of high-value scientific datasets are pushing
+the boundaries of traditional models of data access and discovery. Many large
+datasets are only accessible through the systems on which they were created or
+require specialized software or computational resources.</p>
+<p>Labs Workbench is a scalable, web-based platform intended to support turn-key
+deployment of encapsulated data management and analysis tools to support
+exploratory analysis and development near research datasets.</p>
+</section>
+<section id="terminology">
+<span id="id1"></span><h1>Terminology<a class="headerlink" href="#terminology" title="Link to this heading"></a></h1>
+<p>The following collections are stored in MongoDB:</p>
+<ul class="simple">
+<li><p><strong>AppSpec</strong>: Contains all the information needed to create a new UserApp</p></li>
+<li><p><strong>UserApp</strong>: A launchable instance of an AppSpec that is owned by a particular user</p></li>
+</ul>
+<div class="toctree-wrapper compound" id="overview">
+<p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="overview/use-cases.html">Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview/terminology.html">Terminology</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview/architecture.html">Architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview/architecture.html#components">Components</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="overview/architecture.html#what-is-an-appspec">What is an AppSpec?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview/architecture.html#what-is-a-userapp">What is a UserApp?</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="overview/architecture.html#full-authentication-flow">Full Authentication Flow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="overview/architecture.html#acquiring-a-valid-auth-token">Acquiring a Valid Auth Token</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview/architecture.html#decoding-the-auth-token">Decoding the Auth Token</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview/architecture.html#nginx-traefik-integrations">NGINX / Traefik Integrations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound" id="guides">
+<p class="caption" role="heading"><span class="caption-text">Platform Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guides/user-guide.html">User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guides/user-guide.html#typical-user-flow">Typical User Flow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="guides/user-guide.html#landing-page">Landing Page</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="guides/user-guide.html#login-with-local-username-password">Login with Local Username / Password</a></li>
+<li class="toctree-l4"><a class="reference internal" href="guides/user-guide.html#login-with-an-oidc-provider-e-g-cilogon">Login with an OIDC Provider (e.g. CILogon)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="guides/user-guide.html#all-apps">All Apps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guides/user-guide.html#my-apps">My Apps</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guides/dev-guide.html">Contributor Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guides/dev-guide.html#view-all-apps">View: All Apps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guides/dev-guide.html#view-my-apps">View: My Apps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guides/dev-guide.html#view-my-catalog">View: My Catalog</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guides/admin-guide.html">Admin Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guides/admin-guide.html#cluster-requirements">Cluster Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guides/admin-guide.html#workbench-deployment-steps">Workbench Deployment Steps</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="guides/admin-guide.html#local-development-instance">Local Development Instance</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="guides/admin-guide.html#testing-the-workbench-api">Testing the Workbench API</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="guides/admin-guide.html#production-deployment">Production Deployment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="guides/admin-guide.html#keycloak-configuration-options">Keycloak Configuration Options</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="guides/admin-guide.html#authorization-flows">Authorization Flows</a></li>
+<li class="toctree-l4"><a class="reference internal" href="guides/admin-guide.html#configuring-oidc">Configuring OIDC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="guides/admin-guide.html#group-membership">Group Membership</a></li>
+<li class="toctree-l4"><a class="reference internal" href="guides/admin-guide.html#using-an-external-keycloak">Using an External Keycloak</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="overview/use-cases.html" class="btn btn-neutral float-right" title="Use Cases" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, National Data Service.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

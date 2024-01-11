@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quickstart Install on GKE &mdash; Labs Workbench develop documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=16816911"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Labs Workbench
+              <img src="../_static/workbench-v2-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                develop
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../overview/use-cases.html">Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/terminology.html">Terminology</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/architecture.html">Architecture</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Platform Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/user-guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/dev-guide.html">Contributor Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/admin-guide.html">Admin Guide</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Labs Workbench</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Quickstart Install on GKE</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/nds-org/ndslabs/blob/develop/install/gke.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="quickstart-install-on-gke">
+<span id="setup-gke"></span><h1>Quickstart Install on GKE<a class="headerlink" href="#quickstart-install-on-gke" title="Link to this heading"></a></h1>
+<p>Using the Google Cloud UI or <cite>gcloud</cite>, create a Kubernetes cluster:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>container<span class="w"> </span>clusters<span class="w"> </span>create<span class="w"> </span><span class="o">[</span>CLUSTER_NAME<span class="o">]</span><span class="w"> </span><span class="o">[</span>--zone<span class="w"> </span><span class="o">[</span>COMPUTE_ZONE<span class="o">]]</span>
+</pre></div>
+</div>
+<p>Setup a <cite>ClusterRoleBinding</cite> for your account:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>info<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>Account
+Account:<span class="w"> </span><span class="o">[</span>myname@example.org<span class="o">]</span>
+
+kubectl<span class="w"> </span>create<span class="w"> </span>clusterrolebinding<span class="w"> </span>myname-cluster-admin-binding<span class="w"> </span>--clusterrole<span class="o">=</span>cluster-admin<span class="w">  </span><span class="se">\</span>
+<span class="w">    </span>--user<span class="o">=</span>myname@example.org
+</pre></div>
+</div>
+<p>On the Cloud Console or your local system, install and configure Helm:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
+kubectl<span class="w"> </span>--namespace<span class="w"> </span>kube-system<span class="w"> </span>create<span class="w"> </span>serviceaccount<span class="w"> </span>tiller
+kubectl<span class="w"> </span>create<span class="w"> </span>clusterrolebinding<span class="w"> </span>tiller<span class="w"> </span>--clusterrole<span class="w"> </span>cluster-admin<span class="w">  </span><span class="se">\</span>
+<span class="w">   </span>--serviceaccount<span class="o">=</span>kube-system:tiller
+helm<span class="w"> </span>init<span class="w"> </span>--service-account<span class="w"> </span>tiller<span class="w"> </span>--wait
+</pre></div>
+</div>
+<p>Install the NGINX Ingress Controller:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>helm<span class="w"> </span>install<span class="w"> </span>--name<span class="w"> </span>nginx-ingress<span class="w"> </span>stable/nginx-ingress<span class="w"> </span>--set<span class="w"> </span>rbac.create<span class="o">=</span><span class="nb">true</span>
+</pre></div>
+</div>
+<p>Clone the Workbench chart:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https:/github.com/nds-org/workbench-helm-chart<span class="w"> </span>-b<span class="w"> </span>gke
+</pre></div>
+</div>
+<p>Create an in-cluster NFS server to support ReadWriteMany volume claims:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>nfs-example
+kubectl<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>deployment.yaml<span class="w"> </span>-f<span class="w"> </span>rbac.yaml<span class="w"> </span>-f<span class="w"> </span>class.yaml
+</pre></div>
+</div>
+<p>Configure Workbench <cite>values.yaml</cite>:</p>
+<ul class="simple">
+<li><p>Set <cite>domain</cite> to a wildcard DNS entry.  Contact us if you need something (e.g., <cite>project.ndslabs.org</cite>)</p></li>
+<li><p>Set <cite>support_email</cite> to a valid Gmail account</p></li>
+<li><p>Set <cite>smtp.gmail_user</cite> and <cite>smtp.gmail_password</cite> to your Gmail account and an app password</p></li>
+<li><p>Create a self-signed cert using <cite>generate-self-signed-cert.sh &lt;domain&gt;</cite> and paste into <cite>tls.cert</cite> and <cite>tls.key</cite> sections.</p></li>
+</ul>
+<p>Install Workbench chart:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>helm<span class="w"> </span>install<span class="w"> </span>.<span class="w"> </span>--name<span class="o">=</span>workbench<span class="w"> </span>--namespace<span class="o">=</span>workbench
+</pre></div>
+</div>
+<p>Once the pods are running, you should be able to access your instance at
+<a class="reference external" href="https://www.project.ndslabs.org">https://www.project.ndslabs.org</a>). Click “Sign Up” to register an account.  With
+the default chart settings, you will be required to verify your email address
+and the <cite>support_email</cite> account will receive a message to approve/deny
+registration.  After approval, login to your account and launch the File
+Manager. Confirm that you can access the File Manager UI.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, National Data Service.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

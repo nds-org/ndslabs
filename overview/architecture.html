@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Architecture &mdash; Labs Workbench develop documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=16816911"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="User Guide" href="../guides/user-guide.html" />
+    <link rel="prev" title="Terminology" href="terminology.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Labs Workbench
+              <img src="../_static/workbench-v2-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                develop
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="use-cases.html">Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="terminology.html">Terminology</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#components">Components</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#what-is-an-appspec">What is an AppSpec?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#what-is-a-userapp">What is a UserApp?</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#full-authentication-flow">Full Authentication Flow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#acquiring-a-valid-auth-token">Acquiring a Valid Auth Token</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#decoding-the-auth-token">Decoding the Auth Token</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nginx-traefik-integrations">NGINX / Traefik Integrations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Platform Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/user-guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/dev-guide.html">Contributor Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/admin-guide.html">Admin Guide</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Labs Workbench</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Architecture</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/nds-org/ndslabs/blob/develop/overview/architecture.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="architecture">
+<h1>Architecture<a class="headerlink" href="#architecture" title="Link to this heading"></a></h1>
+<p>The following diagram illustrates the approximate architecture of the Workbench application:</p>
+<a class="reference internal image-reference" href="../_images/workbench-architecture.drawio.svg"><img alt="Architecture diagram" src="../_images/workbench-architecture.drawio.svg" width="400" /></a>
+<section id="components">
+<h2>Components<a class="headerlink" href="#components" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt><a class="reference external" href="https://github.com/nds-org/ndslabs">NDS Labs Workbench</a></dt><dd><ul>
+<li><p><a class="reference external" href="https://github.com/nds-org/ndslabs-specs">Application Spec Catalog</a></p></li>
+<li><dl class="simple">
+<dt><a class="reference external" href="https://github.com/nds-org/workbench-helm-chart">Workbench Helm Chart</a></dt><dd><ul>
+<li><dl class="simple">
+<dt><a class="reference external" href="https://github.com/nds-org/workbench-webui">Workbench WebUI</a> (React)</dt><dd><ul>
+<li><p>Swagger UI</p></li>
+<li><p>Redux Store</p></li>
+<li><p>Websocket use for Console Exec</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="https://github.com/nds-org/workbench-apiserver-python">Workbench API server</a> (Python)</dt><dd><ul>
+<li><p>KubeWatcher</p></li>
+<li><p>Websocket forwarding for Console Exec</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Third-Party Dependencies</dt><dd><ul>
+<li><p>NFS Provisioner (ReadWriteMany) (<a class="reference external" href="https://artifacthub.io/packages/helm/nfs-ganesha-server-and-external-provisioner/nfs-server-provisioner">Server</a> or <a class="reference external" href="https://artifacthub.io/packages/helm/nfs-subdir-external-provisioner/nfs-subdir-external-provisioner">Client</a>)</p></li>
+<li><p>Ingress Controller (<a class="reference external" href="https://artifacthub.io/packages/helm/traefik/traefik">Traefik</a> or <a class="reference external" href="https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx">NGINX</a>)</p></li>
+<li><p><a class="reference external" href="https://artifacthub.io/packages/helm/bitnami/oauth2-proxy">OAuth2 Proxy</a></p></li>
+<li><p><a class="reference external" href="https://artifacthub.io/packages/helm/bitnami/keycloak">Keycloak</a></p></li>
+<li><p><a class="reference external" href="https://artifacthub.io/packages/helm/bitnami/mongodb">MongoDB</a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<section id="what-is-an-appspec">
+<h3>What is an AppSpec?<a class="headerlink" href="#what-is-an-appspec" title="Link to this heading"></a></h3>
+<p>An <strong>application specification</strong> (AppSpec) contains all of the information necessary to run a containerized application</p>
+<p>The only required pieces are as follows:</p>
+<ul class="simple">
+<li><p><cite>key`</cite> is simply unique identifier for this application. This field may only contain alphanumeric characters (no special characters)</p></li>
+<li><p>Docker image name/tags of the application</p></li>
+</ul>
+</section>
+<section id="what-is-a-userapp">
+<h3>What is a UserApp?<a class="headerlink" href="#what-is-a-userapp" title="Link to this heading"></a></h3>
+<p>The information in the AppSpec is used to create a <strong>user-specific instance of an app</strong> (UserApp)</p>
+<p>Creating a UserApp creates the following resources on the Kubernetes cluster:</p>
+<ul class="simple">
+<li><p>ConfigMap (future: secret?) - environment variables for the application to use at runtime</p></li>
+<li><p>Ingress (optional) - allows users on the public internet to reach this application</p></li>
+<li><p>Service (optional) - allows other applications in the cluster to reach this application</p></li>
+<li><dl class="simple">
+<dt>Deployment - Allows us to scale up (launch) or scale down (shutdown) the application while preserving the configuration</dt><dd><ul>
+<li><p>Mount: Home Data Volume PVC - each User has a Home volume that will be mounted in the <cite>/home/</cite> folder</p></li>
+<li><p>Mount: Shared Data Volume PVC (optional) - if configured, Workbench will mount one or more shared data volumes</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+</section>
+<section id="full-authentication-flow">
+<h2>Full Authentication Flow<a class="headerlink" href="#full-authentication-flow" title="Link to this heading"></a></h2>
+<p>The auth flow presented here is fairly standard, and works with any app or apps that can make an HTTP request with credentials / cookies.</p>
+<section id="acquiring-a-valid-auth-token">
+<h3>Acquiring a Valid Auth Token<a class="headerlink" href="#acquiring-a-valid-auth-token" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>User navigates to WebUI and clicks the Login button</p></li>
+<li><p>User is sent to the OAuth2 Proxy’s <cite>/oauth2/start</cite> endpoint</p></li>
+<li><dl class="simple">
+<dt><cite>/oauth2/start</cite> begins the OAuth chain, which starts by automatically redirecting the User to Keycloak</dt><dd><ul class="simple">
+<li><p>If local accounts are enabled, you should see a Username/Password field</p></li>
+<li><p>If one or more OIDC providers are configured, you should also see a button allowing you to login with those providers (e.g. GitHub, Google, CILogon, etc)</p></li>
+<li><p>If ONLY OIDC is enabled, you will be redirected to the provider’s login page</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>(optional) if using OIDC, User logs in with provider credentials</p></li>
+<li><p>After login, User is automatically redirected back to Keycloak’s callback URL</p></li>
+<li><p>Keycloak sets a few cookies in the User’s browser before automatically redirects the user back to OAuth2 Proxy’s callback URL</p></li>
+<li><p>OAuth2 Proxy sets an <cite>_oauth2_proxy</cite> cookie in the User’s browser containing an authorization token</p></li>
+<li><p>OAuth2 Proxy automatically redirects the User back to the Workbench WebUI</p></li>
+</ol>
+<p>Finally, the User arrives back at the Workbench WebUI with a valid auth token set as a cookie. This cookie is sent to the Workbench API server with every subsequent request</p>
+</section>
+<section id="decoding-the-auth-token">
+<h3>Decoding the Auth Token<a class="headerlink" href="#decoding-the-auth-token" title="Link to this heading"></a></h3>
+<p>Anytime the WebUI or API server needs to decode this token, they can make a request to the <cite>/oauth2/userinfo</cite> endpoint that includes the token cookie.</p>
+<p>The server will respond with a decoded token as a JSON document</p>
+<p>The decoded token includes the following information:</p>
+<ul class="simple">
+<li><p>email</p></li>
+<li><p>username</p></li>
+<li><p>group membership</p></li>
+</ul>
+</section>
+<section id="nginx-traefik-integrations">
+<h3>NGINX / Traefik Integrations<a class="headerlink" href="#nginx-traefik-integrations" title="Link to this heading"></a></h3>
+<p>TODO: add more details here</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="terminology.html" class="btn btn-neutral float-left" title="Terminology" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../guides/user-guide.html" class="btn btn-neutral float-right" title="User Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, National Data Service.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

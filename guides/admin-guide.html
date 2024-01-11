@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Guide &mdash; Labs Workbench develop documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=16816911"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Contributor Guide" href="dev-guide.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Labs Workbench
+              <img src="../_static/workbench-v2-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                develop
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../overview/use-cases.html">Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/terminology.html">Terminology</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/architecture.html">Architecture</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Platform Usage</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="user-guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dev-guide.html">Contributor Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Admin Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#cluster-requirements">Cluster Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#workbench-deployment-steps">Workbench Deployment Steps</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#local-development-instance">Local Development Instance</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#testing-the-workbench-api">Testing the Workbench API</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#production-deployment">Production Deployment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#keycloak-configuration-options">Keycloak Configuration Options</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#authorization-flows">Authorization Flows</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#configuring-oidc">Configuring OIDC</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#group-membership">Group Membership</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#using-an-external-keycloak">Using an External Keycloak</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Labs Workbench</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Admin Guide</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/nds-org/ndslabs/blob/develop/guides/admin-guide.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="admin-guide">
+<span id="id1"></span><h1><a class="toc-backref" href="#id3" role="doc-backlink">Admin Guide</a><a class="headerlink" href="#admin-guide" title="Link to this heading"></a></h1>
+<nav class="contents" id="table-of-contents">
+<p class="topic-title">Table of Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#admin-guide" id="id3">Admin Guide</a></p>
+<ul>
+<li><p><a class="reference internal" href="#cluster-requirements" id="id4">Cluster Requirements</a></p></li>
+<li><p><a class="reference internal" href="#workbench-deployment-steps" id="id5">Workbench Deployment Steps</a></p>
+<ul>
+<li><p><a class="reference internal" href="#local-development-instance" id="id6">Local Development Instance</a></p>
+<ul>
+<li><p><a class="reference internal" href="#testing-the-workbench-api" id="id7">Testing the Workbench API</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#production-deployment" id="id8">Production Deployment</a></p></li>
+<li><p><a class="reference internal" href="#keycloak-configuration-options" id="id9">Keycloak Configuration Options</a></p>
+<ul>
+<li><p><a class="reference internal" href="#authorization-flows" id="id10">Authorization Flows</a></p></li>
+<li><p><a class="reference internal" href="#configuring-oidc" id="id11">Configuring OIDC</a></p></li>
+<li><p><a class="reference internal" href="#group-membership" id="id12">Group Membership</a></p></li>
+<li><p><a class="reference internal" href="#using-an-external-keycloak" id="id13">Using an External Keycloak</a></p>
+<ul>
+<li><p><a class="reference internal" href="#audience" id="id14">Audience</a></p></li>
+<li><p><a class="reference internal" href="#groups" id="id15">Groups</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="cluster-requirements">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Cluster Requirements</a><a class="headerlink" href="#cluster-requirements" title="Link to this heading"></a></h2>
+<p>The following third-party dependencies are required. These can optionally be installed by our Helm chart if they are not alrady provided on your cluster:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>NFS Provisioner (ReadWriteMany) (<a class="reference external" href="https://artifacthub.io/packages/helm/nfs-ganesha-server-and-external-provisioner/nfs-server-provisioner">Server</a> or <a class="reference external" href="https://artifacthub.io/packages/helm/nfs-subdir-external-provisioner/nfs-subdir-external-provisioner">Client</a>)</dt><dd><ul>
+<li><p>Other RWM providers should work, but have not been tested</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Ingress Controller (<a class="reference external" href="https://artifacthub.io/packages/helm/traefik/traefik">Traefik</a> or <a class="reference external" href="https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx">NGINX</a>)</dt><dd><ul>
+<li><p>Other Ingress Controllers should work, but have not been tested</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p><a class="reference external" href="https://artifacthub.io/packages/helm/bitnami/oauth2-proxy">OAuth2 Proxy</a></p></li>
+<li><p><a class="reference external" href="https://artifacthub.io/packages/helm/bitnami/keycloak">Keycloak</a></p></li>
+<li><p><a class="reference external" href="https://artifacthub.io/packages/helm/bitnami/mongodb">MongoDB</a></p></li>
+</ul>
+<p>The following third-party dependencies are optional, but recommended:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://artifacthub.io/packages/helm/cert-manager/cert-manager">CertManager</a>: for automating renewal of Wildcard TLS certificates</p></li>
+</ul>
+</section>
+<section id="workbench-deployment-steps">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Workbench Deployment Steps</a><a class="headerlink" href="#workbench-deployment-steps" title="Link to this heading"></a></h2>
+<p>The following steps can be used to deploy Workbench to any cluster where you have kubeconfig access.</p>
+<p>For local development, we offer a Makefile to help get everything up and running in the proper order</p>
+<p>For production deployments, we recommend setting up your own custom <a class="reference external" href="https://github.com/nds-org/workbench-helm-chart">Helm Configuration values</a></p>
+<section id="local-development-instance">
+<h3><a class="toc-backref" href="#id6" role="doc-backlink">Local Development Instance</a><a class="headerlink" href="#local-development-instance" title="Link to this heading"></a></h3>
+<p>To contribute back to the Workbench platform, you can run a local development environment in a few quick steps</p>
+<p>Prerequisites:</p>
+<ul class="simple">
+<li><p><cite>make</cite> CLI</p></li>
+<li><p><a class="reference external" href="https://git-scm.com/book/en/v2/Getting-Started-Installing-Git">Git</a> CLI</p></li>
+<li><p><a class="reference external" href="https://nodejs.org/en/download/package-manager">NodeJS / npm</a>,</p></li>
+<li><p><a class="reference external" href="https://helm.sh/docs/intro/install/">Helm</a></p></li>
+<li><p><a class="reference external" href="https://www.docker.com/products/docker-desktop/">Docker Desktop</a></p></li>
+<li><p>Make sure no other application is running on port 80/443</p></li>
+</ul>
+<p>Setup Steps:</p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt><a class="reference external" href="https://docs.docker.com/desktop/kubernetes">Enable Kubernetes</a> in Docker Desktop</dt><dd><ul class="simple">
+<li><p>This will run a small Kubernetes cluster on your local machine</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Clone the <cite>workbench-helm-chart</cite> repo locally</dt><dd><ul class="simple">
+<li><p><cite>git clone https://github.com/nds-org/workbench-helm-chart &amp;&amp; cd workbench-helm-chart/</cite></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Edit the <cite>.env</cite> to setup your local config. The defaults should work as-is, but you may need to change the following:</dt><dd><ul class="simple">
+<li><p><cite>KUBE_CONTEXT=docker-desktop</cite> the Kubernetes kubeconfig context to use. This should match the name of a <cite>context</cite> from <cite>kubectl config get-contexts</cite> file. See <a class="reference external" href="https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/">Kubernetes Documentation</a> for more details</p></li>
+<li><p><cite>NAMESPACE=workbench</cite> the Kubernetes namespace where Workbench will run</p></li>
+<li><p><cite>NAME=workbench</cite> the name of the Helm release that will run Workbench</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Run <cite>make dev</cite> to install all parts of the application. This will automatically do the following:</dt><dd><ul class="simple">
+<li><p>Verify that all dependencies are installed correctly</p></li>
+<li><p>Update/fetch Helm dependency charts</p></li>
+<li><p>Clone the webui/apiserver source code locally</p></li>
+<li><p>Install frontend dependencies and use them to compile the source code</p></li>
+<li><p>(if <cite>REALM_IMPORT=true</cite>) Create a configmap called <cite>keycloak-realm</cite> - this will automatically create a Keycloak realm named <cite>workbench-dev</cite> with all necessary groups and mappings</p></li>
+<li><p>Deploy the Workbench Helm chart (with live-reload) with dependencies</p></li>
+<li><p>Pull and run all required Docker images and bring the platform online</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Run <cite>make status</cite> to verify that everything is starting up properly. You can also run <cite>make watch</cite> to watch for changes</dt><dd><ul class="simple">
+<li><p>Wait until all Volumes are <cite>Bound</cite> and all Pods are <cite>Running</cite></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Navigate your browser to <a class="reference external" href="https://kubernetes.docker.internal">https://kubernetes.docker.internal</a></dt><dd><ul class="simple">
+<li><p>You should see the Workbench Landing page load in your browser</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Click the Login button to go to the Keycloak login page</p></li>
+<li><p>Click the Register button at the bottom and create a Test User</p></li>
+</ol>
+<p>After registraton, you should now be logged into the Workbench WebUI</p>
+<section id="testing-the-workbench-api">
+<h4><a class="toc-backref" href="#id7" role="doc-backlink">Testing the Workbench API</a><a class="headerlink" href="#testing-the-workbench-api" title="Link to this heading"></a></h4>
+<p>If you’re modifying the Workbench API, it can be helpful to test your changes using Swagger UI
+This lets you test the API’s raw request/reponse behavior without involving or changing the WebUI</p>
+<p>To see Swagger UI, go to <a class="reference external" href="https://kubernetes.docker.internal/swagger">https://kubernetes.docker.internal/swagger</a>
+To use the authenticated endpoints (padlock icon), you can use the <em>POST /authenticate</em> endpoint</p>
+<p>This endpoint takes your Test User username/password combination, and returns a token when successful
+After authenticating, this token will be automatically added to all requests from Swagger UI</p>
+<p>You can test this by executing the <cite>/me</cite> endpoint, which should now return information about the currently logged-in user</p>
+</section>
+</section>
+<section id="production-deployment">
+<h3><a class="toc-backref" href="#id8" role="doc-backlink">Production Deployment</a><a class="headerlink" href="#production-deployment" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Copy <cite>values.yaml</cite> to create a new file named <cite>values.myworkbench.yaml</cite></p></li>
+<li><dl class="simple">
+<dt>Edit <cite>values.myworkbench.yaml</cite> to your liking. Subcharts allow us to set configuration options on them as well. In particular, you may want to change:</dt><dd><ul class="simple">
+<li><p>Disable any sub-charts that you don’t want to deploy with Workbench (e.g. NFS server, Keycloak, etc)</p></li>
+<li><p>Edit <cite>ingress.api.annotations</cite> and <cite>ingress.webui.annotations</cite> to modify the Ingress annotations for the API / WebUI respectively</p></li>
+<li><p>Edit <cite>config.frontend.customization</cite> section to customize the appearance/text of the WebUI</p></li>
+<li><p>Edit <cite>ingress.hostname</cite> and <cite>config.backend.domain</cite> with your desired domain name</p></li>
+<li><p>Edit <cite>config.frontend.signin_url</cite>, <cite>config.frontend.signout_url</cite>, and <cite>config.backend.oauth.userinfoUrl</cite></p></li>
+<li><p>Edit <cite>config.backend.namespace</cite> and set this to the namespace where your UserApps should launch</p></li>
+<li><p>Edit <cite>config.backend.mongo</cite> section and update/match MongoDB credentials throughout</p></li>
+<li><p>Edit <cite>config.backend.keycloak</cite> section to point at a third-party Keycloak instance</p></li>
+<li><p>Edit <cite>config.backend.userapps.shared_storage</cite> if you want to enable one or more Shared Data Volume</p></li>
+<li><p>Edit <cite>config.backend.userapps.annotations</cite> to modify the Ingress annotations for UserApps</p></li>
+<li><p>Edit <cite>mongodb.autoimport</cite> section to change which github repo is loaded during the <cite>import-specs</cite> job</p></li>
+<li><p>Locate <cite>kubernetes.docker.internal</cite> throughout and replace with your own domain</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Change your kubeconfig context to your desired cluster context: <cite>kubectl config use-context &lt;name&gt;</cite></p></li>
+<li><dl class="simple">
+<dt>Deploy the Helm chart using your custom values: <cite>helm upgrade –install –create-namespace -n &lt;namespace&gt; &lt;name&gt; . -f values.myworkbench.yaml</cite></dt><dd><ul class="simple">
+<li><p>By default, <cite>namespace=workbench</cite> and <cite>name=workbench</cite> - you can use any combination here to deploy multiple different Workbench instances to the same cluster</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ol>
+<p>For a full reference of Helm chart configuration values, see <a class="reference external" href="https://github.com/nds-org/workbench-helm-chart">https://github.com/nds-org/workbench-helm-chart</a></p>
+</section>
+<section id="keycloak-configuration-options">
+<h3><a class="toc-backref" href="#id9" role="doc-backlink">Keycloak Configuration Options</a><a class="headerlink" href="#keycloak-configuration-options" title="Link to this heading"></a></h3>
+<p>If you need to change the configuration of Keycloak, go to <a class="reference external" href="https://kubernetes.docker.internal/auth/">https://kubernetes.docker.internal/auth/</a>
+Default credentials: <cite>admin</cite> / <cite>workbench</cite></p>
+<p>After logging in, choose the <cite>workbench-dev</cite> realm from the dropdown at the top-left</p>
+<section id="authorization-flows">
+<h4><a class="toc-backref" href="#id10" role="doc-backlink">Authorization Flows</a><a class="headerlink" href="#authorization-flows" title="Link to this heading"></a></h4>
+<p>When a user logs in via <cite>browser</cite> or <cite>first broker login</cite>, they are sent through an Authorization Flow</p>
+<p>These flows can be customized by navigating to the <strong>Authentication</strong> page, although most of the built-in flows work very nicely without additional modifications.</p>
+<p>Some examples:</p>
+<ul class="simple">
+<li><p><cite>browser</cite> tells us how the user will be redirected to the Keycloak Login page (e.g. optionally skip Kecloak login and go to first provider)</p></li>
+<li><p><cite>first broker login</cite> lets us customize what happens after a user logs in for the first time (create a user, merge with existing account matching email, etc)</p></li>
+</ul>
+</section>
+<section id="configuring-oidc">
+<h4><a class="toc-backref" href="#id11" role="doc-backlink">Configuring OIDC</a><a class="headerlink" href="#configuring-oidc" title="Link to this heading"></a></h4>
+<p>By default, Keycloak only allows username/password auth. By configuring OIDC, you can allow your users to login to the platform with existing credentials from another system (e.g. GitHub, Google, Azure, etc)</p>
+<p>First, create a new OAuth/OIDC Application within the chosen provider(s) (NOTE: this terminology may vary between providers).</p>
+<p>For example, with CILogon users can fill out <a class="reference external" href="https://cilogon.org/oauth2/register">https://cilogon.org/oauth2/register</a> to receive these values</p>
+<p>Here, the callback URL will be <cite>https://&lt;KEYCLOAKDOMAIN&gt;/auth/realms/&lt;REALM&gt;/broker/&lt;CLIENT&gt;/endpoint</cite></p>
+<ul class="simple">
+<li><p>KEYCLOAKDOMAIN = Keycloak instance domain name</p></li>
+<li><p>REALM = Keycloak realm name</p></li>
+<li><p>CLIENT = Keycloak client name (you will create this below)</p></li>
+</ul>
+<p>This should provide you with a ClientID + ClientSecret to use.</p>
+<p>In Keycloak, create a new <strong>Client</strong> for each provider and specify your ClientID + ClientSecret when requested, and also set:</p>
+<ul class="simple">
+<li><p>First Login Flow = <cite>browser</cite></p></li>
+<li><p>Valid Redirect URLs = <cite>https://&lt;APPDOMAIN&gt;/oauth2/callback</cite></p></li>
+<li><p>Default Scopes = <em>openid profile</em> + any other scopes desired</p></li>
+<li><p>Set Authorization URL / Token URL / User Info URL / etc according to your chosen provider</p></li>
+</ul>
+<p>For a more detailed example of configuring OAuth2 Proxy authentiating via Keycloak, see <a class="reference external" href="https://osc.github.io/ood-documentation/release-1.7/authentication/tutorial-oidc-keycloak-rhel7/configure-cilogon.html#configure-keycloak-with-cilogon">an example application</a></p>
+</section>
+<section id="group-membership">
+<h4><a class="toc-backref" href="#id12" role="doc-backlink">Group Membership</a><a class="headerlink" href="#group-membership" title="Link to this heading"></a></h4>
+<ul class="simple">
+<li><p><strong>workbench-users</strong> - allows user to login to Workbench (otherwise 403 is returned)</p></li>
+<li><p><strong>workbench-developers</strong> - allows user access to create, modify, and launch custom UserApps</p></li>
+<li><p><strong>workbench-admin</strong> - not currently used. (future: allow user to access admin-only API/UI functions)</p></li>
+</ul>
+</section>
+<section id="using-an-external-keycloak">
+<h4><a class="toc-backref" href="#id13" role="doc-backlink">Using an External Keycloak</a><a class="headerlink" href="#using-an-external-keycloak" title="Link to this heading"></a></h4>
+<p>If you already have a running Keycloak instance that you would like to use, make sure you configure Mappers needed for OIDC via OAuth2 Proxy</p>
+<p>For more information, see the <a class="reference external" href="https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/oauth_provider#keycloak-oidc-auth-provider">OAuth2 Proxy documentation</a></p>
+<section id="audience">
+<h5><a class="toc-backref" href="#id14" role="doc-backlink">Audience</a><a class="headerlink" href="#audience" title="Link to this heading"></a></h5>
+<p>Configure a dedicated audience mapper for your client by navigating to <strong>Clients -&gt; &lt;your client’s id&gt; -&gt; Client scopes</strong>.</p>
+<ul class="simple">
+<li><p>Access the dedicated mappers pane by clicking <strong>&lt;your client’s id&gt;-dedicated</strong>, located under Assigned client scope.</p></li>
+</ul>
+<dl class="simple">
+<dt><cite>(It should have a description of “Dedicated scope and mappers for this client”)</cite></dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>Click <strong>Configure a new mapper</strong> and select <strong>Audience</strong></dt><dd><ul>
+<li><p><strong>Name</strong> ‘aud-mapper-&lt;your client’s id&gt;’</p></li>
+<li><dl class="simple">
+<dt><strong>Included Client Audience</strong> select <cite>&lt;your client’s id&gt;</cite> from the dropdown.</dt><dd><ul>
+<li><p><em>OAuth2 proxy can be set up to pass both the access and ID JWT tokens to your upstream services. If you require additional audience entries, you can use the Included Custom Audience field in addition to the “Included Client Audience” dropdown. Note that the “aud” claim of a JWT token should be limited and only specify its intended recipients.</em></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p><strong>Add to ID token</strong> ‘On’</p></li>
+<li><dl class="simple">
+<dt><strong>Add to access token</strong> ‘On’ - <a class="reference external" href="https://github.com/oauth2-proxy/oauth2-proxy/pull/1916">#1916</a></dt><dd><ul>
+<li><p><em>Save the configuration.</em></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<ul class="simple">
+<li><p>Any subsequent dedicated client mappers can be defined by clicking <strong>Dedicated scopes -&gt; Add mapper -&gt; By configuration -&gt;</strong> <cite>Select mapper</cite></p></li>
+</ul>
+</section>
+<section id="groups">
+<h5><a class="toc-backref" href="#id15" role="doc-backlink">Groups</a><a class="headerlink" href="#groups" title="Link to this heading"></a></h5>
+<p>To summarize, the steps required to authorize Keycloak group membership with OAuth2 Proxy are as follows:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Create a new Client Scope with the name <strong>groups</strong> in Keycloak.</dt><dd><ul>
+<li><p>Include a mapper of type <strong>Group Membership</strong>.</p></li>
+<li><p>Set the “Token Claim Name” to <strong>groups</strong> or customize by matching it to the <em>–oidc-groups-claim</em> option of OAuth2 Proxy.</p></li>
+<li><p>If the “Full group path” option is selected, you need to include a “/” separator in the group names defined in the <em>–allowed-group</em> option of OAuth2 Proxy. Example: “/groupname” or “/groupname/childgroup”.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>After creating the Client Scope named <em>groups</em> you will need to attach it to your client.
+<strong>Clients -&gt; &lt;your client’s id&gt; -&gt; Client scopes -&gt; Add client scope</strong> -&gt; Select <strong>groups</strong> and choose Optional and you should now have a client that maps group memberships into the JWT tokens so that Oauth2 Proxy may evaluate them.</p>
+</section>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="dev-guide.html" class="btn btn-neutral float-left" title="Contributor Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, National Data Service.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

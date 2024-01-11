@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Guide &mdash; Labs Workbench develop documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=16816911"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Contributor Guide" href="dev-guide.html" />
+    <link rel="prev" title="Architecture" href="../overview/architecture.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Labs Workbench
+              <img src="../_static/workbench-v2-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                develop
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../overview/use-cases.html">Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/terminology.html">Terminology</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/architecture.html">Architecture</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Platform Usage</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#typical-user-flow">Typical User Flow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#landing-page">Landing Page</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#login-with-local-username-password">Login with Local Username / Password</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#login-with-an-oidc-provider-e-g-cilogon">Login with an OIDC Provider (e.g. CILogon)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#all-apps">All Apps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#my-apps">My Apps</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dev-guide.html">Contributor Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="admin-guide.html">Admin Guide</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Labs Workbench</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">User Guide</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/nds-org/ndslabs/blob/develop/guides/user-guide.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="user-guide">
+<span id="id1"></span><h1><a class="toc-backref" href="#id2" role="doc-backlink">User Guide</a><a class="headerlink" href="#user-guide" title="Link to this heading"></a></h1>
+<p>All Workbench users have the ability to install and launch UserApps</p>
+<nav class="contents" id="table-of-contents">
+<p class="topic-title">Table of Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#user-guide" id="id2">User Guide</a></p>
+<ul>
+<li><p><a class="reference internal" href="#typical-user-flow" id="id3">Typical User Flow</a></p>
+<ul>
+<li><p><a class="reference internal" href="#landing-page" id="id4">Landing Page</a></p>
+<ul>
+<li><p><a class="reference internal" href="#login-with-local-username-password" id="id5">Login with Local Username / Password</a></p></li>
+<li><p><a class="reference internal" href="#login-with-an-oidc-provider-e-g-cilogon" id="id6">Login with an OIDC Provider (e.g. CILogon)</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#all-apps" id="id7">All Apps</a></p></li>
+<li><p><a class="reference internal" href="#my-apps" id="id8">My Apps</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+<section id="typical-user-flow">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Typical User Flow</a><a class="headerlink" href="#typical-user-flow" title="Link to this heading"></a></h2>
+<p>A typical user of the app would likely follow these steps:</p>
+<ol class="arabic simple">
+<li><p>Login to Workbench</p></li>
+<li><p>Go to “All Apps” to view all AppSpecs offered by the system</p></li>
+<li><p>Find an AppSpec to install, then click the + button</p></li>
+<li><p>On the “My Apps” view, your chosen UserApp should now appear</p></li>
+<li><p>Click the Launch button on your UserApp to start it up</p></li>
+<li><p>Wait for the status to turn green</p></li>
+<li><p>Expand the running app - you should see a link appear in the expanded section</p></li>
+<li><p>Click the link to navigate to your launched UserApp</p></li>
+<li><p>When you’re finished using the app, click the Shutdown button</p></li>
+<li><p>Wait for the app to finishing shutting down</p></li>
+<li><p>Click the Delete button to remove the UserApp from your list</p></li>
+</ol>
+<section id="landing-page">
+<h3><a class="toc-backref" href="#id4" role="doc-backlink">Landing Page</a><a class="headerlink" href="#landing-page" title="Link to this heading"></a></h3>
+<p>Depending on how your administrator has configured Workbench, there are two ways to log into the platform: username/password or OIDC</p>
+<p>Typically we recommend configuring some form of OIDC for production instances, but this is not always appropriate.</p>
+<section id="login-with-local-username-password">
+<h4><a class="toc-backref" href="#id5" role="doc-backlink">Login with Local Username / Password</a><a class="headerlink" href="#login-with-local-username-password" title="Link to this heading"></a></h4>
+<a class="reference internal image-reference" href="../_images/workbench-keycloak-userpass-login.png"><img alt="Userpass login" src="../_images/workbench-keycloak-userpass-login.png" style="width: 400px;" /></a>
+<ol class="arabic simple">
+<li><p>User navigates to WebUI and clicks the Login button</p></li>
+<li><p>User is sent to the OAuth2 Proxy’s <cite>/oauth2/start</cite> endpoint</p></li>
+<li><p><cite>/oauth2/start</cite> begins the OAuth chain, which starts by automatically redirecting the User to Keycloak</p></li>
+<li><p>User enters their username / password into the form and clicks “Sign In” at the bottom</p></li>
+</ol>
+<p>After login, User is automatically redirected back to the Workbench WebUI with a valid auth token set as a cookie.</p>
+<p>This cookie is automatically sent to the Workbench API server with every subsequent request</p>
+</section>
+<section id="login-with-an-oidc-provider-e-g-cilogon">
+<h4><a class="toc-backref" href="#id6" role="doc-backlink">Login with an OIDC Provider (e.g. CILogon)</a><a class="headerlink" href="#login-with-an-oidc-provider-e-g-cilogon" title="Link to this heading"></a></h4>
+<a class="reference internal image-reference" href="../_images/workbench-keycloak-oidc-login.png"><img alt="OIDC login" src="../_images/workbench-keycloak-oidc-login.png" style="width: 400px;" /></a>
+<ol class="arabic simple">
+<li><p>User navigates to WebUI and clicks the login button</p></li>
+<li><p>User is sent to the OAuth2 Proxy’s <cite>/oauth2/start</cite> endpoint</p></li>
+<li><dl class="simple">
+<dt><cite>/oauth2/start</cite> begins the OAuth chain, which starts by automatically redirecting the User to Keycloak</dt><dd><ul class="simple">
+<li><p>If ONLY OIDC is enabled (no username/password), you will be redirected to the provider’s login page</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>User logs in with provider credentials</p></li>
+</ol>
+<p>After login, User is automatically redirected back to the Workbench WebUI with a valid auth token set as a cookie.</p>
+<p>This cookie is automatically sent to the Workbench API server with every subsequent request</p>
+</section>
+</section>
+<section id="all-apps">
+<h3><a class="toc-backref" href="#id7" role="doc-backlink">All Apps</a><a class="headerlink" href="#all-apps" title="Link to this heading"></a></h3>
+<a class="reference internal image-reference" href="../_images/workbench-all-apps.png"><img alt="All apps" src="../_images/workbench-all-apps.png" style="width: 400px;" /></a>
+<p>This view shows the entire catalog of our available AppSpecs</p>
+<p>With this view, we can:</p>
+<ul class="simple">
+<li><p>Search / Filter to find applications that we can create</p></li>
+<li><p>Create a New Application Instance - this will create a new item under “My Apps”</p></li>
+</ul>
+</section>
+<section id="my-apps">
+<h3><a class="toc-backref" href="#id8" role="doc-backlink">My Apps</a><a class="headerlink" href="#my-apps" title="Link to this heading"></a></h3>
+<a class="reference internal image-reference" href="../_images/workbench-my-apps.png"><img alt="My apps" src="../_images/workbench-my-apps.png" style="width: 400px;" /></a>
+<p>With this view, we can:</p>
+<ul class="simple">
+<li><p>Launch / Shutdown an Application Instance (App)</p></li>
+<li><p>Go to a running application</p></li>
+<li><p>Access the Console of Running App</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../overview/architecture.html" class="btn btn-neutral float-left" title="Architecture" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="dev-guide.html" class="btn btn-neutral float-right" title="Contributor Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, National Data Service.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Setting up Helm &mdash; Labs Workbench develop documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=16816911"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Labs Workbench
+              <img src="../_static/workbench-v2-logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                develop
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Overview</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../overview/use-cases.html">Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/terminology.html">Terminology</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/architecture.html">Architecture</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Platform Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/user-guide.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/dev-guide.html">Contributor Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/admin-guide.html">Admin Guide</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Labs Workbench</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Setting up Helm</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/nds-org/ndslabs/blob/develop/install/helm.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="setting-up-helm">
+<span id="setup-helm"></span><h1>Setting up Helm<a class="headerlink" href="#setting-up-helm" title="Link to this heading"></a></h1>
+<p>Labs Workbench uses the <a class="reference external" href="https://helm.sh/">Helm</a> package manager for
+Kubernetes. This section describes how to setup Helm on your cluster.</p>
+<p>There a number of ways to <a class="reference external" href="https://docs.helm.sh/using_helm/#installing-helm">install Helm</a>. A simple approach is to
+run the Helm installer:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
+</pre></div>
+</div>
+<p>This will install the latest release of Helm.</p>
+<p>After installing Helm on your system, you must initialize it in your Kubernetes
+cluster:</p>
+<p>First, setup a <cite>ServiceAccount</cite> for use by the <cite>tiller</cite>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>--namespace<span class="w"> </span>kube-system<span class="w"> </span>create<span class="w"> </span>serviceaccount<span class="w"> </span>tiller
+</pre></div>
+</div>
+<p>Next, give the <cite>ServiceAccount</cite> permissions to manage the cluster:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>create<span class="w"> </span>clusterrolebinding<span class="w"> </span>tiller<span class="w"> </span>--clusterrole<span class="w"> </span>cluster-admin<span class="w"> </span><span class="se">\</span>
+<span class="w">   </span>--serviceaccount<span class="o">=</span>kube-system:tiller
+</pre></div>
+</div>
+<p>Finally, initialize Helm in your cluster:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>helm<span class="w"> </span>init<span class="w"> </span>--service-account<span class="w"> </span>tiller<span class="w"> </span>--wait
+</pre></div>
+</div>
+<p>This command creates a <cite>tiller</cite> deployment in the <cite>kube-system</cite> namespace and
+configures your local <cite>helm</cite> client.</p>
+<p>For more information, see the <cite>Helm
+&lt;https://docs.helm.sh/using_helm/#installing-helm&gt;_</cite> documentation.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, National Data Service.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
