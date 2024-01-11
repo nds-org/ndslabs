@@ -38,6 +38,7 @@ What is an AppSpec?
 An **application specification** (AppSpec) contains all of the information necessary to run a containerized application
 
 The only required pieces are as follows:
+
 * `key`` is simply unique identifier for this application. This field may only contain alphanumeric characters (no special characters)
 * Docker image name/tags of the application
 
@@ -89,6 +90,7 @@ Anytime the WebUI or API server needs to decode this token, they can make a requ
 The server will respond with a decoded token as a JSON document
 
 The decoded token includes the following information:
+
 * email
 * username
 * group membership
